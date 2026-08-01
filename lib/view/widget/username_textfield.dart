@@ -1,0 +1,18 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+
+Widget TextFieldForUsername(TextEditingController controller) {
+  return TextField(
+    controller: controller,
+    maxLines: 1,
+    maxLength: 14,
+    maxLengthEnforcement: MaxLengthEnforcement.enforced,
+    inputFormatters: [
+      FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9-_ ]')),
+    ],
+    decoration: const InputDecoration(
+      hintText: '输入用户名',
+      helperText: '0-9, a-z, A-Z, -, _, space',
+    ),
+  );
+}

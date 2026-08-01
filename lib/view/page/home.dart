@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/select_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title});
@@ -61,6 +62,15 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  void _disposeControllers() {
+    for (final c in _numberControllers.values) {
+      c.dispose();
+    }
+    for (final c in _textControllers.values) {
+      c.dispose();
+    }
+  }
+
   void _removeCard(int id) {
     final idx = Stores.infoStore.getCardIds().indexOf(id);
     if (idx != -1) {
@@ -105,10 +115,7 @@ class _MyHomePageState extends State<MyHomePage> {
                           final TextEditingController usernameController = TextEditingController();
                           return AlertDialog(
                             title: const Text('添加用户'),
-                            content: TextField(
-                              controller: usernameController,
-                              decoration: const InputDecoration(hintText: '输入用户名'),
-                            ),
+                            content: TextFieldForUsername(usernameController),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -155,6 +162,9 @@ class _MyHomePageState extends State<MyHomePage> {
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => const SelectUserPage()),
                     ).then((_) {
+                      _disposeControllers();
+                      _textControllers.clear();
+                      _numberControllers.clear();
                       setState(() {});
                     });
                   },
@@ -319,102 +329,101 @@ class _MyHomePageState extends State<MyHomePage> {
     return Dismissible( // 左划删除
       key: ValueKey(id),
       direction: DismissDirection.endToStart,
-        onDismissed: (direction) {
-          setState(() {
-            _removeCard(id);
-          });
+      onDismissed: (direction) {
+        setState(() {
+          _removeCard(id);
+        });
+      },
+      child: Listener(
+        onPointerDown: (_) {
+          // 必须在拖拽代理创建之前清除焦点，否则持有焦点
+          // 的 TextField 被移入 Overlay 时会导致崩溃
+          FocusManager.instance.primaryFocus?.unfocus();
         },
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Listener(
-          onPointerDown: (_) {
-            // 必须在拖拽代理创建之前清除焦点，否则持有焦点
-            // 的 TextField 被移入 Overlay 时会导致崩溃
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: Row(
-            children: [
-              // 显式拖拽句柄：避免在 TextField 区域长按触发重排
-              Expanded(
-                flex: 2,
-                child: ReorderableDragStartListener(
-                  index: index,
-                  child: Container(
-                    alignment: Alignment.center,  // 内容居中
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryContainer,
-                      borderRadius: BorderRadius.circular(4.0),
-                    ),
-                    child: Text(
-                      (index + 1).toString(), 
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold, 
-                        fontSize: 16.0
-                      )
-                    ),
-                  ),
+        child: ListTile(
+          // 显式拖拽句柄：避免在 TextField 区域长按触发重排
+          leading: ReorderableDragStartListener(
+            index: index,
+            child: Container(
+              width: 40,
+              height: 40,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(4.0),
+              ),
+              child: Text(
+                (index + 1).toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
                 ),
               ),
-              const SizedBox(width: 8.0),
+            ),
+          ),
+          // 两个输入框作为主体
+          title: Row(
+            children: [
               Expanded(flex: 11, child: _textFieldForTextInput(id)),
               const SizedBox(width: 8.0),
               Expanded(flex: 7, child: _textFieldForNumberInput(id)),
-              const SizedBox(width: 8.0),
-              Expanded(
-                flex: 2,
-                child: PopupMenuButton(
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      child: Row(
-                        children: [
-                          Icon(Stores.infoStore.getApplyFlag(id) ? Icons.done : Icons.block, color: Stores.infoStore.getApplyFlag(id) ? Colors.green : Colors.red),
-                          const SizedBox(width: 8.0),
-                          Text(Stores.infoStore.getApplyFlag(id) ? '已应用' : '未应用'),
-                        ],
-                      ),
-                      onTap: () {
-                        setState(() {
-                          Stores.infoStore.setApplyFlag(id, !Stores.infoStore.getApplyFlag(id));
-                        });
-                      }
+            ],
+          ),
+          // 弹出菜单
+          trailing: PopupMenuButton(
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                child: Row(
+                  children: [
+                    Icon(
+                      Stores.infoStore.getApplyFlag(id) ? Icons.done : Icons.block,
+                      color: Stores.infoStore.getApplyFlag(id) ? Colors.green : Colors.red,
                     ),
-                    // 清除表单
-                    PopupMenuItem(
-                      child: const Row(
-                        children: [
-                          Icon(Icons.clear),
-                          SizedBox(width: 8.0),
-                          Text('清空'),
-                        ],
-                      ),
-                      onTap: () {
-                        setState(() {
-                          _numberControllerFor(id).clear();
-                          id != 1 && id != 2 ? _textControllerFor(id).clear() : null;
-                          // _textControllerFor(id).clear();
-                        });
-                      },
-                    ),
-                    PopupMenuItem(
-                      enabled: id != 1 && id != 2,
-                      child: const Row(
-                        children: [
-                          Icon(Icons.delete, color: Colors.red),
-                          SizedBox(width: 8.0),
-                          Text('删除', style: TextStyle(color: Colors.red)),
-                        ],
-                      ),
-                       onTap: () {
-                         setState(() {
-                           _removeCard(id);
-                         });
-                       },
-                    ),
+                    const SizedBox(width: 8.0),
+                    Text(Stores.infoStore.getApplyFlag(id) ? '已应用' : '未应用'),
                   ],
                 ),
+                onTap: () {
+                  setState(() {
+                    Stores.infoStore.setApplyFlag(id, !Stores.infoStore.getApplyFlag(id));
+                  });
+                },
+              ),
+              // 清除表单
+              PopupMenuItem(
+                child: const Row(
+                  children: [
+                    Icon(Icons.clear),
+                    SizedBox(width: 8.0),
+                    Text('清空'),
+                  ],
+                ),
+                onTap: () {
+                  setState(() {
+                    _numberControllerFor(id).clear();
+                    // if (id != 1 && id != 2) _textControllerFor(id).clear();
+                    _textControllerFor(id).clear();
+                  });
+                },
+              ),
+              PopupMenuItem(
+                enabled: id != 1 && id != 2,
+                child: const Row(
+                  children: [
+                    Icon(Icons.delete, color: Colors.red),
+                    SizedBox(width: 8.0),
+                    Text('删除', style: TextStyle(color: Colors.red)),
+                  ],
+                ),
+                onTap: () {
+                  setState(() {
+                    _removeCard(id);
+                  });
+                },
               ),
             ],
           ),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
         ),
       ),
     );

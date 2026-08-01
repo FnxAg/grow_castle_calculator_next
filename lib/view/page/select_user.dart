@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 
 class SelectUserPage extends StatefulWidget {
   const SelectUserPage({super.key});
@@ -60,7 +60,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
             ),
             leading: infoStore.getCurrentUser() == userId
                 ? const Icon(Icons.check, color: Colors.green)
-                : const Spacer(),
+                : const SizedBox(width: 24.0),
             trailing: !_settingState
                 ? null
                 : IconButton(
@@ -87,19 +87,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
                         TextEditingController(text: userId);
                     return AlertDialog(
                       title: const Text('编辑用户名'),
-                      content: TextField(
-                        controller: controller,
-                        maxLines: 1,
-                        maxLength: 14,
-                        maxLengthEnforcement: MaxLengthEnforcement.enforced,
-                        inputFormatters: [
-                          FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9-_ ]')),
-                        ],
-                        decoration: const InputDecoration(
-                          hintText: '输入新用户名',
-                          helperText: '0-9, a-z, A-Z, -, _, space',
-                        ),
-                      ),
+                      content: TextFieldForUsername(controller),
                       actions: [
                         TextButton(
                           onPressed: () {
