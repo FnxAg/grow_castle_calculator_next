@@ -337,6 +337,7 @@ class InfoStore {
   void setApplyFlag(int id, bool value) {
     _addCard(id);
     _applyFlags[id] = value;
+    _recalc();
     updateData(_currentUser);
   }
 
@@ -365,8 +366,14 @@ class InfoStore {
   String getNumberValue(int id) => _numberValues[id] ?? '';
 
   /// 重新计算并通知 UI
+  /// 仅累加启用单位（applyFlag != false）的金币，未启用的 unitGold 保留但不计入汇总
   void _recalc() {
-    _totalGold = _unitGold.values.fold(0.0, (sum, gold) => sum + gold);
+    _totalGold = 0.0;
+    for (final entry in _unitGold.entries) {
+      if (_applyFlags[entry.key] ?? true) {
+        _totalGold += entry.value;
+      }
+    }
     _gp = (_wave > 0) ? _totalGold / (0.5 * (310 + _wave * 310) * _wave) * 100 : 0.0;
     _gpCN = (_wave > 0) ? (_totalGold / (_wave * _wave)) : 0.0;
     totalGoldNotifier.value = _totalGold;
