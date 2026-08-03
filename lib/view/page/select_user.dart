@@ -87,7 +87,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
                         TextEditingController(text: userId);
                     return AlertDialog(
                       title: const Text('编辑用户名'),
-                      content: TextFieldForUsername(controller),
+                      content: UsernameTextField(controller: controller),
                       actions: [
                         TextButton(
                           onPressed: () {
@@ -100,8 +100,14 @@ class _SelectUserPageState extends State<SelectUserPage> {
                             final String newUsername = controller.text.trim();
                             if (newUsername.isNotEmpty &&
                                 newUsername != userId) {
-                              infoStore.renameUser(userId, newUsername);
-                              setState(() {});
+                              try {
+                                infoStore.renameUser(userId, newUsername);
+                                setState(() {});
+                              } catch (e) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(content: Text(e.toString())),
+                                );
+                              }
                             }
                             Navigator.of(context).pop();
                           },

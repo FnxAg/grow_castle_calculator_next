@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class InfoStore {
@@ -21,6 +22,9 @@ class InfoStore {
   Map<int, String> _numberValues = {};
   Map<int, double> _unitGold = {};
   double _totalGold = 0;
+
+  /// 当前用户总金币变化通知（供 UI 实时刷新）
+  final ValueNotifier<double> totalGoldNotifier = ValueNotifier<double>(0);
 
   /// 默认用户数据
   static const Map<int, Map<String, dynamic>> defaultUserData = {
@@ -129,6 +133,7 @@ class InfoStore {
     _numberValues = Map<int, String>.from(userData.numberValues);
     _unitGold = Map<int, double>.from(userData.unitGold);
     _totalGold = userData.totalGold;
+    totalGoldNotifier.value = _totalGold;
     _persistMeta();
   }
 
@@ -248,10 +253,11 @@ class InfoStore {
     userData.username = newUsername;
     _userIds.remove(oldUsername);
     _userIds[newUsername] = userId;
+    if (_currentUserId == userId) {
+      _currentUser = newUsername;
+    }
     _persistUser(userId);
     _persistMeta();
-    // print(_usersBox.toMap());
-    print(_metaBox.toMap());
   }
 
   /// 添加卡片 ID 到当前用户的列表中
@@ -295,11 +301,17 @@ class InfoStore {
   /// 获取当前卡片的等级
   String getNumberValue(int id) => _numberValues[id] ?? '';
 
+  /// 重新计算总金币并通知 UI
+  void _recalcTotalGold() {
+    _totalGold = _unitGold.values.fold(0.0, (sum, gold) => sum + gold);
+    totalGoldNotifier.value = _totalGold;
+  }
+
   /// 设置当前卡片的经济
   void _setUnitGold(int id, int value) {
     _addCard(id);
     _unitGold[id] = unitLevelSpendGold(value, id);
-    _totalGold = _unitGold.values.fold(0.0, (sum, gold) => sum + gold);
+    _recalcTotalGold();
     _saveCurrentState();
   }
 
@@ -322,7 +334,7 @@ class InfoStore {
     _numberValues.remove(id);
     _unitGold.remove(id);
     _cardIds.remove(id);
-    _totalGold = _unitGold.values.fold(0.0, (sum, gold) => sum + gold);
+    _recalcTotalGold();
     updateData(_currentUser);
   }
 

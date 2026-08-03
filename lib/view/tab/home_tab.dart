@@ -4,23 +4,25 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/select_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 
-class MyHomePage extends StatefulWidget {
-  const MyHomePage({super.key, required this.title, this.onToggleTheme});
+/// 首页 tab：独立的 Scaffold，含抽屉、AppBar（汉堡/加号/用户菜单）、
+/// 卡片列表与总金币汇总。
+///
+/// 输入框的控制器与焦点按卡片 id 缓存在 State 中，
+/// 切换用户后需调用 [_disposeControllers] 重建。
+class HomeTab extends StatefulWidget {
+  const HomeTab({super.key, required this.title});
 
   final String title;
-  final VoidCallback? onToggleTheme;
 
   @override
-  State<MyHomePage> createState() => _MyHomePageState();
+  State<HomeTab> createState() => _HomeTabState();
 }
 
-class _MyHomePageState extends State<MyHomePage> {
+class _HomeTabState extends State<HomeTab> {
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
   final Map<int, TextEditingController> _textControllers = {};
-
-  final _selectIndex = ValueNotifier(0);
 
   FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
     return cache.putIfAbsent(id, () => FocusNode());
@@ -63,6 +65,7 @@ class _MyHomePageState extends State<MyHomePage> {
     super.dispose();
   }
 
+  /// 切换用户后丢弃旧控制器（数据已由 store 持久化，下次重建时重新读取）
   void _disposeControllers() {
     for (final c in _numberControllers.values) {
       c.dispose();
@@ -85,9 +88,18 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _addCard() {
+    setState(() {
+      final newId = (Stores.infoStore.getCardIds().isEmpty ? 1 : (Stores.infoStore.getCardIds().reduce((a, b) => a > b ? a : b) + 1));
+      Stores.infoStore.addNewCard(newId);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      // 抽屉属于首页：AppBar 会因此自动显示汉堡按钮
+      drawer: _buildDrawer(),
       appBar: AppBar(
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Column(
@@ -101,16 +113,11 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
         actions: [
-          // 切换浅色/深色模式
+          // 新增条目（原 FAB 迁移）
           IconButton(
-            icon: Icon(
-              Theme.of(context).brightness == Brightness.light
-                  ? Icons.dark_mode
-                  : Icons.light_mode,
-            ),
-            onPressed: () {
-              widget.onToggleTheme?.call();
-            },
+            icon: const Icon(Icons.add),
+            tooltip: '新增条目',
+            onPressed: _addCard,
           ),
           PopupMenuButton(
             itemBuilder: (context) => [
@@ -121,13 +128,14 @@ class _MyHomePageState extends State<MyHomePage> {
                   Future.delayed(
                     const Duration(milliseconds: 0),
                     () {
+                      if (!context.mounted) return;
                       showDialog(
                         context: context,
                         builder: (context) {
                           final TextEditingController usernameController = TextEditingController();
                           return AlertDialog(
                             title: const Text('添加用户'),
-                            content: TextFieldForUsername(usernameController),
+                            content: UsernameTextField(controller: usernameController),
                             actions: [
                               TextButton(
                                 onPressed: () {
@@ -171,6 +179,7 @@ class _MyHomePageState extends State<MyHomePage> {
                 Future.delayed(
                   const Duration(milliseconds: 0),
                   () {
+                    if (!context.mounted) return;
                     Navigator.of(context).push(
                       MaterialPageRoute(builder: (context) => const SelectUserPage()),
                     ).then((_) {
@@ -186,108 +195,136 @@ class _MyHomePageState extends State<MyHomePage> {
           ),
         ]
       ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            DrawerHeader(
-              decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
-              ),
-              child: const Text('GCC Next', style: TextStyle(fontSize: 24.0)),
-            ),
-            ListTile(
-              leading: const Icon(Icons.info),
-              title: const Text('关于'),
-              onTap: () {
-                showAboutDialog(
-                  context: context,
-                  applicationName: 'GCC Next',
-                  applicationVersion: '1.0.0',
-                  applicationIcon: const Icon(Icons.castle),
-                  children: [
-                    const Text('GCC Next 是一个用于计算和管理游戏数据的工具。'),
-                  ],
-                );
-              },
-            ),
-          ],
-        ),
+      body: Column(
+        children: [
+          Expanded(
+            child: Stores.infoStore.getCardIds().isEmpty
+                ? const Center(
+                    child: Text(
+                      '暂无条目，点击右上角 + 添加',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : ReorderableListView.builder(
+                    itemCount: Stores.infoStore.getCardIds().length,
+                    proxyDecorator: (child, index, animation) {
+                      return AnimatedBuilder(
+                        animation: animation,
+                        builder: (context, child) {
+                          final double elevation = 4.0 * animation.value;
+                          return Material(
+                            elevation: elevation,
+                            shadowColor: Colors.black26,
+                            borderRadius: BorderRadius.circular(8.0),
+                            child: IgnorePointer(child: child),
+                          );
+                        },
+                        child: child,
+                      );
+                    },
+                    onReorderItem: (oldIndex, newIndex) {
+                      // 拖拽前先清除焦点，避免 TextField 的 FocusNode
+                      // 在 widget 临时脱离树时产生不一致状态导致崩溃
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      setState(() {
+                        final item = Stores.infoStore.getCardIds().removeAt(oldIndex);
+                        Stores.infoStore.getCardIds().insert(newIndex, item);
+                      });
+                    },
+                    itemBuilder: (context, index) {
+                      return _buildCard(Stores.infoStore.getCardIds()[index], index);
+                    },
+                    buildDefaultDragHandles: false,
+                    scrollDirection: .vertical,
+                  ),
+          ),
+          _buildGoldSummaryBar(),
+        ],
       ),
-      body: ReorderableListView.builder(
-        itemCount: Stores.infoStore.getCardIds().length,
-        proxyDecorator: (child, index, animation) {
-          return AnimatedBuilder(
-            animation: animation,
-            builder: (context, child) {
-              final double elevation = 4.0 * animation.value;
-              return Material(
-                elevation: elevation,
-                shadowColor: Colors.black26,
-                borderRadius: BorderRadius.circular(8.0),
-                child: IgnorePointer(child: child),
+    );
+  }
+
+  Widget _buildDrawer() {
+    return Drawer(
+      child: ListView(
+        padding: EdgeInsets.zero,
+        children: [
+          DrawerHeader(
+            decoration: BoxDecoration(
+              color: Theme.of(context).colorScheme.primaryContainer,
+            ),
+            child: const Text('GCC Next', style: TextStyle(fontSize: 24.0)),
+          ),
+          // 设置入口占位，暂时空置
+          const ListTile(
+            leading: Icon(Icons.settings),
+            title: Text('设置'),
+            enabled: false,
+          ),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('关于'),
+            onTap: () {
+              showAboutDialog(
+                context: context,
+                applicationName: 'GCC Next',
+                applicationVersion: '1.0.0',
+                applicationIcon: const Icon(Icons.castle),
+                children: [
+                  const Text('GCC Next 是一个用于计算和管理游戏数据的工具。'),
+                ],
               );
             },
-            child: child,
-          );
-        },
-        onReorderItem: (oldIndex, newIndex) {
-          // 拖拽前先清除焦点，避免 TextField 的 FocusNode
-          // 在 widget 临时脱离树时产生不一致状态导致崩溃
-          FocusManager.instance.primaryFocus?.unfocus();
-          setState(() {
-            final item = Stores.infoStore.getCardIds().removeAt(oldIndex);
-            Stores.infoStore.getCardIds().insert(newIndex, item);
-          });
-        },
-        itemBuilder: (context, index) {
-          return _buildCard(Stores.infoStore.getCardIds()[index], index);
-        },
-        buildDefaultDragHandles: false,
-        scrollDirection: .vertical,
-      ),
-      floatingActionButton: Column(
-        mainAxisAlignment: MainAxisAlignment.end,
-        children: [
-          FloatingActionButton(
-            onPressed: () {
-              setState(() {
-                final newId = (Stores.infoStore.getCardIds().isEmpty ? 1 : (Stores.infoStore.getCardIds().reduce((a, b) => a > b ? a : b) + 1));
-                Stores.infoStore.addNewCard(newId);
-              });
-            },
-            tooltip: '新增条目',
-            child: const Icon(Icons.add),
           ),
         ],
       ),
-      bottomNavigationBar: 
-        ListenableBuilder(
-          listenable: _selectIndex, 
-          builder: (context, child) {
-            return NavigationBar(
-              selectedIndex: _selectIndex.value,
-              height: kBottomNavigationBarHeight * 1.1,
-              animationDuration: const Duration(milliseconds: 250),
-              onDestinationSelected: (index) {
-                setState(() {
-                  _selectIndex.value = index;
-                });
-              },
-              labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-                destinations: [
-                NavigationDestination(
-                  icon: const Icon(Icons.home),
-                  label: '首页',
-                ),
-                NavigationDestination(
-                  icon: const Icon(Icons.settings),
-                  label: '设置',
-                ),
-              ],
-            );
-          }
+    );
+  }
+
+  /// 底部总金币汇总条，输入等级时实时更新
+  Widget _buildGoldSummaryBar() {
+    final colorScheme = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
+      decoration: BoxDecoration(
+        color: colorScheme.surfaceContainer,
+        border: Border(
+          top: BorderSide(color: colorScheme.outlineVariant),
         ),
+      ),
+      child: Row(
+        children: [
+          Icon(Icons.monetization_on_outlined,
+              size: 20.0, color: colorScheme.primary),
+          const SizedBox(width: 8.0),
+          const Text('总金币'),
+          const Spacer(),
+          ValueListenableBuilder<double>(
+            valueListenable: Stores.infoStore.totalGoldNotifier,
+            builder: (context, gold, _) {
+              return Text(
+                _formatGold(gold),
+                style: TextStyle(
+                  fontSize: 16.0,
+                  fontWeight: FontWeight.bold,
+                  color: colorScheme.primary,
+                ),
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 格式化金币：整数不带小数，千位加分隔符
+  String _formatGold(double value) {
+    final text = value == value.roundToDouble()
+        ? value.toStringAsFixed(0)
+        : value.toStringAsFixed(1);
+    return text.replaceAllMapped(
+      RegExp(r'\B(?=(\d{3})+(?!\d))'),
+      (m) => ',',
     );
   }
 
@@ -297,7 +334,7 @@ class _MyHomePageState extends State<MyHomePage> {
         color: Theme.of(context).colorScheme.primaryContainer,
         border: Border(
           left: BorderSide(
-            color: Theme.of(context).colorScheme.primary, 
+            color: Theme.of(context).colorScheme.primary,
             width: 2.0
             )
           ),
@@ -333,7 +370,7 @@ class _MyHomePageState extends State<MyHomePage> {
         color: Theme.of(context).colorScheme.primaryContainer,
         border: Border(
           left: BorderSide(
-            color: Theme.of(context).colorScheme.primary, 
+            color: Theme.of(context).colorScheme.primary,
             width: 2.0
             )
           ),

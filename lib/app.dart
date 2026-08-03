@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:grow_castle_calculator_next/view/page/home.dart';
+import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/shell/main_shell.dart';
 import 'package:grow_castle_calculator_next/view/widget/dynamic_color.dart';
 
 class MyApp extends StatefulWidget {
@@ -14,7 +15,6 @@ class _MyAppState extends State<MyApp> {
   ColorScheme? _lightDynamic;
   ColorScheme? _darkDynamic;
   Color defaultColor = Colors.blue;
-  ThemeMode _themeMode = ThemeMode.system;
 
   @override
   void initState() {
@@ -45,24 +45,23 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
-  void _toggleTheme() {
-    setState(() {
-      _themeMode = _themeMode == ThemeMode.dark ? ThemeMode.light : ThemeMode.dark;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
-    return  MaterialApp(
-      title: 'GCC Next',
-      theme: _lightTheme(_lightDynamic),
-      darkTheme: _darkTheme(_darkDynamic),
-      themeMode: _themeMode,
-      home: MyHomePage(title: 'GCC Next', onToggleTheme: _toggleTheme),
-      builder: (context, child) {
-        return GestureDetector(
-          onTap: () => FocusScope.of(context).unfocus(),
-          child: child!,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: Stores.appSettingsStore.themeModeNotifier,
+      builder: (context, themeMode, _) {
+        return MaterialApp(
+          title: 'GCC Next',
+          theme: _lightTheme(_lightDynamic),
+          darkTheme: _darkTheme(_darkDynamic),
+          themeMode: themeMode,
+          home: const MainShell(title: 'GCC Next'),
+          builder: (context, child) {
+            return GestureDetector(
+              onTap: () => FocusScope.of(context).unfocus(),
+              child: child!,
+            );
+          },
         );
       },
     );
