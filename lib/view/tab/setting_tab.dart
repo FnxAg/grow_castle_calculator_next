@@ -51,6 +51,24 @@ class SettingTab extends StatelessWidget {
               },
             ),
           ),
+          ListTile(
+            leading: const Icon(Icons.info),
+            title: const Text('关于'),
+            onTap: () {
+              // 先释放焦点：避免对话框关闭后焦点恢复，
+              // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
+              FocusManager.instance.primaryFocus?.unfocus();
+              showAboutDialog(
+                context: context,
+                applicationName: 'GCC Next',
+                applicationVersion: '1.0.0',
+                applicationIcon: const Icon(Icons.castle),
+                children: [
+                  const Text('GCC Next 是一个用于计算和管理游戏数据的工具。'),
+                ],
+              );
+            },
+          ),
         ],
       ),
     );

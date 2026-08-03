@@ -387,9 +387,10 @@ class InfoStore {
     updateData(_currentUser);
   }
 
-  /// 添加新条目
-  void addNewCard(int id) {
-    setApplyFlag(id, true);
+  /// 添加新条目（id 自动取当前最大 id + 1）
+  void addNewCard() {
+    final newId = _cardIds.isEmpty ? 1 : _cardIds.reduce((a, b) => a > b ? a : b) + 1;
+    setApplyFlag(newId, true);
     updateData(_currentUser);
   }
 

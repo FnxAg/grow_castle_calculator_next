@@ -31,6 +31,12 @@ class _MainShellState extends State<MainShell> {
         onPageChanged: (index) {
           // 同步底部导航高亮（滑动与点击两种来源都会触发）
           _selectIndex.value = index;
+          // 离开首页时释放输入框焦点：否则焦点仍挂在首页 TextField 上，
+          // 之后打开对话框（如设置页"关于"）关闭时焦点会恢复回首页，
+          // PageView(allowImplicitScrolling) 为了显示获焦子页会自动滚回首页，造成页面抽风
+          if (index != 0) {
+            FocusManager.instance.primaryFocus?.unfocus();
+          }
         },
         // 相邻页保活：保留首页滚动位置，并支持左右滑动切换
         allowImplicitScrolling: true,
