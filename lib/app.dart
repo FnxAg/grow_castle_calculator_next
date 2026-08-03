@@ -10,7 +10,7 @@ class MyApp extends StatefulWidget {
   State<MyApp> createState() => _MyAppState();
 }
 
-class _MyAppState extends State<MyApp> {
+class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
 
   ColorScheme? _lightDynamic;
   ColorScheme? _darkDynamic;
@@ -19,7 +19,23 @@ class _MyAppState extends State<MyApp> {
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
     _fetchDynamicColor();
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    // 退到后台/即将终止前立即落盘，避免延迟保存的数据丢失
+    if (state == AppLifecycleState.paused ||
+        state == AppLifecycleState.detached) {
+      Stores.infoStore.flush();
+    }
   }
 
   ThemeData _lightTheme(ColorScheme? dynamic) {

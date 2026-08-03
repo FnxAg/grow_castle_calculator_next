@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
@@ -26,6 +28,9 @@ class InfoStore {
   int _seasonWave = 0;
   double _gp = 0;
   double _gpCN = 0;
+
+  /// 延迟落盘定时器：输入热路径合并写盘
+  Timer? _saveDebounce;
 
   /// 当前用户总金币变化通知（供 UI 实时刷新）
   final ValueNotifier<double> totalGoldNotifier = ValueNotifier<double>(0);
@@ -133,6 +138,9 @@ class InfoStore {
   /// 加载指定用户的数据
   /// 并写入到当前用户的状态中
   void _loadUserState(int userId) {
+    // 切换用户前取消待执行的延迟保存，避免旧用户数据被误写
+    _saveDebounce?.cancel();
+    _saveDebounce = null;
     final userData = _data[userId];
     if (userData == null) {
       throw ArgumentError('User not found');
@@ -180,6 +188,23 @@ class InfoStore {
     // print(_usersBox.toMap());
   }
 
+  /// 延迟落盘：输入热路径只更新内存与通知，停笔后统一保存
+  void _scheduleSave() {
+    _saveDebounce?.cancel();
+    _saveDebounce = Timer(const Duration(milliseconds: 400), () {
+      _saveDebounce = null;
+      _saveCurrentState();
+    });
+  }
+
+  /// 立即落盘并取消待执行的延迟保存
+  /// （切换用户/重命名/应用退到后台前调用，避免丢失最近输入）
+  void flush() {
+    _saveDebounce?.cancel();
+    _saveDebounce = null;
+    _saveCurrentState();
+  }
+
   /// 重置为默认用户
   void resetToDefaultUser() {
     if (_data[0] == null) {
@@ -203,8 +228,12 @@ class InfoStore {
     if (userId == -1) {
       throw ArgumentError('User not found');
     }
-    _saveCurrentState();
-    if (userId != _currentUserId) {
+    if (userId == _currentUserId) {
+      // 输入热路径：只更新内存与通知，延迟落盘合并写次数
+      _scheduleSave();
+    } else {
+      // 目标不是当前用户：切换前立即保存
+      flush();
       _loadUserState(userId);
     }
   }
@@ -255,7 +284,8 @@ class InfoStore {
     if (userId == _currentUserId) {
       return;
     }
-    _saveCurrentState();
+    // 切换前立即落盘，确保当前用户最近输入不丢失
+    flush();
     _loadUserState(userId);
   }
 
@@ -275,6 +305,8 @@ class InfoStore {
     if (userData == null) {
       throw ArgumentError('User data not found');
     }
+    // 重命名前先落盘：避免 _data 里还是延迟保存前的旧快照
+    flush();
     userData.username = newUsername;
     _userIds.remove(oldUsername);
     _userIds[newUsername] = userId;
@@ -341,7 +373,7 @@ class InfoStore {
     _addCard(id);
     _unitGold[id] = unitLevelSpendGold(value, id);
     _recalc();
-    _saveCurrentState();
+    // 持久化统一由 setNumberValue 末尾的 updateData 负责（防抖落盘）
   }
 
   /// 获取当前波数
@@ -372,6 +404,10 @@ class InfoStore {
     final userId = getUserId(username);
     if (userId == -1) {
       throw ArgumentError('User not found');
+    }
+    // 当前用户返回内存实时值（防抖落盘期间 _data 里可能是旧快照）
+    if (userId == _currentUserId) {
+      return _totalGold;
     }
     return _data[userId]?.totalGold ?? 0.0;
   }
