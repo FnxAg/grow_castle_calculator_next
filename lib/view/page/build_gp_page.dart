@@ -299,7 +299,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                 valueListenable: Stores.infoStore.totalGoldNotifier,
                 builder: (context, gold, _) {
                   return Text(
-                    gold.format(),
+                    gold.formatCompact(fractionDigits: 2, english: false),
                     style: TextStyle(
                       fontSize: 16.0,
                       fontWeight: FontWeight.bold,
