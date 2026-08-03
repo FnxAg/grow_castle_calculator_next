@@ -13,11 +13,12 @@ class UsernameTextField extends StatelessWidget {
       maxLines: 1,
       maxLength: 14,
       maxLengthEnforcement: MaxLengthEnforcement.enforced,
+      autofocus: true,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9-_ ]')),
       ],
       decoration: const InputDecoration(
-        hintText: '输入用户名',
+        labelText: '用户名',
         helperText: '0-9, a-z, A-Z, -, _, space',
       ),
     );

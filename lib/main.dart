@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 import 'package:grow_castle_calculator_next/app.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
@@ -15,6 +16,11 @@ void main() async {
 
 Future<void> _init() async {
   WidgetsFlutterBinding.ensureInitialized();
+  try {
+    await FlutterDisplayMode.setHighRefreshRate();
+  } catch (e) {
+    debugPrint('Failed to set high refresh rate: $e');
+  }
   await _initializeHive();
   await _initializeGetIt();
 }

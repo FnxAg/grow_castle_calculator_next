@@ -41,58 +41,6 @@ final List<DrawerPageEntry> drawerPages = [
         // 列表重建由 store 的 cardIdsNotifier 驱动
         onPressed: () => Stores.infoStore.addNewCard(),
       ),
-      // 手动输入 wave 和 seasonWave
-      IconButton(
-        icon: const Icon(Icons.edit),
-        tooltip: '设置波数',
-        onPressed: () {
-          showDialog(
-            context: context,
-            builder: (context) {
-              final waveController = TextEditingController();
-              final seasonWaveController = TextEditingController();
-              return AlertDialog(
-                title: const Text('设置波数'),
-                content: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    TextField(
-                      controller: waveController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(labelText: '当前波数'),
-                    ),
-                    TextField(
-                      controller: seasonWaveController,
-                      keyboardType: TextInputType.number,
-                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-                      decoration: const InputDecoration(labelText: '赛季波数'),
-                    ),
-                  ],
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('取消'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      final wave = int.tryParse(waveController.text) ?? 1;
-                      final seasonWave = int.tryParse(seasonWaveController.text) ?? 0;
-                      Stores.infoStore.setWave(wave);
-                      Stores.infoStore.setSeasonWave(seasonWave);
-                      Navigator.of(context).pop();
-                    },
-                    child: const Text('保存'),
-                  ),
-                ],
-              );
-            },
-          );
-        },
-      ),
     ],
   ),
   DrawerPageEntry(

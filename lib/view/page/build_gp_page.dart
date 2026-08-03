@@ -140,6 +140,156 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         children: [
           Row(
             children: [
+              Icon(Icons.waves, size: 20.0, color: colorScheme.primary),
+              const SizedBox(width: 8.0),
+              const Text('总波数'),
+              const SizedBox(width: 8.0),
+              SizedBox(
+                height: 20.0,
+                width: 20.0,
+                child: IconButton(
+                  icon: Icon(Icons.edit), 
+                  iconSize: 20.0,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  color: Theme.of(context).colorScheme.primary, 
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        final waveController = TextEditingController();
+                        return AlertDialog(
+                          title: const Text('设置波数'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: waveController,
+                                autofocus: true,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                decoration: const InputDecoration(
+                                  labelText: '总波数',
+                                  helperText: '0-9',
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('取消'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                final wave = int.tryParse(waveController.text) ?? 1;
+                                Stores.infoStore.setWave(wave);
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('保存'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                ),
+              ),
+              const Spacer(),
+              ValueListenableBuilder<int>(
+                valueListenable: Stores.infoStore.waveNotifier,
+                builder: (context, wave, _) {
+                  return Text(
+                    wave.format(),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  );
+                },
+              ),
+            ]
+          ),
+          Row(
+            children: [
+              Icon(Icons.emoji_events, size: 20.0, color: colorScheme.primary),
+              const SizedBox(width: 8.0),
+              const Text('赛季波数'),
+              const SizedBox(width: 8.0),
+              SizedBox(
+                height: 20.0,
+                width: 20.0,
+                child: IconButton(
+                  icon: Icon(Icons.edit), 
+                  iconSize: 20.0,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  color: Theme.of(context).colorScheme.primary, 
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) {
+                        final seasonWaveController = TextEditingController();
+                        return AlertDialog(
+                          title: const Text('设置赛季波数'),
+                          content: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              TextField(
+                                controller: seasonWaveController,
+                                autofocus: true,
+                                keyboardType: TextInputType.number,
+                                inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                                decoration: const InputDecoration(
+                                  labelText: '赛季波数',
+                                  helperText: '0-9',
+                                ),
+                              ),
+                            ],
+                          ),
+                          actions: [
+                            TextButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('取消'),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                final seasonWave = int.tryParse(seasonWaveController.text) ?? 0;
+                                Stores.infoStore.setSeasonWave(seasonWave);
+                                Navigator.of(context).pop();
+                              },
+                              child: const Text('保存'),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  }
+                ),
+              ),
+              const Spacer(),
+              ValueListenableBuilder<int>(
+                valueListenable: Stores.infoStore.seasonWaveNotifier,
+                builder: (context, seasonWave, _) {
+                  return Text(
+                    seasonWave.format(),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  );
+                },
+              ),
+            ]
+          ),
+          Row(
+            children: [
               Icon(Icons.monetization_on_outlined,
                   size: 20.0, color: colorScheme.primary),
               const SizedBox(width: 8.0),

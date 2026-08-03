@@ -14,6 +14,23 @@ if (keyPropertiesFile.exists()) {
     keyProperties.load(FileInputStream(keyPropertiesFile))
 }
 
+// 自动递增 versionCode：使用 git 提交总数（每次提交单调递增，无需手动改 pubspec.yaml）。
+// 非 git 环境（如导出源码构建）回退到 pubspec.yaml 中定义的构建号。
+fun gitCommitCount(): Int? {
+    return try {
+        ProcessBuilder("git", "rev-list", "--count", "HEAD")
+            .redirectErrorStream(true)
+            .start()
+            .inputStream.bufferedReader().readText().trim()
+            .toIntOrNull()
+            ?.takeIf { it > 0 }
+    } catch (e: Exception) {
+        null
+    }
+}
+
+val versionCodeFromGit: Int? = gitCommitCount()
+
 android {
     namespace = "com.example.grow_castle_calculator_next"
     compileSdk = flutter.compileSdkVersion
@@ -31,7 +48,7 @@ android {
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = flutter.minSdkVersion
         targetSdk = flutter.targetSdkVersion
-        versionCode = flutter.versionCode
+        versionCode = versionCodeFromGit ?: flutter.versionCode
         versionName = flutter.versionName
         // ndk {
         //     abiFilters += listOf("arm64-v8a")
@@ -42,6 +59,8 @@ android {
         debug {
             signingConfig = signingConfigs.getByName("debug")
             isDebuggable = true
+            // 调试包使用独立包名，可与 release 包共存安装
+            applicationIdSuffix = ".debug"
         }
         release {
             // TODO: Add your own signing config for the release build.

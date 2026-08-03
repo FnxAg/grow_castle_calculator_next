@@ -32,10 +32,14 @@ class InfoStore {
   /// 延迟落盘定时器：输入热路径合并写盘
   Timer? _saveDebounce;
 
-  /// 当前用户总金币变化通知（供 UI 实时刷新）
+  /// 当前用户总金币变化通知
   final ValueNotifier<double> totalGoldNotifier = ValueNotifier<double>(0);
   final ValueNotifier<double> gpNotifier = ValueNotifier<double>(0);
   final ValueNotifier<double> gpCNNotifier = ValueNotifier<double>(0);
+
+  /// 当前用户波数变化通知
+  final ValueNotifier<int> waveNotifier = ValueNotifier<int>(1);
+  final ValueNotifier<int> seasonWaveNotifier = ValueNotifier<int>(0);
 
   /// 卡片列表结构变化通知（新增/删除/排序），供卡片列表重建
   final ValueNotifier<int> cardIdsNotifier = ValueNotifier<int>(0);
@@ -163,6 +167,8 @@ class InfoStore {
     totalGoldNotifier.value = _totalGold;
     gpNotifier.value = _gp;
     gpCNNotifier.value = _gpCN;
+    waveNotifier.value = _wave;
+    seasonWaveNotifier.value = _seasonWave;
     _persistMeta();
   }
 
@@ -386,6 +392,7 @@ class InfoStore {
   void setWave(int wave) {
     _wave = wave;
     _recalc();
+    waveNotifier.value = _wave;
     _saveCurrentState();
   }
 
@@ -393,6 +400,7 @@ class InfoStore {
   void setSeasonWave(int seasonWave) {
     _seasonWave = seasonWave;
     _recalc();
+    seasonWaveNotifier.value = _seasonWave;
     _saveCurrentState();
   }
 

@@ -36,6 +36,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   get_it: ^9.2.1
   hive_flutter: ^1.1.0
+  flutter_displaymode: ^0.7.0
 dev_dependencies:
   flutter_test:
     sdk: flutter
