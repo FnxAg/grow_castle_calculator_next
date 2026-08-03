@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/select_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
@@ -113,11 +114,62 @@ class _HomeTabState extends State<HomeTab> {
           ],
         ),
         actions: [
-          // 新增条目（原 FAB 迁移）
           IconButton(
             icon: const Icon(Icons.add),
             tooltip: '新增条目',
             onPressed: _addCard,
+          ),
+          // 手动输入 wave 和 seasonWave
+          IconButton(
+            icon: const Icon(Icons.edit),
+            tooltip: '设置波数',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  final waveController = TextEditingController();
+                  final seasonWaveController = TextEditingController();
+                  return AlertDialog(
+                    title: const Text('设置波数'),
+                    content: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        TextField(
+                          controller: waveController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          decoration: const InputDecoration(labelText: '当前波数'),
+                        ),
+                        TextField(
+                          controller: seasonWaveController,
+                          keyboardType: TextInputType.number,
+                          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                          decoration: const InputDecoration(labelText: '赛季波数'),
+                        ),
+                      ],
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          final wave = int.tryParse(waveController.text) ?? 1;
+                          final seasonWave = int.tryParse(seasonWaveController.text) ?? 0;
+                          Stores.infoStore.setWave(wave);
+                          Stores.infoStore.setSeasonWave(seasonWave);
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('保存'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
           ),
           PopupMenuButton(
             itemBuilder: (context) => [
@@ -238,7 +290,7 @@ class _HomeTabState extends State<HomeTab> {
                     scrollDirection: .vertical,
                   ),
           ),
-          _buildGoldSummaryBar(),
+          _buildSummaryBar(),
         ],
       ),
     );
@@ -282,7 +334,7 @@ class _HomeTabState extends State<HomeTab> {
   }
 
   /// 底部总金币汇总条，输入等级时实时更新
-  Widget _buildGoldSummaryBar() {
+  Widget _buildSummaryBar() {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
@@ -292,41 +344,77 @@ class _HomeTabState extends State<HomeTab> {
           top: BorderSide(color: colorScheme.outlineVariant),
         ),
       ),
-      child: Row(
+      child: Column(
         children: [
-          Icon(Icons.monetization_on_outlined,
-              size: 20.0, color: colorScheme.primary),
-          const SizedBox(width: 8.0),
-          const Text('总金币'),
-          const Spacer(),
-          ValueListenableBuilder<double>(
-            valueListenable: Stores.infoStore.totalGoldNotifier,
-            builder: (context, gold, _) {
-              return Text(
-                _formatGold(gold),
-                style: TextStyle(
-                  fontSize: 16.0,
-                  fontWeight: FontWeight.bold,
-                  color: colorScheme.primary,
-                ),
-              );
-            },
+          Row(
+            children: [
+              Icon(Icons.monetization_on_outlined,
+                  size: 20.0, color: colorScheme.primary),
+              const SizedBox(width: 8.0),
+              const Text('总金币'),
+              const Spacer(),
+              ValueListenableBuilder<double>(
+                valueListenable: Stores.infoStore.totalGoldNotifier,
+                builder: (context, gold, _) {
+                  return Text(
+                    gold.format(),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
+          Row(
+            children: [
+              Icon(Icons.star, size: 20.0, color: colorScheme.primary),
+              const SizedBox(width: 8.0),
+              const Text('GP'),
+              const Spacer(),
+              ValueListenableBuilder<double>(
+                valueListenable: Stores.infoStore.gpNotifier,
+                builder: (context, gp, _) {
+                  return Text(
+                    gp.format(fractionDigits: 3),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  );
+                },
+              ),
+            ],
+          ),
+          Row(
+            children: [
+              Icon(Icons.local_fire_department, size: 20.0, color: colorScheme.primary),
+              const SizedBox(width: 8.0),
+              const Text('指数'),
+              const Spacer(),
+              ValueListenableBuilder<double>(
+                valueListenable: Stores.infoStore.gpCNNotifier,
+                builder: (context, gpCN, _) {
+                  return Text(
+                    gpCN.format(fractionDigits: 3),
+                    style: TextStyle(
+                      fontSize: 16.0,
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.primary,
+                    ),
+                  );
+                },
+              ),
+            ],
+          )
         ],
       ),
     );
   }
 
-  /// 格式化金币：整数不带小数，千位加分隔符
-  String _formatGold(double value) {
-    final text = value == value.roundToDouble()
-        ? value.toStringAsFixed(0)
-        : value.toStringAsFixed(1);
-    return text.replaceAllMapped(
-      RegExp(r'\B(?=(\d{3})+(?!\d))'),
-      (m) => ',',
-    );
-  }
 
   Widget _textFieldForTextInput(int id) {
     return Container(
@@ -406,6 +494,15 @@ class _HomeTabState extends State<HomeTab> {
     return Dismissible( // 左划删除
       key: ValueKey(id),
       direction: DismissDirection.endToStart,
+      confirmDismiss: (direction) async {
+        if (id == 1 || id == 2) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('该条目不可删除，请选择禁用该条目')),
+          );
+          return false; // 否决滑动，卡片弹回原位
+        }
+        return true;
+      },
       onDismissed: (direction) {
         setState(() {
           _removeCard(id);
@@ -514,3 +611,5 @@ class _HomeTabState extends State<HomeTab> {
     );
   }
 }
+
+

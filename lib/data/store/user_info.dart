@@ -22,9 +22,15 @@ class InfoStore {
   Map<int, String> _numberValues = {};
   Map<int, double> _unitGold = {};
   double _totalGold = 0;
+  int _wave = 1;
+  int _seasonWave = 0;
+  double _gp = 0;
+  double _gpCN = 0;
 
   /// 当前用户总金币变化通知（供 UI 实时刷新）
   final ValueNotifier<double> totalGoldNotifier = ValueNotifier<double>(0);
+  final ValueNotifier<double> gpNotifier = ValueNotifier<double>(0);
+  final ValueNotifier<double> gpCNNotifier = ValueNotifier<double>(0);
 
   /// 默认用户数据
   static const Map<int, Map<String, dynamic>> defaultUserData = {
@@ -39,6 +45,10 @@ class InfoStore {
       'data': {
         'unitGold': {},
         'totalGold': 0,
+        'wave': 1,
+        'seasonWave': 0,
+        'gp': 0,
+        'gpCN': 0,
       }
     }
   };
@@ -132,8 +142,16 @@ class InfoStore {
     _textValues = Map<int, String>.from(userData.textValues);
     _numberValues = Map<int, String>.from(userData.numberValues);
     _unitGold = Map<int, double>.from(userData.unitGold);
+    _wave = userData.wave;
+    _seasonWave = userData.seasonWave;
+    _gp = userData.gp;
+    _gpCN = userData.gpCN;
     _totalGold = userData.totalGold;
+
+    // 通知 UI 更新
     totalGoldNotifier.value = _totalGold;
+    gpNotifier.value = _gp;
+    gpCNNotifier.value = _gpCN;
     _persistMeta();
   }
 
@@ -150,6 +168,10 @@ class InfoStore {
     currentState.numberValues = Map<int, String>.from(_numberValues);
     currentState.unitGold = Map<int, double>.from(_unitGold);
     currentState.totalGold = _totalGold;
+    currentState.wave = _wave;
+    currentState.seasonWave = _seasonWave;
+    currentState.gp = _gp;
+    currentState.gpCN = _gpCN;
     _persistUser(_currentUserId);
     _persistMeta();
     // print(_usersBox.toMap());
@@ -260,37 +282,37 @@ class InfoStore {
     _persistMeta();
   }
 
-  /// 添加卡片 ID 到当前用户的列表中
+  /// 添加条目 ID 到当前用户的列表中
   void _addCard(int id) {
     if (!_cardIds.contains(id)) {
       _cardIds.add(id);
     }
   }
 
-  /// 返回当前用户的卡片 ID 列表
+  /// 返回当前用户的条目 ID 列表
   List<int> getCardIds() => _cardIds; 
 
-  /// 设置当前卡片是否应用
+  /// 设置当前条目的应用标志
   void setApplyFlag(int id, bool value) {
     _addCard(id);
     _applyFlags[id] = value;
     updateData(_currentUser);
   }
 
-  /// 获取当前卡片的应用标志
+  /// 获取当前条目的应用标志
   bool getApplyFlag(int id) => _applyFlags[id] ?? true; 
 
-  /// 设置当前卡片的名称
+  /// 设置当前条目的名称
   void setTextValue(int id, String value) {
     _addCard(id);
     _textValues[id] = value;
     updateData(_currentUser);
   }
 
-  /// 获取当前卡片的名称
+  /// 获取当前条目的名称
   String getTextValue(int id) => _textValues[id] ?? '';
 
-  /// 设置当前卡片的等级
+  /// 设置当前条目的等级
   void setNumberValue(int id, String value) {
     _addCard(id);
     _numberValues[id] = value;
@@ -298,24 +320,48 @@ class InfoStore {
     updateData(_currentUser);
   }
 
-  /// 获取当前卡片的等级
+  /// 获取当前条目的等级
   String getNumberValue(int id) => _numberValues[id] ?? '';
 
-  /// 重新计算总金币并通知 UI
-  void _recalcTotalGold() {
+  /// 重新计算并通知 UI
+  void _recalc() {
     _totalGold = _unitGold.values.fold(0.0, (sum, gold) => sum + gold);
+    _gp = (_wave > 0) ? _totalGold / (0.5 * (310 + _wave * 310) * _wave) * 100 : 0.0;
+    _gpCN = (_wave > 0) ? (_totalGold / (_wave * _wave)) : 0.0;
     totalGoldNotifier.value = _totalGold;
+    gpNotifier.value = _gp;
+    gpCNNotifier.value = _gpCN;
   }
 
-  /// 设置当前卡片的经济
+  /// 设置当前条目的金币
   void _setUnitGold(int id, int value) {
     _addCard(id);
     _unitGold[id] = unitLevelSpendGold(value, id);
-    _recalcTotalGold();
+    _recalc();
     _saveCurrentState();
   }
 
-  /// 获取当前卡片的经济
+  /// 获取当前波数
+  int getWave() => _wave;
+
+  /// 获取当前赛季波数
+  int getSeasonWave() => _seasonWave;
+
+  /// 设置当前波数
+  void setWave(int wave) {
+    _wave = wave;
+    _recalc();
+    _saveCurrentState();
+  }
+
+  /// 设置当前赛季波数
+  void setSeasonWave(int seasonWave) {
+    _seasonWave = seasonWave;
+    _recalc();
+    _saveCurrentState();
+  }
+
+  /// 获取当前条目的金币
   double getUnitGold(int id) => _unitGold[id] ?? 0.0;
 
   /// 获取总经济
@@ -329,16 +375,19 @@ class InfoStore {
 
   /// 移除当前卡片
   void removeCard(int id) {
+    // 默认条目不允许删除
+    if (id == 1 || id == 2) return;
+
     _applyFlags.remove(id);
     _textValues.remove(id);
     _numberValues.remove(id);
     _unitGold.remove(id);
     _cardIds.remove(id);
-    _recalcTotalGold();
+    _recalc();
     updateData(_currentUser);
   }
 
-  /// 添加新卡片
+  /// 添加新条目
   void addNewCard(int id) {
     setApplyFlag(id, true);
     updateData(_currentUser);
@@ -394,12 +443,21 @@ class UserData {
     Map<int, String>? numberValues,
     Map<int, double>? unitGold,
     double? totalGold,
+    int? wave,
+    int? seasonWave,
+    double? gp,    // Gold Power
+    double? gpCN,  // 十里坡剑神指数
   })  : cardIds = cardIds ?? [1, 2],
         applyFlags = applyFlags ?? {1: true, 2: true},
         textValues = textValues ?? {},
         numberValues = numberValues ?? {},
         unitGold = unitGold ?? {},
-        totalGold = totalGold ?? 0.0;
+        totalGold = totalGold ?? 0.0,
+        wave = wave ?? 1,
+        seasonWave = seasonWave ?? 0,
+        gp = gp ?? 0,
+        gpCN = gpCN ?? 0;
+
 
   String username;
   List<int> cardIds;
@@ -408,7 +466,10 @@ class UserData {
   Map<int, String> numberValues;
   Map<int, double> unitGold;
   double totalGold;
-
+  int wave;
+  int seasonWave;
+  double gp;    // Gold Power
+  double gpCN;  // 十里坡剑神指数
   factory UserData.fromMap(Map<dynamic, dynamic> map) {
     final info = Map<String, dynamic>.from((map['info'] as Map?) ?? const {});
     final data = Map<String, dynamic>.from((map['data'] as Map?) ?? const {});
@@ -421,6 +482,10 @@ class UserData {
       numberValues: _castIntKeyStringMap(info['numberValues']),
       unitGold: _castIntKeyDoubleMap(data['unitGold']),
       totalGold: (data['totalGold'] as num?)?.toDouble() ?? 0.0,
+      wave: (data['wave'] as num?)?.toInt() ?? 1,
+      seasonWave: (data['seasonWave'] as num?)?.toInt() ?? 0,
+      gp: (data['gp'] as num?)?.toDouble() ?? 0.0,
+      gpCN: (data['gpCN'] as num?)?.toDouble() ?? 0.0,
     );
   }
 
@@ -433,6 +498,10 @@ class UserData {
       numberValues: Map<int, String>.from(numberValues),
       unitGold: Map<int, double>.from(unitGold),
       totalGold: totalGold,
+      wave: wave,
+      seasonWave: seasonWave,
+      gp: gp,
+      gpCN: gpCN,
     );
   }
 
@@ -448,6 +517,10 @@ class UserData {
       'data': {
         'unitGold': Map<int, double>.from(unitGold),
         'totalGold': totalGold,
+        'wave': wave,
+        'seasonWave': seasonWave,
+        'gp': gp,
+        'gpCN': gpCN,
       },
     };
   }
@@ -485,6 +558,19 @@ class UserData {
         final key = int.tryParse(entry.key.toString());
         if (key != null) {
           result[key] = (entry.value as num?)?.toDouble() ?? 0.0;
+        }
+      }
+    }
+    return result;
+  }
+
+  static Map<int, int> _castIntKeyIntMap(Object? value) {
+    final result = <int, int>{};
+    if (value is Map) {
+      for (final entry in value.entries) {
+        final key = int.tryParse(entry.key.toString());
+        if (key != null) {
+          result[key] = (entry.value as num?)?.toInt() ?? 0;
         }
       }
     }
