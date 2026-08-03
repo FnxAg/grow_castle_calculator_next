@@ -4,12 +4,11 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/build_gp_page.dart';
 import 'package:grow_castle_calculator_next/view/page/income_page.dart';
 
-/// 页面在 AppBar 中声明的操作按钮构建器
+/// 页面在 AppBar 中声明的操作按钮构建器。
 ///
-/// [refresh] 用于操作后刷新框架（等价于框架的 setState），
-/// 使页面 body 重新从 store 读取数据。
-typedef PageActionsBuilder =
-    List<Widget> Function(BuildContext context, void Function() refresh);
+/// 页面数据变化通过 store 的 ValueNotifier 驱动 UI 重建，
+/// 按钮只需直接调用 store 方法，无需手动刷新。
+typedef PageActionsBuilder = List<Widget> Function(BuildContext context);
 
 /// 抽屉页面注册表：新增页面只需在此追加一条记录，
 /// 首页框架（[HomeTab]）会自动在抽屉中列出并支持切换。
@@ -34,15 +33,13 @@ final List<DrawerPageEntry> drawerPages = [
   DrawerPageEntry(
     title: '阵容经济计算',
     icon: Icons.calculate,
-    builder: (_) => const FormationCalcPage(),
-    actionsBuilder: (context, refresh) => [
+    builder: (_) => FormationCalcPage(),
+    actionsBuilder: (context) => [
       IconButton(
         icon: const Icon(Icons.add),
         tooltip: '新增条目',
-        onPressed: () {
-          Stores.infoStore.addNewCard();
-          refresh();
-        },
+        // 列表重建由 store 的 cardIdsNotifier 驱动
+        onPressed: () => Stores.infoStore.addNewCard(),
       ),
       // 手动输入 wave 和 seasonWave
       IconButton(
@@ -101,6 +98,6 @@ final List<DrawerPageEntry> drawerPages = [
   DrawerPageEntry(
     title: '收入计算',
     icon: Icons.trending_up,
-    builder: (_) => const IncomePage(),
+    builder: (_) => IncomePage(),
   ),
 ];

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/data/res/pages.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/select_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 
 /// 首页 tab：抽屉页面的框架（Scaffold + AppBar + 抽屉切换）。
 ///
@@ -11,9 +10,7 @@ import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart'
 /// 切换用户时通过更换 [KeyedSubtree] 的 key（当前用户名）强制重建页面，
 /// 使各页面重新读取新用户的数据并释放旧的控制器/焦点。
 class HomeTab extends StatefulWidget {
-  const HomeTab({super.key, required this.title});
-
-  final String title;
+  const HomeTab({super.key});
 
   @override
   State<HomeTab> createState() => _HomeTabState();
@@ -22,9 +19,6 @@ class HomeTab extends StatefulWidget {
 class _HomeTabState extends State<HomeTab> {
   /// 当前抽屉页面索引
   int _pageIndex = 0;
-
-  /// 刷新框架（供页面 AppBar 操作触发 body 重新读取 store）
-  void _refresh() => setState(() {});
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +31,8 @@ class _HomeTabState extends State<HomeTab> {
         title: Column(
           crossAxisAlignment: .start,
           children: [
-            Text(widget.title),
+            // 大标题跟随抽屉选中的页面
+            Text(drawerPages[_pageIndex].title),
             Text(
               Stores.infoStore.getCurrentUser(),
               style: const TextStyle(fontSize: 12.0)
@@ -46,75 +41,19 @@ class _HomeTabState extends State<HomeTab> {
         ),
         actions: [
           // 当前页面声明的操作按钮（随抽屉切换变化）
-          ...(page.actionsBuilder?.call(context, _refresh) ?? const <Widget>[]),
-          // 用户菜单：全局共享，不随页面变化
-          PopupMenuButton(
-            itemBuilder: (context) => [
-              PopupMenuItem(
-                child: const Text('添加用户'),
-                onTap: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  Future.delayed(
-                    const Duration(milliseconds: 0),
-                    () {
-                      if (!context.mounted) return;
-                      showDialog(
-                        context: context,
-                        builder: (context) {
-                          final TextEditingController usernameController = TextEditingController();
-                          return AlertDialog(
-                            title: const Text('添加用户'),
-                            content: UsernameTextField(controller: usernameController),
-                            actions: [
-                              TextButton(
-                                onPressed: () {
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('取消'),
-                              ),
-                              TextButton(
-                                onPressed: () {
-                                  final username = usernameController.text.trim();
-                                  if (username.isNotEmpty) {
-                                    try {
-                                      Stores.infoStore.createUser(username);
-                                      Stores.infoStore.setCurrentUser(username);
-                                      setState(() {});
-                                    } catch (e) {
-                                      ScaffoldMessenger.of(context).showSnackBar(
-                                        SnackBar(content: Text(e.toString())),
-                                      );
-                                    }
-                                  }
-                                  Navigator.of(context).pop();
-                                },
-                                child: const Text('添加'),
-                              ),
-                            ],
-                          );
-                        },
-                      );
-                    },
-                  );
-                },
-              ),
-              PopupMenuItem(
-                child: const Text('管理用户'), 
-                onTap: () {
-                  Future.delayed(
-                    const Duration(milliseconds: 0),
-                    () {
-                      if (!context.mounted) return;
-                      Navigator.of(context).push(
-                        MaterialPageRoute(builder: (context) => const SelectUserPage()),
-                      ).then((_) {
-                        setState(() {});
-                      });
-                    },
-                  );
-                },
-              )
-            ]
+          ...(page.actionsBuilder?.call(context) ?? const <Widget>[]),
+          // 用户管理入口：全局共享，不随页面变化
+          IconButton(
+            icon: const Icon(Icons.group),
+            tooltip: '用户管理',
+            onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const SelectUserPage()),
+              ).then((_) {
+                setState(() {});
+              });
+            },
           ),
         ]
       ),

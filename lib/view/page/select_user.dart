@@ -122,6 +122,50 @@ class _SelectUserPageState extends State<SelectUserPage> {
           );
         },
       ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _showAddUserDialog,
+        child: const Icon(Icons.add),
+      ),
+    );
+  }
+
+  /// 添加用户对话框
+  void _showAddUserDialog() {
+    final controller = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('添加用户'),
+          content: UsernameTextField(controller: controller),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                final username = controller.text.trim();
+                if (username.isNotEmpty) {
+                  try {
+                    Stores.infoStore.createUser(username);
+                    Stores.infoStore.setCurrentUser(username);
+                    setState(() {});
+                  } catch (e) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(e.toString())),
+                    );
+                  }
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('添加'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

@@ -32,6 +32,9 @@ class InfoStore {
   final ValueNotifier<double> gpNotifier = ValueNotifier<double>(0);
   final ValueNotifier<double> gpCNNotifier = ValueNotifier<double>(0);
 
+  /// 卡片列表结构变化通知（新增/删除/排序），供卡片列表重建
+  final ValueNotifier<int> cardIdsNotifier = ValueNotifier<int>(0);
+
   /// 默认用户数据
   static const Map<int, Map<String, dynamic>> defaultUserData = {
     0: {  // 给一个用户分配的编号
@@ -385,6 +388,7 @@ class InfoStore {
     _cardIds.remove(id);
     _recalc();
     updateData(_currentUser);
+    cardIdsNotifier.value++;
   }
 
   /// 添加新条目（id 自动取当前最大 id + 1）
@@ -392,6 +396,15 @@ class InfoStore {
     final newId = _cardIds.isEmpty ? 1 : _cardIds.reduce((a, b) => a > b ? a : b) + 1;
     setApplyFlag(newId, true);
     updateData(_currentUser);
+    cardIdsNotifier.value++;
+  }
+
+  /// 调整当前用户卡片的顺序
+  void reorderCard(int oldIndex, int newIndex) {
+    final id = _cardIds.removeAt(oldIndex);
+    _cardIds.insert(newIndex, id);
+    cardIdsNotifier.value++;
+    _saveCurrentState();
   }
 
   double heroLevelSpendGold(int level) {

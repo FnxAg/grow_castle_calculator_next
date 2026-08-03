@@ -55,7 +55,7 @@ class _MyAppState extends State<MyApp> {
           theme: _lightTheme(_lightDynamic),
           darkTheme: _darkTheme(_darkDynamic),
           themeMode: themeMode,
-          home: const MainShell(title: 'GCC Next'),
+          home: const MainShell(),
           builder: (context, child) {
             return GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),

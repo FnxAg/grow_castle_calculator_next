@@ -62,62 +62,63 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   }
 
   void _removeCard(int id) {
-    final idx = Stores.infoStore.getCardIds().indexOf(id);
-    if (idx != -1) {
-      _numberFocusNodes.remove(id)?.dispose();
-      _textFocusNodes.remove(id)?.dispose();
-      _numberControllers.remove(id)?.dispose();
-      _textControllers.remove(id)?.dispose();
-      setState(() {
-        Stores.infoStore.removeCard(id);
-      });
-    }
+    _numberFocusNodes.remove(id)?.dispose();
+    _textFocusNodes.remove(id)?.dispose();
+    _numberControllers.remove(id)?.dispose();
+    _textControllers.remove(id)?.dispose();
+    // 列表重建由 store 的 cardIdsNotifier 驱动
+    Stores.infoStore.removeCard(id);
   }
 
   @override
   Widget build(BuildContext context) {
     return Column(
       children: [
+        // 卡片列表监听 store 的结构变化（新增/删除/排序），自动重建
         Expanded(
-          child: Stores.infoStore.getCardIds().isEmpty
-              ? const Center(
+          child: ValueListenableBuilder<int>(
+            valueListenable: Stores.infoStore.cardIdsNotifier,
+            builder: (context, _, _) {
+              final cardIds = Stores.infoStore.getCardIds();
+              if (cardIds.isEmpty) {
+                return const Center(
                   child: Text(
                     '暂无条目，点击右上角 + 添加',
                     style: TextStyle(color: Colors.grey),
                   ),
-                )
-              : ReorderableListView.builder(
-                  itemCount: Stores.infoStore.getCardIds().length,
-                  proxyDecorator: (child, index, animation) {
-                    return AnimatedBuilder(
-                      animation: animation,
-                      builder: (context, child) {
-                        final double elevation = 4.0 * animation.value;
-                        return Material(
-                          elevation: elevation,
-                          shadowColor: Colors.black26,
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: IgnorePointer(child: child),
-                        );
-                      },
-                      child: child,
-                    );
-                  },
-                  onReorderItem: (oldIndex, newIndex) {
-                    // 拖拽前先清除焦点，避免 TextField 的 FocusNode
-                    // 在 widget 临时脱离树时产生不一致状态导致崩溃
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    setState(() {
-                      final item = Stores.infoStore.getCardIds().removeAt(oldIndex);
-                      Stores.infoStore.getCardIds().insert(newIndex, item);
-                    });
-                  },
-                  itemBuilder: (context, index) {
-                    return _buildCard(Stores.infoStore.getCardIds()[index], index);
-                  },
-                  buildDefaultDragHandles: false,
-                  scrollDirection: .vertical,
-                ),
+                );
+              }
+              return ReorderableListView.builder(
+                itemCount: cardIds.length,
+                proxyDecorator: (child, index, animation) {
+                  return AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, child) {
+                      final double elevation = 4.0 * animation.value;
+                      return Material(
+                        elevation: elevation,
+                        shadowColor: Colors.black26,
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: IgnorePointer(child: child),
+                      );
+                    },
+                    child: child,
+                  );
+                },
+                onReorderItem: (oldIndex, newIndex) {
+                  // 拖拽前先清除焦点，避免 TextField 的 FocusNode
+                  // 在 widget 临时脱离树时产生不一致状态导致崩溃
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Stores.infoStore.reorderCard(oldIndex, newIndex);
+                },
+                itemBuilder: (context, index) {
+                  return _buildCard(cardIds[index], index);
+                },
+                buildDefaultDragHandles: false,
+                scrollDirection: .vertical,
+              );
+            },
+          ),
         ),
         _buildSummaryBar(),
       ],
@@ -294,9 +295,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         return true;
       },
       onDismissed: (direction) {
-        setState(() {
-          _removeCard(id);
-        });
+        _removeCard(id);
       },
       child: Listener(
         onPointerDown: (_) {
@@ -387,9 +386,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                     ],
                   ),
                   onTap: () {
-                    setState(() {
-                      _removeCard(id);
-                    });
+                    _removeCard(id);
                   },
                 ),
               ],
