@@ -13,7 +13,14 @@ class InfoStore {
   final Box _metaBox = Hive.box(_metaBoxName);
 
   final Map<int, UserData> _data = {};
+  /// 用户名 → userId 索引（展示用，保留原始大小写）
   final Map<String, int> _userIds = {};
+  /// 归一化用户名（trim + 小写）→ userId 索引：实现大小写不敏感查找
+  final Map<String, int> _userIdsLower = {};
+
+  /// 用户名/公会名归一化：大小写不敏感比较与索引的基准（trim + lowercase）
+  static String _normalize(String s) => s.trim().toLowerCase();
+  
   int _nextUserId = 0;
   int _currentUserId = 0;
   String _currentUser = 'default';
@@ -112,7 +119,8 @@ class InfoStore {
       throw ArgumentError('User not found');
     }
     final userData = _data[userId];
-    if (userData == null || userData.guild == guild) {
+    // 公会名大小写不敏感：内容仅大小写/首尾空格不同时不重复写入
+    if (userData == null || _normalize(userData.guild) == _normalize(guild)) {
       return;
     }
     userData.guild = guild;
@@ -128,6 +136,7 @@ class InfoStore {
   void _loadFromHive() {
     _data.clear();
     _userIds.clear();
+    _userIdsLower.clear();
 
     for (final key in _usersBox.keys) {
       final rawValue = _usersBox.get(key);
@@ -141,6 +150,7 @@ class InfoStore {
         final userData = UserData.fromMap(raw);
         _data[key] = userData;
         _userIds[userData.username] = key;
+        _userIdsLower[_normalize(userData.username)] = key;
       }
     }
 
@@ -175,6 +185,7 @@ class InfoStore {
   void _registerUser(int userId, UserData userData) {
     _data[userId] = userData;
     _userIds[userData.username] = userId;
+    _userIdsLower[_normalize(userData.username)] = userId;
     _nextUserId = _nextUserId <= userId ? userId + 1 : _nextUserId;
   }
 
@@ -281,9 +292,9 @@ class InfoStore {
     _loadUserState(0);
   }
 
-  /// 获取用户 ID，如果不存在则返回 -1
+  /// 获取用户 ID（大小写不敏感），如果不存在则返回 -1
   int getUserId(String username) {
-    return _userIds[username] ?? -1;
+    return _userIdsLower[_normalize(username)] ?? -1;
   }
   
   /// 更新当前用户的数据
@@ -311,7 +322,7 @@ class InfoStore {
       throw ArgumentError('Username cannot be empty');
     }
     if (getUserId(username) != -1) {
-      throw ArgumentError('User already exists');
+      throw ArgumentError('Username already exists (case-insensitive)');
     }
     final newUserId = _nextUserId++;
     
@@ -333,7 +344,9 @@ class InfoStore {
     if (_currentUserId == userId) {
       resetToDefaultUser();
     }
-    _userIds.remove(username);
+    // 按 userId 移除索引：传入名的大小写可能与存储不一致
+    _userIds.removeWhere((name, id) => id == userId);
+    _userIdsLower.removeWhere((name, id) => id == userId);
     _data.remove(userId);
     _usersBox.delete(userId);
     _persistMeta();
@@ -365,8 +378,10 @@ class InfoStore {
     if (userId == -1) {
       throw ArgumentError('Old user not found');
     }
-    if (getUserId(newUsername) != -1) {
-      throw ArgumentError('New username already exists');
+    // 大小写不敏感去重：允许仅改大小写（如 Alice → alice），禁止与其他人重名
+    final existingId = getUserId(newUsername);
+    if (existingId != -1 && existingId != userId) {
+      throw ArgumentError('New username already exists (case-insensitive)');
     }
     final userData = _data[userId];
     if (userData == null) {
@@ -375,8 +390,11 @@ class InfoStore {
     // 重命名前先落盘：避免 _data 里还是延迟保存前的旧快照
     flush();
     userData.username = newUsername;
-    _userIds.remove(oldUsername);
+    // 按 userId 移除旧索引：旧名传入大小写可能与存储不一致
+    _userIds.removeWhere((name, id) => id == userId);
+    _userIdsLower.removeWhere((name, id) => id == userId);
     _userIds[newUsername] = userId;
+    _userIdsLower[_normalize(newUsername)] = userId;
     if (_currentUserId == userId) {
       _currentUser = newUsername;
     }
