@@ -98,8 +98,17 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
 
     if (result is PlayerQueryResult) {
       // 格式化一次并固定，切换页面/重建时保持上次查询的状态不变
-      final lastOnline =
+      String lastOnline =
           PlayerApiService.formatLastOnline(result.queryDate, DateTime.now());
+      
+      // 封禁检测
+      if (result.wave == 0 && result.queryDate.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('用户「$name」已被封禁')),
+        );
+        lastOnline = 'Banned';
+      }
+
       Stores.infoStore.applyOnlineQuery(
         result.wave,
         result.seasonalScore,

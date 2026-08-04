@@ -18,6 +18,7 @@ class InfoStore {
   int _currentUserId = 0;
   String _currentUser = 'default';
 
+  String _guild = '';
   List<int> _cardIds = [];
   Map<int, bool> _applyFlags = {};
   Map<int, String> _textValues = {};
@@ -29,6 +30,7 @@ class InfoStore {
   double _gp = 0;
   double _gpCN = 0;
   bool _onlineQuery = false;
+  int _infiniteColony = 0;
 
   /// 延迟落盘定时器：输入热路径合并写盘
   Timer? _saveDebounce;
@@ -54,6 +56,8 @@ class InfoStore {
   static const Map<int, Map<String, dynamic>> defaultUserData = {
     0: {  // 给一个用户分配的编号
       'username': 'default',  // 将用户名作为 key 存储
+      'version': UserData.currentVersion,  // 数据版本号
+      'guild': '',  // 公会
       'info': {
         'cardIds': [1, 2],
         'applyFlags': {1: true, 2: true},
@@ -67,6 +71,7 @@ class InfoStore {
         'seasonWave': 0,
         'gp': 0,
         'gpCN': 0,
+        'infiniteColony': 0,
       },
       'setting': {
         'onlineQuery': false,
@@ -87,6 +92,9 @@ class InfoStore {
 
   /// 获取当前用户 ID
   int getCurrentUserId() => _currentUserId;
+
+  /// 获取当前用户公会
+  String getCurrentUserGuild() => _guild;
 
   /// 获取所有用户名称
   List<String> getAllUsernames() => _userIds.keys.toList();
@@ -170,6 +178,7 @@ class InfoStore {
     }
     _currentUserId = userId;
     _currentUser = userData.username;
+    _guild = userData.guild;
 
     _cardIds = List<int>.from(userData.cardIds);
     _applyFlags = Map<int, bool>.from(userData.applyFlags);
@@ -182,6 +191,7 @@ class InfoStore {
     _gpCN = userData.gpCN;
     _totalGold = userData.totalGold;
     _onlineQuery = userData.onlineQuery;
+    _infiniteColony = userData.infiniteColony;
 
     // 通知 UI 更新
     totalGoldNotifier.value = _totalGold;
@@ -201,6 +211,7 @@ class InfoStore {
       return;
     }
 
+    currentState.guild = _guild;
     currentState.cardIds = List<int>.from(_cardIds);
     currentState.applyFlags = Map<int, bool>.from(_applyFlags);
     currentState.textValues = Map<int, String>.from(_textValues);
@@ -212,6 +223,7 @@ class InfoStore {
     currentState.gp = _gp;
     currentState.gpCN = _gpCN;
     currentState.onlineQuery = _onlineQuery;
+    currentState.infiniteColony = _infiniteColony;
     _persistUser(_currentUserId);
     _persistMeta();
     // print(_usersBox.toMap());
@@ -562,6 +574,8 @@ class InfoStore {
 class UserData {
   UserData({
     required this.username,
+    int? version,
+    String? guild,
     List<int>? cardIds,
     Map<int, bool>? applyFlags,
     Map<int, String>? textValues,
@@ -573,8 +587,10 @@ class UserData {
     double? gp,    // Gold Power
     double? gpCN,  // 十里坡剑神指数
     bool? onlineQuery,
-    int? version,
-  })  : cardIds = cardIds ?? [1, 2],
+    int? infiniteColony,
+  })  : version = version ?? 1,
+        guild = guild ?? '',
+        cardIds = cardIds ?? [1, 2],
         applyFlags = applyFlags ?? {1: true, 2: true},
         textValues = textValues ?? {},
         numberValues = numberValues ?? {},
@@ -585,10 +601,11 @@ class UserData {
         gp = gp ?? 0,
         gpCN = gpCN ?? 0,
         onlineQuery = onlineQuery ?? false,
-        version = version ?? 1;
+        infiniteColony = infiniteColony ?? 0;
 
 
   String username;
+  String guild;
   List<int> cardIds;
   Map<int, bool> applyFlags;
   Map<int, String> textValues;
@@ -600,6 +617,7 @@ class UserData {
   double gp;    // Gold Power
   double gpCN;  // 十里坡剑神指数
   bool onlineQuery;
+  int infiniteColony;
   /// 数据 schema 版本：结构变更时递增并在 migrate 里补迁移逻辑
   int version;
 
@@ -639,7 +657,9 @@ class UserData {
 
     // 所有字段读时兜底：缺失或类型不符都回退默认值，保证 fromMap 永不抛异常
     return UserData(
+      version: _asInt(map['version'], 1),
       username: map['username']?.toString() ?? 'default',
+      guild: map['guild']?.toString() ?? '',
       cardIds: _castCardIds(info['cardIds']),
       applyFlags: _castIntKeyBoolMap(info['applyFlags']),
       textValues: _castIntKeyStringMap(info['textValues']),
@@ -651,13 +671,14 @@ class UserData {
       gp: _asDouble(data['gp'], 0.0),
       gpCN: _asDouble(data['gpCN'], 0.0),
       onlineQuery: _asBool(setting['onlineQuery'], false),
-      version: _asInt(map['version'], 1),
+      infiniteColony: _asInt(data['infiniteColony'], 0),
     );
   }
 
   UserData clone() {
     return UserData(
       username: username,
+      version: version,
       cardIds: List<int>.from(cardIds),
       applyFlags: Map<int, bool>.from(applyFlags),
       textValues: Map<int, String>.from(textValues),
@@ -669,12 +690,13 @@ class UserData {
       gp: gp,
       gpCN: gpCN,
       onlineQuery: onlineQuery,
-      version: version,
+      infiniteColony: infiniteColony,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
+      'guild': guild,
       'username': username,
       'version': version,
       'info': {
@@ -690,6 +712,7 @@ class UserData {
         'seasonWave': seasonWave,
         'gp': gp,
         'gpCN': gpCN,
+        'infiniteColony': infiniteColony,
       },
       'setting': {
         'onlineQuery': onlineQuery,

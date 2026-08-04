@@ -192,12 +192,12 @@ class PlayerApiService {
 
       final wave = _parseInt(player['wave']);
       final score = _parseInt(player['score']);
-      final queryDate = (player['date'] as String?) ?? '';
+      final lastOnline = (player['date'] as String?) ?? '';
 
       return PlayerQueryResult(
         wave: wave,
         seasonalScore: score,
-        queryDate: queryDate,
+        queryDate: lastOnline,
         rawResult: Map<String, dynamic>.from(result),
       );
     } on TimeoutException {
