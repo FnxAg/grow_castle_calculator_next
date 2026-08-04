@@ -28,6 +28,7 @@ class InfoStore {
   int _seasonWave = 0;
   double _gp = 0;
   double _gpCN = 0;
+  bool _onlineQuery = false;
 
   /// 延迟落盘定时器：输入热路径合并写盘
   Timer? _saveDebounce;
@@ -36,10 +37,15 @@ class InfoStore {
   final ValueNotifier<double> totalGoldNotifier = ValueNotifier<double>(0);
   final ValueNotifier<double> gpNotifier = ValueNotifier<double>(0);
   final ValueNotifier<double> gpCNNotifier = ValueNotifier<double>(0);
-
   /// 当前用户波数变化通知
   final ValueNotifier<int> waveNotifier = ValueNotifier<int>(1);
   final ValueNotifier<int> seasonWaveNotifier = ValueNotifier<int>(0);
+  // 当前用户设置变化通知
+  final ValueNotifier<bool> onlineQueryNotifier = ValueNotifier<bool>(false);
+  /// 各用户最近一次联网查询的"上次在线"展示字符串（仅内存，不持久化）
+  final Map<int, String> _lastOnline = {};
+  /// 当前用户"上次在线"时间通知（查询成功时格式化并固定，仅内存）
+  final ValueNotifier<String> lastOnlineNotifier = ValueNotifier<String>('');
 
   /// 卡片列表结构变化通知（新增/删除/排序），供卡片列表重建
   final ValueNotifier<int> cardIdsNotifier = ValueNotifier<int>(0);
@@ -61,7 +67,10 @@ class InfoStore {
         'seasonWave': 0,
         'gp': 0,
         'gpCN': 0,
-      }
+      },
+      'setting': {
+        'onlineQuery': false,
+      },
     }
   };
 
@@ -69,8 +78,9 @@ class InfoStore {
     _loadFromHive();
   }
 
-  /// 获取当前用户资料
-  Map<String, dynamic> get currentUserData => _data[_currentUserId]?.toMap() ?? defaultUserData[0]!;
+  /// 获取当前用户资料（无数据时返回默认用户副本，避免外部改动污染常量）
+  Map<String, dynamic> get currentUserData =>
+      _data[_currentUserId]?.toMap() ?? UserData.fromMap(defaultUserData[0]!).toMap();
 
   /// 获取当前用户名称
   String getCurrentUser() => _currentUser;
@@ -85,7 +95,13 @@ class InfoStore {
     for (final key in _usersBox.keys) {
       final rawValue = _usersBox.get(key);
       if (key is int && rawValue is Map) {
-        final userData = UserData.fromMap(Map<dynamic, dynamic>.from(rawValue));
+        var raw = Map<dynamic, dynamic>.from(rawValue);
+        // 旧版本数据缺少新字段：逐级迁移并一次性写回磁盘
+        if (UserData.isOutdated(raw)) {
+          raw = UserData.migrate(raw);
+          _usersBox.put(key, raw);
+        }
+        final userData = UserData.fromMap(raw);
         _data[key] = userData;
         _userIds[userData.username] = key;
       }
@@ -162,6 +178,7 @@ class InfoStore {
     _gp = userData.gp;
     _gpCN = userData.gpCN;
     _totalGold = userData.totalGold;
+    _onlineQuery = userData.onlineQuery;
 
     // 通知 UI 更新
     totalGoldNotifier.value = _totalGold;
@@ -169,6 +186,8 @@ class InfoStore {
     gpCNNotifier.value = _gpCN;
     waveNotifier.value = _wave;
     seasonWaveNotifier.value = _seasonWave;
+    onlineQueryNotifier.value = _onlineQuery;
+    lastOnlineNotifier.value = _lastOnline[userId] ?? '';
     _persistMeta();
   }
 
@@ -189,6 +208,7 @@ class InfoStore {
     currentState.seasonWave = _seasonWave;
     currentState.gp = _gp;
     currentState.gpCN = _gpCN;
+    currentState.onlineQuery = _onlineQuery;
     _persistUser(_currentUserId);
     _persistMeta();
     // print(_usersBox.toMap());
@@ -344,6 +364,17 @@ class InfoStore {
   /// 获取当前条目的应用标志
   bool getApplyFlag(int id) => _applyFlags[id] ?? true; 
 
+  /// 修改当前用户联网查询设置
+  void setOnlineQuery(int id, bool value) {
+    _addCard(id);
+    _onlineQuery = value;
+    onlineQueryNotifier.value = _onlineQuery;
+    updateData(_currentUser);
+  }
+
+  /// 获取当前用户联网查询设置状态
+  bool getOnlineQuery() => _onlineQuery;
+
   /// 设置当前条目的名称
   void setTextValue(int id, String value) {
     _addCard(id);
@@ -407,6 +438,22 @@ class InfoStore {
   void setSeasonWave(int seasonWave) {
     _seasonWave = seasonWave;
     _recalc();
+    seasonWaveNotifier.value = _seasonWave;
+    _saveCurrentState();
+  }
+
+  /// 将联网查询结果一次性写入当前用户的波数与赛季波数
+  /// （合并 setWave/setSeasonWave，只重算与落盘一次）
+  /// [lastOnline] 为查询时格式化好的"上次在线"展示字符串，仅内存记录、不持久化
+  void applyOnlineQuery(int wave, int seasonWave, {String lastOnline = ''}) {
+    _wave = wave;
+    _seasonWave = seasonWave;
+    if (lastOnline.isNotEmpty) {
+      _lastOnline[_currentUserId] = lastOnline;
+      lastOnlineNotifier.value = lastOnline;
+    }
+    _recalc();
+    waveNotifier.value = _wave;
     seasonWaveNotifier.value = _seasonWave;
     _saveCurrentState();
   }
@@ -512,6 +559,8 @@ class UserData {
     int? seasonWave,
     double? gp,    // Gold Power
     double? gpCN,  // 十里坡剑神指数
+    bool? onlineQuery,
+    int? version,
   })  : cardIds = cardIds ?? [1, 2],
         applyFlags = applyFlags ?? {1: true, 2: true},
         textValues = textValues ?? {},
@@ -521,7 +570,9 @@ class UserData {
         wave = wave ?? 1,
         seasonWave = seasonWave ?? 0,
         gp = gp ?? 0,
-        gpCN = gpCN ?? 0;
+        gpCN = gpCN ?? 0,
+        onlineQuery = onlineQuery ?? false,
+        version = version ?? 1;
 
 
   String username;
@@ -535,22 +586,59 @@ class UserData {
   int seasonWave;
   double gp;    // Gold Power
   double gpCN;  // 十里坡剑神指数
-  factory UserData.fromMap(Map<dynamic, dynamic> map) {
-    final info = Map<String, dynamic>.from((map['info'] as Map?) ?? const {});
-    final data = Map<String, dynamic>.from((map['data'] as Map?) ?? const {});
+  bool onlineQuery;
+  /// 数据 schema 版本：结构变更时递增并在 migrate 里补迁移逻辑
+  int version;
 
+  /// 当前 schema 版本（结构变更时 +1）
+  static const int currentVersion = 1;
+
+  /// 判断原始数据是否低于当前 schema 版本，需要迁移
+  static bool isOutdated(Map<dynamic, dynamic> map) =>
+      _asInt(map['version'], 1) < currentVersion;
+
+  /// 逐级迁移原始数据到当前版本；已是最新时原样返回
+  static Map<dynamic, dynamic> migrate(Map<dynamic, dynamic> raw) {
+    var map = Map<String, dynamic>.from(raw);
+    var v = _asInt(map['version'], 1);
+    while (v < currentVersion) {
+      switch (v) {
+        case 1:
+          // v1 -> v2 示例：补默认字段 / 重算派生值 / 字段改名
+          break;
+      }
+      v++;
+    }
+    map['version'] = v;
+    return map;
+  }
+
+  factory UserData.fromMap(Map<dynamic, dynamic> map) {
+    final info = (map['info'] is Map)
+        ? Map<String, dynamic>.from(map['info'] as Map)
+        : const <String, dynamic>{};
+    final data = (map['data'] is Map)
+        ? Map<String, dynamic>.from(map['data'] as Map)
+        : const <String, dynamic>{};
+    final setting = (map['setting'] is Map)
+        ? Map<String, dynamic>.from(map['setting'] as Map)
+        : const <String, dynamic>{};
+
+    // 所有字段读时兜底：缺失或类型不符都回退默认值，保证 fromMap 永不抛异常
     return UserData(
       username: map['username']?.toString() ?? 'default',
-      cardIds: List<int>.from((info['cardIds'] as List?) ?? const [1, 2]),
+      cardIds: _castCardIds(info['cardIds']),
       applyFlags: _castIntKeyBoolMap(info['applyFlags']),
       textValues: _castIntKeyStringMap(info['textValues']),
       numberValues: _castIntKeyStringMap(info['numberValues']),
       unitGold: _castIntKeyDoubleMap(data['unitGold']),
-      totalGold: (data['totalGold'] as num?)?.toDouble() ?? 0.0,
-      wave: (data['wave'] as num?)?.toInt() ?? 1,
-      seasonWave: (data['seasonWave'] as num?)?.toInt() ?? 0,
-      gp: (data['gp'] as num?)?.toDouble() ?? 0.0,
-      gpCN: (data['gpCN'] as num?)?.toDouble() ?? 0.0,
+      totalGold: _asDouble(data['totalGold'], 0.0),
+      wave: _asInt(data['wave'], 1),
+      seasonWave: _asInt(data['seasonWave'], 0),
+      gp: _asDouble(data['gp'], 0.0),
+      gpCN: _asDouble(data['gpCN'], 0.0),
+      onlineQuery: _asBool(setting['onlineQuery'], false),
+      version: _asInt(map['version'], 1),
     );
   }
 
@@ -567,12 +655,15 @@ class UserData {
       seasonWave: seasonWave,
       gp: gp,
       gpCN: gpCN,
+      onlineQuery: onlineQuery,
+      version: version,
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'username': username,
+      'version': version,
       'info': {
         'cardIds': List<int>.from(cardIds),
         'applyFlags': Map<int, bool>.from(applyFlags),
@@ -586,6 +677,9 @@ class UserData {
         'seasonWave': seasonWave,
         'gp': gp,
         'gpCN': gpCN,
+      },
+      'setting': {
+        'onlineQuery': onlineQuery,
       },
     };
   }
@@ -629,16 +723,30 @@ class UserData {
     return result;
   }
 
-  static Map<int, int> _castIntKeyIntMap(Object? value) {
-    final result = <int, int>{};
-    if (value is Map) {
-      for (final entry in value.entries) {
-        final key = int.tryParse(entry.key.toString());
-        if (key != null) {
-          result[key] = (entry.value as num?)?.toInt() ?? 0;
+  static int _asInt(Object? value, int fallback) {
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
+  static double _asDouble(Object? value, double fallback) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? fallback;
+  }
+
+  static bool _asBool(Object? value, bool fallback) =>
+      value is bool ? value : fallback;
+
+  static List<int> _castCardIds(Object? value) {
+    if (value is List) {
+      final result = <int>[];
+      for (final entry in value) {
+        final n = entry is num ? entry.toInt() : int.tryParse(entry.toString());
+        if (n != null) {
+          result.add(n);
         }
       }
+      return result;
     }
-    return result;
+    return const [1, 2];
   }
 }

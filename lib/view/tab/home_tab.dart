@@ -33,9 +33,16 @@ class _HomeTabState extends State<HomeTab> {
           children: [
             // 大标题跟随抽屉选中的页面
             Text(drawerPages[_pageIndex].title),
-            Text(
-              Stores.infoStore.getCurrentUser(),
-              style: const TextStyle(fontSize: 12.0)
+            // 用户名 + 联网查询到的"上次在线"时间（查询时格式化并固定，仅内存）
+            ValueListenableBuilder<String>(
+              valueListenable: Stores.infoStore.lastOnlineNotifier,
+              builder: (context, lastOnline, _) {
+                return Text(
+                  '${Stores.infoStore.getCurrentUser()}'
+                  '${lastOnline.isEmpty ? '' : '（$lastOnline）'}',
+                  style: const TextStyle(fontSize: 12.0),
+                );
+              },
             ),
           ],
         ),

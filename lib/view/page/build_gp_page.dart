@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
+import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 
 /// 阵容经济计算页：卡片列表（名称/等级输入）与底部汇总条。
@@ -68,6 +69,55 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     _textControllers.remove(id)?.dispose();
     // 列表重建由 store 的 cardIdsNotifier 驱动
     Stores.infoStore.removeCard(id);
+  }
+
+  /// 5 秒冷却，避免用户连续点击联网查询按钮导致多次请求
+  static const Duration _queryCooldown = Duration(seconds: 5);
+  DateTime? _lastQueryAt;
+  bool _querying = false;
+
+  /// 联网查询当前用户的波数与赛季波数，成功写入 store，失败弹 SnackBar
+  Future<void> _queryOnline() async {
+    final now = DateTime.now();
+    final last = _lastQueryAt;
+    if (last != null && now.difference(last) < _queryCooldown) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('查询过于频繁，请稍后后再试')),
+      );
+      return;
+    }
+    // 先记录时间再发起请求：查询进行中也同样受冷却保护
+    _lastQueryAt = now;
+    setState(() => _querying = true);
+
+    final name = Stores.infoStore.getCurrentUser();
+    final result = await PlayerApiService.query(name);
+
+    if (!mounted) return;
+    setState(() => _querying = false);
+
+    if (result is PlayerQueryResult) {
+      // 格式化一次并固定：切换页面/重建时保持上次查询的状态不变
+      final lastOnline =
+          PlayerApiService.formatLastOnline(result.queryDate, DateTime.now());
+      Stores.infoStore.applyOnlineQuery(
+        result.wave,
+        result.seasonalScore,
+        lastOnline: lastOnline,
+      );
+    } else if (result is QueryError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('查询失败：${_queryErrorMessage(name, result)}')),
+      );
+    }
+  }
+
+  String _queryErrorMessage(String name, QueryError error) {
+    return switch (error) {
+      NameNotFound() => '未找到「$name」的赛季数据',
+      TimeoutError() => '查询超时，请稍后重试',
+      NetworkError(:final message) => message,
+    };
   }
 
   @override
@@ -195,6 +245,26 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                       },
                     );
                   }
+                ),
+              ),
+              const SizedBox(width: 4.0),
+              SizedBox(
+                height: 20.0,
+                width: 20.0,
+                child: IconButton(
+                  icon: _querying
+                      ? const SizedBox(
+                          width: 14.0,
+                          height: 14.0,
+                          child: CircularProgressIndicator(strokeWidth: 2.0),
+                        )
+                      : const Icon(Icons.cloud_sync),
+                  iconSize: 20.0,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                  color: Theme.of(context).colorScheme.primary,
+                  tooltip: '联网查询波数',
+                  onPressed: _querying ? null : _queryOnline,
                 ),
               ),
               const Spacer(),
