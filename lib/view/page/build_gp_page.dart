@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
+import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 
 /// 阵容经济计算页：卡片列表（名称/等级输入）与底部汇总条。
 ///
@@ -76,6 +78,33 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   DateTime? _lastQueryAt;
   bool _querying = false;
 
+  /// 玩家赛季榜排名（前 300 内才显示，不在榜单则隐藏）
+  int? _playerRank;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadPlayerRank();
+  }
+
+  /// 从玩家赛季榜缓存/接口获取当前用户的排名（大小写不敏感匹配）
+  Future<void> _loadPlayerRank() async {
+    final result = await RankingCache.playerRanking();
+    if (!mounted) return;
+    final currentUser = Stores.infoStore.getCurrentUsername();
+    setState(() {
+      _playerRank = null;
+      if (result is List<PlayerRankInfo>) {
+        for (final p in result) {
+          if (p.name.toLowerCase() == currentUser.toLowerCase()) {
+            _playerRank = p.rank;
+            break;
+          }
+        }
+      }
+    });
+  }
+
   /// 联网查询当前用户的波数与赛季波数，成功写入 store，失败弹 SnackBar
   Future<void> _queryOnline() async {
     final now = DateTime.now();
@@ -115,6 +144,15 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         result.seasonalScore,
         lastOnline: lastOnline,
       );
+      // 查询成功：顺带后台预取公开榜单（TTL 缓存，15 分钟内不重复请求），
+      // 供公会页/后续排行榜页直接使用
+      RankingCache.playerRanking();
+      RankingCache.hellRanking();
+      if (Stores.infoStore.getCurrentUserGuild().isNotEmpty) {
+        RankingCache.guildRanking();
+      }
+      // 查询后刷新玩家排名展示
+      _loadPlayerRank();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}')),
       );
@@ -361,6 +399,20 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                 ),
               ),
               const Spacer(),
+              // 玩家赛季榜排名（前 300 内才显示）
+              if (_playerRank != null) ...[
+                PillChip(
+                  text: Text(
+                    '#$_playerRank',
+                    style: const TextStyle(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  icon: Icons.eco,
+                ),
+                const SizedBox(width: 8.0),
+              ],
               ValueListenableBuilder<int>(
                 valueListenable: Stores.infoStore.seasonWaveNotifier,
                 builder: (context, seasonWave, _) {

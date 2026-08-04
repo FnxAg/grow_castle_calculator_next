@@ -320,7 +320,7 @@ class PlayerApiService {
   /// Fetches the guild leaderboard for the current season.
   ///
   /// Returns a list of [GuildInfo] on success, or a [QueryError] on failure.
-  static Future<Object /* List<GuildInfo> | QueryError */> queryGuilds() async {
+  static Future<Object /* List<GuildInfo> | QueryError */> queryGuildRanking() async {
     final uri = Uri.parse(_buildGuildsUrl());
 
     try {

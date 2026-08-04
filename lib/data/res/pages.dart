@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/build_gp_page.dart';
+import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/income_page.dart';
 
 /// 页面在 AppBar 中声明的操作按钮构建器。
@@ -31,7 +32,7 @@ class DrawerPageEntry {
 final List<DrawerPageEntry> drawerPages = [
   // 阵容经济计算 AppBar
   DrawerPageEntry(
-    title: '阵容经济计算',
+    title: '阵容',
     icon: Icons.calculate,
     builder: (_) => FormationCalcPage(),
     actionsBuilder: (context) => [
@@ -45,8 +46,13 @@ final List<DrawerPageEntry> drawerPages = [
   ),
   // 收入计算 AppBar
   DrawerPageEntry(
-    title: '收入计算',
+    title: '收入',
     icon: Icons.trending_up,
     builder: (_) => IncomePage(),
   ),
+  DrawerPageEntry(
+    title: '公会',
+    icon: Icons.group,
+    builder: (_) => GuildPage(),
+  )
 ];
