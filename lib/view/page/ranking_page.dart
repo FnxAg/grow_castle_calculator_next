@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
+import 'package:grow_castle_calculator_next/view/page/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 
 /// 工具 tab 下的三类排行榜
@@ -215,6 +217,19 @@ class _RankingPageState extends State<RankingPage> {
               ? null
               : _crossRanks[row.name.toLowerCase()];
           return ListTile(
+            // 点击行：公会榜进入公会成员详情，玩家榜进入玩家详情
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => switch (widget.kind) {
+                    RankingKind.guild => GuildDetailPage(guildName: row.name),
+                    RankingKind.player || RankingKind.hell =>
+                      PlayerDetailPage(playerName: row.name),
+                  },
+                ),
+              );
+            },
             leading: CircleAvatar(
               radius: 14.0,
               backgroundColor: scheme.surfaceContainerHighest,

@@ -3,16 +3,40 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/page/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 
-/// 公会页：进入时读取缓存（无缓存则立即抓取）当前用户所在公会的成员信息，
-/// 按赛季波数（score）从大到小排列展示；头部信息条显示公会排名（前 300 内）。
+/// 公会页：展示指定公会（[guildName] 为 null 时取当前用户所在公会）的成员信息，
+/// 进入时读取缓存（无缓存则立即抓取），按赛季波数（score）从大到小排列；
+/// 头部信息条显示公会排名（前 300 内）。成员行可点击进入玩家详情页。
 /// 手动刷新（下拉/重试）不会顶掉已有内容，失败仅提示并保留旧数据。
 class GuildPage extends StatefulWidget {
-  const GuildPage({super.key});
+  const GuildPage({super.key, this.guildName});
+
+  /// 要展示的公会名；为 null 时使用当前用户设置的公会（drawer 场景）
+  final String? guildName;
 
   @override
   State<GuildPage> createState() => _GuildPageState();
+}
+
+/// 公会成员详情页（带 AppBar 的完整路由壳），供工具页公会榜点击进入；
+/// 内部复用 [GuildPage] 的加载与展示逻辑。
+class GuildDetailPage extends StatelessWidget {
+  const GuildDetailPage({super.key, required this.guildName});
+
+  final String guildName;
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(guildName),
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+      ),
+      body: GuildPage(guildName: guildName),
+    );
+  }
 }
 
 class _GuildPageState extends State<GuildPage> {
@@ -38,7 +62,8 @@ class _GuildPageState extends State<GuildPage> {
   /// 加载公会数据：缓存命中直接展示（手动刷新时 force 重新抓取）。
   /// 已有内容时刷新不清空界面，失败仅 SnackBar 提示并保留旧数据。
   Future<void> _load() async {
-    final guild = Stores.infoStore.getCurrentUserGuild().trim();
+    final guild = (widget.guildName ?? Stores.infoStore.getCurrentUserGuild())
+        .trim();
     final hasContent = _members.isNotEmpty;
     setState(() {
       _firstLoading = !hasContent;
@@ -222,6 +247,16 @@ class _GuildPageState extends State<GuildPage> {
                 final seasonRank = _playerRankByName[lowerName];
                 final hellRank = _hellRankByName[lowerName];
                 return ListTile(
+                  // 点击成员进入玩家详情页
+                  onTap: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            PlayerDetailPage(playerName: member.name),
+                      ),
+                    );
+                  },
                   leading: CircleAvatar(
                     radius: 14.0,
                     backgroundColor: isSelf
