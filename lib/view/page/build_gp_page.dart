@@ -107,12 +107,16 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
           SnackBar(content: Text('用户「$name」已被封禁')),
         );
         lastOnline = 'Banned';
+        return;
       }
 
       Stores.infoStore.applyOnlineQuery(
         result.wave,
         result.seasonalScore,
         lastOnline: lastOnline,
+      );
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}')),
       );
     } else if (result is QueryError) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -199,7 +203,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         children: [
           Row(
             children: [
-              Icon(Icons.waves, size: 20.0, color: colorScheme.primary),
+              Icon(Icons.emoji_events, size: 20.0, color: colorScheme.primary),
               const SizedBox(width: 8.0),
               const Text('总波数'),
               const SizedBox(width: 8.0),
@@ -298,7 +302,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
           ),
           Row(
             children: [
-              Icon(Icons.emoji_events, size: 20.0, color: colorScheme.primary),
+              Icon(Icons.eco, size: 20.0, color: colorScheme.primary),
               const SizedBox(width: 8.0),
               const Text('赛季波数'),
               const SizedBox(width: 8.0),
