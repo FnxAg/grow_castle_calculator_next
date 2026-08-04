@@ -38,7 +38,7 @@ class _HomeTabState extends State<HomeTab> {
               valueListenable: Stores.infoStore.lastOnlineNotifier,
               builder: (context, lastOnline, _) {
                 return Text(
-                  '${Stores.infoStore.getCurrentUser()}'
+                  '${Stores.infoStore.getCurrentUsername()}'
                   '${lastOnline.isEmpty ? '' : '（$lastOnline）'}',
                   style: const TextStyle(fontSize: 12.0),
                 );
@@ -66,7 +66,7 @@ class _HomeTabState extends State<HomeTab> {
       ),
       // 切换用户后用户名变化 → key 变化 → 页面整体重建（控制器/焦点随之释放）
       body: KeyedSubtree(
-        key: ValueKey(Stores.infoStore.getCurrentUser()),
+        key: ValueKey(Stores.infoStore.getCurrentUsername()),
         child: page.builder(context),
       ),
     );

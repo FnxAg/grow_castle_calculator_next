@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+/// 用户名/公会等短文本输入框：共用同一套输入约束
+/// （单行、≤14 字符、仅允许 0-9 a-z A-Z - _ 空格），
+/// 通过 [labelText]/[helperText] 区分用途。
 class UsernameTextField extends StatelessWidget {
-  const UsernameTextField({super.key, required this.controller});
+  const UsernameTextField({
+    super.key,
+    required this.controller,
+    this.labelText = '用户名',
+    this.helperText = '0-9, a-z, A-Z, -, _, space',
+    this.autofocus = true,
+  });
 
   final TextEditingController controller;
+  final String labelText;
+  final String helperText;
+
+  /// 弹窗中多个输入框同时使用时，仅第一个保持自动聚焦
+  final bool autofocus;
 
   @override
   Widget build(BuildContext context) {
@@ -13,13 +27,13 @@ class UsernameTextField extends StatelessWidget {
       maxLines: 1,
       maxLength: 14,
       maxLengthEnforcement: MaxLengthEnforcement.enforced,
-      autofocus: true,
+      autofocus: autofocus,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9-_ ]')),
       ],
-      decoration: const InputDecoration(
-        labelText: '用户名',
-        helperText: '0-9, a-z, A-Z, -, _, space',
+      decoration: InputDecoration(
+        labelText: labelText,
+        helperText: helperText,
       ),
     );
   }

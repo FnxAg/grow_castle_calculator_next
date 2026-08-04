@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 
@@ -20,11 +21,11 @@ class _SelectUserPageState extends State<SelectUserPage> {
   @override
   Widget build(BuildContext context) {
     final InfoStore infoStore = Stores.infoStore;
-    final List<String> usernames = infoStore.getAllUsernames();
+    final List<String> userList = infoStore.getAllUsernames();
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('选择用户'),
+        title: const Text('用户管理'),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
@@ -40,9 +41,10 @@ class _SelectUserPageState extends State<SelectUserPage> {
         ],
       ),
       body: ListView.builder(
-        itemCount: usernames.length,
+        itemCount: userList.length,
         itemBuilder: (ctx, index) {
-          final String userId = usernames[index];
+          final String username = userList[index];
+          final String guild = infoStore.getUserGuild(username);
           return ListTile(
             title: Row(
               children: [
@@ -51,25 +53,62 @@ class _SelectUserPageState extends State<SelectUserPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Text(userId),
-                      Text(
-                        infoStore.getTotalGold(userId).format(fractionDigits: 0),
-                        style: TextStyle(
-                          fontSize: 12.0,
-                          color: Theme.of(context).textTheme.bodySmall?.color,
-                        ),
+                      // 用户名 + 公会徽标（无公会的用户不显示）
+                      Wrap(
+                        spacing: 8.0,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(username),
+                          if (guild.isNotEmpty)
+                            PillChip(
+                              text: Text(
+                                guild,
+                                style: const TextStyle(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              // icon: Icons.groups,
+                            ),
+                        ],
                       ),
+                      Row(
+                        children: [
+                          PillChip(
+                            text: Text(
+                              infoStore.getUserWave(username).format(),
+                              style: TextStyle(
+                                fontSize: 12.0,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
+                              ),
+                            ),
+                            icon: Icons.emoji_events,
+                          ),
+                          const SizedBox(width: 1.0),
+                          PillChip(
+                            text: Text(
+                              infoStore.getUserTotalGold(username).formatCompact(fractionDigits: 3, english: true),
+                              style: TextStyle(
+                                fontSize: 12.0,
+                                color: Theme.of(context).textTheme.bodySmall?.color,
+                              ),
+                            ),
+                            icon: Icons.monetization_on,
+                          ),
+                        ],
+                      ),
+
                     ],
                   ),
                 ),
               ],
             ),
-            leading: infoStore.getCurrentUser() == userId
+            leading: infoStore.getCurrentUsername() == username
                 ? const Icon(Icons.check, color: Colors.green)
                 : const SizedBox(width: 24.0),
             trailing: !_settingState
                 ? null
-                : infoStore.getUserId(userId) == 0
+                : infoStore.getUserId(username) == 0
                     ? null
                     : Row(
                       // 必须收缩到内容宽度：默认 max 会占满整行触发 ListTile 断言
@@ -77,18 +116,18 @@ class _SelectUserPageState extends State<SelectUserPage> {
                       children: [
                         IconButton(
                           icon: const Icon(Icons.edit),
-                          onPressed: switch (infoStore.getUserId(userId)) {
+                          onPressed: switch (infoStore.getUserId(username)) {
                             0 => () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('默认用户不可重命名')),
                               );
                             },
-                            _ => () => _showRenameDialog(infoStore, userId),
+                            _ => () => _showRenameDialog(infoStore, username),
                           },
                         ),
                         IconButton(
                           icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: switch (infoStore.getUserId(userId)) {
+                          onPressed: switch (infoStore.getUserId(username)) {
                             0 => () {
                               ScaffoldMessenger.of(context).showSnackBar(
                                 const SnackBar(content: Text('默认用户不可删除')),
@@ -99,7 +138,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
                                 context: context,
                                 builder: (context) => _DeleteUserDialog(
                                   infoStore: infoStore,
-                                  userId: userId,
+                                  userId: username,
                                   onDeleted: () => setState(() {}),
                                 ),
                               );
@@ -109,19 +148,19 @@ class _SelectUserPageState extends State<SelectUserPage> {
                       ],
                     ),
             onTap: () {
-              infoStore.setCurrentUser(userId);
+              infoStore.setCurrentUser(username);
               Navigator.pop(context);
             },
             // 长按查看该用户的单位汇总（任意用户均可用，含默认用户）
             onLongPress: () {
-              final data = infoStore.getUserData(userId);
+              final data = infoStore.getUserData(username);
               if (data == null) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('未找到用户「$userId」的数据')),
+                  SnackBar(content: Text('未找到用户「$username」的数据')),
                 );
                 return;
               }
-              showUnitSummarySheet(context, username: userId, data: data);
+              showUnitSummarySheet(context, username: username, data: data);
             },
           );
         },
@@ -136,12 +175,24 @@ class _SelectUserPageState extends State<SelectUserPage> {
   /// 添加用户对话框
   void _showAddUserDialog() {
     final controller = TextEditingController();
+    final guildController = TextEditingController();
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
           title: const Text('添加用户'),
-          content: UsernameTextField(controller: controller),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              UsernameTextField(controller: controller),
+              const SizedBox(height: 8.0),
+              UsernameTextField(
+                controller: guildController,
+                labelText: '公会（选填）',
+                autofocus: false,
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -154,7 +205,10 @@ class _SelectUserPageState extends State<SelectUserPage> {
                 final username = controller.text.trim();
                 if (username.isNotEmpty) {
                   try {
-                    Stores.infoStore.createUser(username);
+                    Stores.infoStore.createUser(
+                      username,
+                      guild: guildController.text.trim(),
+                    );
                     Stores.infoStore.setCurrentUser(username);
                     setState(() {});
                   } catch (e) {
@@ -173,16 +227,31 @@ class _SelectUserPageState extends State<SelectUserPage> {
     );
   }
 
-  /// 重命名用户对话框（默认用户不可重命名，由调用方拦截）
-  void _showRenameDialog(InfoStore infoStore, String userId) {
+  /// 编辑用户对话框：修改用户名与公会（默认用户不可编辑，由调用方拦截）
+  void _showRenameDialog(InfoStore infoStore, String username) {
     showDialog(
       context: context,
       builder: (context) {
         final TextEditingController controller =
-            TextEditingController(text: userId);
+            TextEditingController(text: username);
+        final TextEditingController guildController =
+            TextEditingController(
+          text: infoStore.getUserGuild(username),
+        );
         return AlertDialog(
-          title: const Text('编辑用户名'),
-          content: UsernameTextField(controller: controller),
+          title: const Text('编辑用户'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              UsernameTextField(controller: controller),
+              const SizedBox(height: 8.0),
+              UsernameTextField(
+                controller: guildController,
+                labelText: '公会',
+                autofocus: false,
+              ),
+            ],
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -193,15 +262,23 @@ class _SelectUserPageState extends State<SelectUserPage> {
             TextButton(
               onPressed: () {
                 final String newUsername = controller.text.trim();
-                if (newUsername.isNotEmpty && newUsername != userId) {
-                  try {
-                    infoStore.renameUser(userId, newUsername);
-                    setState(() {});
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(e.toString())),
-                    );
+                final String newGuild = guildController.text.trim();
+                // 改名前先取旧公会：改名后旧用户名将失效
+                final String oldGuild =
+                    infoStore.getUserData(username)?.guild ?? '';
+                final bool renamed = newUsername.isNotEmpty && newUsername != username;
+                try {
+                  if (renamed) {
+                    infoStore.renameUser(username, newUsername);
                   }
+                  if (newGuild != oldGuild) {
+                    infoStore.setUserGuild(renamed ? newUsername : username, newGuild);
+                  }
+                  setState(() {});
+                } catch (e) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text(e.toString())),
+                  );
                 }
                 Navigator.of(context).pop();
               },

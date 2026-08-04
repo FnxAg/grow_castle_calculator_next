@@ -88,13 +88,39 @@ class InfoStore {
       _data[_currentUserId]?.toMap() ?? UserData.fromMap(defaultUserData[0]!).toMap();
 
   /// 获取当前用户名称
-  String getCurrentUser() => _currentUser;
+  String getCurrentUsername() => _currentUser;
 
   /// 获取当前用户 ID
   int getCurrentUserId() => _currentUserId;
 
   /// 获取当前用户公会
   String getCurrentUserGuild() => _guild;
+
+  /// 获取指定用户的公会
+  String getUserGuild(String username) {
+    final userId = getUserId(username);
+    if (userId == -1) {
+      throw ArgumentError('User not found');
+    }
+    return _data[userId]?.guild ?? '';
+  }
+
+  /// 设置指定用户的公会（跨用户操作；为当前用户时同步内存态并落盘）
+  void setUserGuild(String username, String guild) {
+    final userId = getUserId(username);
+    if (userId == -1) {
+      throw ArgumentError('User not found');
+    }
+    final userData = _data[userId];
+    if (userData == null || userData.guild == guild) {
+      return;
+    }
+    userData.guild = guild;
+    if (userId == _currentUserId) {
+      _guild = guild;
+    }
+    _persistUser(userId);
+  }
 
   /// 获取所有用户名称
   List<String> getAllUsernames() => _userIds.keys.toList();
@@ -280,7 +306,7 @@ class InfoStore {
   }
 
   /// 创建新用户
-  void createUser(String username) {
+  void createUser(String username, {String guild = ''}) {
     if (username.isEmpty) {
       throw ArgumentError('Username cannot be empty');
     }
@@ -289,7 +315,7 @@ class InfoStore {
     }
     final newUserId = _nextUserId++;
     
-    _registerUser(newUserId, UserData(username: username, cardIds: [1, 2], applyFlags: {1: true, 2: true}));
+    _registerUser(newUserId, UserData(username: username, cardIds: [1, 2], applyFlags: {1: true, 2: true}, guild: guild));
     _persistUser(newUserId);
     _persistMeta();
 
@@ -365,20 +391,6 @@ class InfoStore {
     }
   }
 
-  /// 返回当前用户的条目 ID 列表
-  List<int> getCardIds() => _cardIds; 
-
-  /// 设置当前条目的应用标志
-  void setApplyFlag(int id, bool value) {
-    _addCard(id);
-    _applyFlags[id] = value;
-    _recalc();
-    updateData(_currentUser);
-  }
-
-  /// 获取当前条目的应用标志
-  bool getApplyFlag(int id) => _applyFlags[id] ?? true; 
-
   /// 修改当前用户联网查询设置
   void setOnlineQuery(int id, bool value) {
     _addCard(id);
@@ -389,27 +401,6 @@ class InfoStore {
 
   /// 获取当前用户联网查询设置状态
   bool getOnlineQuery() => _onlineQuery;
-
-  /// 设置当前条目的名称
-  void setTextValue(int id, String value) {
-    _addCard(id);
-    _textValues[id] = value;
-    updateData(_currentUser);
-  }
-
-  /// 获取当前条目的名称
-  String getTextValue(int id) => _textValues[id] ?? '';
-
-  /// 设置当前条目的等级
-  void setNumberValue(int id, String value) {
-    _addCard(id);
-    _numberValues[id] = value;
-    _setUnitGold(id, value.isEmpty ? 0 : int.tryParse(value) ?? 0);
-    updateData(_currentUser);
-  }
-
-  /// 获取当前条目的等级
-  String getNumberValue(int id) => _numberValues[id] ?? '';
 
   /// 重新计算并通知 UI
   /// 仅累加启用单位（applyFlag != false）的金币，未启用的 unitGold 保留但不计入汇总
@@ -427,6 +418,41 @@ class InfoStore {
     gpCNNotifier.value = _gpCN;
   }
 
+  /// 获取当前用户的条目 ID 列表
+  List<int> getCardIds() => _cardIds; 
+
+  /// 获取当前条目的应用标志
+  bool getApplyFlag(int id) => _applyFlags[id] ?? true;
+
+  /// 设置当前条目的应用标志
+  void setApplyFlag(int id, bool value) {
+    _addCard(id);
+    _applyFlags[id] = value;
+    _recalc();
+    updateData(_currentUser);
+  } 
+
+  /// 获取当前条目的名称
+  String getTextValue(int id) => _textValues[id] ?? '';
+
+  /// 设置当前条目的名称
+  void setTextValue(int id, String value) {
+    _addCard(id);
+    _textValues[id] = value;
+    updateData(_currentUser);
+  }
+
+  /// 获取当前条目的等级
+  String getNumberValue(int id) => _numberValues[id] ?? '';
+
+  /// 设置当前条目的等级
+  void setNumberValue(int id, String value) {
+    _addCard(id);
+    _numberValues[id] = value;
+    _setUnitGold(id, value.isEmpty ? 0 : int.tryParse(value) ?? 0);
+    updateData(_currentUser);
+  }
+
   /// 设置当前条目的金币
   void _setUnitGold(int id, int value) {
     _addCard(id);
@@ -435,22 +461,40 @@ class InfoStore {
     // 持久化统一由 setNumberValue 末尾的 updateData 负责（防抖落盘）
   }
 
-  /// 获取当前波数
-  int getWave() => _wave;
+  /// 获取当前用户总波数
+  int getCurrentUserWave() => _wave;
 
-  /// 获取当前赛季波数
-  int getSeasonWave() => _seasonWave;
+  /// 获取指定用户总波数
+  int getUserWave(String username) {
+    final userId = getUserId(username);
+    if (userId == -1) {
+      throw ArgumentError('User not found');
+    }
+    return _data[userId]?.wave ?? 1;
+  }
 
-  /// 设置当前波数
-  void setWave(int wave) {
+  /// 设置当前用户总波数
+  void setUserWave(int wave) {
     _wave = wave;
     _recalc();
     waveNotifier.value = _wave;
     _saveCurrentState();
   }
 
-  /// 设置当前赛季波数
-  void setSeasonWave(int seasonWave) {
+  /// 获取当前用户赛季波数
+  int getCurrentUserSeasonWave() => _seasonWave;
+
+  /// 获取指定用户赛季波数
+  int getUserSeasonWave(String username) {
+    final userId = getUserId(username);
+    if (userId == -1) {
+      throw ArgumentError('User not found');
+    }
+    return _data[userId]?.seasonWave ?? 1;
+  }
+
+  /// 设置当前用户赛季波数
+  void setCurrentUserSeasonWave(int seasonWave) {
     _seasonWave = seasonWave;
     _recalc();
     seasonWaveNotifier.value = _seasonWave;
@@ -474,10 +518,10 @@ class InfoStore {
   }
 
   /// 获取当前条目的金币
-  double getUnitGold(int id) => _unitGold[id] ?? 0.0;
+  double getCurrentUserUnitGold(int id) => _unitGold[id] ?? 0.0;
 
-  /// 获取总经济
-  double getTotalGold(String username) {
+  /// 获取指定用户总经济
+  double getUserTotalGold(String username) {
     final userId = getUserId(username);
     if (userId == -1) {
       throw ArgumentError('User not found');
@@ -499,7 +543,7 @@ class InfoStore {
     return UserData.fromMap(_data[userId]!.toMap());
   }
 
-  /// 移除当前卡片
+  /// 移除卡片
   void removeCard(int id) {
     // 默认条目不允许删除
     if (id == 1 || id == 2) return;

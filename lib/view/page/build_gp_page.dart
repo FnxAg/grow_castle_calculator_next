@@ -90,7 +90,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     _lastQueryAt = now;
     setState(() => _querying = true);
 
-    final name = Stores.infoStore.getCurrentUser();
+    final name = Stores.infoStore.getCurrentUsername();
     final result = await PlayerApiService.query(name);
 
     if (!mounted) return;
@@ -245,7 +245,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                             TextButton(
                               onPressed: () {
                                 final wave = int.tryParse(waveController.text) ?? 1;
-                                Stores.infoStore.setWave(wave);
+                                Stores.infoStore.setUserWave(wave);
                                 Navigator.of(context).pop();
                               },
                               child: const Text('保存'),
@@ -344,7 +344,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                             TextButton(
                               onPressed: () {
                                 final seasonWave = int.tryParse(seasonWaveController.text) ?? 0;
-                                Stores.infoStore.setSeasonWave(seasonWave);
+                                Stores.infoStore.setCurrentUserSeasonWave(seasonWave);
                                 Navigator.of(context).pop();
                               },
                               child: const Text('保存'),
