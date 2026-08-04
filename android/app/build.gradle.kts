@@ -32,7 +32,7 @@ fun gitCommitCount(): Int? {
 val versionCodeFromGit: Int? = gitCommitCount()
 
 android {
-    namespace = "com.example.grow_castle_calculator_next"
+    namespace = "fnxag.gccnext"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 

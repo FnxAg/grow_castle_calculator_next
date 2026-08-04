@@ -1,4 +1,4 @@
-package com.example.grow_castle_calculator_next
+package fnxag.gccnext
 
 import android.os.Build
 import io.flutter.embedding.android.FlutterActivity
