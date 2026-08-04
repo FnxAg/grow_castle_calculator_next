@@ -85,6 +85,9 @@ class InfoStore {
   /// 获取当前用户名称
   String getCurrentUser() => _currentUser;
 
+  /// 获取当前用户 ID
+  int getCurrentUserId() => _currentUserId;
+
   /// 获取所有用户名称
   List<String> getAllUsernames() => _userIds.keys.toList();
 
@@ -472,6 +475,16 @@ class InfoStore {
       return _totalGold;
     }
     return _data[userId]?.totalGold ?? 0.0;
+  }
+
+  /// 获取指定用户的完整数据快照（返回拷贝，外部修改不会污染 store）。
+  /// 用于在用户列表中查看非当前用户的汇总；当前用户可能有 ≤400ms 防抖延迟。
+  UserData? getUserData(String username) {
+    final userId = getUserId(username);
+    if (userId == -1 || !_data.containsKey(userId)) {
+      return null;
+    }
+    return UserData.fromMap(_data[userId]!.toMap());
   }
 
   /// 移除当前卡片

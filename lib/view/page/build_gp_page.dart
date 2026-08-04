@@ -97,7 +97,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     setState(() => _querying = false);
 
     if (result is PlayerQueryResult) {
-      // 格式化一次并固定：切换页面/重建时保持上次查询的状态不变
+      // 格式化一次并固定，切换页面/重建时保持上次查询的状态不变
       final lastOnline =
           PlayerApiService.formatLastOnline(result.queryDate, DateTime.now());
       Stores.infoStore.applyOnlineQuery(
@@ -203,6 +203,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   color: Theme.of(context).colorScheme.primary, 
+                  tooltip: '修改总波数',
                   onPressed: () {
                     showDialog(
                       context: context,
@@ -251,7 +252,10 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
               SizedBox(
                 height: 20.0,
                 width: 20.0,
-                child: IconButton(
+                child: switch (Stores.infoStore.getCurrentUserId()) {
+                  0 => const SizedBox.shrink(),
+                  _ =>
+                IconButton(
                   icon: _querying
                       ? const SizedBox(
                           width: 14.0,
@@ -265,7 +269,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                   color: Theme.of(context).colorScheme.primary,
                   tooltip: '联网查询波数',
                   onPressed: _querying ? null : _queryOnline,
-                ),
+                ),}
               ),
               const Spacer(),
               ValueListenableBuilder<int>(
@@ -298,6 +302,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
                   color: Theme.of(context).colorScheme.primary, 
+                  tooltip: '修改赛季波数',
                   onPressed: () {
                     showDialog(
                       context: context,
