@@ -18,6 +18,14 @@ class FormationCalcPage extends StatefulWidget {
 }
 
 class _FormationCalcPageState extends State<FormationCalcPage> {
+  /// 本次会话中已自动查询过的用户名。
+  ///
+  /// 页面会被销毁重建（底部 tab 切换、抽屉切换），initState 随之重跑；
+  /// 用会话级标记保证同一用户每次会话只自动查询一次，避免往返导航
+  /// 反复请求。切换用户（KeyedSubtree 换 key 重建）时新用户名不在集合中，
+  /// 仍会为新用户触发自动查询。
+  static final Set<String> _autoQueriedUsers = {};
+
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
@@ -87,15 +95,24 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   @override
   void initState() {
     super.initState();
-    // 启动时静默查询当前用户波数：打开应用最先想看到的就是自己的最新数据，
-    // 查询成功后的预取逻辑顺带刷新榜单与排名展示，无需单独 prewarm。
-    // 未配置用户（userId == 0）不查询，与底部联网查询按钮的显示条件一致。
+    // 未配置用户（userId == 0）不加载，与底部联网查询按钮的显示条件一致
     if (Stores.infoStore.getCurrentUserId() != 0) {
-      _performQuery(silent: true);
+      // 从榜单 TTL 缓存重新推导排名胶囊：页面被销毁重建（底部 tab /
+      // 抽屉切换）后胶囊状态丢失，这里恢复——缓存命中零请求，
+      // 过期则按缓存语义后台静默刷新，不会随页面重建反复请求。
+      _loadRanks();
+      // 启动时静默查询当前用户波数：打开应用最先想看到的就是自己的最新数据，
+      // 查询成功后的预取逻辑顺带刷新榜单与排名展示，无需单独 prewarm。
+      // 会话级去重：页面因 tab/抽屉切换被销毁重建时不再重复自动查询。
+      final username = Stores.infoStore.getCurrentUsername();
+      if (_autoQueriedUsers.add(username)) {
+        _performQuery(silent: true);
+      }
     }
   }
 
-  /// 从榜单缓存/接口获取当前用户在赛季榜与无尽榜的排名（大小写不敏感匹配）
+  /// 从榜单缓存/接口获取当前用户在赛季榜与无尽榜的排名（大小写不敏感匹配）。
+  /// 挂载时调用用于恢复页面重建后丢失的胶囊；查询成功后调用刷新为最新数据。
   Future<void> _loadRanks() async {
     final currentUser = Stores.infoStore.getCurrentUsername();
     final lower = currentUser.toLowerCase();
@@ -655,7 +672,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                 alignment: Alignment.center,
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(4.0),
+                  borderRadius: BorderRadius.circular(999.0),
                 ),
                 child: Text(
                   (index + 1).toString(),

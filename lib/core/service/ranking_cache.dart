@@ -6,7 +6,8 @@ import 'api.dart';
 ///   手动刷新失败时保留旧缓存）；
 /// - 三个公开榜单（玩家赛季 / 无尽 / 公会前 300）：首次访问抓取并缓存，
 ///   TTL（[ttl]）过期后先返回旧数据、同时后台静默刷新——榜单是共享数据、
-///   变化慢，不值得让用户等待，也避免高频请求。
+///   变化慢，不值得让用户等待，也避免高频请求；用户手动刷新（force）时
+///   忽略缓存强制重新抓取，失败保留旧缓存。
 class RankingCache {
   RankingCache._();
 
@@ -41,34 +42,40 @@ class RankingCache {
   static List<HellRankInfo>? _hell;
   static DateTime? _hellAt;
 
-  /// 公会前 300 榜单（返回 [GuildInfo] 列表或 [QueryError]）
-  static Future<Object> guildRanking() => _cachedList<GuildInfo>(
+  /// 公会前 300 榜单（返回 [GuildInfo] 列表或 [QueryError]）；
+  /// [force] 为 true（用户手动刷新）时忽略缓存重新请求，失败保留旧缓存。
+  static Future<Object> guildRanking({bool force = false}) => _cachedList<GuildInfo>(
         'guilds',
         () => _guilds,
         (v) => _guilds = v,
         () => _guildsAt,
         (t) => _guildsAt = t,
         PlayerApiService.queryGuildRanking,
+        force: force,
       );
 
-  /// 玩家赛季波前 300 榜单
-  static Future<Object> playerRanking() => _cachedList<PlayerRankInfo>(
+  /// 玩家赛季波前 300 榜单；
+  /// [force] 为 true（用户手动刷新）时忽略缓存重新请求，失败保留旧缓存。
+  static Future<Object> playerRanking({bool force = false}) => _cachedList<PlayerRankInfo>(
         'players',
         () => _players,
         (v) => _players = v,
         () => _playersAt,
         (t) => _playersAt = t,
         PlayerApiService.queryPlayerRanking,
+        force: force,
       );
 
-  /// 玩家无尽模式前 300 榜单
-  static Future<Object> hellRanking() => _cachedList<HellRankInfo>(
+  /// 玩家无尽模式前 300 榜单；
+  /// [force] 为 true（用户手动刷新）时忽略缓存重新请求，失败保留旧缓存。
+  static Future<Object> hellRanking({bool force = false}) => _cachedList<HellRankInfo>(
         'hell',
         () => _hell,
         (v) => _hell = v,
         () => _hellAt,
         (t) => _hellAt = t,
         PlayerApiService.queryHellRanking,
+        force: force,
       );
 
   /// 正在进行的抓取（key → Future），并发调用同一榜单时复用同一个请求
@@ -77,7 +84,7 @@ class RankingCache {
   /// 通用榜单缓存逻辑：
   /// 命中且在 TTL 内 → 直接返回；
   /// 命中但已过期 → 先返回旧数据，同时后台静默刷新；
-  /// 未命中 → 同步请求，成功后缓存；
+  /// 未命中或 [force] → 同步请求，成功后缓存（force 失败保留旧缓存）；
   /// 无论哪种情况，同一榜单的并发调用共享同一个请求（[_inflight] 去重）。
   static Future<Object /* List<T> | QueryError */> _cachedList<T>(
     String key,
@@ -85,10 +92,12 @@ class RankingCache {
     void Function(List<T> value) write,
     DateTime? Function() readAt,
     void Function(DateTime time) writeAt,
-    Future<Object> Function() fetch,
-  ) async {
+    Future<Object> Function() fetch, {
+    bool force = false,
+  }) async {
     final cached = read();
-    if (cached != null) {
+    // 命中缓存且未强制刷新：TTL 内直接返回，过期则后台刷新后仍先给旧数据
+    if (cached != null && !force) {
       final at = readAt();
       if (at == null || DateTime.now().difference(at) > ttl) {
         // TTL 过期：后台静默刷新，界面先拿旧数据，不空转；
@@ -107,7 +116,7 @@ class RankingCache {
       }
       return cached;
     }
-    // 未命中：并发调用时复用同一个请求，避免重复抓取
+    // 未命中或强制刷新：并发调用时复用同一个请求，避免重复抓取
     final inflight = _inflight[key];
     if (inflight != null) return inflight;
     final future = fetch();

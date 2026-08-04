@@ -216,7 +216,7 @@ class _IndexBadge extends StatelessWidget {
         color: applied
             ? theme.colorScheme.primaryContainer
             : theme.colorScheme.surfaceContainerHighest,
-        borderRadius: BorderRadius.circular(4.0),
+        borderRadius: BorderRadius.circular(999.0),
       ),
       child: Text(
         '${index + 1}',
