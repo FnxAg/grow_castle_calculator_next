@@ -535,6 +535,12 @@ class InfoStore {
     _saveCurrentState();
   }
 
+  /// 仅更新「上次在线」展示字符串（如封禁标记），不修改任何波数数据
+  void setLastOnline(String lastOnline) {
+    _lastOnline[_currentUserId] = lastOnline;
+    lastOnlineNotifier.value = lastOnline;
+  }
+
   /// 获取当前条目的金币
   double getCurrentUserUnitGold(int id) => _unitGold[id] ?? 0.0;
 

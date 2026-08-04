@@ -81,23 +81,44 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 玩家赛季榜排名（前 300 内才显示，不在榜单则隐藏）
   int? _playerRank;
 
+  /// 无尽榜排名（前 300 内才显示，不在榜单则隐藏）
+  int? _hellRank;
+
   @override
   void initState() {
     super.initState();
-    _loadPlayerRank();
+    // 启动时静默查询当前用户波数：打开应用最先想看到的就是自己的最新数据，
+    // 查询成功后的预取逻辑顺带刷新榜单与排名展示，无需单独 prewarm。
+    // 未配置用户（userId == 0）不查询，与底部联网查询按钮的显示条件一致。
+    if (Stores.infoStore.getCurrentUserId() != 0) {
+      _performQuery(silent: true);
+    }
   }
 
-  /// 从玩家赛季榜缓存/接口获取当前用户的排名（大小写不敏感匹配）
-  Future<void> _loadPlayerRank() async {
-    final result = await RankingCache.playerRanking();
-    if (!mounted) return;
+  /// 从榜单缓存/接口获取当前用户在赛季榜与无尽榜的排名（大小写不敏感匹配）
+  Future<void> _loadRanks() async {
     final currentUser = Stores.infoStore.getCurrentUsername();
+    final lower = currentUser.toLowerCase();
+    final (players, hell) = await (
+      RankingCache.playerRanking(),
+      RankingCache.hellRanking(),
+    ).wait;
+    if (!mounted) return;
     setState(() {
       _playerRank = null;
-      if (result is List<PlayerRankInfo>) {
-        for (final p in result) {
-          if (p.name.toLowerCase() == currentUser.toLowerCase()) {
+      if (players is List<PlayerRankInfo>) {
+        for (final p in players) {
+          if (p.name.toLowerCase() == lower) {
             _playerRank = p.rank;
+            break;
+          }
+        }
+      }
+      _hellRank = null;
+      if (hell is List<HellRankInfo>) {
+        for (final h in hell) {
+          if (h.name.toLowerCase() == lower) {
+            _hellRank = h.rank;
             break;
           }
         }
@@ -105,7 +126,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     });
   }
 
-  /// 联网查询当前用户的波数与赛季波数，成功写入 store，失败弹 SnackBar
+  /// 联网查询当前用户的波数与赛季波数，成功写入 store，失败弹 SnackBar。
+  /// 冷却检查仅对用户手动点击生效；启动自动查询走 [_performQuery] 不经过这里。
   Future<void> _queryOnline() async {
     final now = DateTime.now();
     final last = _lastQueryAt;
@@ -117,6 +139,14 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     }
     // 先记录时间再发起请求：查询进行中也同样受冷却保护
     _lastQueryAt = now;
+    await _performQuery();
+  }
+
+  /// 执行查询并写入 store。
+  ///
+  /// [silent] 为 true 时（启动自动查询）不弹任何 SnackBar，失败静默忽略，
+  /// 界面由 store 的 notifier 自动更新；手动路径的冷却与提示由 [_queryOnline] 负责。
+  Future<void> _performQuery({bool silent = false}) async {
     setState(() => _querying = true);
 
     final name = Stores.infoStore.getCurrentUsername();
@@ -129,13 +159,15 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       // 格式化一次并固定，切换页面/重建时保持上次查询的状态不变
       String lastOnline =
           PlayerApiService.formatLastOnline(result.queryDate, DateTime.now());
-      
-      // 封禁检测
+
+      // 封禁检测：仅标记「已封禁」（AppBar 副标题展示），不写入波数
       if (result.wave == 0 && result.queryDate.isEmpty) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('用户「$name」已被封禁')),
-        );
-        lastOnline = 'Banned';
+        if (!silent) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(content: Text('用户「$name」已被封禁')),
+          );
+        }
+        Stores.infoStore.setLastOnline('Banned');
         return;
       }
 
@@ -152,14 +184,18 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         RankingCache.guildRanking();
       }
       // 查询后刷新玩家排名展示
-      _loadPlayerRank();
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}')),
-      );
+      _loadRanks();
+      if (!silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}')),
+        );
+      }
     } else if (result is QueryError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('查询失败：${_queryErrorMessage(name, result)}')),
-      );
+      if (!silent) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text('查询失败：${_queryErrorMessage(name, result)}')),
+        );
+      }
     }
   }
 
@@ -410,6 +446,20 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                     ),
                   ),
                   icon: Icons.eco,
+                ),
+                const SizedBox(width: 8.0),
+              ],
+              if (_hellRank != null) ...[
+                PillChip(
+                  text: Text(
+                    '#$_hellRank',
+                    style: const TextStyle(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  // 无尽模式：∞ 无限符号
+                  icon: Icons.all_inclusive,
                 ),
                 const SizedBox(width: 8.0),
               ],
