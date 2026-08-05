@@ -1,3 +1,5 @@
+import 'package:flutter/foundation.dart';
+
 import 'api.dart';
 
 /// 排行榜/公会数据的会话级缓存。
@@ -14,40 +16,54 @@ class RankingCache {
   /// 公开榜单缓存有效期
   static const Duration ttl = Duration(minutes: 15);
 
+  /// 各榜单的赛季区间：个人与公会同源（5 天一赛季），无尽独立（一周一赛季），
+  /// 抓取成功时分别更新；供 AppBar 赛季进度指示等 UI 监听。
+  static final ValueNotifier<SeasonRange?> playerSeasonNotifier =
+      ValueNotifier<SeasonRange?>(null);
+  static final ValueNotifier<SeasonRange?> guildSeasonNotifier =
+      ValueNotifier<SeasonRange?>(null);
+  static final ValueNotifier<SeasonRange?> hellSeasonNotifier =
+      ValueNotifier<SeasonRange?>(null);
+
   // ── 公会成员详情（无 TTL，手动刷新）──────────────────────────────
 
-  static final Map<String, List<GuildMember>> _guildDetails = {};
+  static final Map<String, SeasonQueryResult<GuildMember>> _guildDetails = {};
 
   /// 获取公会成员列表：命中缓存直接返回；[force] 为 true（用户手动刷新）
   /// 时忽略缓存重新请求，成功后覆盖缓存，失败保留旧缓存。
-  static Future<Object /* List<GuildMember> | QueryError */> guildDetail(
+  static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */> guildDetail(
     String guildName, {
     bool force = false,
   }) async {
     final cached = _guildDetails[guildName];
     if (!force && cached != null) return cached;
     final result = await PlayerApiService.queryGuildDetail(guildName);
-    if (result is List<GuildMember>) {
-      _guildDetails[guildName] = List<GuildMember>.from(result);
+    if (result is SeasonQueryResult<GuildMember>) {
+      _guildDetails[guildName] = result;
+      // 公会成员数据与公会榜单同赛季（个人/公会 5 天赛季）
+      guildSeasonNotifier.value = result.season;
     }
     return result;
   }
 
   // ── 公开榜单（TTL 过期自动刷新）───────────────────────────────────
 
-  static List<GuildInfo>? _guilds;
+  static SeasonQueryResult<GuildInfo>? _guilds;
   static DateTime? _guildsAt;
-  static List<PlayerRankInfo>? _players;
+  static SeasonQueryResult<PlayerRankInfo>? _players;
   static DateTime? _playersAt;
-  static List<HellRankInfo>? _hell;
+  static SeasonQueryResult<HellRankInfo>? _hell;
   static DateTime? _hellAt;
 
-  /// 公会前 300 榜单（返回 [GuildInfo] 列表或 [QueryError]）；
+  /// 公会前 300 榜单（返回 [SeasonQueryResult] 或 [QueryError]）；
   /// [force] 为 true（用户手动刷新）时忽略缓存重新请求，失败保留旧缓存。
   static Future<Object> guildRanking({bool force = false}) => _cachedList<GuildInfo>(
         'guilds',
         () => _guilds,
-        (v) => _guilds = v,
+        (v) {
+          _guilds = v;
+          guildSeasonNotifier.value = v.season;
+        },
         () => _guildsAt,
         (t) => _guildsAt = t,
         PlayerApiService.queryGuildRanking,
@@ -59,7 +75,10 @@ class RankingCache {
   static Future<Object> playerRanking({bool force = false}) => _cachedList<PlayerRankInfo>(
         'players',
         () => _players,
-        (v) => _players = v,
+        (v) {
+          _players = v;
+          playerSeasonNotifier.value = v.season;
+        },
         () => _playersAt,
         (t) => _playersAt = t,
         PlayerApiService.queryPlayerRanking,
@@ -71,7 +90,10 @@ class RankingCache {
   static Future<Object> hellRanking({bool force = false}) => _cachedList<HellRankInfo>(
         'hell',
         () => _hell,
-        (v) => _hell = v,
+        (v) {
+          _hell = v;
+          hellSeasonNotifier.value = v.season;
+        },
         () => _hellAt,
         (t) => _hellAt = t,
         PlayerApiService.queryHellRanking,
@@ -86,10 +108,10 @@ class RankingCache {
   /// 命中但已过期 → 先返回旧数据，同时后台静默刷新；
   /// 未命中或 [force] → 同步请求，成功后缓存（force 失败保留旧缓存）；
   /// 无论哪种情况，同一榜单的并发调用共享同一个请求（[_inflight] 去重）。
-  static Future<Object /* List<T> | QueryError */> _cachedList<T>(
+  static Future<Object /* SeasonQueryResult<T> | QueryError */> _cachedList<T>(
     String key,
-    List<T>? Function() read,
-    void Function(List<T> value) write,
+    SeasonQueryResult<T>? Function() read,
+    void Function(SeasonQueryResult<T> value) write,
     DateTime? Function() readAt,
     void Function(DateTime time) writeAt,
     Future<Object> Function() fetch, {
@@ -107,7 +129,7 @@ class RankingCache {
           final future = fetch();
           _inflight[key] = future;
           future.then((result) {
-            if (result is List<T>) {
+            if (result is SeasonQueryResult<T>) {
               write(result);
               writeAt(DateTime.now());
             }
@@ -123,7 +145,7 @@ class RankingCache {
     _inflight[key] = future;
     try {
       final result = await future;
-      if (result is List<T>) {
+      if (result is SeasonQueryResult<T>) {
         write(result);
         writeAt(DateTime.now());
       }

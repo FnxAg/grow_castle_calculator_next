@@ -47,6 +47,10 @@ class _GuildPageState extends State<GuildPage> {
 
   /// 公会榜单排名；不在前 300 内为 null（不显示）
   int? _guildRank;
+
+  /// 公会榜中与上一名/下一名的分数差距；首名/末名时对应侧为 null
+  int? _guildGapPrev;
+  int? _guildGapNext;
   List<GuildMember> _members = const [];
   /// 玩家赛季榜索引：玩家名(小写) → 排名
   Map<String, int> _playerRankByName = {};
@@ -97,20 +101,20 @@ class _GuildPageState extends State<GuildPage> {
 
       // 玩家赛季榜 / 无尽榜索引，供成员行查询各自排名
       _playerRankByName = {};
-      if (players is List<PlayerRankInfo>) {
-        for (final p in players) {
+      if (players is SeasonQueryResult<PlayerRankInfo>) {
+        for (final p in players.items) {
           _playerRankByName[p.name.toLowerCase()] = p.rank;
         }
       }
       _hellRankByName = {};
-      if (hell is List<HellRankInfo>) {
-        for (final h in hell) {
+      if (hell is SeasonQueryResult<HellRankInfo>) {
+        for (final h in hell.items) {
           _hellRankByName[h.name.toLowerCase()] = h.rank;
         }
       }
 
-      if (detail is List<GuildMember>) {
-        final members = List<GuildMember>.from(detail);
+      if (detail is SeasonQueryResult<GuildMember>) {
+        final members = List<GuildMember>.from(detail.items);
         // 按赛季波数（score）从大到小排列
         members.sort((a, b) => b.score.compareTo(a.score));
         _members = members;
@@ -124,12 +128,22 @@ class _GuildPageState extends State<GuildPage> {
         }
       }
 
-      // 在公会榜单中查找当前公会排名（前 300 内才显示）
+      // 在公会榜单中查找当前公会排名（前 300 内才显示），并记录与前后的差距
       _guildRank = null;
-      if (guilds is List<GuildInfo>) {
-        for (final g in guilds) {
+      _guildGapPrev = null;
+      _guildGapNext = null;
+      if (guilds is SeasonQueryResult<GuildInfo>) {
+        final items = guilds.items;
+        for (var i = 0; i < items.length; i++) {
+          final g = items[i];
           if (g.name.toLowerCase() == guild.toLowerCase()) {
             _guildRank = g.rank;
+            // 上一名（排名靠前、分数更高）：还需多少分追上
+            if (i > 0) _guildGapPrev = items[i - 1].score - g.score;
+            // 下一名（排名靠后、分数更低）：领先多少分；末名无下一名
+            if (i < items.length - 1) {
+              _guildGapNext = g.score - items[i + 1].score;
+            }
             break;
           }
         }
@@ -210,8 +224,24 @@ class _GuildPageState extends State<GuildPage> {
                 '公会：$_guildName',
                 style: Theme.of(context).textTheme.bodySmall,
               ),
-              if (_guildRank != null) ...[
+              // 公会榜排名（前 300 内才显示），前后为与上一名/下一名的分数差距
+              if (_guildGapPrev != null) ...[
                 const SizedBox(width: 8.0),
+                PillChip(
+                  backgroundColor: Colors.red,
+                  foreground: Colors.white,
+                  icon: Icons.arrow_upward,
+                  text: Text(
+                    _guildGapPrev!.format(),
+                    style: const TextStyle(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+              ],
+              if (_guildRank != null) ...[
+                const SizedBox(width: 4.0),
                 PillChip(
                   text: Text(
                     '#$_guildRank',
@@ -221,6 +251,21 @@ class _GuildPageState extends State<GuildPage> {
                     ),
                   ),
                   icon: Icons.emoji_events,
+                ),
+              ],
+              if (_guildGapNext != null) ...[
+                const SizedBox(width: 4.0),
+                PillChip(
+                  backgroundColor: Colors.green,
+                  foreground: Colors.white,
+                  icon: Icons.arrow_downward,
+                  text: Text(
+                    _guildGapNext!.format(),
+                    style: const TextStyle(
+                      fontSize: 11.0,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
                 ),
               ],
               const Spacer(),

@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/build_gp_page.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/income_page.dart';
+import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 
 /// 页面在 AppBar 中声明的操作按钮构建器。
 ///
@@ -54,5 +56,9 @@ final List<DrawerPageEntry> drawerPages = [
     title: '公会',
     icon: Icons.group,
     builder: (_) => GuildPage(),
+    // AppBar action 区：公会赛季进度（点击查看详情）
+    actionsBuilder: (context) => [
+      SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
+    ],
   )
 ];

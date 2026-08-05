@@ -6,28 +6,35 @@ import 'package:flutter/material.dart';
 ///   使用胶囊前景色；胶囊的内边距与图标大小以文本实际字号为基准自适应缩放；
 /// - [icon]：前置图标，不传则不显示；
 /// - [backgroundColor]：背景色，默认使用主题 [ColorScheme.primaryContainer]；
-///   自定义背景色时前景自动按背景亮度取黑白，保证对比度。
+///   自定义背景色时前景自动按背景亮度取黑白，保证对比度；
+/// - [foreground]：强制指定前景色（图标 + 文本兜底），优先于亮度自动判断，
+///   用于红/绿等自定义底色上保证对比度。
 class PillChip extends StatelessWidget {
   const PillChip({
     super.key,
     required this.text,
     this.icon,
     this.backgroundColor,
+    this.foreground,
   });
 
   final Text text;
   final IconData? icon;
   final Color? backgroundColor;
 
+  /// 前景色（图标 + 文本兜底）；未指定时按背景亮度自动取黑白
+  final Color? foreground;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final Color bg = backgroundColor ?? scheme.primaryContainer;
-    final Color fg = backgroundColor == null
-        ? scheme.onPrimaryContainer
-        : ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
-            ? Colors.white
-            : Colors.black87;
+    final Color fg = foreground ??
+        (backgroundColor == null
+            ? scheme.onPrimaryContainer
+            : ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
+                ? Colors.white
+                : Colors.black87);
 
     // 以文本实际字号为基准：内边距、图标大小、间距随内容自适应缩放
     final double fontSize =

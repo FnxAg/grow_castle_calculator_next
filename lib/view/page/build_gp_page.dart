@@ -92,6 +92,13 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 无尽榜排名（前 300 内才显示，不在榜单则隐藏）
   int? _hellRank;
 
+  /// 当前用户所属公会在公会榜上的排名（前 300 内才显示）
+  int? _guildRank;
+
+  /// 个人赛季榜中与上一名/下一名的分数差距；首名/末名时对应侧为 null
+  int? _playerGapPrev;
+  int? _playerGapNext;
+
   @override
   void initState() {
     super.initState();
@@ -111,31 +118,57 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     }
   }
 
-  /// 从榜单缓存/接口获取当前用户在赛季榜与无尽榜的排名（大小写不敏感匹配）。
+  /// 一次性获取当前用户所需的三类排名（个人赛季 / 无尽 / 所属公会），
+  /// 大小写不敏感匹配；TTL 缓存命中零请求，未命中/过期则在此并行抓取；
+  /// [force] 为 true（手动同步）时忽略缓存强制重新抓取，失败保留旧缓存。
   /// 挂载时调用用于恢复页面重建后丢失的胶囊；查询成功后调用刷新为最新数据。
-  Future<void> _loadRanks() async {
+  Future<void> _loadRanks({bool force = false}) async {
     final currentUser = Stores.infoStore.getCurrentUsername();
     final lower = currentUser.toLowerCase();
-    final (players, hell) = await (
-      RankingCache.playerRanking(),
-      RankingCache.hellRanking(),
+    final guild = Stores.infoStore.getCurrentUserGuild();
+    final guildLower = guild.toLowerCase();
+    final (players, hell, guilds) = await (
+      RankingCache.playerRanking(force: force),
+      RankingCache.hellRanking(force: force),
+      guild.isEmpty
+          ? Future<Object?>.value(null)
+          : RankingCache.guildRanking(force: force),
     ).wait;
     if (!mounted) return;
     setState(() {
       _playerRank = null;
-      if (players is List<PlayerRankInfo>) {
-        for (final p in players) {
+      _playerGapPrev = null;
+      _playerGapNext = null;
+      if (players is SeasonQueryResult<PlayerRankInfo>) {
+        final items = players.items;
+        for (var i = 0; i < items.length; i++) {
+          final p = items[i];
           if (p.name.toLowerCase() == lower) {
             _playerRank = p.rank;
+            // 上一名（排名靠前、分数更高）：还需多少分追上
+            if (i > 0) _playerGapPrev = items[i - 1].score - p.score;
+            // 下一名（排名靠后、分数更低）：领先多少分；末名无下一名
+            if (i < items.length - 1) {
+              _playerGapNext = p.score - items[i + 1].score;
+            }
             break;
           }
         }
       }
       _hellRank = null;
-      if (hell is List<HellRankInfo>) {
-        for (final h in hell) {
+      if (hell is SeasonQueryResult<HellRankInfo>) {
+        for (final h in hell.items) {
           if (h.name.toLowerCase() == lower) {
             _hellRank = h.rank;
+            break;
+          }
+        }
+      }
+      _guildRank = null;
+      if (guilds is SeasonQueryResult<GuildInfo>) {
+        for (final g in guilds.items) {
+          if (g.name.toLowerCase() == guildLower) {
+            _guildRank = g.rank;
             break;
           }
         }
@@ -193,15 +226,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         result.seasonalScore,
         lastOnline: lastOnline,
       );
-      // 查询成功：顺带后台预取公开榜单（TTL 缓存，15 分钟内不重复请求），
-      // 供公会页/后续排行榜页直接使用
-      RankingCache.playerRanking();
-      RankingCache.hellRanking();
-      if (Stores.infoStore.getCurrentUserGuild().isNotEmpty) {
-        RankingCache.guildRanking();
-      }
-      // 查询后刷新玩家排名展示
-      _loadRanks();
+      // 查询后刷新排名展示：手动同步强制重新拉取三类榜单（TTL 缓存仅对
+      // 静默自动查询生效），失败保留旧缓存与胶囊，成功则胶囊立即更新
+      _loadRanks(force: !silent);
       if (!silent) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}')),
@@ -452,34 +479,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                 ),
               ),
               const Spacer(),
-              // 玩家赛季榜排名（前 300 内才显示）
-              if (_playerRank != null) ...[
-                PillChip(
-                  text: Text(
-                    '#$_playerRank',
-                    style: const TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  icon: Icons.eco,
-                ),
-                const SizedBox(width: 8.0),
-              ],
-              if (_hellRank != null) ...[
-                PillChip(
-                  text: Text(
-                    '#$_hellRank',
-                    style: const TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  // 无尽模式：∞ 无限符号
-                  icon: Icons.all_inclusive,
-                ),
-                const SizedBox(width: 8.0),
-              ],
               ValueListenableBuilder<int>(
                 valueListenable: Stores.infoStore.seasonWaveNotifier,
                 builder: (context, seasonWave, _) {
@@ -495,6 +494,102 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
               ),
             ]
           ),
+          // 排名行：个人赛季 / 无尽 / 所属公会三类榜单有任一排名才显示
+          if (_playerRank != null || _hellRank != null || _guildRank != null) ...[
+            Row(
+              children: [
+                Icon(Icons.leaderboard, size: 20.0, color: colorScheme.primary),
+                const SizedBox(width: 8.0),
+                const Text('排名'),
+                // 胶囊靠右，与其他行的数值展示样式统一；内容过宽时可横向滚动
+                Expanded(
+                  child: Align(
+                    alignment: Alignment.centerRight,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      reverse: true,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // 个人赛季榜：与上一名/下一名的分数差距（首尾无对应名次则隐藏）
+                          if (_playerGapPrev != null) ...[
+                            PillChip(
+                              backgroundColor: Colors.red,
+                              foreground: Colors.white,
+                              icon: Icons.arrow_upward,
+                              text: Text(
+                                _playerGapPrev!.format(),
+                                style: const TextStyle(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 4.0),
+                          ],
+                          if (_playerRank != null) ...[
+                            PillChip(
+                              text: Text(
+                                '#$_playerRank',
+                                style: const TextStyle(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              icon: Icons.eco,
+                            ),
+                            const SizedBox(width: 4.0),
+                          ],
+                          if (_playerGapNext != null) ...[
+                            PillChip(
+                              backgroundColor: Colors.green,
+                              foreground: Colors.white,
+                              icon: Icons.arrow_downward,
+                              text: Text(
+                                _playerGapNext!.format(),
+                                style: const TextStyle(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 8.0),
+                          ],
+                          if (_hellRank != null) ...[
+                            PillChip(
+                              text: Text(
+                                '#$_hellRank',
+                                style: const TextStyle(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              // 无尽模式：∞ 无限符号
+                              icon: Icons.all_inclusive,
+                            ),
+                            const SizedBox(width: 8.0),
+                          ],
+                          if (_guildRank != null) ...[
+                            PillChip(
+                              text: Text(
+                                '#$_guildRank',
+                                style: const TextStyle(
+                                  fontSize: 11.0,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              icon: Icons.group,
+                            ),
+                            const SizedBox(width: 8.0),
+                          ],
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ],
           Row(
             children: [
               Icon(Icons.monetization_on_outlined,

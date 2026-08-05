@@ -3,17 +3,35 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 
+/// 赛季起止时间（来自接口 result.date，可能缺失或格式异常）。
+class SeasonRange {
+  final DateTime? start;
+  final DateTime? end;
+
+  const SeasonRange({this.start, this.end});
+}
+
+/// 一次带赛季信息的查询结果：列表数据 + 该赛季的起止时间。
+class SeasonQueryResult<T> {
+  final List<T> items;
+  final SeasonRange season;
+
+  const SeasonQueryResult({required this.items, required this.season});
+}
+
 /// Result of a successful player query.
 class PlayerQueryResult {
   final int wave;
   final int seasonalScore;
   final String queryDate;
+  final SeasonRange season;
   final Map<String, dynamic> rawResult;
 
   const PlayerQueryResult({
     required this.wave,
     required this.seasonalScore,
     required this.queryDate,
+    required this.season,
     required this.rawResult,
   });
 }
@@ -198,6 +216,7 @@ class PlayerApiService {
         wave: wave,
         seasonalScore: score,
         queryDate: lastOnline,
+        season: _parseSeason(result['date']),
         rawResult: Map<String, dynamic>.from(result),
       );
     } on TimeoutException {
@@ -211,8 +230,9 @@ class PlayerApiService {
 
   /// Fetches the player leaderboard for the current season.
   ///
-  /// Returns a list of [PlayerRankInfo] on success, or a [QueryError] on failure.
-  static Future<Object /* List<PlayerRankInfo> | QueryError */> queryPlayerRanking() async {
+  /// Returns a [SeasonQueryResult] of [PlayerRankInfo] on success,
+  /// or a [QueryError] on failure.
+  static Future<Object /* SeasonQueryResult<PlayerRankInfo> | QueryError */> queryPlayerRanking() async {
     final uri = Uri.parse(_buildPlayerRankingUrl());
 
     try {
@@ -253,7 +273,10 @@ class PlayerApiService {
         ));
       }
 
-      return players;
+      return SeasonQueryResult(
+        items: players,
+        season: _parseSeason(result['date']),
+      );
     } on TimeoutException {
       return const TimeoutError();
     } on http.ClientException {
@@ -265,8 +288,9 @@ class PlayerApiService {
 
   /// Fetches the hell-mode leaderboard for the current season.
   ///
-  /// Returns a list of [HellRankInfo] on success, or a [QueryError] on failure.
-  static Future<Object /* List<HellRankInfo> | QueryError */> queryHellRanking() async {
+  /// Returns a [SeasonQueryResult] of [HellRankInfo] on success,
+  /// or a [QueryError] on failure.
+  static Future<Object /* SeasonQueryResult<HellRankInfo> | QueryError */> queryHellRanking() async {
     final uri = Uri.parse(_buildHellRankingUrl());
 
     try {
@@ -307,7 +331,10 @@ class PlayerApiService {
         ));
       }
 
-      return players;
+      return SeasonQueryResult(
+        items: players,
+        season: _parseSeason(result['date']),
+      );
     } on TimeoutException {
       return const TimeoutError();
     } on http.ClientException {
@@ -319,8 +346,9 @@ class PlayerApiService {
 
   /// Fetches the guild leaderboard for the current season.
   ///
-  /// Returns a list of [GuildInfo] on success, or a [QueryError] on failure.
-  static Future<Object /* List<GuildInfo> | QueryError */> queryGuildRanking() async {
+  /// Returns a [SeasonQueryResult] of [GuildInfo] on success,
+  /// or a [QueryError] on failure.
+  static Future<Object /* SeasonQueryResult<GuildInfo> | QueryError */> queryGuildRanking() async {
     final uri = Uri.parse(_buildGuildsUrl());
 
     try {
@@ -361,7 +389,10 @@ class PlayerApiService {
         ));
       }
 
-      return guilds;
+      return SeasonQueryResult(
+        items: guilds,
+        season: _parseSeason(result['date']),
+      );
     } on TimeoutException {
       return const TimeoutError();
     } on http.ClientException {
@@ -373,9 +404,9 @@ class PlayerApiService {
 
   /// Fetches the member list for a specific guild.
   ///
-  /// Returns a list of [GuildMember] sorted by score descending,
+  /// Returns a [SeasonQueryResult] of [GuildMember] sorted by score descending,
   /// or a [QueryError] on failure. Members with null names are excluded.
-  static Future<Object /* List<GuildMember> | QueryError */> queryGuildDetail(
+  static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */> queryGuildDetail(
       String guildName) async {
     final uri = Uri.parse(_buildGuildDetailUrl(guildName.trim()));
 
@@ -421,7 +452,10 @@ class PlayerApiService {
       // Sort by score descending.
       members.sort((a, b) => b.score.compareTo(a.score));
 
-      return members;
+      return SeasonQueryResult(
+        items: members,
+        season: _parseSeason(result['date']),
+      );
     } on TimeoutException {
       return const TimeoutError();
     } on http.ClientException {
@@ -449,11 +483,37 @@ class PlayerApiService {
     }
   }
 
+  /// Formats the time remaining until [end] (season end) as "Xd Xh Xm",
+  /// e.g. "2d 3h 45m". Returns '已结束' once the season has ended.
+  static String formatSeasonRemaining(DateTime end, DateTime now) {
+    final diff = end.difference(now);
+    if (diff.isNegative) return '已结束';
+    return '${diff.inDays}d ${diff.inHours % 24}h ${diff.inMinutes % 60}m';
+  }
+
   /// Parses [value] to int, handling both `int` and `String` representations.
   static int _parseInt(dynamic value) {
     if (value is int) return value;
     if (value is String) return int.tryParse(value) ?? 0;
     if (value is double) return value.toInt();
     return 0;
+  }
+
+  /// 解析 result.date（赛季起止时间，已换算为本地时区）；缺失或格式异常时返回空区间。
+  static SeasonRange _parseSeason(Object? date) {
+    if (date is! Map) return const SeasonRange();
+    return SeasonRange(
+      start: _parseSeasonTime(date['start']),
+      end: _parseSeasonTime(date['end']),
+    );
+  }
+
+  /// 解析赛季时间字符串并换算为本地时区：
+  /// 带时区后缀（Z 或 ±hh:mm）直接解析；无后缀视为 UTC（服务器时间）。
+  static DateTime? _parseSeasonTime(Object? value) {
+    if (value is! String || value.isEmpty) return null;
+    final hasTimezone =
+        value.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(value);
+    return DateTime.tryParse(hasTimezone ? value : '${value}Z')?.toLocal();
   }
 }

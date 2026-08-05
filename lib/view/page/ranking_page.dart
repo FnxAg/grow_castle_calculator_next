@@ -5,6 +5,7 @@ import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 
 /// 工具 tab 下的三类排行榜
 enum RankingKind {
@@ -100,13 +101,13 @@ class _RankingPageState extends State<RankingPage> {
       _error = null;
 
       final rows = switch (widget.kind) {
-        RankingKind.player when result is List<PlayerRankInfo> => result
+        RankingKind.player when result is SeasonQueryResult<PlayerRankInfo> => result.items
             .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
             .toList(),
-        RankingKind.guild when result is List<GuildInfo> => result
+        RankingKind.guild when result is SeasonQueryResult<GuildInfo> => result.items
             .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
             .toList(),
-        RankingKind.hell when result is List<HellRankInfo> => result
+        RankingKind.hell when result is SeasonQueryResult<HellRankInfo> => result.items
             .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
             .toList(),
         _ => const <_RankRow>[],
@@ -124,10 +125,10 @@ class _RankingPageState extends State<RankingPage> {
 
       // 交叉榜单索引（另一榜排名，行内胶囊）：成功才覆盖，失败保留旧索引
       final crossRanks = switch (widget.kind) {
-        RankingKind.player when cross is List<HellRankInfo> =>
-          {for (final e in cross) e.name.toLowerCase(): e.rank},
-        RankingKind.hell when cross is List<PlayerRankInfo> =>
-          {for (final e in cross) e.name.toLowerCase(): e.rank},
+        RankingKind.player when cross is SeasonQueryResult<HellRankInfo> =>
+          {for (final e in cross.items) e.name.toLowerCase(): e.rank},
+        RankingKind.hell when cross is SeasonQueryResult<PlayerRankInfo> =>
+          {for (final e in cross.items) e.name.toLowerCase(): e.rank},
         _ => null,
       };
       if (crossRanks != null) {
@@ -156,6 +157,16 @@ class _RankingPageState extends State<RankingPage> {
       appBar: AppBar(
         title: Text(widget.kind.title),
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // action 区：赛季进度胶囊（个人/公会 5 天赛季，无尽一周赛季，各用各的）
+        actions: [
+          SeasonIndicator(
+            notifier: switch (widget.kind) {
+              RankingKind.player => RankingCache.playerSeasonNotifier,
+              RankingKind.guild => RankingCache.guildSeasonNotifier,
+              RankingKind.hell => RankingCache.hellSeasonNotifier,
+            },
+          ),
+        ],
       ),
       body: _buildBody(),
     );
