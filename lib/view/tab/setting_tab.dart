@@ -77,7 +77,7 @@ class SettingTab extends StatelessWidget {
                     ButtonSegment(
                       value: ThemeMode.system,
                       icon: Icon(Icons.brightness_auto),
-                      label: Text('系统默认'),
+                      label: Text('系统'),
                     ),
                     ButtonSegment(
                       value: ThemeMode.light,

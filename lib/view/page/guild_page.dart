@@ -13,7 +13,7 @@ import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 class GuildPage extends StatefulWidget {
   const GuildPage({super.key, this.guildName});
 
-  /// 要展示的公会名；为 null 时使用当前用户设置的公会（drawer 场景）
+  /// 要展示的公会名；为 null 时使用当前用户设置的公会（首页公会 tab 场景）
   final String? guildName;
 
   @override

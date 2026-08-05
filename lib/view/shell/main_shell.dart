@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:grow_castle_calculator_next/view/tab/home_tab.dart';
-import 'package:grow_castle_calculator_next/view/tab/setting_tab.dart';
-import 'package:grow_castle_calculator_next/view/tab/tools_tab.dart';
+import 'package:grow_castle_calculator_next/data/res/pages.dart';
+import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
-/// app 根外壳：PageView（首页/工具/设置）+ 底部导航。
-/// 每个 tab 使用各自独立的 Scaffold（抽屉属于首页，见 [HomeTab]）。
+/// app 根外壳：PageView（阵容/收入/公会/工具/设置）+ 底部导航。
+/// 与当前用户相关的页面（阵容/收入/公会）由 [UserPageScaffold] 挂载，
+/// 其余页面自带独立 Scaffold。
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -30,19 +30,21 @@ class _MainShellState extends State<MainShell> {
         onPageChanged: (index) {
           // 同步底部导航高亮（滑动与点击两种来源都会触发）
           _selectIndex.value = index;
-          // 离开首页时释放输入框焦点：否则焦点仍挂在首页 TextField 上，
-          // 之后打开对话框（如设置页"关于"）关闭时焦点会恢复回首页，
-          // PageView(allowImplicitScrolling) 为了显示获焦子页会自动滚回首页，造成页面抽风
-          if (index != 0) {
-            FocusManager.instance.primaryFocus?.unfocus();
-          }
+          // 切页即释放输入框焦点：否则焦点仍挂在已被切走的页面上，
+          // PageView(allowImplicitScrolling) 为了显示获焦子页会自动滚回来，造成页面抽风
+          FocusManager.instance.primaryFocus?.unfocus();
         },
-        // 相邻页保活：保留首页滚动位置，并支持左右滑动切换
+        // 相邻页保活：保留各页输入状态，并支持左右滑动切换
         allowImplicitScrolling: true,
         children: [
-          const HomeTab(),
-          const ToolsTab(),
-          const SettingTab(),
+          for (final page in mainPages)
+            page.userPage
+                ? UserPageScaffold(
+                    title: page.title,
+                    actions: page.actionsBuilder?.call(context) ?? const [],
+                    body: page.builder(context),
+                  )
+                : page.builder(context),
         ],
       ),
       bottomNavigationBar: ListenableBuilder(
@@ -63,18 +65,11 @@ class _MainShellState extends State<MainShell> {
             },
             labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
             destinations: [
-              NavigationDestination(
-                icon: const Icon(Icons.home),
-                label: '首页',
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.handyman),
-                label: '工具',
-              ),
-              NavigationDestination(
-                icon: const Icon(Icons.settings),
-                label: '设置',
-              ),
+              for (final page in mainPages)
+                NavigationDestination(
+                  icon: Icon(page.icon),
+                  label: page.title,
+                ),
             ],
           );
         },

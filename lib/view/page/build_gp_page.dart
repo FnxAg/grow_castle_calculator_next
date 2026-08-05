@@ -8,8 +8,8 @@ import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 
 /// 阵容经济计算页：卡片列表（名称/等级输入）与底部汇总条。
 ///
-/// 作为抽屉页面由 [HomeTab] 挂载；输入框控制器与焦点按卡片 id 缓存在
-/// State 中，切换用户时 HomeTab 通过更换 key 重建本页，控制器随之释放。
+/// 作为首页 tab 由 UserPageScaffold 挂载；输入框控制器与焦点按卡片 id 缓存在
+/// State 中，切换用户时 UserPageScaffold 通过更换 key 重建本页，控制器随之释放。
 class FormationCalcPage extends StatefulWidget {
   const FormationCalcPage({super.key});
 
@@ -20,7 +20,7 @@ class FormationCalcPage extends StatefulWidget {
 class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 本次会话中已自动查询过的用户名。
   ///
-  /// 页面会被销毁重建（底部 tab 切换、抽屉切换），initState 随之重跑；
+  /// 页面会被销毁重建（底部 tab 切换），initState 随之重跑；
   /// 用会话级标记保证同一用户每次会话只自动查询一次，避免往返导航
   /// 反复请求。切换用户（KeyedSubtree 换 key 重建）时新用户名不在集合中，
   /// 仍会为新用户触发自动查询。
