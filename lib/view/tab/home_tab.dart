@@ -17,8 +17,9 @@ class HomeTab extends StatefulWidget {
 }
 
 class _HomeTabState extends State<HomeTab> {
-  /// 当前抽屉页面索引
-  int _pageIndex = 0;
+  /// 当前抽屉页面索引（会话级：PageView 切走导致本页销毁重建后仍保持
+  /// 选中页；app 重启归零回「阵容」）
+  static int _pageIndex = 0;
 
   @override
   Widget build(BuildContext context) {
