@@ -200,16 +200,13 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     setState(() => _querying = true);
 
     final name = Stores.infoStore.getCurrentUsername();
-    final result = await PlayerApiService.query(name);
+    // 拉取个人赛季数据并写入 store（含封禁标记与上次在线）
+    final result = await Stores.infoStore.syncCurrentUser();
 
     if (!mounted) return;
     setState(() => _querying = false);
 
     if (result is PlayerQueryResult) {
-      // 格式化一次并固定，切换页面/重建时保持上次查询的状态不变
-      String lastOnline =
-          PlayerApiService.formatLastOnline(result.queryDate, DateTime.now());
-
       // 封禁检测：仅标记「已封禁」（AppBar 副标题展示），不写入波数
       if (result.wave == 0 && result.queryDate.isEmpty) {
         if (!silent) {
@@ -217,15 +214,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
             SnackBar(content: Text('用户「$name」已被封禁')),
           );
         }
-        Stores.infoStore.setLastOnline('Banned');
         return;
       }
-
-      Stores.infoStore.applyOnlineQuery(
-        result.wave,
-        result.seasonalScore,
-        lastOnline: lastOnline,
-      );
       // 查询后刷新排名展示：手动同步强制重新拉取三类榜单（TTL 缓存仅对
       // 静默自动查询生效），失败保留旧缓存与胶囊，成功则胶囊立即更新
       _loadRanks(force: !silent);

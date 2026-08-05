@@ -63,9 +63,9 @@ class _GuildPageState extends State<GuildPage> {
     _load();
   }
 
-  /// 加载公会数据：缓存命中直接展示（手动刷新时 force 重新抓取）。
-  /// 已有内容时刷新不清空界面，失败仅 SnackBar 提示并保留旧数据。
-  Future<void> _load() async {
+  /// 加载公会数据：缓存命中直接展示；[force]（下拉全量同步）时忽略缓存
+  /// 强制重新抓取。已有内容时刷新不清空界面，失败仅 SnackBar 提示并保留旧数据。
+  Future<void> _load({bool force = false}) async {
     final guild = (widget.guildName ?? Stores.infoStore.getCurrentUserGuild())
         .trim();
     final hasContent = _members.isNotEmpty;
@@ -86,10 +86,10 @@ class _GuildPageState extends State<GuildPage> {
 
     // 并行：公会成员详情 + 公会榜（头部排名）+ 玩家赛季榜/无尽榜（成员排名）
     final (detail, guilds, players, hell) = await (
-      RankingCache.guildDetail(guild, force: hasContent),
-      RankingCache.guildRanking(),
-      RankingCache.playerRanking(),
-      RankingCache.hellRanking(),
+      RankingCache.guildDetail(guild, force: hasContent || force),
+      RankingCache.guildRanking(force: force),
+      RankingCache.playerRanking(force: force),
+      RankingCache.hellRanking(force: force),
     ).wait;
 
     if (!mounted) return;
@@ -155,6 +155,23 @@ class _GuildPageState extends State<GuildPage> {
         SnackBar(content: Text('刷新失败：$refreshFailure')),
       );
     }
+  }
+
+  /// 下拉刷新：与「阵容」页同步按钮一致的全量同步——
+  /// 拉取个人赛季数据写入 store，再强制刷新公会成员与三类榜单（胶囊）。
+  /// 个人查询失败仅提示不中断；榜单/成员失败保留旧缓存与旧数据。
+  Future<void> _refresh() async {
+    final guild = (widget.guildName ?? Stores.infoStore.getCurrentUserGuild())
+        .trim();
+    final result = await Stores.infoStore.syncCurrentUser();
+    if (!mounted) return;
+    if (result is QueryError) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('同步失败：${_errorMessage(guild, result)}')),
+      );
+    }
+    // 个人查询成败与否都强制刷新公会成员与三榜单（失败保留旧缓存与胶囊）
+    await _load(force: true);
   }
 
   String _errorMessage(String guild, QueryError error) {
@@ -281,7 +298,7 @@ class _GuildPageState extends State<GuildPage> {
         const Divider(height: 1.0),
         Expanded(
           child: RefreshIndicator(
-            onRefresh: _load,
+            onRefresh: _refresh,
             child: ListView.builder(
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: _members.length,

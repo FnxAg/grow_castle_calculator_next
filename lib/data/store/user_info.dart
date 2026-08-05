@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class InfoStore {
@@ -533,6 +534,30 @@ class InfoStore {
     waveNotifier.value = _wave;
     seasonWaveNotifier.value = _seasonWave;
     _saveCurrentState();
+  }
+
+  /// 联网同步当前用户：拉取个人赛季数据并写入 store。
+  ///
+  /// 成功返回 [PlayerQueryResult]（波数与赛季波数已写入；封禁时仅标记
+  /// 「已封禁」不写波数），失败返回 [QueryError]；UI 层自行决定提示文案。
+  /// 供「阵容」页同步按钮与「公会」页下拉刷新共用。
+  Future<Object /* PlayerQueryResult | QueryError */> syncCurrentUser() async {
+    final result = await PlayerApiService.query(_currentUser);
+    if (result is PlayerQueryResult) {
+      final lastOnline =
+          PlayerApiService.formatLastOnline(result.queryDate, DateTime.now());
+      if (result.wave == 0 && result.queryDate.isEmpty) {
+        // 封禁检测：仅标记「已封禁」（AppBar 副标题展示），不写入波数
+        setLastOnline('Banned');
+      } else {
+        applyOnlineQuery(
+          result.wave,
+          result.seasonalScore,
+          lastOnline: lastOnline,
+        );
+      }
+    }
+    return result;
   }
 
   /// 仅更新「上次在线」展示字符串（如封禁标记），不修改任何波数数据
