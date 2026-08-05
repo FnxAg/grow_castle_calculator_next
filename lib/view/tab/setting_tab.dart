@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 
 /// 设置 tab：独立的 Scaffold（无抽屉）
 class SettingTab extends StatelessWidget {
   const SettingTab({super.key});
+
+  Future<PackageInfo> _getPackageInfo() async {
+    return await PackageInfo.fromPlatform();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -18,7 +23,6 @@ class SettingTab extends StatelessWidget {
           const ListTile(
             leading: Icon(Icons.color_lens),
             title: Text('主题模式'),
-            subtitle: Text('跟随系统、亮色或暗色'),
           ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
@@ -54,17 +58,22 @@ class SettingTab extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('关于'),
-            onTap: () {
+            onTap: () async {
               // 先释放焦点：避免对话框关闭后焦点恢复，
               // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
               FocusManager.instance.primaryFocus?.unfocus();
+              final PackageInfo packageInfo = await _getPackageInfo();
+              final appName = packageInfo.appName;
+              final version = packageInfo.version;
+              final buildNumber = packageInfo.buildNumber;
+              if (!context.mounted) return;
               showAboutDialog(
                 context: context,
-                applicationName: 'GCC Next',
-                applicationVersion: '1.0.0',
+                applicationName: appName,
+                applicationVersion: '$version ($buildNumber)',
                 applicationIcon: const Icon(Icons.castle),
+                applicationLegalese: 'FnxAg',
                 children: [
-                  const Text('GCC Next 是一个用于计算和管理游戏数据的工具。'),
                 ],
               );
             },
