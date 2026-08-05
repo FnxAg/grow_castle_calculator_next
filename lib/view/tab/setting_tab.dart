@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 
 /// 设置 tab：独立的 Scaffold（无抽屉）
 class SettingTab extends StatelessWidget {
@@ -8,6 +9,48 @@ class SettingTab extends StatelessWidget {
 
   Future<PackageInfo> _getPackageInfo() async {
     return await PackageInfo.fromPlatform();
+  }
+
+  /// 弹出第三方 API 地址编辑对话框
+  void _showApiUrlDialog(BuildContext context, AppSettingsStore store) {
+    // 先释放焦点：避免对话框关闭后焦点恢复，
+    // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
+    FocusManager.instance.primaryFocus?.unfocus();
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        // 控制器在 builder 内创建、随对话框路由销毁后由 GC 回收，
+        // 不手动 dispose：若 pop 后立即释放，路由退场动画期间
+        // TextField 仍挂载，访问已释放的控制器会抛异常导致路由卡死
+        final controller = TextEditingController(
+          text: store.apiUrlNotifier.value,
+        );
+        return AlertDialog(
+          title: const Text('第三方API'),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.url,
+            decoration: const InputDecoration(
+              labelText: 'API 地址',
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                store.setApiUrl(controller.text);
+                Navigator.of(context).pop();
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   @override
@@ -55,57 +98,31 @@ class SettingTab extends StatelessWidget {
               },
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.api),
-            title: const Text('第三方API'),
-            subtitle: ValueListenableBuilder<String>(
-              valueListenable: appSettingsStore.apiUrlNotifier,
-              builder: (context, url, _) {
-                return Text(
-                  url,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                );
-              },
-            ),
-            onTap: () {
-              // 先释放焦点：避免对话框关闭后焦点恢复，
-              // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
-              FocusManager.instance.primaryFocus?.unfocus();
-              showDialog<void>(
-                context: context,
-                builder: (context) {
-                  // 控制器在 builder 内创建、随对话框路由销毁后由 GC 回收，
-                  // 不手动 dispose：若 pop 后立即释放，路由退场动画期间
-                  // TextField 仍挂载，访问已释放的控制器会抛异常导致路由卡死
-                  final controller = TextEditingController(
-                    text: appSettingsStore.apiUrlNotifier.value,
-                  );
-                  return AlertDialog(
-                    title: const Text('第三方API'),
-                    content: TextField(
-                      controller: controller,
-                      autofocus: true,
-                      keyboardType: TextInputType.url,
-                      decoration: const InputDecoration(
-                        labelText: 'API 地址',
-                      ),
-                    ),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('取消'),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          appSettingsStore.setApiUrl(controller.text);
-                          Navigator.of(context).pop();
-                        },
-                        child: const Text('保存'),
-                      ),
-                    ],
-                  );
-                },
+          ValueListenableBuilder<bool>(
+            valueListenable: appSettingsStore.thirdPartyApiEnabledNotifier,
+            builder: (context, enabled, _) {
+              return ListTile(
+                enabled: enabled,
+                leading: const Icon(Icons.api),
+                title: const Text('第三方API'),
+                subtitle: ValueListenableBuilder<String>(
+                  valueListenable: appSettingsStore.apiUrlNotifier,
+                  builder: (context, url, _) {
+                    return Text(
+                      url,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    );
+                  },
+                ),
+                // 开关关闭时禁止编辑（onTap 置空，整行置灰）
+                onTap: enabled
+                    ? () => _showApiUrlDialog(context, appSettingsStore)
+                    : null,
+                trailing: Switch(
+                  value: enabled,
+                  onChanged: appSettingsStore.setThirdPartyApiEnabled,
+                ),
               );
             },
           ),

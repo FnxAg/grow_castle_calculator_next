@@ -30,20 +30,25 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
   }
 
   /// 官方 API 与第三方 API 并行查询（均不缓存，每次进入重新抓取）；
-  /// 第三方历史失败或为空时静默忽略，不阻塞官方数据展示
+  /// 第三方历史失败或为空时静默忽略，不阻塞官方数据展示。
+  /// 第三方 API 开关关闭时跳过波速历史查询。
   Future<void> _load() async {
     setState(() {
       _loading = true;
       _error = null;
     });
 
-    final (result, history) = await (
-      PlayerApiService.query(widget.playerName),
-      PlayerApiService.queryPlayerWphHistory(
-        widget.playerName,
-        Stores.appSettingsStore.apiUrlNotifier.value,
-      ),
-    ).wait;
+    final thirdPartyEnabled =
+        Stores.appSettingsStore.thirdPartyApiEnabledNotifier.value;
+    final (result, history) = thirdPartyEnabled
+        ? await (
+            PlayerApiService.query(widget.playerName),
+            PlayerApiService.queryPlayerWphHistory(
+              widget.playerName,
+              Stores.appSettingsStore.apiUrlNotifier.value,
+            ),
+          ).wait
+        : (await PlayerApiService.query(widget.playerName), null);
 
     if (!mounted) return;
     setState(() {

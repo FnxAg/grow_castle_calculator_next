@@ -6,6 +6,7 @@ class AppSettingsStore {
   static const String _boxName = 'app_meta';
   static const String _themeModeKey = 'themeMode';
   static const String _apiUrlKey = 'apiUrl';
+  static const String _thirdPartyApiEnabledKey = 'thirdPartyApiEnabled';
 
   /// 第三方 API 默认地址（正式接口部署前的占位地址）
   static const String defaultApiUrl = 'https://fnxag.eu.org/gcapi';
@@ -13,6 +14,7 @@ class AppSettingsStore {
   final Box _box;
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<String> apiUrlNotifier;
+  final ValueNotifier<bool> thirdPartyApiEnabledNotifier;
 
   AppSettingsStore()
       : _box = Hive.box(_boxName),
@@ -21,6 +23,9 @@ class AppSettingsStore {
         ),
         apiUrlNotifier = ValueNotifier<String>(
           _readApiUrl(Hive.box(_boxName)),
+        ),
+        thirdPartyApiEnabledNotifier = ValueNotifier<bool>(
+          _readThirdPartyApiEnabled(Hive.box(_boxName)),
         );
 
   static ThemeMode _readThemeMode(Box box) {
@@ -48,6 +53,21 @@ class AppSettingsStore {
       return raw;
     }
     return defaultApiUrl;
+  }
+
+  /// 读取第三方 API 开关状态；未设置过时默认开启（保持原有行为）
+  static bool _readThirdPartyApiEnabled(Box box) {
+    final raw = box.get(_thirdPartyApiEnabledKey);
+    return raw is bool ? raw : true;
+  }
+
+  /// 设置第三方 API 开关状态并持久化
+  void setThirdPartyApiEnabled(bool enabled) {
+    if (thirdPartyApiEnabledNotifier.value == enabled) {
+      return;
+    }
+    thirdPartyApiEnabledNotifier.value = enabled;
+    _box.put(_thirdPartyApiEnabledKey, enabled);
   }
 
   /// 设置第三方 API 地址并持久化；输入为空时回退到默认地址
