@@ -11,7 +11,7 @@ class ToolsTab extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('工具'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: ListView(
         children: [

@@ -57,7 +57,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.playerName),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: _buildBody(),
     );

@@ -28,7 +28,7 @@ class _HomeTabState extends State<HomeTab> {
       // 抽屉属于首页：AppBar 会因此自动显示汉堡按钮
       drawer: _buildDrawer(),
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Column(
           crossAxisAlignment: .start,
           children: [

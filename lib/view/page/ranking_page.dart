@@ -156,7 +156,7 @@ class _RankingPageState extends State<RankingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.kind.title),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         // action 区：赛季进度胶囊（个人/公会 5 天赛季，无尽一周赛季，各用各的）
         actions: [
           SeasonIndicator(

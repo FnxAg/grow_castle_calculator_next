@@ -26,7 +26,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('用户管理'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
             icon: Icon(
