@@ -83,6 +83,17 @@ class GuildMember {
   const GuildMember({required this.name, required this.score});
 }
 
+/// 玩家在某赛季的每小时波速快照集合（来自第三方 API）。
+///
+/// [wphs] 保持接口返回顺序（快照 id 降序，即赛季内最新在前），
+/// 缺失的波速记录以 null 表示。
+class SeasonWphGroup {
+  final String season;
+  final List<int?> wphs;
+
+  const SeasonWphGroup({required this.season, required this.wphs});
+}
+
 /// Simple wrapper for API error cases.
 sealed class QueryError {
   const QueryError();
@@ -456,6 +467,61 @@ class PlayerApiService {
         items: members,
         season: _parseSeason(result['date']),
       );
+    } on TimeoutException {
+      return const TimeoutError();
+    } on http.ClientException {
+      return const NetworkError('Network connection failed');
+    } catch (e) {
+      return NetworkError(e.toString());
+    }
+  }
+
+  /// Fetches the player's per-season wph history from the custom third-party
+  /// API (`{baseUrl}/season/all/players/{name}`).
+  ///
+  /// The response is a list of hourly snapshots spanning multiple seasons;
+  /// only `season` and `wph` are used, snapshots are grouped by season
+  /// (keeping the API's newest-first order within each season). Returns the
+  /// seasons ordered newest first, or a [QueryError]. Player without
+  /// third-party data (404/empty list) yields an empty list.
+  static Future<Object /* List<SeasonWphGroup> | QueryError */>
+      queryPlayerWphHistory(String playerName, String baseUrl) async {
+    final base = baseUrl.endsWith('/')
+        ? baseUrl.substring(0, baseUrl.length - 1)
+        : baseUrl;
+    final uri = Uri.parse(
+        '$base/season/all/players/${Uri.encodeComponent(playerName.trim())}');
+
+    try {
+      final response = await http.get(uri).timeout(_timeout);
+      if (response.statusCode == 404) return const <SeasonWphGroup>[];
+      if (response.statusCode != 200) {
+        return NetworkError('HTTP ${response.statusCode}');
+      }
+
+      final rawBody = utf8.decode(response.bodyBytes);
+      final decoded = json.decode(rawBody);
+      if (decoded is! List<dynamic>) {
+        return const NetworkError('Invalid response format');
+      }
+
+      // 按赛季分组（保持接口快照顺序），只保留 season 与 wph 两个字段
+      final bySeason = <String, List<int?>>{};
+      for (final item in decoded) {
+        if (item is! Map<String, dynamic>) continue;
+        final season = (item['season'] as String?) ?? '';
+        if (season.isEmpty) continue;
+        final wphValue = item['wph'];
+        bySeason
+            .putIfAbsent(season, () => <int?>[])
+            .add(wphValue is num ? wphValue.toInt() : null);
+      }
+
+      final result = bySeason.entries
+          .map((e) => SeasonWphGroup(season: e.key, wphs: e.value))
+          .toList()
+        ..sort((a, b) => b.season.compareTo(a.season));
+      return result;
     } on TimeoutException {
       return const TimeoutError();
     } on http.ClientException {

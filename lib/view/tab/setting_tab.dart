@@ -56,6 +56,60 @@ class SettingTab extends StatelessWidget {
             ),
           ),
           ListTile(
+            leading: const Icon(Icons.api),
+            title: const Text('第三方API'),
+            subtitle: ValueListenableBuilder<String>(
+              valueListenable: appSettingsStore.apiUrlNotifier,
+              builder: (context, url, _) {
+                return Text(
+                  url,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                );
+              },
+            ),
+            onTap: () {
+              // 先释放焦点：避免对话框关闭后焦点恢复，
+              // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
+              FocusManager.instance.primaryFocus?.unfocus();
+              showDialog<void>(
+                context: context,
+                builder: (context) {
+                  // 控制器在 builder 内创建、随对话框路由销毁后由 GC 回收，
+                  // 不手动 dispose：若 pop 后立即释放，路由退场动画期间
+                  // TextField 仍挂载，访问已释放的控制器会抛异常导致路由卡死
+                  final controller = TextEditingController(
+                    text: appSettingsStore.apiUrlNotifier.value,
+                  );
+                  return AlertDialog(
+                    title: const Text('第三方API'),
+                    content: TextField(
+                      controller: controller,
+                      autofocus: true,
+                      keyboardType: TextInputType.url,
+                      decoration: const InputDecoration(
+                        labelText: 'API 地址',
+                      ),
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('取消'),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          appSettingsStore.setApiUrl(controller.text);
+                          Navigator.of(context).pop();
+                        },
+                        child: const Text('保存'),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.info),
             title: const Text('关于'),
             onTap: () async {

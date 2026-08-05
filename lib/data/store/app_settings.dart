@@ -5,14 +5,22 @@ import 'package:hive_flutter/hive_flutter.dart';
 class AppSettingsStore {
   static const String _boxName = 'app_meta';
   static const String _themeModeKey = 'themeMode';
+  static const String _apiUrlKey = 'apiUrl';
+
+  /// 第三方 API 默认地址（正式接口部署前的占位地址）
+  static const String defaultApiUrl = 'https://fnxag.eu.org/gcapi';
 
   final Box _box;
   final ValueNotifier<ThemeMode> themeModeNotifier;
+  final ValueNotifier<String> apiUrlNotifier;
 
   AppSettingsStore()
       : _box = Hive.box(_boxName),
         themeModeNotifier = ValueNotifier<ThemeMode>(
           _readThemeMode(Hive.box(_boxName)),
+        ),
+        apiUrlNotifier = ValueNotifier<String>(
+          _readApiUrl(Hive.box(_boxName)),
         );
 
   static ThemeMode _readThemeMode(Box box) {
@@ -32,5 +40,23 @@ class AppSettingsStore {
     }
     themeModeNotifier.value = mode;
     _box.put(_themeModeKey, mode.name);
+  }
+
+  static String _readApiUrl(Box box) {
+    final raw = box.get(_apiUrlKey);
+    if (raw is String && raw.trim().isNotEmpty) {
+      return raw;
+    }
+    return defaultApiUrl;
+  }
+
+  /// 设置第三方 API 地址并持久化；输入为空时回退到默认地址
+  void setApiUrl(String url) {
+    final value = url.trim().isEmpty ? defaultApiUrl : url.trim();
+    if (apiUrlNotifier.value == value) {
+      return;
+    }
+    apiUrlNotifier.value = value;
+    _box.put(_apiUrlKey, value);
   }
 }
