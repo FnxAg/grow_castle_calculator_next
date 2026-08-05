@@ -134,6 +134,12 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
           ? Future<Object?>.value(null)
           : RankingCache.guildRanking(force: force),
     ).wait;
+    // 顺带预热当前用户所属公会的成员列表（成功后缓存，无 TTL、手动刷新才
+    // 更新）：抽屉「公会」页首次进入直接命中缓存，避免成员首拉的转圈等待；
+    // 不 await，不影响胶囊更新的时机。
+    if (guild.isNotEmpty) {
+      RankingCache.guildDetail(guild, force: force);
+    }
     if (!mounted) return;
     setState(() {
       _playerRank = null;
