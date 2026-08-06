@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
-import 'package:grow_castle_calculator_next/data/store/user_info.dart';
+import 'package:grow_castle_calculator_next/data/store/user_data.dart';
 
 /// 系统语言非中文时使用英文数量级缩写（K/M/B/T/P/E）
 bool _useEnglishUnits(BuildContext context) {

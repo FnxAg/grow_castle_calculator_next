@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/view/page/ranking_page.dart';
 
-/// 工具 tab：独立 Scaffold（无抽屉），与首页的当前用户无关——
-/// 与当前用户相关的页面都在首页抽屉中切换，这里的入口展示全局共享数据。
-class ToolsTab extends StatelessWidget {
-  const ToolsTab({super.key});
+/// 工具页：独立 Scaffold，与当前用户无关——入口展示全局共享数据。
+class ToolsPage extends StatelessWidget {
+  const ToolsPage({super.key});
 
   @override
   Widget build(BuildContext context) {

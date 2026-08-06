@@ -3,9 +3,9 @@ import 'package:package_info_plus/package_info_plus.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 
-/// 设置 tab：独立的 Scaffold（无抽屉）
-class SettingTab extends StatelessWidget {
-  const SettingTab({super.key});
+/// 设置页：独立的 Scaffold
+class SettingPage extends StatelessWidget {
+  const SettingPage({super.key});
 
   Future<PackageInfo> _getPackageInfo() async {
     return await PackageInfo.fromPlatform();

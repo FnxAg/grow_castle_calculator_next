@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:grow_castle_calculator_next/data/res/pages.dart';
+import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 /// app 根外壳：PageView（阵容/收入/公会/工具/设置）+ 底部导航。
