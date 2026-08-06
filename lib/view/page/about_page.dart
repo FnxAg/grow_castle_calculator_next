@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
 
 /// 「关于」页：应用信息头部 + 说明 / 链接 / 法律与授权分组条目。
 ///
@@ -76,7 +75,12 @@ class _AboutPageState extends State<AboutPage> {
           onTap: () => showLicensePage(
             context: context,
             applicationName: _packageInfo?.appName ?? 'GCC Next',
-            // applicationIcon: const Icon(Icons.castle),
+            applicationIcon: Image.asset(
+              'assets/images/app_icon.png',
+              width: 72,
+              height: 72,
+              fit: BoxFit.cover,
+            ),
           ),
         ),
         _AboutEntry(
@@ -115,17 +119,13 @@ class _AboutPageState extends State<AboutPage> {
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
       child: Column(
         children: [
-          Container(
-            width: 88,
-            height: 88,
-            decoration: BoxDecoration(
-              color: scheme.primaryContainer,
-              borderRadius: BorderRadius.circular(24),
-            ),
-            child: Icon(
-              Icons.castle,
-              size: 48,
-              color: scheme.onPrimaryContainer,
+          ClipRRect(
+            borderRadius: BorderRadius.circular(24),
+            child: Image.asset(
+              'assets/images/app_icon.png',
+              width: 88,
+              height: 88,
+              fit: BoxFit.cover,
             ),
           ),
           const SizedBox(height: 16),
