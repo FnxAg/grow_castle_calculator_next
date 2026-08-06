@@ -61,6 +61,12 @@ class InfoStore {
   /// 卡片列表结构变化通知（新增/删除/排序），供卡片列表重建
   final ValueNotifier<int> cardIdsNotifier = ValueNotifier<int>(0);
 
+  /// 当前用户名称变化通知：切换/重命名用户时触发。
+  ///
+  /// 供 UserPageScaffold 全局监听——PageView 保活的用户页面不会随
+  /// 「发起切换的页面」的局部 setState 重建，必须由这里统一驱动
+  final ValueNotifier<String> currentUserNotifier = ValueNotifier<String>('default');
+
   InfoStore() {
     _loadFromHive();
   }
@@ -190,6 +196,7 @@ class InfoStore {
     }
     _currentUserId = userId;
     _currentUser = userData.username;
+    currentUserNotifier.value = userData.username;
     _guild = userData.guild;
 
     _cardIds = List<int>.from(userData.cardIds);
@@ -372,6 +379,7 @@ class InfoStore {
     _userIdsLower[_normalize(newUsername)] = userId;
     if (_currentUserId == userId) {
       _currentUser = newUsername;
+      currentUserNotifier.value = newUsername;
     }
     _persistUser(userId);
     _persistMeta();
