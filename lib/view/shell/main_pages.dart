@@ -54,17 +54,17 @@ final List<MainPageEntry> mainPages = [
       ),
     ],
   ),
-  // 收入计算
+  // 用户功能
   MainPageEntry(
-    title: '收入',
-    icon: Icons.trending_up,
+    title: '功能',
+    icon: Icons.history_edu,
     userPage: true,
     builder: (_) => const IncomePage(),
   ),
   // 公会
   MainPageEntry(
     title: '公会',
-    icon: Icons.group,
+    icon: Icons.flag_circle,
     userPage: true,
     builder: (_) => const GuildPage(),
     // AppBar action 区：公会赛季进度（点击查看详情）

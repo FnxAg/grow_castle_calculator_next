@@ -312,7 +312,7 @@ class _RankRow extends StatelessWidget {
                   if (guildRank != null) ...[
                     PillChip(
                       text: Text('#$guildRank', style: chipTextStyle),
-                      icon: Icons.group,
+                      icon: Icons.flag_circle,
                     ),
                     const SizedBox(width: 8.0),
                   ],

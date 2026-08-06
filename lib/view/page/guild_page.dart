@@ -267,7 +267,7 @@ class _GuildPageState extends State<GuildPage> {
                       fontWeight: FontWeight.w600,
                     ),
                   ),
-                  icon: Icons.emoji_events,
+                  icon: Icons.flag_circle,
                 ),
               ],
               if (_guildGapNext != null) ...[
