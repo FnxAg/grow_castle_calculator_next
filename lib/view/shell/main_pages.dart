@@ -3,7 +3,7 @@ import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/formation_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
-import 'package:grow_castle_calculator_next/view/page/income_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tools_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
@@ -59,7 +59,7 @@ final List<MainPageEntry> mainPages = [
     title: '功能',
     icon: Icons.history_edu,
     userPage: true,
-    builder: (_) => const IncomePage(),
+    builder: (_) => const FunctionPage(),
   ),
   // 公会
   MainPageEntry(

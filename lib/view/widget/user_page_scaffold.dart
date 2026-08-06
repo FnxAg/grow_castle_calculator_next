@@ -3,7 +3,8 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/select_user_page.dart';
 
 /// 与当前用户数据相关页面的公共框架（首页三个 tab：阵容/收入/公会）：
-/// AppBar = 页面标题 + 用户名/上次在线 + 页面声明的操作按钮 + 用户管理入口。
+/// AppBar = 页面标题 + 用户名/上次在线 + 页面声明的操作按钮 + 用户管理入口，
+/// 可选 [bottom]（如 TabBar）挂在 AppBar 底部。
 ///
 /// 全局监听 store 的 currentUserNotifier：切换用户时所有用户页外壳一起重建
 /// （PageView 保活的其他页面同样收到通知），通过更换 [KeyedSubtree] 的 key
@@ -14,11 +15,15 @@ class UserPageScaffold extends StatefulWidget {
     required this.title,
     required this.body,
     this.actions = const [],
+    this.bottom,
   });
 
   final String title;
   final Widget body;
   final List<Widget> actions;
+
+  /// AppBar 底部组件（如 TabBar），透传给 AppBar.bottom
+  final PreferredSizeWidget? bottom;
 
   @override
   State<UserPageScaffold> createState() => _UserPageScaffoldState();
@@ -35,6 +40,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
       builder: (context, currentUser, _) {
         return Scaffold(
           appBar: AppBar(
+            bottom: widget.bottom,
             title: Column(
               crossAxisAlignment: .start,
               children: [

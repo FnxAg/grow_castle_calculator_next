@@ -18,6 +18,13 @@ class UserData {
     double? gpCN,  // 十里坡剑神指数
     bool? onlineQuery,
     int? infiniteColony,
+    int? gameSpeed,
+    int? chronoClass,
+    bool? horn,
+    bool? goldenHorn,
+    int? devilHornSkip,
+    bool? isGoldAutoBattle,
+    int? theoreticalWph,
   })  : version = version ?? 1,
         guild = guild ?? '',
         cardIds = cardIds ?? [1, 2],
@@ -31,7 +38,14 @@ class UserData {
         gp = gp ?? 0,
         gpCN = gpCN ?? 0,
         onlineQuery = onlineQuery ?? false,
-        infiniteColony = infiniteColony ?? 0;
+        infiniteColony = infiniteColony ?? 0,
+        gameSpeed = gameSpeed ?? 0,
+        chronoClass = chronoClass ?? 0,
+        horn = horn ?? false,
+        goldenHorn = goldenHorn ?? false,
+        devilHornSkip = devilHornSkip ?? 1,
+        isGoldAutoBattle = isGoldAutoBattle ?? true,
+        theoreticalWph = theoreticalWph ?? 0;
 
   String username;
   String guild;
@@ -47,6 +61,21 @@ class UserData {
   double gpCN;  // 十里坡剑神指数
   bool onlineQuery;
   int infiniteColony;
+  /// 跳波状态（wave_status_page 持久化于 data 字段）
+  /// 游戏速度下标（0=2速 / 1=2速+10广 / 2=3速）
+  int gameSpeed;
+  /// 闹钟转职下标（0=白 / 1=黄 / 2=蓝）
+  int chronoClass;
+  /// 10%角
+  bool horn;
+  /// 30%角
+  bool goldenHorn;
+  /// 恶魔号角跳波数（1=无）
+  int devilHornSkip;
+  /// 挂机类型（true=金挂）
+  bool isGoldAutoBattle;
+  /// 理论 WPH（由上述参数派生，可跨用户查询）
+  int theoreticalWph;
   /// 数据 schema 版本：结构变更时递增并在 migrate 里补迁移逻辑
   int version;
 
@@ -101,6 +130,13 @@ class UserData {
       gpCN: _asDouble(data['gpCN'], 0.0),
       onlineQuery: _asBool(setting['onlineQuery'], false),
       infiniteColony: _asInt(data['infiniteColony'], 0),
+      gameSpeed: _asInt(data['gameSpeed'], 0),
+      chronoClass: _asInt(data['chronoClass'], 0),
+      horn: _asBool(data['horn'], false),
+      goldenHorn: _asBool(data['goldenHorn'], false),
+      devilHornSkip: _asInt(data['devilHornSkip'], 1),
+      isGoldAutoBattle: _asBool(data['isGoldAutoBattle'], true),
+      theoreticalWph: _asInt(data['theoreticalWph'], 0),
     );
   }
 
@@ -120,6 +156,13 @@ class UserData {
       gpCN: gpCN,
       onlineQuery: onlineQuery,
       infiniteColony: infiniteColony,
+      gameSpeed: gameSpeed,
+      chronoClass: chronoClass,
+      horn: horn,
+      goldenHorn: goldenHorn,
+      devilHornSkip: devilHornSkip,
+      isGoldAutoBattle: isGoldAutoBattle,
+      theoreticalWph: theoreticalWph,
     );
   }
 
@@ -142,6 +185,14 @@ class UserData {
         'gp': gp,
         'gpCN': gpCN,
         'infiniteColony': infiniteColony,
+        // 跳波状态（wave_status_page）
+        'gameSpeed': gameSpeed,
+        'chronoClass': chronoClass,
+        'horn': horn,
+        'goldenHorn': goldenHorn,
+        'devilHornSkip': devilHornSkip,
+        'isGoldAutoBattle': isGoldAutoBattle,
+        'theoreticalWph': theoreticalWph,
       },
       'setting': {
         'onlineQuery': onlineQuery,
@@ -238,6 +289,13 @@ const Map<int, Map<String, dynamic>> defaultUserData = {
       'gp': 0,
       'gpCN': 0,
       'infiniteColony': 0,
+      'gameSpeed': 0,
+      'chronoClass': 0,
+      'horn': false,
+      'goldenHorn': false,
+      'devilHornSkip': 1,
+      'isGoldAutoBattle': true,
+      'theoreticalWph': 0,
     },
     'setting': {
       'onlineQuery': false,

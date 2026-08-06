@@ -10,7 +10,7 @@ import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 /// 工具 tab 下的三类排行榜
 enum RankingKind {
   player(title: '个人排行榜', icon: Icons.eco, crossIcon: Icons.all_inclusive),
-  guild(title: '公会排行榜', icon: Icons.groups, crossIcon: null),
+  guild(title: '公会排行榜', icon: Icons.flag_circle, crossIcon: null),
   hell(title: '无尽排行榜', icon: Icons.all_inclusive, crossIcon: Icons.eco);
 
   const RankingKind({

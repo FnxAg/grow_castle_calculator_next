@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/data/store/user_data.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -40,6 +41,13 @@ class InfoStore {
   double _gpCN = 0;
   bool _onlineQuery = false;
   int _infiniteColony = 0;
+  int _gameSpeed = 0;
+  int _chronoClass = 0;
+  bool _horn = false;
+  bool _goldenHorn = false;
+  int _devilHornSkip = 1;
+  bool _isGoldAutoBattle = true;
+  int _theoreticalWph = 0;
 
   /// 延迟落盘定时器：输入热路径合并写盘
   Timer? _saveDebounce;
@@ -53,6 +61,8 @@ class InfoStore {
   final ValueNotifier<int> seasonWaveNotifier = ValueNotifier<int>(0);
   // 当前用户设置变化通知
   final ValueNotifier<bool> onlineQueryNotifier = ValueNotifier<bool>(false);
+  /// 跳波状态变化通知（参数变更/切换用户时触发），供跳波状态页重建
+  final ValueNotifier<int> waveStatusNotifier = ValueNotifier<int>(0);
   /// 各用户最近一次联网查询的"上次在线"展示字符串（仅内存，不持久化）
   final Map<int, String> _lastOnline = {};
   /// 当前用户"上次在线"时间通知（查询成功时格式化并固定，仅内存）
@@ -211,6 +221,13 @@ class InfoStore {
     _totalGold = userData.totalGold;
     _onlineQuery = userData.onlineQuery;
     _infiniteColony = userData.infiniteColony;
+    _gameSpeed = userData.gameSpeed;
+    _chronoClass = userData.chronoClass;
+    _horn = userData.horn;
+    _goldenHorn = userData.goldenHorn;
+    _devilHornSkip = userData.devilHornSkip;
+    _isGoldAutoBattle = userData.isGoldAutoBattle;
+    _theoreticalWph = userData.theoreticalWph;
 
     // 通知 UI 更新
     totalGoldNotifier.value = _totalGold;
@@ -220,6 +237,11 @@ class InfoStore {
     seasonWaveNotifier.value = _seasonWave;
     onlineQueryNotifier.value = _onlineQuery;
     lastOnlineNotifier.value = _lastOnline[userId] ?? '';
+    waveStatusNotifier.value++;
+    // 旧数据/新用户的理论 WPH 未持久化（默认 0）：按当前参数补算，避免首次展示为 0
+    if (_theoreticalWph <= 0) {
+      _recalcWaveStatus();
+    }
     _persistMeta();
   }
 
@@ -243,6 +265,13 @@ class InfoStore {
     currentState.gpCN = _gpCN;
     currentState.onlineQuery = _onlineQuery;
     currentState.infiniteColony = _infiniteColony;
+    currentState.gameSpeed = _gameSpeed;
+    currentState.chronoClass = _chronoClass;
+    currentState.horn = _horn;
+    currentState.goldenHorn = _goldenHorn;
+    currentState.devilHornSkip = _devilHornSkip;
+    currentState.isGoldAutoBattle = _isGoldAutoBattle;
+    currentState.theoreticalWph = _theoreticalWph;
     _persistUser(_currentUserId);
     _persistMeta();
     // print(_usersBox.toMap());
@@ -402,6 +431,102 @@ class InfoStore {
 
   /// 获取当前用户联网查询设置状态
   bool getOnlineQuery() => _onlineQuery;
+
+  // ── 跳波状态（持久化于 data 字段；参数仅当前用户读写，理论 WPH 可跨用户查询）──
+
+  /// 参数变更后重算理论 WPH 并通知 UI；持久化由各 setter 末尾的 updateData 负责
+  void _recalcWaveStatus() {
+    _theoreticalWph = getWph(
+      devilHornSkip: _devilHornSkip,
+      isGoldAutoBattle: _isGoldAutoBattle,
+      gameSpeed: _gameSpeed,
+      chronoBonus: _chronoClass,
+      equipHorn: _horn,
+      equipGoldenHorn: _goldenHorn,
+    ).round();
+    waveStatusNotifier.value++;
+  }
+
+  /// 获取当前用户游戏速度下标（0=2速 / 1=2速+10广 / 2=3速）
+  int getCurrentUserGameSpeed() => _gameSpeed;
+
+  /// 设置当前用户游戏速度（并重算理论 WPH）
+  void setCurrentUserGameSpeed(int value) {
+    if (_gameSpeed == value) return;
+    _gameSpeed = value;
+    _recalcWaveStatus();
+    updateData(_currentUser);
+  }
+
+  /// 获取当前用户闹钟转职下标（0=白 / 1=黄 / 2=蓝）
+  int getCurrentUserChronoClass() => _chronoClass;
+
+  /// 设置当前用户闹钟转职（并重算理论 WPH）
+  void setCurrentUserChronoClass(int value) {
+    if (_chronoClass == value) return;
+    _chronoClass = value;
+    _recalcWaveStatus();
+    updateData(_currentUser);
+  }
+
+  /// 获取当前用户 10% 角装备状态
+  bool getCurrentUserHorn() => _horn;
+
+  /// 设置当前用户 10% 角装备状态（并重算理论 WPH）
+  void setCurrentUserHorn(bool value) {
+    if (_horn == value) return;
+    _horn = value;
+    _recalcWaveStatus();
+    updateData(_currentUser);
+  }
+
+  /// 获取当前用户 30% 角装备状态
+  bool getCurrentUserGoldenHorn() => _goldenHorn;
+
+  /// 设置当前用户 30% 角装备状态（并重算理论 WPH）
+  void setCurrentUserGoldenHorn(bool value) {
+    if (_goldenHorn == value) return;
+    _goldenHorn = value;
+    _recalcWaveStatus();
+    updateData(_currentUser);
+  }
+
+  /// 获取当前用户恶魔号角跳波数（1=无）
+  int getCurrentUserDevilHornSkip() => _devilHornSkip;
+
+  /// 设置当前用户恶魔号角跳波数（并重算理论 WPH）
+  void setCurrentUserDevilHornSkip(int value) {
+    if (_devilHornSkip == value) return;
+    _devilHornSkip = value;
+    _recalcWaveStatus();
+    updateData(_currentUser);
+  }
+
+  /// 获取当前用户挂机类型（true=金挂）
+  bool getCurrentUserIsGoldAutoBattle() => _isGoldAutoBattle;
+
+  /// 设置当前用户挂机类型（并重算理论 WPH）
+  void setCurrentUserIsGoldAutoBattle(bool value) {
+    if (_isGoldAutoBattle == value) return;
+    _isGoldAutoBattle = value;
+    _recalcWaveStatus();
+    updateData(_currentUser);
+  }
+
+  /// 获取当前用户理论 WPH（由参数派生，随参数持久化）
+  int getCurrentUserTheoreticalWph() => _theoreticalWph;
+
+  /// 获取指定用户理论 WPH（跨用户查询；当前用户返回内存实时值）
+  int getUserTheoreticalWph(String username) {
+    final userId = getUserId(username);
+    if (userId == -1) {
+      throw ArgumentError('User not found');
+    }
+    if (userId == _currentUserId) {
+      return _theoreticalWph;
+    }
+    return _data[userId]?.theoreticalWph ?? 0;
+  }
 
   /// 重新计算并通知 UI
   /// 仅累加启用单位（applyFlag != false）的金币，未启用的 unitGold 保留但不计入汇总
