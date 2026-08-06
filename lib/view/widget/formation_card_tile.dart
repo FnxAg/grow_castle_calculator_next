@@ -103,7 +103,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
       controller: widget.textController,
       focusNode: widget.textFocusNode,
       enabled: _applied,
-      labelText: '名称${widget.id == 1 ? ' - 城堡专属' : widget.id == 2 ? ' - 城弓专属' : ''}',
+      labelText: '${widget.id == 1 ? '城堡' : widget.id == 2 ? '城弓' : ''}名称',
       keyboardType: TextInputType.text,
     );
   }

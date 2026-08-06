@@ -7,6 +7,11 @@ class IncomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     // TODO: 页面内容待设计
-    return const SizedBox.shrink();
+    return Center(
+      child: const Text(
+        '¯\\_ (ツ)_/¯',
+        style: TextStyle(fontSize: 48),
+      )
+    );
   }
 }

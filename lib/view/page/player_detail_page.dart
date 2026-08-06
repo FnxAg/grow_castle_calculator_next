@@ -181,14 +181,14 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
             ),
           ],
         ],
-        Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Text(
-            '数据为游戏内最新赛季数据，仅展示不写入本地存档',
-            textAlign: TextAlign.center,
-            style: TextStyle(fontSize: 12.0, color: scheme.onSurfaceVariant),
-          ),
-        ),
+        // Padding(
+        //   padding: const EdgeInsets.all(16.0),
+        //   child: Text(
+        //     '数据为游戏内最新赛季数据，仅展示不写入本地存档',
+        //     textAlign: TextAlign.center,
+        //     style: TextStyle(fontSize: 12.0, color: scheme.onSurfaceVariant),
+        //   ),
+        // ),
       ],
     );
   }
