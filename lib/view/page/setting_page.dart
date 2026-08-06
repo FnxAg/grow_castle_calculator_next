@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:package_info_plus/package_info_plus.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
+import 'package:grow_castle_calculator_next/view/page/about_page.dart';
 
 /// 设置页：独立的 Scaffold
 class SettingPage extends StatelessWidget {
   const SettingPage({super.key});
-
-  Future<PackageInfo> _getPackageInfo() async {
-    return await PackageInfo.fromPlatform();
-  }
 
   /// 弹出第三方 API 地址编辑对话框
   void _showApiUrlDialog(BuildContext context, AppSettingsStore store) {
@@ -129,23 +125,13 @@ class SettingPage extends StatelessWidget {
           ListTile(
             leading: const Icon(Icons.info),
             title: const Text('关于'),
-            onTap: () async {
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
               // 先释放焦点：避免对话框关闭后焦点恢复，
               // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
               FocusManager.instance.primaryFocus?.unfocus();
-              final PackageInfo packageInfo = await _getPackageInfo();
-              final appName = packageInfo.appName;
-              final version = packageInfo.version;
-              final buildNumber = packageInfo.buildNumber;
-              if (!context.mounted) return;
-              showAboutDialog(
-                context: context,
-                applicationName: appName,
-                applicationVersion: '$version ($buildNumber)',
-                applicationIcon: const Icon(Icons.castle),
-                applicationLegalese: 'FnxAg',
-                children: [
-                ],
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const AboutPage()),
               );
             },
           ),
