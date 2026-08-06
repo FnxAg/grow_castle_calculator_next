@@ -3,8 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_input_field.dart';
 
-/// 阵容页的卡片行：拖拽排序句柄 + 名称/等级输入 + 操作菜单（应用/清空/删除），
-/// 支持左滑删除。
+/// 阵容页的卡片行：拖拽排序句柄 + 名称/等级输入 + 操作菜单（应用/清空/删除）。
 ///
 /// 输入框的控制器与焦点由页面 State 按卡片 id 缓存并负责释放，通过构造参数
 /// 传入；[onRemove] 由页面 State 实现（释放控制器缓存并写入 store）。
@@ -27,7 +26,7 @@ class FormationCardTile extends StatefulWidget {
   final FocusNode textFocusNode;
   final FocusNode numberFocusNode;
 
-  /// 删除回调（左滑删除 / 菜单删除共用）
+  /// 删除回调（菜单删除使用）
   final ValueChanged<int> onRemove;
 
   @override
@@ -40,60 +39,46 @@ class _FormationCardTileState extends State<FormationCardTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Dismissible(
-      key: ValueKey(widget.id),
-      direction: DismissDirection.endToStart,
-      confirmDismiss: (direction) async {
-        if (widget.id == 1 || widget.id == 2) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('该条目不可删除，请选择禁用该条目')),
-          );
-          return false; // 否决滑动，卡片弹回原位
-        }
-        return true;
+    return Listener(
+      onPointerDown: (_) {
+        // 必须在拖拽代理创建之前清除焦点，否则持有焦点
+        // 的 TextField 被移入 Overlay 时会导致崩溃
+        FocusManager.instance.primaryFocus?.unfocus();
       },
-      onDismissed: (direction) => widget.onRemove(widget.id),
-      child: Listener(
-        onPointerDown: (_) {
-          // 必须在拖拽代理创建之前清除焦点，否则持有焦点
-          // 的 TextField 被移入 Overlay 时会导致崩溃
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        child: ListTile(
-          // 显式拖拽句柄：避免在 TextField 区域长按触发重排
-          leading: ReorderableDragStartListener(
-            index: widget.index,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 24),
-              child: Container(
-                width: 24,
-                height: 24,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: Theme.of(context).colorScheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(999.0),
-                ),
-                child: Text(
-                  (widget.index + 1).toString(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                  ),
+      child: ListTile(
+        // 显式拖拽句柄：避免在 TextField 区域长按触发重排
+        leading: ReorderableDragStartListener(
+          index: widget.index,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 24),
+            child: Container(
+              width: 24,
+              height: 24,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                color: Theme.of(context).colorScheme.primaryContainer,
+                borderRadius: BorderRadius.circular(999.0),
+              ),
+              child: Text(
+                (widget.index + 1).toString(),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16.0,
                 ),
               ),
             ),
           ),
-          // 名称 + 等级两个输入框作为主体
-          title: Row(
-            children: [
-              Expanded(flex: 9, child: _nameField()),
-              const SizedBox(width: 8.0),
-              Expanded(flex: 9, child: _levelField()),
-            ],
-          ),
-          trailing: _menuButton(),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
         ),
+        // 名称 + 等级两个输入框作为主体
+        title: Row(
+          children: [
+            Expanded(flex: 9, child: _nameField()),
+            const SizedBox(width: 8.0),
+            Expanded(flex: 9, child: _levelField()),
+          ],
+        ),
+        trailing: _menuButton(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
       ),
     );
   }
