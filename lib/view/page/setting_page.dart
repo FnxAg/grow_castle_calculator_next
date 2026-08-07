@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/view/page/about_page.dart';
+import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 设置页：独立的 Scaffold
 class SettingPage extends StatelessWidget {
@@ -23,7 +24,7 @@ class SettingPage extends StatelessWidget {
         );
         return AlertDialog(
           title: const Text('第三方API'),
-          content: TextField(
+          content: SelectAllTextField(
             controller: controller,
             autofocus: true,
             keyboardType: TextInputType.url,

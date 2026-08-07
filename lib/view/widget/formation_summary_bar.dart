@@ -3,6 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 阵容页底部汇总条：总波数 / 赛季波数（可编辑、可联网查询）、排名胶囊、
 /// 总金币、GP、指数。数值变化由 store 的 ValueNotifier 驱动实时更新。
@@ -57,13 +58,16 @@ class FormationSummaryBar extends StatelessWidget {
               _SmallIconButton(
                 icon: const Icon(Icons.edit),
                 tooltip: '修改总波数',
-                onPressed: () => showWaveEditDialog(
-                  context,
-                  title: '设置波数',
-                  labelText: '总波数',
-                  fallback: 1,
-                  onSave: Stores.infoStore.setUserWave,
-                ),
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  showWaveEditDialog(
+                    context,
+                    title: '设置总波数',
+                    labelText: '总波数',
+                    fallback: 1,
+                    onSave: Stores.infoStore.setUserWave,
+                  );
+                },
               ),
               // 未配置用户（userId == 0）不显示联网查询按钮
               if (Stores.infoStore.getCurrentUserId() != 0)
@@ -91,13 +95,16 @@ class FormationSummaryBar extends StatelessWidget {
               _SmallIconButton(
                 icon: const Icon(Icons.edit),
                 tooltip: '修改赛季波数',
-                onPressed: () => showWaveEditDialog(
-                  context,
-                  title: '设置赛季波数',
-                  labelText: '赛季波数',
-                  fallback: 0,
-                  onSave: Stores.infoStore.setCurrentUserSeasonWave,
-                ),
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  showWaveEditDialog(
+                    context,
+                    title: '设置赛季波数',
+                    labelText: '赛季波数',
+                    fallback: 0,
+                    onSave: Stores.infoStore.setCurrentUserSeasonWave,
+                  );
+                },
               ),
             ],
             value: ValueListenableBuilder<int>(
@@ -166,7 +173,7 @@ Future<void> showWaveEditDialog(
       final controller = TextEditingController();
       return AlertDialog(
         title: Text(title),
-        content: TextField(
+        content: SelectAllTextField(
           controller: controller,
           autofocus: true,
           keyboardType: TextInputType.number,

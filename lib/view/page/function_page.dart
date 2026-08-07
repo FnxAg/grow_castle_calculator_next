@@ -8,12 +8,6 @@ class FunctionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return Center(
-    //   child: const Text(
-    //     '¯\\_ (ツ)_/¯',
-    //     style: TextStyle(fontSize: 48),
-    //   )
-    // );
     return ListView(
       children: [
         ListTile(

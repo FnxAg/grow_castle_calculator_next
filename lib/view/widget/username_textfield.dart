@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 用户名/公会等短文本输入框：共用同一套输入约束
 /// （单行、≤14 字符、仅允许 0-9 a-z A-Z - _ 空格），
 /// 通过 [labelText]/[helperText] 区分用途。
+/// 聚焦时自动全选内容（见 SelectAllTextField）。
 class UsernameTextField extends StatelessWidget {
   const UsernameTextField({
     super.key,
@@ -22,7 +24,7 @@ class UsernameTextField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return TextField(
+    return SelectAllTextField(
       controller: controller,
       maxLines: 1,
       maxLength: 14,
