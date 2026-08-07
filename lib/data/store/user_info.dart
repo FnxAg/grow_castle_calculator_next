@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:grow_castle_calculator_next/core/calc/gold_income.dart';
 import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/data/store/user_data.dart';
@@ -49,6 +50,16 @@ class InfoStore {
   bool _isGoldAutoBattle = true;
   int _theoreticalWph = 0;
   int _theoreticalRwph = 0;
+  // 收入（income 页，持久化于 data 字段）
+  double _gabTime = 0.0;
+  double _gabBonus = 0.0;
+  double _tabTime = 0.0;
+  int _icCooldownSkill = 0;
+  int _icGoldSkill = 0;
+  bool _equipWheel = false;
+  bool _equipWhip = false;
+  bool _seasonColony = false;
+  bool _goldenTree = false;
 
   /// 延迟落盘定时器：输入热路径合并写盘
   Timer? _saveDebounce;
@@ -64,6 +75,8 @@ class InfoStore {
   final ValueNotifier<bool> onlineQueryNotifier = ValueNotifier<bool>(false);
   /// 跳波状态变化通知（参数变更/切换用户时触发），供跳波状态页重建
   final ValueNotifier<int> waveStatusNotifier = ValueNotifier<int>(0);
+  /// 收入变化通知（收入参数/跳波参数/波数变更或切换用户时触发），供收入页汇总条重建
+  final ValueNotifier<int> incomeNotifier = ValueNotifier<int>(0);
   /// 各用户最近一次联网查询的"上次在线"展示字符串（仅内存，不持久化）
   final Map<int, String> _lastOnline = {};
   /// 当前用户"上次在线"时间通知（查询成功时格式化并固定，仅内存）
@@ -228,6 +241,15 @@ class InfoStore {
     _goldenHorn = userData.goldenHorn;
     _devilHornSkip = userData.devilHornSkip;
     _isGoldAutoBattle = userData.isGoldAutoBattle;
+    _gabTime = userData.gabTime;
+    _gabBonus = userData.gabBonus;
+    _tabTime = userData.tabTime;
+    _icCooldownSkill = userData.icCooldownSkill;
+    _icGoldSkill = userData.icGoldSkill;
+    _equipWheel = userData.equipWheel;
+    _equipWhip = userData.equipWhip;
+    _seasonColony = userData.seasonColony;
+    _goldenTree = userData.goldenTree;
     // 派生值（理论 WPH / RWPH）不持久化：切用户时按该用户参数重算，保证始终与参数一致
     _recalcDerivedWaves();
 
@@ -240,6 +262,7 @@ class InfoStore {
     onlineQueryNotifier.value = _onlineQuery;
     lastOnlineNotifier.value = _lastOnline[userId] ?? '';
     waveStatusNotifier.value++;
+    incomeNotifier.value++;
     _persistMeta();
   }
 
@@ -269,6 +292,15 @@ class InfoStore {
     currentState.goldenHorn = _goldenHorn;
     currentState.devilHornSkip = _devilHornSkip;
     currentState.isGoldAutoBattle = _isGoldAutoBattle;
+    currentState.gabTime = _gabTime;
+    currentState.gabBonus = _gabBonus;
+    currentState.tabTime = _tabTime;
+    currentState.icCooldownSkill = _icCooldownSkill;
+    currentState.icGoldSkill = _icGoldSkill;
+    currentState.equipWheel = _equipWheel;
+    currentState.equipWhip = _equipWhip;
+    currentState.seasonColony = _seasonColony;
+    currentState.goldenTree = _goldenTree;
     _persistUser(_currentUserId);
     _persistMeta();
     // print(_usersBox.toMap());
@@ -453,6 +485,8 @@ class InfoStore {
   void _recalcWaveStatus() {
     _recalcDerivedWaves();
     waveStatusNotifier.value++;
+    // 每日收入依赖跳波参数（f0/f2），一并通知收入汇总条
+    incomeNotifier.value++;
   }
 
   /// 获取当前用户游戏速度下标（0=2速 / 1=2速+10广 / 2=3速）
@@ -521,11 +555,19 @@ class InfoStore {
     updateData(_currentUser);
   }
 
-  /// 获取当前用户理论 WPH（由参数派生，仅内存不落盘）
-  int getCurrentUserTheoreticalWph() => _theoreticalWph;
+  /// 获取当前用户理论 WPH
+  int getCurrentUserWph() => _theoreticalWph;
 
-  /// 获取当前用户真实 WPH（RWPH，由参数派生，仅内存不落盘）
+  /// 获取当前用户理论 RWPH
   int getCurrentUserRwph() => _theoreticalRwph;
+
+  /// 获取当前用户单波时间（s = 3600 / rwph，由跳波参数派生，仅内存不落盘）
+  double getCurrentUserWaveTime() => 3600 / getRwph(
+        gameSpeed: _gameSpeed,
+        chronoBonus: _chronoClass,
+        equipHorn: _horn,
+        equipGoldenHorn: _goldenHorn,
+      );
 
   /// 获取指定用户真实 WPH（RWPH；当前用户返回内存实时值，
   /// 其他用户按其已持久化的参数实时计算，保证与参数一致）
@@ -572,6 +614,143 @@ class InfoStore {
       equipGoldenHorn: userData.goldenHorn,
     ).round();
   }
+
+  // ── 收入（income 页各 tab 持久化于 data 字段；每日收入由参数实时计算，不持久化）──
+
+  /// 收入参数变更：落盘（防抖）并通知收入页汇总条重建
+  void _updateIncome() {
+    updateData(_currentUser);
+    incomeNotifier.value++;
+  }
+
+  /// 获取当前用户殖民地等级
+  int getCurrentUserInfiniteColony() => _infiniteColony;
+
+  /// 设置当前用户殖民地等级
+  void setCurrentUserInfiniteColony(int value) {
+    if (_infiniteColony == value) return;
+    _infiniteColony = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户每日金挂时间（h）
+  double getCurrentUserGabTime() => _gabTime;
+
+  /// 设置当前用户每日金挂时间（h）
+  void setCurrentUserGabTime(double value) {
+    if (_gabTime == value) return;
+    _gabTime = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户金挂平均收益（%）
+  double getCurrentUserGabBonus() => _gabBonus;
+
+  /// 设置当前用户金挂平均收益（%）
+  void setCurrentUserGabBonus(double value) {
+    if (_gabBonus == value) return;
+    _gabBonus = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户每日时挂时间（h）
+  double getCurrentUserTabTime() => _tabTime;
+
+  /// 设置当前用户每日时挂时间（h）
+  void setCurrentUserTabTime(double value) {
+    if (_tabTime == value) return;
+    _tabTime = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户额外殖民地C
+  int getCurrentUserIcCooldown() => _icCooldownSkill;
+
+  /// 设置当前用户额外殖民地C
+  void setCurrentUserIcCooldown(int value) {
+    if (_icCooldownSkill == value) return;
+    _icCooldownSkill = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户额外殖民地G
+  int getCurrentUserIcGold() => _icGoldSkill;
+
+  /// 设置当前用户额外殖民地G
+  void setCurrentUserIcGold(int value) {
+    if (_icGoldSkill == value) return;
+    _icGoldSkill = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户车轮装备状态
+  bool getCurrentUserEquipWheel() => _equipWheel;
+
+  /// 设置当前用户车轮装备状态
+  void setCurrentUserEquipWheel(bool value) {
+    if (_equipWheel == value) return;
+    _equipWheel = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户鞭子装备状态（启用时相当于额外殖民地G +15）
+  bool getCurrentUserEquipWhip() => _equipWhip;
+
+  /// 设置当前用户鞭子装备状态（启用时相当于额外殖民地G +15）
+  void setCurrentUserEquipWhip(bool value) {
+    if (_equipWhip == value) return;
+    _equipWhip = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户赛季殖民地启用状态
+  bool getCurrentUserSeasonColony() => _seasonColony;
+
+  /// 设置当前用户赛季殖民地启用状态
+  void setCurrentUserSeasonColony(bool value) {
+    if (_seasonColony == value) return;
+    _seasonColony = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户金币大树启用状态
+  bool getCurrentUserGoldenTree() => _goldenTree;
+
+  /// 设置当前用户金币大树启用状态
+  void setCurrentUserGoldenTree(bool value) {
+    if (_goldenTree == value) return;
+    _goldenTree = value;
+    _updateIncome();
+  }
+
+  /// 获取当前用户每日收入分项（殖民地 / 挂机 / 其他 / 总计）。
+  ///
+  /// 由当前用户的收入参数与跳波参数实时计算，不持久化；
+  /// 公式见 core/calc/gold_income.dart。
+  ({double colony, double autoBattle, double other, double total})
+      getCurrentUserDailyIncomeBreakdown() {
+    return getDailyIncomeBreakdown(
+      wave: _wave,
+      gameSpeed: _gameSpeed,
+      chronoBonus: _chronoClass,
+      equipHorn: _horn,
+      equipGoldenHorn: _goldenHorn,
+      infiniteColony: _infiniteColony,
+      icCooldownSkill: _icCooldownSkill,
+      icGoldSkill: _icGoldSkill,
+      equipWheel: _equipWheel,
+      equipWhip: _equipWhip,
+      gabTime: _gabTime,
+      gabBonus: _gabBonus,
+      tabTime: _tabTime,
+      seasonColony: _seasonColony,
+      goldenTree: _goldenTree,
+    );
+  }
+
+  /// 获取当前用户每日总收入（金币），见 [getCurrentUserDailyIncomeBreakdown]。
+  double getCurrentUserDailyIncome() =>
+      getCurrentUserDailyIncomeBreakdown().total;
 
   /// 重新计算并通知 UI
   /// 仅累加启用单位（applyFlag != false）的金币，未启用的 unitGold 保留但不计入汇总
@@ -649,6 +828,8 @@ class InfoStore {
     _wave = wave;
     _recalc();
     waveNotifier.value = _wave;
+    // 每日收入的 gabCost/广告收入以波数为基准，一并通知收入汇总条
+    incomeNotifier.value++;
     _saveCurrentState();
   }
 
@@ -685,6 +866,8 @@ class InfoStore {
     _recalc();
     waveNotifier.value = _wave;
     seasonWaveNotifier.value = _seasonWave;
+    // 波数变化影响每日收入，一并通知收入汇总条
+    incomeNotifier.value++;
     _saveCurrentState();
   }
 

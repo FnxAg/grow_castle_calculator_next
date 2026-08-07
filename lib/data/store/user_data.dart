@@ -24,6 +24,15 @@ class UserData {
     bool? goldenHorn,
     int? devilHornSkip,
     bool? isGoldAutoBattle,
+    double? gabTime,
+    double? gabBonus,
+    double? tabTime,
+    int? icCooldownSkill,
+    int? icGoldSkill,
+    bool? equipWheel,
+    bool? equipWhip,
+    bool? seasonColony,
+    bool? goldenTree,
   })  : version = version ?? 1,
         guild = guild ?? '',
         cardIds = cardIds ?? [1, 2],
@@ -43,7 +52,16 @@ class UserData {
         horn = horn ?? false,
         goldenHorn = goldenHorn ?? false,
         devilHornSkip = devilHornSkip ?? 1,
-        isGoldAutoBattle = isGoldAutoBattle ?? true;
+        isGoldAutoBattle = isGoldAutoBattle ?? true,
+        gabTime = gabTime ?? 0.0,
+        gabBonus = gabBonus ?? 0.0,
+        tabTime = tabTime ?? 0.0,
+        icCooldownSkill = icCooldownSkill ?? 0,
+        icGoldSkill = icGoldSkill ?? 0,
+        equipWheel = equipWheel ?? false,
+        equipWhip = equipWhip ?? false,
+        seasonColony = seasonColony ?? false,
+        goldenTree = goldenTree ?? false;
 
   String username;
   String guild;
@@ -72,6 +90,25 @@ class UserData {
   int devilHornSkip;
   /// 挂机类型（true=金挂）
   bool isGoldAutoBattle;
+  /// 收入（income 页各 tab 持久化于 data 字段）
+  /// 每日金挂时间（h）
+  double gabTime;
+  /// 金挂平均收益（%）
+  double gabBonus;
+  /// 每日时挂时间（h）
+  double tabTime;
+  /// 额外殖民地C
+  int icCooldownSkill;
+  /// 额外殖民地G
+  int icGoldSkill;
+  /// 车轮
+  bool equipWheel;
+  /// 鞭子（启用时相当于额外殖民地G +15）
+  bool equipWhip;
+  /// 赛季殖民地
+  bool seasonColony;
+  /// 金币大树
+  bool goldenTree;
   /// 数据 schema 版本：结构变更时递增并在 migrate 里补迁移逻辑
   int version;
 
@@ -132,6 +169,15 @@ class UserData {
       goldenHorn: _asBool(data['goldenHorn'], false),
       devilHornSkip: _asInt(data['devilHornSkip'], 1),
       isGoldAutoBattle: _asBool(data['isGoldAutoBattle'], true),
+      gabTime: _asDouble(data['gabTime'], 0.0),
+      gabBonus: _asDouble(data['gabBonus'], 0.0),
+      tabTime: _asDouble(data['tabTime'], 0.0),
+      icCooldownSkill: _asInt(data['icCooldown'], 0),
+      icGoldSkill: _asInt(data['icGold'], 0),
+      equipWheel: _asBool(data['equipWheel'], false),
+      equipWhip: _asBool(data['equipWhip'], false),
+      seasonColony: _asBool(data['seasonColony'], false),
+      goldenTree: _asBool(data['goldenTree'], false),
     );
   }
 
@@ -157,6 +203,15 @@ class UserData {
       goldenHorn: goldenHorn,
       devilHornSkip: devilHornSkip,
       isGoldAutoBattle: isGoldAutoBattle,
+      gabTime: gabTime,
+      gabBonus: gabBonus,
+      tabTime: tabTime,
+      icCooldownSkill: icCooldownSkill,
+      icGoldSkill: icGoldSkill,
+      equipWheel: equipWheel,
+      equipWhip: equipWhip,
+      seasonColony: seasonColony,
+      goldenTree: goldenTree,
     );
   }
 
@@ -186,6 +241,16 @@ class UserData {
         'goldenHorn': goldenHorn,
         'devilHornSkip': devilHornSkip,
         'isGoldAutoBattle': isGoldAutoBattle,
+        // 收入（income 页）
+        'gabTime': gabTime,
+        'gabBonus': gabBonus,
+        'tabTime': tabTime,
+        'icCooldown': icCooldownSkill,
+        'icGold': icGoldSkill,
+        'equipWheel': equipWheel,
+        'equipWhip': equipWhip,
+        'seasonColony': seasonColony,
+        'goldenTree': goldenTree,
       },
       'setting': {
         'onlineQuery': onlineQuery,
@@ -288,6 +353,15 @@ const Map<int, Map<String, dynamic>> defaultUserData = {
       'goldenHorn': false,
       'devilHornSkip': 1,
       'isGoldAutoBattle': true,
+      'gabTime': 0.0,
+      'gabBonus': 0.0,
+      'tabTime': 0.0,
+      'icCooldown': 0,
+      'icGold': 0,
+      'equipWheel': false,
+      'equipWhip': false,
+      'seasonColony': false,
+      'goldenTree': false,
     },
     'setting': {
       'onlineQuery': false,

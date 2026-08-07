@@ -46,7 +46,7 @@ class WaveStatusPage extends StatelessWidget {
         valueListenable: Stores.infoStore.waveStatusNotifier,
         builder: (context, _, _) {
           final store = Stores.infoStore;
-          final wph = store.getCurrentUserTheoreticalWph();
+          final wph = store.getCurrentUserWph();
           final rwph = store.getCurrentUserRwph();
           return ListView(
             children: [

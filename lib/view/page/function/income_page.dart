@@ -2,12 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income/colony_tab.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income/other_tab.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income/wave_tab.dart';
+import 'package:grow_castle_calculator_next/view/widget/income_summary_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 /// 收入计算页：按收入来源分 tab（殖民地/推波/其他）。
 ///
-/// 每个 tab 的结构类似阵容页：body 内输入框 + 实时计算详单；
-/// 具体输入项与计算规则待补充。
+/// 每个 tab 内为输入列表；底部固定汇总条展示每日殖民地/挂机/其他收入与
+/// 总收入（与阵容页底部汇总条同模式，由 store 的 incomeNotifier 驱动实时更新）。
 class IncomePage extends StatelessWidget {
   const IncomePage({super.key});
 
@@ -26,11 +27,19 @@ class IncomePage extends StatelessWidget {
             Tab(text: '其他'),
           ],
         ),
-        body: const TabBarView(
+        // 汇总条固定在底部，tab 内容在剩余高度内各自滚动
+        body: const Column(
           children: [
-            ColonyTab(),
-            WaveTab(),
-            OtherTab(),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  ColonyTab(),
+                  WaveTab(),
+                  OtherTab(),
+                ],
+              ),
+            ),
+            IncomeSummaryBar(),
           ],
         ),
       ),
