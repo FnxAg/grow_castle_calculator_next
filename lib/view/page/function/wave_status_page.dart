@@ -3,10 +3,10 @@ import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
-/// 跳波状态页：WPH/WPS 实时计算 + 游戏速度等参数设置。
+/// 跳波状态页：WPH/RWPH/WPS 实时计算 + 游戏速度等参数设置。
 ///
-/// 参数与理论 WPH 由 InfoStore 持久化（data 字段，按用户隔离）；
-/// 计算逻辑见 core/calc/wave_speed.dart。
+/// 参数由 InfoStore 持久化（data 字段，按用户隔离）；理论 WPH 由参数派生，
+/// 仅存内存不落盘；计算逻辑见 core/calc/wave_speed.dart。
 class WaveStatusPage extends StatelessWidget {
   const WaveStatusPage({super.key});
 
@@ -47,11 +47,12 @@ class WaveStatusPage extends StatelessWidget {
         builder: (context, _, _) {
           final store = Stores.infoStore;
           final wph = store.getCurrentUserTheoreticalWph();
+          final rwph = store.getCurrentUserRwph();
           return ListView(
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                child: _ResultCard(wph: wph, wps: wph * 120),
+                child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
               ),
               // 游戏速度：gameSpeed
               _settingTile<int>(
@@ -188,11 +189,13 @@ class WaveStatusPage extends StatelessWidget {
 
 /// WPH / WPS 结果展示卡
 class _ResultCard extends StatelessWidget {
-  const _ResultCard({required this.wph, required this.wps});
+  const _ResultCard({required this.wph, required this.rwph, required this.wps});
 
-  // 理论wph: theoreticalWph
+  /// 理论 WPH
   final int wph;
-  // 理论wps: theoreticalWps
+  /// 理论 RWPH
+  final int rwph;
+  /// 理论 WPS（wph * 120）
   final int wps;
 
   @override
@@ -206,6 +209,12 @@ class _ResultCard extends StatelessWidget {
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
+            Expanded(child: _HeroMetric(label: 'RWPH', value: '$rwph')),
+            Container(
+              width: 1,
+              height: 36,
+              color: colorScheme.onPrimaryContainer.withAlpha(40),
+            ),
             Expanded(child: _HeroMetric(label: 'WPH', value: '$wph')),
             Container(
               width: 1,

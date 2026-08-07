@@ -24,7 +24,6 @@ class UserData {
     bool? goldenHorn,
     int? devilHornSkip,
     bool? isGoldAutoBattle,
-    int? theoreticalWph,
   })  : version = version ?? 1,
         guild = guild ?? '',
         cardIds = cardIds ?? [1, 2],
@@ -44,8 +43,7 @@ class UserData {
         horn = horn ?? false,
         goldenHorn = goldenHorn ?? false,
         devilHornSkip = devilHornSkip ?? 1,
-        isGoldAutoBattle = isGoldAutoBattle ?? true,
-        theoreticalWph = theoreticalWph ?? 0;
+        isGoldAutoBattle = isGoldAutoBattle ?? true;
 
   String username;
   String guild;
@@ -74,8 +72,6 @@ class UserData {
   int devilHornSkip;
   /// 挂机类型（true=金挂）
   bool isGoldAutoBattle;
-  /// 理论 WPH（由上述参数派生，可跨用户查询）
-  int theoreticalWph;
   /// 数据 schema 版本：结构变更时递增并在 migrate 里补迁移逻辑
   int version;
 
@@ -136,7 +132,6 @@ class UserData {
       goldenHorn: _asBool(data['goldenHorn'], false),
       devilHornSkip: _asInt(data['devilHornSkip'], 1),
       isGoldAutoBattle: _asBool(data['isGoldAutoBattle'], true),
-      theoreticalWph: _asInt(data['theoreticalWph'], 0),
     );
   }
 
@@ -162,7 +157,6 @@ class UserData {
       goldenHorn: goldenHorn,
       devilHornSkip: devilHornSkip,
       isGoldAutoBattle: isGoldAutoBattle,
-      theoreticalWph: theoreticalWph,
     );
   }
 
@@ -192,7 +186,6 @@ class UserData {
         'goldenHorn': goldenHorn,
         'devilHornSkip': devilHornSkip,
         'isGoldAutoBattle': isGoldAutoBattle,
-        'theoreticalWph': theoreticalWph,
       },
       'setting': {
         'onlineQuery': onlineQuery,
@@ -295,7 +288,6 @@ const Map<int, Map<String, dynamic>> defaultUserData = {
       'goldenHorn': false,
       'devilHornSkip': 1,
       'isGoldAutoBattle': true,
-      'theoreticalWph': 0,
     },
     'setting': {
       'onlineQuery': false,

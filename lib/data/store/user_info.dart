@@ -48,6 +48,7 @@ class InfoStore {
   int _devilHornSkip = 1;
   bool _isGoldAutoBattle = true;
   int _theoreticalWph = 0;
+  int _theoreticalRwph = 0;
 
   /// 延迟落盘定时器：输入热路径合并写盘
   Timer? _saveDebounce;
@@ -227,7 +228,8 @@ class InfoStore {
     _goldenHorn = userData.goldenHorn;
     _devilHornSkip = userData.devilHornSkip;
     _isGoldAutoBattle = userData.isGoldAutoBattle;
-    _theoreticalWph = userData.theoreticalWph;
+    // 派生值（理论 WPH / RWPH）不持久化：切用户时按该用户参数重算，保证始终与参数一致
+    _recalcDerivedWaves();
 
     // 通知 UI 更新
     totalGoldNotifier.value = _totalGold;
@@ -238,10 +240,6 @@ class InfoStore {
     onlineQueryNotifier.value = _onlineQuery;
     lastOnlineNotifier.value = _lastOnline[userId] ?? '';
     waveStatusNotifier.value++;
-    // 旧数据/新用户的理论 WPH 未持久化（默认 0）：按当前参数补算，避免首次展示为 0
-    if (_theoreticalWph <= 0) {
-      _recalcWaveStatus();
-    }
     _persistMeta();
   }
 
@@ -271,7 +269,6 @@ class InfoStore {
     currentState.goldenHorn = _goldenHorn;
     currentState.devilHornSkip = _devilHornSkip;
     currentState.isGoldAutoBattle = _isGoldAutoBattle;
-    currentState.theoreticalWph = _theoreticalWph;
     _persistUser(_currentUserId);
     _persistMeta();
     // print(_usersBox.toMap());
@@ -434,8 +431,8 @@ class InfoStore {
 
   // ── 跳波状态（持久化于 data 字段；参数仅当前用户读写，理论 WPH 可跨用户查询）──
 
-  /// 参数变更后重算理论 WPH 并通知 UI；持久化由各 setter 末尾的 updateData 负责
-  void _recalcWaveStatus() {
+  /// 由跳波参数重算派生值（理论 WPH / RWPH），不通知 UI
+  void _recalcDerivedWaves() {
     _theoreticalWph = getWph(
       devilHornSkip: _devilHornSkip,
       isGoldAutoBattle: _isGoldAutoBattle,
@@ -444,6 +441,17 @@ class InfoStore {
       equipHorn: _horn,
       equipGoldenHorn: _goldenHorn,
     ).round();
+    _theoreticalRwph = getRwph(
+      gameSpeed: _gameSpeed,
+      chronoBonus: _chronoClass,
+      equipHorn: _horn,
+      equipGoldenHorn: _goldenHorn,
+    ).round();
+  }
+
+  /// 参数变更后重算派生值并通知 UI；持久化由各 setter 末尾的 updateData 负责
+  void _recalcWaveStatus() {
+    _recalcDerivedWaves();
     waveStatusNotifier.value++;
   }
 
@@ -513,10 +521,36 @@ class InfoStore {
     updateData(_currentUser);
   }
 
-  /// 获取当前用户理论 WPH（由参数派生，随参数持久化）
+  /// 获取当前用户理论 WPH（由参数派生，仅内存不落盘）
   int getCurrentUserTheoreticalWph() => _theoreticalWph;
 
-  /// 获取指定用户理论 WPH（跨用户查询；当前用户返回内存实时值）
+  /// 获取当前用户真实 WPH（RWPH，由参数派生，仅内存不落盘）
+  int getCurrentUserRwph() => _theoreticalRwph;
+
+  /// 获取指定用户真实 WPH（RWPH；当前用户返回内存实时值，
+  /// 其他用户按其已持久化的参数实时计算，保证与参数一致）
+  int getUserRwph(String username) {
+    final userId = getUserId(username);
+    if (userId == -1) {
+      throw ArgumentError('User not found');
+    }
+    if (userId == _currentUserId) {
+      return _theoreticalRwph;
+    }
+    final userData = _data[userId];
+    if (userData == null) {
+      return 0;
+    }
+    return getRwph(
+      gameSpeed: userData.gameSpeed,
+      chronoBonus: userData.chronoClass,
+      equipHorn: userData.horn,
+      equipGoldenHorn: userData.goldenHorn,
+    ).round();
+  }
+
+  /// 获取指定用户理论 WPH（跨用户查询；当前用户返回内存实时值，
+  /// 其他用户按其已持久化的参数实时计算，保证与参数一致）
   int getUserTheoreticalWph(String username) {
     final userId = getUserId(username);
     if (userId == -1) {
@@ -525,7 +559,18 @@ class InfoStore {
     if (userId == _currentUserId) {
       return _theoreticalWph;
     }
-    return _data[userId]?.theoreticalWph ?? 0;
+    final userData = _data[userId];
+    if (userData == null) {
+      return 0;
+    }
+    return getWph(
+      devilHornSkip: userData.devilHornSkip,
+      isGoldAutoBattle: userData.isGoldAutoBattle,
+      gameSpeed: userData.gameSpeed,
+      chronoBonus: userData.chronoClass,
+      equipHorn: userData.horn,
+      equipGoldenHorn: userData.goldenHorn,
+    ).round();
   }
 
   /// 重新计算并通知 UI

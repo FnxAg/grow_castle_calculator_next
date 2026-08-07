@@ -40,3 +40,21 @@ double getWph({
       (equipHorn ? hornRatio : 1) *
       (equipGoldenHorn ? goldenHornRatio : 1);
 }
+
+/// 真实每小时跳波数（RWPH）。
+///
+/// 不含恶魔号角跳波（devilHornSkip）与 TAB 额外跳波，
+/// 仅由游戏速度、闹钟与双角倍率决定；[getWph] 在此基础上额外计入
+/// 号角跳波数与时挂加成。
+double getRwph({
+  required int gameSpeed,
+  required int chronoBonus,
+  required bool equipHorn,
+  required bool equipGoldenHorn,
+}) {
+  return baseSpeed *
+      gameSpeedRatio[gameSpeed] *
+      chronoBonusRatio[chronoBonus] *
+      (equipHorn ? hornRatio : 1) *
+      (equipGoldenHorn ? goldenHornRatio : 1);
+}
