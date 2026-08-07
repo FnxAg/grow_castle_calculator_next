@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_switch_tile.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
@@ -45,7 +46,27 @@ class _ColonyTabState extends State<ColonyTab> {
     return ListView(
       children: [
         ListTile(
-          title: const Text('殖民地等级'),
+          title: Row(
+            children: [
+              const Text('殖民地等级'),
+              const Spacer(),
+              // 殖民地效率（等级 × 1000 / 波数）：等级输入与波数变更
+              // 都会触发 incomeNotifier，驱动这里实时重建
+              ValueListenableBuilder<int>(
+                valueListenable: Stores.infoStore.incomeNotifier,
+                builder: (context, _, _) {
+                  final wave = store.getCurrentUserWave();
+                  final value = wave > 0
+                      ? (store.getCurrentUserInfiniteColony() / wave * 1000).format()
+                      : '0';
+                  return Text(
+                    value,
+                    style: const TextStyle(fontSize: 12, color: Colors.grey),
+                  );
+                },
+              ),
+            ],
+          ),
           trailing: SizedBox(
             width: 80,
             child: SelectAllTextField(
