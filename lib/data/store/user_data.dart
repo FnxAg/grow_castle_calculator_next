@@ -234,14 +234,12 @@ class UserData {
         'gp': gp,
         'gpCN': gpCN,
         'infiniteColony': infiniteColony,
-        // 跳波状态（wave_status_page）
         'gameSpeed': gameSpeed,
         'chronoClass': chronoClass,
         'horn': horn,
         'goldenHorn': goldenHorn,
         'devilHornSkip': devilHornSkip,
         'isGoldAutoBattle': isGoldAutoBattle,
-        // 收入（income 页）
         'gabTime': gabTime,
         'gabBonus': gabBonus,
         'tabTime': tabTime,

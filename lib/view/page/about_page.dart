@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -37,6 +38,27 @@ class _AboutPageState extends State<AboutPage> {
           '使用说明',
           'https://blog.fnxag.eu.org/posts/gcc-next-guide/',
         ),
+        _AboutEntry(
+          icon: Icons.api,
+          title: '第三方API说明',
+          subtitle: '当查询内容为空时，请查看这里',
+          onTap: () => showDialog<void>(
+            context: context,
+            builder: (context) => AlertDialog(
+              title: const Text('第三方API'),
+              content: const Text(
+                '默认第三方API (https://fnxag.eu.org/gcapi) '
+                '由开发者维护。如果查询内容为空，可能是未进入记录范围，可通过联系开发者手动添加。'
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.of(context).pop(),
+                  child: const Text('知道了'),
+                ),
+              ],
+            ),
+          ),
+        ),
         // _AboutEntry(
         //   icon: Icons.api,
         //   title: '第三方API',
@@ -64,7 +86,13 @@ class _AboutPageState extends State<AboutPage> {
           'QQ 群',
           'https://qm.qq.com/q/FMLqiMRbai',
           display: '913331981',
-        )
+        ),
+        _AboutEntry(
+          icon: Icons.email,
+          title: '开发者邮箱',
+          subtitle: 'fnxag@qq.com',
+          tappable: false,
+        ),
       ];
 
   /// 法律与授权区条目
@@ -86,7 +114,7 @@ class _AboutPageState extends State<AboutPage> {
         _AboutEntry(
           icon: Icons.verified_outlined,
           title: 'LICENSE',
-          subtitle: '本应用遵循 GPL v3.0 开源协议',
+          subtitle: '本应用遵循 GPL-3.0 开源协议',
           tappable: false,
         ),
       ];
@@ -158,8 +186,22 @@ class _AboutPageState extends State<AboutPage> {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
       child: Column(
         children: [
-          Text(
-            'GCC Next · by FnxAg',
+          Text.rich(
+            TextSpan(
+              children: [
+                const TextSpan(text: 'GCC Next · by '),
+                TextSpan(
+                  text: 'FnxAg', 
+                  style: const TextStyle(
+                    color: Colors.blueAccent,
+                  ),
+                  recognizer: TapGestureRecognizer()
+                    ..onTap = () {
+                      _launchUrl('https://github.com/FnxAg');
+                    },
+                ),
+              ],
+            ),
             style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
           ),
           // const SizedBox(height: 4),
