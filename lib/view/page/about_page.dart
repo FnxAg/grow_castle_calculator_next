@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -126,11 +127,11 @@ class _AboutPageState extends State<AboutPage> {
       body: ListView(
         children: [
           _buildHeader(context),
-          const _SectionHeader('说明'),
+          const SectionHeader('说明'),
           for (final entry in _infoEntries) entry,
-          const _SectionHeader('链接'),
+          const SectionHeader('链接'),
           for (final entry in _linkEntries) entry,
-          const _SectionHeader('授权'),
+          const SectionHeader('授权'),
           for (final entry in _legalEntries) entry,
           _buildFooter(context),
         ],
@@ -263,27 +264,6 @@ class _AboutPageState extends State<AboutPage> {
   }
 }
 
-/// 分组标题
-class _SectionHeader extends StatelessWidget {
-  const _SectionHeader(this.title);
-
-  final String title;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 20, 16, 4),
-      child: Text(
-        title,
-        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-              color: scheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-      ),
-    );
-  }
-}
 
 /// 关于页条目行。
 ///
