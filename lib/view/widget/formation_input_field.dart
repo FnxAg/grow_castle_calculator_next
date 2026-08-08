@@ -52,6 +52,7 @@ class FormationInputField extends StatelessWidget {
           filled: true,
           disabledBorder: InputBorder.none,
           enabled: enabled,
+          isDense: true
         ),
       ),
     );
