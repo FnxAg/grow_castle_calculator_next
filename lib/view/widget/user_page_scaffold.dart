@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/view/page/select_user_page.dart';
+import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 
 /// 与当前用户数据相关页面的公共框架（首页三个 tab：阵容/收入/公会）：
 /// AppBar = 页面标题 + 用户名/上次在线 + 页面声明的操作按钮 + 用户管理入口，

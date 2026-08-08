@@ -3,7 +3,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/view/page/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 
 /// 公会页：展示指定公会（[guildName] 为 null 时取当前用户所在公会）的成员信息，

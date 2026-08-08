@@ -5,7 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:grow_castle_calculator_next/core/service/update_checker.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
-import 'package:grow_castle_calculator_next/view/page/about_page.dart';
+import 'package:grow_castle_calculator_next/view/page/setting/about_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 设置页：独立的 Scaffold

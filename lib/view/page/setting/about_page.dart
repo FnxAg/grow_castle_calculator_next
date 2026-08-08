@@ -41,7 +41,7 @@ class _AboutPageState extends State<AboutPage> {
         ),
         _AboutEntry(
           icon: Icons.api,
-          title: '第三方API说明',
+          title: '第三方 API 说明',
           subtitle: '当查询内容为空时，请查看这里',
           onTap: () => showDialog<void>(
             context: context,
