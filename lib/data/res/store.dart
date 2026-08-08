@@ -1,5 +1,6 @@
 import 'package:get_it/get_it.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
+import 'package:grow_castle_calculator_next/data/store/item_rule_store.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
 
 abstract final class Stores {
@@ -17,5 +18,12 @@ abstract final class Stores {
       _getIt.registerSingleton<AppSettingsStore>(AppSettingsStore());
     }
     return _getIt<AppSettingsStore>();
+  }
+
+  static ItemRuleStore get itemRuleStore {
+    if (!_getIt.isRegistered<ItemRuleStore>()) {
+      _getIt.registerSingleton<ItemRuleStore>(ItemRuleStore());
+    }
+    return _getIt<ItemRuleStore>();
   }
 }
