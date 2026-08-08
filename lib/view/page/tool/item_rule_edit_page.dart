@@ -428,7 +428,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   child: Text(
-                    '提示：红/黄词条各最多选 1 条；白色词条合计 3 条时不能选红色词条；\n'
+                    '提示：红/金词条各最多选 1 条；白色词条合计 3 条时不能选红色词条；\n'
                     '输入数值范围时，判断的是词条原始值（加强前的值），留空表示不限。\n\n'
                     '注意：数值范围没有强校验，请确认后再保存，否则可能导致规则无法命中。',
                     style: Theme.of(context).textTheme.bodySmall,

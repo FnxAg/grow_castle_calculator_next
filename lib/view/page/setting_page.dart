@@ -136,7 +136,7 @@ class _SettingPageState extends State<SettingPage> {
           text: store.apiUrlNotifier.value,
         );
         return AlertDialog(
-          title: const Text('第三方API'),
+          title: const Text('第三方 API'),
           content: SelectAllTextField(
             controller: controller,
             autofocus: true,
@@ -214,7 +214,7 @@ class _SettingPageState extends State<SettingPage> {
               return ListTile(
                 enabled: enabled,
                 leading: const Icon(Icons.api),
-                title: const Text('第三方API'),
+                title: const Text('第三方 API'),
                 subtitle: ValueListenableBuilder<String>(
                   valueListenable: appSettingsStore.apiUrlNotifier,
                   builder: (context, url, _) {
