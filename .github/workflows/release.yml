@@ -19,7 +19,10 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          # 拉取完整提交历史
+          fetch-depth: 0
 
       - name: Restore keystore file
         run: |
@@ -29,7 +32,7 @@ jobs:
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.44.8' # 修改为你本地Flutter版本
+          flutter-version: '3.44.8' # 修改为本地Flutter版本
           cache: true
 
       - name: Install dependencies
@@ -40,7 +43,7 @@ jobs:
 
       # 上传产物到Action工件（调试用）
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v6
         with:
           name: app-build-files
           path: |
