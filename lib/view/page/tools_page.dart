@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/ranking_page.dart';
 
 /// 工具页：独立 Scaffold，与当前用户无关——入口展示全局共享数据。
@@ -42,6 +43,21 @@ class ToolsPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const DragonSimulatorPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.compare_arrows),
+            title: const Text('装备对比'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              // 先释放焦点：避免首页 TextField 的焦点触发
+              // PageView(allowImplicitScrolling) 自动滚回首页
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const ItemComparerPage(),
                 ),
               );
             },
