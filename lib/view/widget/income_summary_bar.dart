@@ -11,16 +11,14 @@ class IncomeSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        border: Border(
-          top: BorderSide(color: colorScheme.outlineVariant),
-        ),
-      ),
-      child: ValueListenableBuilder<int>(
+    // 卡片效果与阵容页底部汇总条统一：16 外边距 + Card + 内边距
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+          child: ValueListenableBuilder<int>(
         valueListenable: Stores.infoStore.incomeNotifier,
         builder: (context, _, _) {
           final income = Stores.infoStore.getCurrentUserDailyIncomeBreakdown();
@@ -49,6 +47,8 @@ class IncomeSummaryBar extends StatelessWidget {
             ],
           );
         },
+          ),
+        ),
       ),
     );
   }

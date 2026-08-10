@@ -12,7 +12,7 @@ class WaveStatusPage extends StatelessWidget {
 
   // ── 选择框选项 ──────────────────────────────────────────────────────────
 
-  static const _gameSpeedEntries = [(0, '2速'), (1, '2速+10广'), (2, '3速')];
+  static const _gameSpeedEntries = [(0, '2速'), (1, '2速 + 10广'), (2, '3速')];
   static const _chronoEntries = [
     (0, '白闹钟(+10%)'),
     (1, '黄闹钟(+14%)'),
@@ -27,7 +27,7 @@ class WaveStatusPage extends StatelessWidget {
     (5, '+4'),
     (6, '+5'),
   ];
-  static const _autoBattleEntries = [(true, '金挂(GAB) / 破挂(NAB)'), (false, '时挂(TAB)')];
+  static const _autoBattleEntries = [(true, '金挂(GAB) / 破挂(FAB)'), (false, '时挂(TAB)')];
 
   // 各选择框的 key：点击 ListTile 时定位按钮合成点击以打开下拉框
   static final _gameSpeedKey = GlobalKey();
@@ -202,9 +202,10 @@ class _ResultCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
-      elevation: 0,
-      color: colorScheme.primaryContainer,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      margin: EdgeInsets.zero,
+      // elevation: 0,
+      // color: colorScheme.primaryContainer,
+      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(

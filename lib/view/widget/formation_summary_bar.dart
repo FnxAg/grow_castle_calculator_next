@@ -40,117 +40,143 @@ class FormationSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 10.0),
-      decoration: BoxDecoration(
-        color: colorScheme.surfaceContainer,
-        border: Border(
-          top: BorderSide(color: colorScheme.outlineVariant),
-        ),
-      ),
-      child: Column(
-        children: [
-          _SummaryRow(
-            icon: Icons.emoji_events,
-            label: '总波数',
-            actions: [
-              _SmallIconButton(
-                icon: const Icon(Icons.edit),
-                tooltip: '修改总波数',
-                onPressed: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  showWaveEditDialog(
-                    context,
-                    title: '设置总波数',
-                    labelText: '总波数',
-                    fallback: 1,
-                    onSave: Stores.infoStore.setUserWave,
-                  );
-                },
-              ),
-              // 未配置用户（userId == 0）不显示联网查询按钮
-              if (Stores.infoStore.getCurrentUserId() != 0)
-                _SmallIconButton(
-                  icon: querying
-                      ? const SizedBox(
-                          width: 14.0,
-                          height: 14.0,
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        )
-                      : const Icon(Icons.cloud_sync),
-                  tooltip: '联网查询波数',
-                  onPressed: querying ? null : onQuery,
+    return Padding(
+      padding: const EdgeInsets.all(16.0),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+          child: Column(
+            children: [
+              _SummaryRow(
+                icon: Icons.emoji_events,
+                label: Text('总波数'),
+                actions: [
+                  _SmallIconButton(
+                    icon: const Icon(Icons.edit),
+                    tooltip: '修改总波数',
+                    onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      showWaveEditDialog(
+                        context,
+                        title: '设置总波数',
+                        labelText: '总波数',
+                        fallback: 1,
+                        onSave: Stores.infoStore.setUserWave,
+                      );
+                    },
+                  ),
+                  // 未配置用户（userId == 0）不显示联网查询按钮
+                  if (Stores.infoStore.getCurrentUserId() != 0)
+                    _SmallIconButton(
+                      icon: querying
+                          ? const SizedBox(
+                              width: 14.0,
+                              height: 14.0,
+                              child: CircularProgressIndicator(strokeWidth: 2.0),
+                            )
+                          : const Icon(Icons.cloud_sync),
+                      tooltip: '联网查询波数',
+                      onPressed: querying ? null : onQuery,
+                    ),
+                ],
+                value: ValueListenableBuilder<int>(
+                  valueListenable: Stores.infoStore.waveNotifier,
+                  builder: (context, wave, _) => _ValueText(text: wave.format()),
                 ),
-            ],
-            value: ValueListenableBuilder<int>(
-              valueListenable: Stores.infoStore.waveNotifier,
-              builder: (context, wave, _) => _ValueText(text: wave.format()),
-            ),
-          ),
-          _SummaryRow(
-            icon: Icons.eco,
-            label: '赛季波数',
-            actions: [
-              _SmallIconButton(
-                icon: const Icon(Icons.edit),
-                tooltip: '修改赛季波数',
-                onPressed: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  showWaveEditDialog(
-                    context,
-                    title: '设置赛季波数',
-                    labelText: '赛季波数',
-                    fallback: 0,
-                    onSave: Stores.infoStore.setCurrentUserSeasonWave,
-                  );
-                },
+              ),
+              _SummaryRow(
+                icon: Icons.eco,
+                label: Text('赛季波数'),
+                actions: [
+                  _SmallIconButton(
+                    icon: const Icon(Icons.edit),
+                    tooltip: '修改赛季波数',
+                    onPressed: () {
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      showWaveEditDialog(
+                        context,
+                        title: '设置赛季波数',
+                        labelText: '赛季波数',
+                        fallback: 0,
+                        onSave: Stores.infoStore.setCurrentUserSeasonWave,
+                      );
+                    },
+                  ),
+                ],
+                value: ValueListenableBuilder<int>(
+                  valueListenable: Stores.infoStore.seasonWaveNotifier,
+                  builder: (context, seasonWave, _) =>
+                      _ValueText(text: seasonWave.format()),
+                ),
+              ),
+              // 排名行：个人赛季 / 无尽 / 所属公会三类榜单有任一排名才显示；
+              // 联网数据返回后整行才出现，做入场过渡：卡片高度平滑展开 + 内容淡入上移
+              AnimatedSize(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeOutCubic,
+                alignment: Alignment.topCenter,
+                child: (playerRank != null ||
+                        hellRank != null ||
+                        guildRank != null)
+                    ? TweenAnimationBuilder<double>(
+                        tween: Tween(begin: 0.0, end: 1.0),
+                        duration: const Duration(milliseconds: 350),
+                        curve: Curves.easeOutCubic,
+                        builder: (context, value, child) => Opacity(
+                          opacity: value,
+                          child: Transform.translate(
+                            offset: Offset(0, 8 * (1 - value)),
+                            child: child,
+                          ),
+                        ),
+                        child: _RankRow(
+                          playerRank: playerRank,
+                          playerGapPrev: playerGapPrev,
+                          playerGapNext: playerGapNext,
+                          hellRank: hellRank,
+                          guildRank: guildRank,
+                        ),
+                      )
+                    : const SizedBox(width: double.infinity),
+              ),
+              _SummaryRow(
+                icon: Icons.monetization_on_outlined,
+                label: Text('总金币'),
+                value: ValueListenableBuilder<double>(
+                  valueListenable: Stores.infoStore.totalGoldNotifier,
+                  builder: (context, gold, _) => _ValueText(
+                    text: gold.formatCompact(fractionDigits: 2, english: false),
+                  ),
+                ),
+              ),
+              _SummaryRow(
+                icon: Icons.star,
+                // GP 与指数合并为一行展示，中间以 | 分隔
+                label: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Text('GP'),
+                    const Text(' | '),
+                    const Text('指数'),
+                  ],
+                ),
+                value: ListenableBuilder(
+                  listenable: Listenable.merge([
+                    Stores.infoStore.gpNotifier,
+                    Stores.infoStore.gpCNNotifier,
+                  ]),
+                  builder: (context, _) => _ValueText(
+                    text:
+                        '${Stores.infoStore.gpNotifier.value.format(fractionDigits: 3)}'
+                        ' | '
+                        '${Stores.infoStore.gpCNNotifier.value.format(fractionDigits: 3)}',
+                  ),
+                ),
               ),
             ],
-            value: ValueListenableBuilder<int>(
-              valueListenable: Stores.infoStore.seasonWaveNotifier,
-              builder: (context, seasonWave, _) =>
-                  _ValueText(text: seasonWave.format()),
-            ),
           ),
-          // 排名行：个人赛季 / 无尽 / 所属公会三类榜单有任一排名才显示
-          if (playerRank != null || hellRank != null || guildRank != null)
-            _RankRow(
-              playerRank: playerRank,
-              playerGapPrev: playerGapPrev,
-              playerGapNext: playerGapNext,
-              hellRank: hellRank,
-              guildRank: guildRank,
-            ),
-          _SummaryRow(
-            icon: Icons.monetization_on_outlined,
-            label: '总金币',
-            value: ValueListenableBuilder<double>(
-              valueListenable: Stores.infoStore.totalGoldNotifier,
-              builder: (context, gold, _) => _ValueText(
-                text: gold.formatCompact(fractionDigits: 2, english: false),
-              ),
-            ),
-          ),
-          _SummaryRow(
-            icon: Icons.star,
-            label: 'GP',
-            value: ValueListenableBuilder<double>(
-              valueListenable: Stores.infoStore.gpNotifier,
-              builder: (context, gp, _) =>
-                  _ValueText(text: gp.format(fractionDigits: 3)),
-            ),
-          ),
-          _SummaryRow(
-            icon: Icons.local_fire_department,
-            label: '指数',
-            value: ValueListenableBuilder<double>(
-              valueListenable: Stores.infoStore.gpCNNotifier,
-              builder: (context, gpCN, _) =>
-                  _ValueText(text: gpCN.format(fractionDigits: 3)),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }
@@ -212,7 +238,9 @@ class _SummaryRow extends StatelessWidget {
   });
 
   final IconData icon;
-  final String label;
+
+  /// 标签（可为组合文本，如合并行的 "GP | 指数" 分段布局）
+  final Widget label;
 
   /// 标签与数值之间的行内操作按钮（编辑/联网查询）
   final List<Widget> actions;
@@ -225,7 +253,7 @@ class _SummaryRow extends StatelessWidget {
       children: [
         Icon(icon, size: 20.0, color: colorScheme.primary),
         const SizedBox(width: 8.0),
-        Text(label),
+        label,
         const SizedBox(width: 8.0),
         for (var i = 0; i < actions.length; i++) ...[
           if (i > 0) const SizedBox(width: 4.0),
