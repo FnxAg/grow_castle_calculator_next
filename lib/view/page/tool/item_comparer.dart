@@ -310,7 +310,55 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('装备对比'),
+        title: Row(
+          children: [
+            const Text('装备对比'),
+            // const SizedBox(width: 8),
+            IconButton(
+              icon: const Icon(Icons.help_outline, size: 20),
+              tooltip: '使用说明',
+              onPressed: () => showDialog<void>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: const Text('使用说明'),
+                  content: const Text.rich(
+                    TextSpan(
+                      style: TextStyle(fontSize: 14),
+                      children: [
+                        TextSpan(
+                          text: '该工具用于对比两件装备的期望。\n\n',
+                        ),
+                        TextSpan(
+                          text: '使用步骤：\n',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                          text: '1. 确认需要对比的装备 / 宝珠 / 宝物槽位，然后将对应的物品卸下，根据此时的面板填写“无装备面板”数据；\n',
+                        ),
+                        TextSpan(
+                          text: '2. 将两件装备的白词条填写到“装备 1 / 装备 2”中，',
+                        ),
+                        TextSpan(
+                          text: '请注意词条类型，元素伤害统一并入 "Element Damage"，请自行根据单位属性填入对应元素伤害词条；\n',
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        TextSpan(
+                          text: '3. 对比结果：实时显示三组 DPS 结果，并给出结论。',
+                        ),
+                      ],
+                    ),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: const Text('关闭'),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
         actions: [
           IconButton(
             tooltip: '重置',

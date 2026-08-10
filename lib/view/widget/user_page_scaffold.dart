@@ -87,6 +87,21 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
                             ),
                           segments[i],
                         ],
+                        // 默认用户（未配置账号）：追加说明按钮，引导填写账号信息
+                        if (Stores.infoStore.getCurrentUserId() == 0) ...[
+                          const SizedBox(width: 4.0),
+                          SizedBox(
+                            height: 12.0,
+                            width: 12.0,
+                            child: IconButton(
+                              icon: const Icon(Icons.info_outline, size: 12.0),
+                              tooltip: '使用说明',
+                              padding: EdgeInsets.zero,
+                              constraints: const BoxConstraints(),
+                              onPressed: () => _showDefaultUserHint(context),
+                            ),
+                          ),
+                        ],
                       ],
                     );
                   },
@@ -116,6 +131,38 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
           ),
         );
       },
+    );
+  }
+
+  /// 默认用户说明弹窗：引导用户点击右上角「用户管理」创建并填写自己的账号
+  void _showDefaultUserHint(BuildContext context) {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('默认用户'),
+        content: const Text(
+          '当前为默认用户，仅用于体验基础功能。\n\n'
+          '请点击右上角「用户管理」按钮，填写游戏账号信息。',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('知道了'),
+          ),
+          TextButton(
+            onPressed: () {
+              final navigator = Navigator.of(dialogContext);
+              navigator.pop();
+              navigator.push(
+                MaterialPageRoute(
+                  builder: (context) => const SelectUserPage(),
+                ),
+              );
+            },
+            child: const Text('前往用户管理'),
+          ),
+        ],
+      ),
     );
   }
 }
