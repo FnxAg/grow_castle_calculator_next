@@ -235,12 +235,12 @@ class _GuildPageState extends State<GuildPage> {
           padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 8.0),
           child: Row(
             children: [
-              Icon(Icons.groups, size: 16.0, color: scheme.primary),
-              const SizedBox(width: 6.0),
-              Text(
-                '公会：$_guildName',
-                style: Theme.of(context).textTheme.bodySmall,
-              ),
+              // Icon(Icons.groups, size: 16.0, color: scheme.primary),
+              // const SizedBox(width: 6.0),
+              // Text(
+              //   '公会：$_guildName',
+              //   style: Theme.of(context).textTheme.bodySmall,
+              // ),
               // 公会榜排名（前 300 内才显示），前后为与上一名/下一名的分数差距
               if (_guildGapPrev != null) ...[
                 const SizedBox(width: 8.0),

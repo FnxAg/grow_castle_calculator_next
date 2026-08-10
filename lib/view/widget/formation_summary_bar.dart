@@ -152,12 +152,19 @@ class FormationSummaryBar extends StatelessWidget {
               ),
               _SummaryRow(
                 icon: Icons.star,
-                // GP 与指数合并为一行展示，中间以 | 分隔
+                // GP 与指数合并为一行展示，中间以主题色细竖线分隔
                 label: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     const Text('GP'),
-                    const Text(' | '),
+                    SizedBox(
+                      height: 14.0,
+                      child: VerticalDivider(
+                        width: 12.0,
+                        thickness: 1.0,
+                        color: Theme.of(context).colorScheme.outlineVariant,
+                      ),
+                    ),
                     const Text('指数'),
                   ],
                 ),
@@ -169,7 +176,7 @@ class FormationSummaryBar extends StatelessWidget {
                   builder: (context, _) => _ValueText(
                     text:
                         '${Stores.infoStore.gpNotifier.value.format(fractionDigits: 3)}'
-                        ' | '
+                        ' · '
                         '${Stores.infoStore.gpCNNotifier.value.format(fractionDigits: 3)}',
                   ),
                 ),

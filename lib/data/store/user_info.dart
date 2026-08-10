@@ -81,6 +81,8 @@ class InfoStore {
   final Map<int, String> _lastOnline = {};
   /// 当前用户"上次在线"时间通知（查询成功时格式化并固定，仅内存）
   final ValueNotifier<String> lastOnlineNotifier = ValueNotifier<String>('');
+  /// 当前用户所属公会变化通知（用户管理页修改公会时触发）
+  final ValueNotifier<String> guildNotifier = ValueNotifier<String>('');
 
   /// 卡片列表结构变化通知（新增/删除/排序），供卡片列表重建
   final ValueNotifier<int> cardIdsNotifier = ValueNotifier<int>(0);
@@ -131,6 +133,7 @@ class InfoStore {
     userData.guild = guild;
     if (userId == _currentUserId) {
       _guild = guild;
+      guildNotifier.value = guild;
     }
     _persistUser(userId);
   }
@@ -222,6 +225,7 @@ class InfoStore {
     _currentUser = userData.username;
     currentUserNotifier.value = userData.username;
     _guild = userData.guild;
+    guildNotifier.value = userData.guild;
 
     _cardIds = List<int>.from(userData.cardIds);
     _applyFlags = Map<int, bool>.from(userData.applyFlags);
