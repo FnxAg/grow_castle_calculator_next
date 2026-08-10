@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 桌面小组件元数据：
+     updatePeriodMillis 为系统定时刷新下限（30 分钟），更小值会被系统钳制；
+     targetCellWidth/Height 为默认尺寸（2x2），仅 API 31+ 生效；
+     minWidth/minHeight 为可缩小的下限，resizeMode 允许自由拖动调整。
+     布局始终全量显示，缩小时由 launcher 裁剪。 -->
+<appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    android:minWidth="110dp"
+    android:minHeight="40dp"
+    android:targetCellWidth="2"
+    android:targetCellHeight="2"
+    android:updatePeriodMillis="1800000"
+    android:initialLayout="@layout/widget_layout"
+    android:resizeMode="horizontal|vertical"
+    android:widgetCategory="home_screen"
+    android:description="@string/widget_description" />

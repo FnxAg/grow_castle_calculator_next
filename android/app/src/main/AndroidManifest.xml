@@ -35,6 +35,20 @@
         <meta-data
             android:name="flutterEmbedding"
             android:value="2" />
+        <!-- 桌面小组件：APPWIDGET_UPDATE 由系统定时发送（updatePeriodMillis 30 分钟），
+             刷新按钮走组件显式广播（见 WidgetStateProvider.ACTION_REFRESH），
+             无需在此声明 intent-filter -->
+        <receiver
+            android:name=".WidgetStateProvider"
+            android:exported="true"
+            android:label="@string/widget_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE"/>
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/gcc_widget_info" />
+        </receiver>
     </application>
     <!-- Required to query activities that can process text, see:
          https://developer.android.com/training/package-visibility and

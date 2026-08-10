@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 桌面小组件文案 -->
+    <string name="widget_label">GCC Next 数据</string>
+    <string name="widget_description">显示当前用户的总波数、赛季波数和在线情况</string>
+    <string name="widget_label_wave">总波数</string>
+    <string name="widget_label_season_wave">赛季波数</string>
+    <string name="widget_placeholder_username">打开应用查看数据</string>
+    <string name="widget_default_username">默认用户</string>
+    <string name="widget_default_user_hint">当前为默认用户，请打开应用创建自己的账号</string>
+    <string name="widget_refresh_desc">刷新</string>
+    <string name="widget_refreshing">刷新中…</string>
+    <string name="widget_ellipsis">…</string>
+    <string name="widget_dash">—</string>
+</resources>

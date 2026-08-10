@@ -5,6 +5,7 @@ import 'package:grow_castle_calculator_next/core/calc/gold_income.dart';
 import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/data/store/user_data.dart';
+import 'package:grow_castle_calculator_next/data/store/widget_snapshot.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 class InfoStore {
@@ -268,6 +269,7 @@ class InfoStore {
     waveStatusNotifier.value++;
     incomeNotifier.value++;
     _persistMeta();
+    _writeWidgetSnapshot();
   }
 
   /// 保存当前用户的数据到内存中
@@ -307,6 +309,7 @@ class InfoStore {
     currentState.goldenTree = _goldenTree;
     _persistUser(_currentUserId);
     _persistMeta();
+    _writeWidgetSnapshot();
     // print(_usersBox.toMap());
   }
 
@@ -325,6 +328,18 @@ class InfoStore {
     _saveDebounce?.cancel();
     _saveDebounce = null;
     _saveCurrentState();
+  }
+
+  /// 同步桌面小组件快照（fire-and-forget，内部已容错，见 WidgetSnapshot 注释）
+  void _writeWidgetSnapshot() {
+    WidgetSnapshot.write(
+      username: _currentUser,
+      wave: _wave,
+      seasonWave: _seasonWave,
+      lastOnline: _lastOnline[_currentUserId] ?? '',
+      // 默认用户（userId == 0）：小组件显示引导态而非联网抓取
+      isDefault: _currentUserId == 0,
+    );
   }
 
   /// 重置为默认用户
@@ -442,6 +457,8 @@ class InfoStore {
     if (_currentUserId == userId) {
       _currentUser = newUsername;
       currentUserNotifier.value = newUsername;
+      // flush() 在改名之前已落盘（快照还是旧用户名），此处显式补写
+      _writeWidgetSnapshot();
     }
     _persistUser(userId);
     _persistMeta();
@@ -903,6 +920,8 @@ class InfoStore {
   void setLastOnline(String lastOnline) {
     _lastOnline[_currentUserId] = lastOnline;
     lastOnlineNotifier.value = lastOnline;
+    // 不走 _saveCurrentState 的独立路径，需单独同步小组件快照
+    _writeWidgetSnapshot();
   }
 
   /// 获取当前条目的金币
