@@ -4,6 +4,7 @@ import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 
 /// 公会页：展示指定公会（[guildName] 为 null 时取当前用户所在公会）的成员信息，
@@ -45,6 +46,9 @@ class _GuildPageState extends State<GuildPage> {
   String? _error;
   String? _guildName;
 
+  /// 公会未配置的引导错误：按钮跳转「用户管理」而非重试
+  bool _emptyGuild = false;
+
   /// 公会榜单排名；不在前 300 内为 null（不显示）
   int? _guildRank;
 
@@ -72,13 +76,15 @@ class _GuildPageState extends State<GuildPage> {
     setState(() {
       _firstLoading = !hasContent;
       _error = null;
+      _emptyGuild = false;
     });
 
     if (guild.isEmpty) {
       setState(() {
         _firstLoading = false;
         if (!hasContent) {
-          _error = '当前用户未设置公会，请先到「用户管理」中填写公会名';
+          _error = _emptyGuildMessage();
+          _emptyGuild = true;
         }
       });
       return;
@@ -182,6 +188,15 @@ class _GuildPageState extends State<GuildPage> {
     };
   }
 
+  /// 公会为空时的提示：默认用户引导创建账号，普通用户引导填写公会
+  String _emptyGuildMessage() {
+    if (Stores.infoStore.getCurrentUserId() == 0) {
+      return '当前为默认用户，仅用于体验基础功能。\n'
+          '请点击右上角「用户管理」创建自己的账号，并填写公会名。';
+    }
+    return '当前用户未设置公会，请先到「用户管理」中填写公会名';
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_firstLoading) {
@@ -196,7 +211,7 @@ class _GuildPageState extends State<GuildPage> {
     return _buildMemberList();
   }
 
-  /// 查询失败提示 + 重试
+  /// 查询失败提示 + 操作按钮（公会未配置时跳转用户管理，网络类错误重试）
   Widget _buildError() {
     final scheme = Theme.of(context).colorScheme;
     return Center(
@@ -213,11 +228,26 @@ class _GuildPageState extends State<GuildPage> {
               style: TextStyle(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16.0),
-            FilledButton.icon(
-              onPressed: _load,
-              icon: const Icon(Icons.refresh),
-              label: const Text('重试'),
-            ),
+            // 公会未配置：跳转「用户管理」填写；网络类错误：重试
+            if (_emptyGuild)
+              FilledButton.icon(
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const SelectUserPage(),
+                    ),
+                  );
+                },
+                icon: const Icon(Icons.group),
+                label: const Text('前往用户管理'),
+              )
+            else
+              FilledButton.icon(
+                onPressed: _load,
+                icon: const Icon(Icons.refresh),
+                label: const Text('重试'),
+              ),
           ],
         ),
       ),

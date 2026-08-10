@@ -165,9 +165,11 @@ class _SelectUserPageState extends State<SelectUserPage> {
           );
         },
       ),
-      floatingActionButton: FloatingActionButton(
+      // extended 变体：宽度自适应内容（图标 + 文字 + 内边距）
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: _showAddUserDialog,
-        child: const Icon(Icons.add),
+        icon: const Icon(Icons.add),
+        label: const Text('添加用户'),
       ),
     );
   }
