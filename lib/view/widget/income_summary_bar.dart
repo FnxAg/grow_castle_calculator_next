@@ -11,7 +11,7 @@ class IncomeSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 卡片效果与阵容页底部汇总条统一：16 外边距 + Card + 内边距
+    // 卡片效果
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(

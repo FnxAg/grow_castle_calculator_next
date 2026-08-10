@@ -151,16 +151,28 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
         PlayerApiService.formatLastOnline(r.queryDate, DateTime.now());
     return ListView(
       children: [
-        _buildRow(Icons.local_fire_department, '总波数', r.wave.format()),
-        _buildRow(Icons.eco, '赛季波数', r.seasonalScore.format()),
-        _buildRow(Icons.schedule, '上次在线', lastOnline),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Card(
+            child: Padding(
+              padding: const EdgeInsets.fromLTRB(0, 8.0, 0, 8.0),
+              child: Column(
+                children: [
+                  _buildRow(Icons.emoji_events, '总波数', r.wave.format()),
+                  _buildRow(Icons.eco, '赛季波数', r.seasonalScore.format()),
+                  _buildRow(Icons.schedule, '上次在线', lastOnline),
+                ],
+              ),
+            ),
+          ),
+        ),
         // 第三方 API：赛季标题 + 每小时波速胶囊流（无数据/失败时整个区块不展示）
         if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
-          const Divider(),
+          // const Divider(),
           Padding(
             padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 4.0),
             child: Text(
-              '每小时波速（第三方API）',
+              '每小时波速（第三方 API）',
               style: Theme.of(context).textTheme.titleSmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -181,14 +193,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
             ),
           ],
         ],
-        // Padding(
-        //   padding: const EdgeInsets.all(16.0),
-        //   child: Text(
-        //     '数据为游戏内最新赛季数据，仅展示不写入本地存档',
-        //     textAlign: TextAlign.center,
-        //     style: TextStyle(fontSize: 12.0, color: scheme.onSurfaceVariant),
-        //   ),
-        // ),
       ],
     );
   }
