@@ -32,9 +32,14 @@ class FormationInputField extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       decoration: BoxDecoration(
-        color: colorScheme.primaryContainer,
+        color: enabled
+            ? colorScheme.primaryContainer
+            : colorScheme.surfaceContainerHighest,
         border: Border(
-          left: BorderSide(color: colorScheme.primary, width: 2.0),
+          left: BorderSide(
+            color: enabled ? colorScheme.primary : colorScheme.outlineVariant,
+            width: 2.0,
+          ),
         ),
       ),
       child: SelectAllTextField(
@@ -45,14 +50,15 @@ class FormationInputField extends StatelessWidget {
         maxLines: 1,
         focusNode: focusNode,
         inputFormatters: inputFormatters,
+        enabled: enabled,
         decoration: InputDecoration(
           border: InputBorder.none,
           labelText: labelText,
           focusedBorder: InputBorder.none,
-          filled: true,
           disabledBorder: InputBorder.none,
           enabled: enabled,
-          isDense: true
+          isDense: true,
+          contentPadding: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
         ),
       ),
     );

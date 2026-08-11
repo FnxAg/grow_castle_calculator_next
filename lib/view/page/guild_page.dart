@@ -44,7 +44,6 @@ class _GuildPageState extends State<GuildPage> {
   /// 首屏加载中（仅当界面尚无任何内容时显示全屏转圈）
   bool _firstLoading = true;
   String? _error;
-  String? _guildName;
 
   /// 公会未配置的引导错误：按钮跳转「用户管理」而非重试
   bool _emptyGuild = false;
@@ -103,7 +102,6 @@ class _GuildPageState extends State<GuildPage> {
     String? refreshFailure;
     setState(() {
       _firstLoading = false;
-      _guildName = guild;
 
       // 玩家赛季榜 / 无尽榜索引，供成员行查询各自排名
       _playerRankByName = {};
