@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
@@ -55,7 +56,9 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
           content: SelectAllTextField(
             controller: controller,
             keyboardType: TextInputType.number,
-            decoration: const InputDecoration(helperText: '0-9'),
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(helperText: '0-9', labelText: '每波金币收入'),
+            autofocus: true,
           ),
           actions: [
             TextButton(
