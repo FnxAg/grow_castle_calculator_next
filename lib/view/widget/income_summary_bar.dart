@@ -11,7 +11,7 @@ class IncomeSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // 卡片效果
+    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(
@@ -24,24 +24,33 @@ class IncomeSummaryBar extends StatelessWidget {
           final income = Stores.infoStore.getCurrentUserDailyIncomeBreakdown();
           return Column(
             children: [
+              Center(
+                child: Text(
+                  "每日收入",
+                  style: TextStyle(
+                    color: scheme.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
               _IncomeRow(
                 icon: Icons.terrain,
-                label: '每日殖民地收入',
+                label: '殖民地',
                 value: income.colony,
               ),
               _IncomeRow(
                 icon: Icons.bolt,
-                label: '每日挂机收入',
+                label: '推波',
                 value: income.autoBattle,
               ),
               _IncomeRow(
                 icon: Icons.park,
-                label: '每日其他收入',
+                label: '其他',
                 value: income.other,
               ),
               _IncomeRow(
                 icon: Icons.monetization_on_outlined,
-                label: '每日总收入',
+                label: '总收入',
                 value: income.total,
               ),
             ],

@@ -6,23 +6,29 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
+import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 /// 公会页：展示指定公会（[guildName] 为 null 时取当前用户所在公会）的成员信息，
 /// 进入时读取缓存（无缓存则立即抓取），按赛季波数（score）从大到小排列；
 /// 头部信息条显示公会排名（前 300 内）。成员行可点击进入玩家详情页。
 /// 手动刷新（下拉/重试）不会顶掉已有内容，失败仅提示并保留旧数据。
 class GuildPage extends StatefulWidget {
-  const GuildPage({super.key, this.guildName});
+  const GuildPage({super.key, this.guildName, this.userHeader = true});
 
   /// 要展示的公会名；为 null 时使用当前用户设置的公会（首页公会 tab 场景）
   final String? guildName;
+
+  /// 是否自带用户页外壳（AppBar 用户名头部 + 赛季进度）。
+  /// 作为公会榜详情页嵌入其他 Scaffold 时传 false，由外层提供 AppBar。
+  final bool userHeader;
 
   @override
   State<GuildPage> createState() => _GuildPageState();
 }
 
 /// 公会成员详情页（带 AppBar 的完整路由壳），供工具页公会榜点击进入；
-/// 内部复用 [GuildPage] 的加载与展示逻辑。
+/// 内部复用 [GuildPage] 的加载与展示逻辑（不自带用户页外壳）。
 class GuildDetailPage extends StatelessWidget {
   const GuildDetailPage({super.key, required this.guildName});
 
@@ -35,7 +41,7 @@ class GuildDetailPage extends StatelessWidget {
         title: Text(guildName),
         // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
-      body: GuildPage(guildName: guildName),
+      body: GuildPage(guildName: guildName, userHeader: false),
     );
   }
 }
@@ -55,8 +61,10 @@ class _GuildPageState extends State<GuildPage> {
   int? _guildGapPrev;
   int? _guildGapNext;
   List<GuildMember> _members = const [];
+
   /// 玩家赛季榜索引：玩家名(小写) → 排名
   Map<String, int> _playerRankByName = {};
+
   /// 无尽榜索引：玩家名(小写) → 排名
   Map<String, int> _hellRankByName = {};
 
@@ -155,9 +163,9 @@ class _GuildPageState extends State<GuildPage> {
     });
 
     if (refreshFailure != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('刷新失败：$refreshFailure')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('刷新失败：$refreshFailure')));
     }
   }
 
@@ -190,23 +198,33 @@ class _GuildPageState extends State<GuildPage> {
   String _emptyGuildMessage() {
     if (Stores.infoStore.getCurrentUserId() == 0) {
       return '当前为默认用户，仅用于体验基础功能。\n'
-          '请点击右上角「用户管理」创建自己的账号，并填写公会名。';
+          '请到「设置」页的「用户管理」创建自己的账号，并填写公会名。';
     }
     return '当前用户未设置公会，请先到「用户管理」中填写公会名';
   }
 
   @override
   Widget build(BuildContext context) {
+    final Widget body;
     if (_firstLoading) {
-      return const Center(child: CircularProgressIndicator());
+      body = const Center(child: CircularProgressIndicator());
+    } else if (_error != null) {
+      body = _buildError();
+    } else if (_members.isEmpty) {
+      body = const Center(child: Text('该公会暂无成员'));
+    } else {
+      body = _buildMemberList();
     }
-    if (_error != null) {
-      return _buildError();
+    // 作为公会榜详情页嵌入外层 Scaffold 时，不带用户页外壳
+    if (!widget.userHeader) {
+      return body;
     }
-    if (_members.isEmpty) {
-      return const Center(child: Text('该公会暂无成员'));
-    }
-    return _buildMemberList();
+    return UserPageScaffold(
+      title: '公会',
+      // AppBar action 区：公会赛季进度（点击查看详情）
+      actions: [SeasonIndicator(notifier: RankingCache.guildSeasonNotifier)],
+      body: body,
+    );
   }
 
   /// 查询失败提示 + 操作按钮（公会未配置时跳转用户管理，网络类错误重试）
@@ -316,9 +334,9 @@ class _GuildPageState extends State<GuildPage> {
               const Spacer(),
               Text(
                 '${_members.length} 人',
-                style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: scheme.onSurfaceVariant,
-                    ),
+                style: Theme.of(
+                  context,
+                ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
               ),
             ],
           ),

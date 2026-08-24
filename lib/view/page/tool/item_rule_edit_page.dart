@@ -16,7 +16,7 @@ Color lineColorOf(LineColor color) => switch (color) {
 const _typeLabels = <ItemType, String>{
   ItemType.bow: '弓',
   ItemType.sword: '剑',
-  ItemType.staff: '法杖',
+  ItemType.staff: '杖',
   ItemType.hammer: '锤',
   ItemType.ring: '戒指',
   ItemType.necklace: '项链',

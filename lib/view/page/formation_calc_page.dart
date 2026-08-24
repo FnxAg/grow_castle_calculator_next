@@ -5,10 +5,11 @@ import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_card_tile.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_summary_bar.dart';
+import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 /// 阵容经济计算页：卡片列表（名称/等级输入）与底部汇总条。
 ///
-/// 作为首页 tab 由 UserPageScaffold 挂载；输入框控制器与焦点按卡片 id 缓存在
+/// 作为首页 tab 自带 UserPageScaffold 外壳；输入框控制器与焦点按卡片 id 缓存在
 /// State 中，切换用户时 UserPageScaffold 通过更换 key 重建本页，控制器随之释放。
 class FormationCalcPage extends StatefulWidget {
   const FormationCalcPage({super.key});
@@ -37,7 +38,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
 
   TextEditingController _numberControllerFor(int id) {
     return _numberControllers.putIfAbsent(id, () {
-      final c = TextEditingController(text: Stores.infoStore.getNumberValue(id));
+      final c = TextEditingController(
+        text: Stores.infoStore.getNumberValue(id),
+      );
       c.addListener(() {
         Stores.infoStore.setNumberValue(id, c.text);
       });
@@ -199,9 +202,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     final now = DateTime.now();
     final last = _lastQueryAt;
     if (last != null && now.difference(last) < _queryCooldown) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('查询过于频繁，请稍后后再试')),
-      );
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text('查询过于频繁，请稍后后再试')));
       return;
     }
     // 先记录时间再发起请求：查询进行中也同样受冷却保护
@@ -227,9 +230,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       // 封禁检测：仅标记「已封禁」（AppBar 副标题展示），不写入波数
       if (result.wave == 0 && result.queryDate.isEmpty) {
         if (!silent) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('用户「$name」已被封禁')),
-          );
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('用户「$name」已被封禁')));
         }
         return;
       }
@@ -238,7 +241,11 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       _loadRanks(force: !silent);
       if (!silent) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}')),
+          SnackBar(
+            content: Text(
+              '数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}',
+            ),
+          ),
         );
       }
     } else if (result is QueryError) {
@@ -260,75 +267,86 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        // 卡片列表监听 store 的结构变化（新增/删除/排序），自动重建
-        Expanded(
-          child: ValueListenableBuilder<int>(
-            valueListenable: Stores.infoStore.cardIdsNotifier,
-            builder: (context, _, _) {
-              final cardIds = Stores.infoStore.getCardIds();
-              if (cardIds.isEmpty) {
-                return const Center(
-                  child: Text(
-                    '暂无条目，点击右上角 + 添加',
-                    style: TextStyle(color: Colors.grey),
-                  ),
-                );
-              }
-              return ReorderableListView.builder(
-                itemCount: cardIds.length,
-                proxyDecorator: (child, index, animation) {
-                  return AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) {
-                      final double elevation = 4.0 * animation.value;
-                      return Material(
-                        elevation: elevation,
-                        shadowColor: Colors.black26,
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: IgnorePointer(child: child),
-                      );
-                    },
-                    child: child,
-                  );
-                },
-                onReorderItem: (oldIndex, newIndex) {
-                  // 拖拽前先清除焦点，避免 TextField 的 FocusNode
-                  // 在 widget 临时脱离树时产生不一致状态导致崩溃
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  Stores.infoStore.reorderCard(oldIndex, newIndex);
-                },
-                itemBuilder: (context, index) {
-                  final id = cardIds[index];
-                  return FormationCardTile(
-                    // ReorderableListView 要求每个列表项（直接子项）有唯一 key
-                    key: ValueKey(id),
-                    id: id,
-                    index: index,
-                    textController: _textControllerFor(id),
-                    numberController: _numberControllerFor(id),
-                    textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                    numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                    onRemove: _removeCard,
-                  );
-                },
-                buildDefaultDragHandles: false,
-                scrollDirection: .vertical,
-              );
-            },
-          ),
-        ),
-        FormationSummaryBar(
-          querying: _querying,
-          playerRank: _playerRank,
-          playerGapPrev: _playerGapPrev,
-          playerGapNext: _playerGapNext,
-          hellRank: _hellRank,
-          guildRank: _guildRank,
-          onQuery: _queryOnline,
+    return UserPageScaffold(
+      title: '阵容',
+      // 新增条目按钮：列表重建由 store 的 cardIdsNotifier 驱动
+      actions: [
+        IconButton(
+          icon: const Icon(Icons.add),
+          tooltip: '新增条目',
+          onPressed: () => Stores.infoStore.addNewCard(),
         ),
       ],
+      body: Column(
+        children: [
+          // 卡片列表监听 store 的结构变化（新增/删除/排序），自动重建
+          Expanded(
+            child: ValueListenableBuilder<int>(
+              valueListenable: Stores.infoStore.cardIdsNotifier,
+              builder: (context, _, _) {
+                final cardIds = Stores.infoStore.getCardIds();
+                if (cardIds.isEmpty) {
+                  return const Center(
+                    child: Text(
+                      '暂无条目，点击右上角 + 添加',
+                      style: TextStyle(color: Colors.grey),
+                    ),
+                  );
+                }
+                return ReorderableListView.builder(
+                  itemCount: cardIds.length,
+                  proxyDecorator: (child, index, animation) {
+                    return AnimatedBuilder(
+                      animation: animation,
+                      builder: (context, child) {
+                        final double elevation = 4.0 * animation.value;
+                        return Material(
+                          elevation: elevation,
+                          shadowColor: Colors.black26,
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: IgnorePointer(child: child),
+                        );
+                      },
+                      child: child,
+                    );
+                  },
+                  onReorderItem: (oldIndex, newIndex) {
+                    // 拖拽前先清除焦点，避免 TextField 的 FocusNode
+                    // 在 widget 临时脱离树时产生不一致状态导致崩溃
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    Stores.infoStore.reorderCard(oldIndex, newIndex);
+                  },
+                  itemBuilder: (context, index) {
+                    final id = cardIds[index];
+                    return FormationCardTile(
+                      // ReorderableListView 要求每个列表项（直接子项）有唯一 key
+                      key: ValueKey(id),
+                      id: id,
+                      index: index,
+                      textController: _textControllerFor(id),
+                      numberController: _numberControllerFor(id),
+                      textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                      numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                      onRemove: _removeCard,
+                    );
+                  },
+                  buildDefaultDragHandles: false,
+                  scrollDirection: .vertical,
+                );
+              },
+            ),
+          ),
+          FormationSummaryBar(
+            querying: _querying,
+            playerRank: _playerRank,
+            playerGapPrev: _playerGapPrev,
+            playerGapNext: _playerGapNext,
+            hellRank: _hellRank,
+            guildRank: _guildRank,
+            onQuery: _queryOnline,
+          ),
+        ],
+      ),
     );
   }
 }

@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
-import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
-/// app 根外壳：PageView（阵容/收入/公会/工具/设置）+ 底部导航。
-/// 与当前用户相关的页面（阵容/收入/公会）由 [UserPageScaffold] 挂载，
-/// 其余页面自带独立 Scaffold。
+/// app 根外壳：PageView（阵容/功能/公会/工具/设置）+ 底部导航。
+/// 各页面自带独立 Scaffold（用户相关页面内部自包 UserPageScaffold）。
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -36,16 +34,7 @@ class _MainShellState extends State<MainShell> {
         },
         // 相邻页保活：保留各页输入状态，并支持左右滑动切换
         allowImplicitScrolling: true,
-        children: [
-          for (final page in mainPages)
-            page.userPage
-                ? UserPageScaffold(
-                    title: page.title,
-                    actions: page.actionsBuilder?.call(context) ?? const [],
-                    body: page.builder(context),
-                  )
-                : page.builder(context),
-        ],
+        children: [for (final page in mainPages) page.builder(context)],
       ),
       bottomNavigationBar: ListenableBuilder(
         listenable: _selectIndex,
@@ -66,10 +55,7 @@ class _MainShellState extends State<MainShell> {
             labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
             destinations: [
               for (final page in mainPages)
-                NavigationDestination(
-                  icon: Icon(page.icon),
-                  label: page.title,
-                ),
+                NavigationDestination(icon: Icon(page.icon), label: page.title),
             ],
           );
         },

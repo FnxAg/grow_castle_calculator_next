@@ -3,7 +3,7 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 
 /// 与当前用户数据相关页面的公共框架（首页三个 tab：阵容/收入/公会）：
-/// AppBar = 页面标题 + 用户名/上次在线/所属公会 + 页面声明的操作按钮 + 用户管理入口，
+/// AppBar = 页面标题 + 用户名/上次在线/所属公会 + 页面声明的操作按钮，
 /// 可选 [bottom]（如 TabBar）挂在 AppBar 底部。
 ///
 /// 全局监听 store 的 currentUserNotifier：切换用户时所有用户页外壳一起重建
@@ -111,17 +111,6 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
             actions: [
               // 当前页面声明的操作按钮
               ...widget.actions,
-              // 用户管理入口：三个用户页面共享
-              IconButton(
-                icon: const Icon(Icons.group),
-                tooltip: '用户管理',
-                onPressed: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const SelectUserPage()),
-                  );
-                },
-              ),
             ],
           ),
           // 切换用户后用户名变化 → key 变化 → 页面整体重建（控制器/焦点随之释放）
@@ -134,7 +123,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
     );
   }
 
-  /// 默认用户说明弹窗：引导用户点击右上角「用户管理」创建并填写自己的账号
+  /// 默认用户说明弹窗：引导用户到「设置」页的用户管理创建并填写自己的账号
   void _showDefaultUserHint(BuildContext context) {
     showDialog<void>(
       context: context,
@@ -142,7 +131,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
         title: const Text('默认用户'),
         content: const Text(
           '当前为默认用户，仅用于体验基础功能。\n\n'
-          '请点击右上角「用户管理」按钮，填写游戏账号信息。',
+          '请前往「设置」页的「用户管理」，填写游戏账号信息。',
         ),
         actions: [
           TextButton(

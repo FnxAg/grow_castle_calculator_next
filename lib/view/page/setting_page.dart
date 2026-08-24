@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:grow_castle_calculator_next/core/service/update_checker.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
+import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/about_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
@@ -173,6 +174,20 @@ class _SettingPageState extends State<SettingPage> {
       ),
       body: ListView(
         children: [
+          // 用户管理：创建/切换游戏账号（从用户页 AppBar 迁移至此）
+          ListTile(
+            leading: const Icon(Icons.group),
+            title: const Text('用户管理'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              // 先释放焦点：避免页面切走后焦点恢复，
+              // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const SelectUserPage()),
+              );
+            },
+          ),
           const ListTile(
             leading: Icon(Icons.color_lens),
             title: Text('主题模式'),
