@@ -37,7 +37,7 @@ class _AboutPageState extends State<AboutPage> {
         _linkEntry(
           Icons.menu_book_outlined,
           '使用说明',
-          'https://blog.fnxag.eu.org/posts/gcc-next-guide/',
+          'https://ariyara.cc/posts/gcc-next-guide/',
         ),
         _AboutEntry(
           icon: Icons.api,
