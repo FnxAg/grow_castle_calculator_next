@@ -274,6 +274,44 @@ class _GuildPageState extends State<GuildPage> {
   Widget _buildMemberList() {
     final scheme = Theme.of(context).colorScheme;
     final currentUser = Stores.infoStore.getCurrentUsername();
+    // 公会成员赛季波数总和（成员行右侧展示的就是各自 score）
+    final totalScore = _members.fold<int>(0, (sum, m) => sum + m.score);
+    const chipTextStyle = TextStyle(
+      fontSize: 11.0,
+      fontWeight: FontWeight.w600,
+    );
+    // 公会榜排名胶囊与其前置间距成对收集；间距只插在胶囊之间，
+    // 第一个胶囊前不追加 SizedBox（紧跟行首对齐左缘）
+    final chips = <(Widget, double)>[
+      if (_guildGapPrev != null)
+        (
+          PillChip(
+            backgroundColor: Colors.red,
+            foreground: Colors.white,
+            icon: Icons.arrow_upward,
+            text: Text(_guildGapPrev!.format(), style: chipTextStyle),
+          ),
+          8.0,
+        ),
+      if (_guildRank != null)
+        (
+          PillChip(
+            text: Text('#$_guildRank', style: chipTextStyle),
+            icon: Icons.flag_circle,
+          ),
+          4.0,
+        ),
+      if (_guildGapNext != null)
+        (
+          PillChip(
+            backgroundColor: Colors.green,
+            foreground: Colors.white,
+            icon: Icons.arrow_downward,
+            text: Text(_guildGapNext!.format(), style: chipTextStyle),
+          ),
+          4.0,
+        ),
+    ];
     return Column(
       children: [
         // 公会名 + 公会排名（前 300 内）+ 成员数
@@ -288,55 +326,17 @@ class _GuildPageState extends State<GuildPage> {
               //   style: Theme.of(context).textTheme.bodySmall,
               // ),
               // 公会榜排名（前 300 内才显示），前后为与上一名/下一名的分数差距
-              if (_guildGapPrev != null) ...[
-                const SizedBox(width: 8.0),
-                PillChip(
-                  backgroundColor: Colors.red,
-                  foreground: Colors.white,
-                  icon: Icons.arrow_upward,
-                  text: Text(
-                    _guildGapPrev!.format(),
-                    style: const TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
-              ],
-              if (_guildRank != null) ...[
-                const SizedBox(width: 4.0),
-                PillChip(
-                  text: Text(
-                    '#$_guildRank',
-                    style: const TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                  icon: Icons.flag_circle,
-                ),
-              ],
-              if (_guildGapNext != null) ...[
-                const SizedBox(width: 4.0),
-                PillChip(
-                  backgroundColor: Colors.green,
-                  foreground: Colors.white,
-                  icon: Icons.arrow_downward,
-                  text: Text(
-                    _guildGapNext!.format(),
-                    style: const TextStyle(
-                      fontSize: 11.0,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
-                ),
+              for (var i = 0; i < chips.length; i++) ...[
+                chips[i].$1,
+                // 间距取下一个胶囊的原始前置间距：只插在胶囊之间
+                if (i < chips.length - 1) SizedBox(width: chips[i + 1].$2),
               ],
               const Spacer(),
               Text(
-                '${_members.length} 人',
+                '${_members.length} 人 · ${totalScore.format()}',
                 style: Theme.of(
                   context,
-                ).textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+                ).textTheme.bodySmall?.copyWith(color: scheme.primary),
               ),
             ],
           ),

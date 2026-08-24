@@ -73,7 +73,9 @@ class FormationSummaryBar extends StatelessWidget {
                           ? const SizedBox(
                               width: 14.0,
                               height: 14.0,
-                              child: CircularProgressIndicator(strokeWidth: 2.0),
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                              ),
                             )
                           : const Icon(Icons.cloud_sync),
                       tooltip: '联网查询波数',
@@ -82,7 +84,8 @@ class FormationSummaryBar extends StatelessWidget {
                 ],
                 value: ValueListenableBuilder<int>(
                   valueListenable: Stores.infoStore.waveNotifier,
-                  builder: (context, wave, _) => _ValueText(text: wave.format()),
+                  builder: (context, wave, _) =>
+                      _ValueText(text: wave.format()),
                 ),
               ),
               _SummaryRow(
@@ -116,7 +119,8 @@ class FormationSummaryBar extends StatelessWidget {
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeOutCubic,
                 alignment: Alignment.topCenter,
-                child: (playerRank != null ||
+                child:
+                    (playerRank != null ||
                         hellRank != null ||
                         guildRank != null)
                     ? TweenAnimationBuilder<double>(
@@ -211,10 +215,7 @@ Future<void> showWaveEditDialog(
           autofocus: true,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(
-            labelText: labelText,
-            helperText: '0-9',
-          ),
+          decoration: InputDecoration(labelText: labelText, helperText: '0-9'),
         ),
         actions: [
           TextButton(
@@ -296,6 +297,56 @@ class _RankRow extends StatelessWidget {
       fontSize: 11.0,
       fontWeight: FontWeight.w600,
     );
+    // 可见胶囊与其后的间距成对收集；间距只插在胶囊之间，
+    // 最后一个胶囊后不再追加 SizedBox
+    final chips = <(Widget, double)>[
+      // 个人赛季榜：与上一名/下一名的分数差距（首尾无对应名次则隐藏）
+      if (playerGapPrev != null)
+        (
+          PillChip(
+            backgroundColor: Colors.red,
+            foreground: Colors.white,
+            icon: Icons.arrow_upward,
+            text: Text(playerGapPrev!.format(), style: chipTextStyle),
+          ),
+          4.0,
+        ),
+      if (playerRank != null)
+        (
+          PillChip(
+            text: Text('#$playerRank', style: chipTextStyle),
+            icon: Icons.eco,
+          ),
+          4.0,
+        ),
+      if (playerGapNext != null)
+        (
+          PillChip(
+            backgroundColor: Colors.green,
+            foreground: Colors.white,
+            icon: Icons.arrow_downward,
+            text: Text(playerGapNext!.format(), style: chipTextStyle),
+          ),
+          8.0,
+        ),
+      if (hellRank != null)
+        (
+          PillChip(
+            text: Text('#$hellRank', style: chipTextStyle),
+            // 无尽模式：∞ 无限符号
+            icon: Icons.all_inclusive,
+          ),
+          8.0,
+        ),
+      if (guildRank != null)
+        (
+          PillChip(
+            text: Text('#$guildRank', style: chipTextStyle),
+            icon: Icons.flag_circle,
+          ),
+          8.0,
+        ),
+    ];
     return Row(
       children: [
         Icon(Icons.leaderboard, size: 20.0, color: colorScheme.primary),
@@ -311,52 +362,9 @@ class _RankRow extends StatelessWidget {
               child: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  // 个人赛季榜：与上一名/下一名的分数差距（首尾无对应名次则隐藏）
-                  if (playerGapPrev != null) ...[
-                    PillChip(
-                      backgroundColor: Colors.red,
-                      foreground: Colors.white,
-                      icon: Icons.arrow_upward,
-                      text: Text(
-                        playerGapPrev!.format(),
-                        style: chipTextStyle,
-                      ),
-                    ),
-                    const SizedBox(width: 4.0),
-                  ],
-                  if (playerRank != null) ...[
-                    PillChip(
-                      text: Text('#$playerRank', style: chipTextStyle),
-                      icon: Icons.eco,
-                    ),
-                    const SizedBox(width: 4.0),
-                  ],
-                  if (playerGapNext != null) ...[
-                    PillChip(
-                      backgroundColor: Colors.green,
-                      foreground: Colors.white,
-                      icon: Icons.arrow_downward,
-                      text: Text(
-                        playerGapNext!.format(),
-                        style: chipTextStyle,
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                  ],
-                  if (hellRank != null) ...[
-                    PillChip(
-                      text: Text('#$hellRank', style: chipTextStyle),
-                      // 无尽模式：∞ 无限符号
-                      icon: Icons.all_inclusive,
-                    ),
-                    const SizedBox(width: 8.0),
-                  ],
-                  if (guildRank != null) ...[
-                    PillChip(
-                      text: Text('#$guildRank', style: chipTextStyle),
-                      icon: Icons.flag_circle,
-                    ),
-                    const SizedBox(width: 8.0),
+                  for (var i = 0; i < chips.length; i++) ...[
+                    chips[i].$1,
+                    if (i < chips.length - 1) SizedBox(width: chips[i].$2),
                   ],
                 ],
               ),
