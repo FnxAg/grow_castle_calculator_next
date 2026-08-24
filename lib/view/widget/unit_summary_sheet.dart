@@ -53,15 +53,15 @@ class _UnitSummarySheet extends StatelessWidget {
     return Column(
       children: [
         // 拖拽把手
-        Container(
-          margin: const EdgeInsets.only(top: 8.0),
-          width: 36.0,
-          height: 4.0,
-          decoration: BoxDecoration(
-            color: theme.colorScheme.outlineVariant,
-            borderRadius: BorderRadius.circular(2.0),
-          ),
-        ),
+        // Container(
+        //   margin: const EdgeInsets.only(top: 8.0),
+        //   width: 36.0,
+        //   height: 4.0,
+        //   decoration: BoxDecoration(
+        //     color: theme.colorScheme.outlineVariant,
+        //     borderRadius: BorderRadius.circular(2.0),
+        //   ),
+        // ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 8.0),
           child: Row(
@@ -245,7 +245,7 @@ Widget _metric(ThemeData theme, String label, String value, bool applied) {
   );
   return Expanded(
     child: Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
         Text(label, style: labelStyle),
         const SizedBox(width: 4.0),
