@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
 
 /// app 根外壳：PageView（阵容/功能/公会/工具/设置）+ 底部导航。

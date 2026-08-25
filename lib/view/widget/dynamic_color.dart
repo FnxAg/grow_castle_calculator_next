@@ -1,5 +1,5 @@
 import 'package:flutter/services.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 class NativeDynamicColorUtil {
   static const MethodChannel _channel = MethodChannel("fnxag.dynamic_color/native");

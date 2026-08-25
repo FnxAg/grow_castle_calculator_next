@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 通用胶囊徽标：主题色圆角胶囊 + 可选前置图标 + 文本内容。
 ///
