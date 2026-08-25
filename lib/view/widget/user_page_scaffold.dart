@@ -62,9 +62,14 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
                         style: const TextStyle(fontSize: 12.0),
                       ),
                       if (lastOnline.isNotEmpty)
-                        Text(
-                          lastOnline,
-                          style: const TextStyle(fontSize: 12.0),
+                        AnimatedSize(
+                          duration: const Duration(milliseconds: 300),
+                          curve: Curves.easeOutCubic,
+                          alignment: Alignment.topCenter,
+                          child: Text(
+                            lastOnline,
+                            style: const TextStyle(fontSize: 12.0),
+                          ),
                         ),
                       if (guild.isNotEmpty)
                         Text(guild, style: const TextStyle(fontSize: 12.0)),
