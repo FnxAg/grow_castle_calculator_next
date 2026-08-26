@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -164,6 +165,52 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  /// 弹出"查询并发数"编辑对话框（公会成员"上次在线"同时查询的请求数）
+  void _showConcurrencyDialog(BuildContext context, AppSettingsStore store) {
+    // 先释放焦点：避免对话框关闭后焦点恢复，
+    // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
+    FocusManager.instance.primaryFocus?.unfocus();
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        // 控制器在 builder 内创建、随对话框路由销毁后由 GC 回收（同 API 地址对话框）
+        final controller = TextEditingController(
+          text: '${store.lastOnlineConcurrencyNotifier.value}',
+        );
+        return AlertDialog(
+          title: const Text('查询并发数'),
+          content: SelectAllTextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: '并发数',
+              helperText: '1-10',
+              isDense: true,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = int.tryParse(controller.text);
+                if (value != null) {
+                  store.setLastOnlineConcurrency(value);
+                }
+                Navigator.of(context).pop();
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appSettingsStore = Stores.appSettingsStore;
@@ -248,6 +295,47 @@ class _SettingPageState extends State<SettingPage> {
                   value: enabled,
                   onChanged: appSettingsStore.setThirdPartyApiEnabled,
                 ),
+              );
+            },
+          ),
+          // 自动查询上次在线：公会成员列表加载后自动逐人查询"上次在线"
+          ValueListenableBuilder<bool>(
+            valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
+            builder: (context, enabled, _) {
+              return ListTile(
+                leading: const Icon(Icons.schedule),
+                title: const Text('自动查询上次在线'),
+                subtitle: const Text('公会成员列表加载后自动查询各成员"上次在线"'),
+                trailing: Switch(
+                  value: enabled,
+                  onChanged: appSettingsStore.setAutoLastOnlineEnabled,
+                ),
+              );
+            },
+          ),
+          // 查询并发数：公会成员"上次在线"同时进行的请求数
+          ValueListenableBuilder<int>(
+            valueListenable: appSettingsStore.lastOnlineConcurrencyNotifier,
+            builder: (context, concurrency, _) {
+              return ValueListenableBuilder(
+                valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
+                builder: (context, value, child) {
+                  return ListTile(
+                    enabled: appSettingsStore.autoLastOnlineEnabledNotifier.value,
+                    leading: const Icon(Icons.network_check),
+                    title: const Text('查询并发数'),
+                    subtitle: const Text('公会成员"上次在线"同时查询的请求数'),
+                    trailing: Text(
+                      '$concurrency',
+                      style: const TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 16.0,
+                        ),
+                  
+                    ),
+                    onTap: () => _showConcurrencyDialog(context, appSettingsStore),
+                  );
+                }
               );
             },
           ),

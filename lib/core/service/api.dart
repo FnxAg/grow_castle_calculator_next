@@ -539,11 +539,11 @@ class PlayerApiService {
     try {
       final dt = DateTime.parse(rawDate);
       final diff = now.difference(dt);
-      if (diff.inDays > 0) return '${diff.inDays}d ago';
-      if (diff.inHours > 0) return '${diff.inHours}h ago';
-      if (diff.inMinutes > 0) return '${diff.inMinutes}min ago';
+      if (diff.inDays > 0) return '${diff.inDays}d';
+      if (diff.inHours > 0) return '${diff.inHours}h';
+      if (diff.inMinutes > 0) return '${diff.inMinutes}min';
       final secs = diff.inSeconds;
-      return '${secs > 0 ? secs : 0}s ago';
+      return '${secs > 0 ? secs : 0}s';
     } catch (_) {
       return '';
     }

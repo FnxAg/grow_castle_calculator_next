@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
+import 'package:grow_castle_calculator_next/core/service/last_online_cache.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
@@ -68,6 +69,37 @@ class _GuildPageState extends State<GuildPage> {
   /// 无尽榜索引：玩家名(小写) → 排名
   Map<String, int> _hellRankByName = {};
 
+  /// 成员「上次在线」展示串索引：玩家名(小写) →
+  /// null = 未知/加载中；'' = 封禁/无数据（显示空白）；其余为相对时间文本。
+  /// 每次成员加载成功后整体重建（清理已退出公会的成员）
+  Map<String, String> _lastOnlineByLower = {};
+
+  /// 分数列宽（像素）：取全部成员 score 展示串的最大宽度固定列宽，
+  /// 使各行 score 与"上次在线"分别纵向对齐
+  double _scoreColumnWidth = 0;
+
+  /// "上次在线"时间列宽（像素）：固定宽度使各行时间右对齐紧贴分数列，
+  /// 联网返回时布局不漂移；开关关闭时为 0（不占位）
+  double _timeColumnWidth = 0;
+
+  /// 分数列测量/展示样式（颜色不影响宽度，行内样式需保持一致）
+  static const TextStyle _scoreStyle = TextStyle(
+    fontSize: 14.0,
+    fontWeight: FontWeight.bold,
+  );
+
+  /// "上次在线"时间列测量/展示样式
+  static const TextStyle _timeStyle = TextStyle(fontSize: 12.0);
+
+  /// 测量单行文本宽度（TextPainter，逻辑像素）
+  double _textWidth(String text, TextStyle style) {
+    return (TextPainter(
+      text: TextSpan(text: text, style: style),
+      textDirection: TextDirection.ltr,
+    )..layout())
+        .width;
+  }
+
   @override
   void initState() {
     super.initState();
@@ -108,6 +140,8 @@ class _GuildPageState extends State<GuildPage> {
     if (!mounted) return;
 
     String? refreshFailure;
+    // 成员详情是否加载成功：成功才发起各成员"上次在线"查询
+    var membersLoaded = false;
     setState(() {
       _firstLoading = false;
 
@@ -131,6 +165,28 @@ class _GuildPageState extends State<GuildPage> {
         members.sort((a, b) => b.score.compareTo(a.score));
         _members = members;
         _error = null;
+        // 固定列宽：score 列取全部成员展示串的最大文本宽度；"上次在线"列
+        // 固定宽度（时间右对齐紧贴分数列），联网返回时布局不漂移。
+        // 开关关闭时不查询不展示，时间列收拢为 0
+        final lastOnlineEnabled =
+            Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
+        _scoreColumnWidth = members.fold<double>(0, (max, m) {
+          final w = _textWidth(m.score.format(), _scoreStyle);
+          return w > max ? w : max;
+        });
+        // "1000d" 覆盖时间格式的最长常见形态（Nd），按此固定时间列宽
+        _timeColumnWidth =
+            lastOnlineEnabled ? _textWidth('1000d', _timeStyle) : 0;
+        // 同步回填各成员"上次在线"（缓存命中首帧即展示，不重放入场动画）；
+        // 重建映射顺带清理已退出公会成员的旧条目；未缓存成员留空待异步拉取
+        _lastOnlineByLower = {};
+        if (lastOnlineEnabled) {
+          for (final m in members) {
+            final v = LastOnlineCache.cached(m.name);
+            if (v != null) _lastOnlineByLower[m.name.toLowerCase()] = v;
+          }
+        }
+        membersLoaded = true;
       } else if (detail is QueryError) {
         if (hasContent) {
           // 已有内容：保留旧数据，仅提示刷新失败
@@ -166,6 +222,22 @@ class _GuildPageState extends State<GuildPage> {
       ScaffoldMessenger.of(
         context,
       ).showSnackBar(SnackBar(content: Text('刷新失败：$refreshFailure')));
+    }
+
+    // 成员列表加载成功且开关开启才发起各成员"上次在线"查询：
+    // 缓存命中零请求零动画；联网返回的新值触发逐行线性展开；
+    // 失败返回 null 保留现有展示
+    if (membersLoaded &&
+        Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value) {
+      for (final m in _members) {
+        LastOnlineCache.fetch(m.name, force: force).then((value) {
+          if (!mounted || value == null) return;
+          final key = m.name.toLowerCase();
+          // 相同值跳过：避免无谓重建与动画重放
+          if (_lastOnlineByLower[key] == value) return;
+          setState(() => _lastOnlineByLower[key] = value);
+        });
+      }
     }
   }
 
@@ -354,6 +426,7 @@ class _GuildPageState extends State<GuildPage> {
                 final isSelf = lowerName == currentUser.toLowerCase();
                 final seasonRank = _playerRankByName[lowerName];
                 final hellRank = _hellRankByName[lowerName];
+                final lastOnline = _lastOnlineByLower[lowerName];
                 return ListTile(
                   // 点击成员进入玩家详情页
                   onTap: () {
@@ -424,13 +497,43 @@ class _GuildPageState extends State<GuildPage> {
                       ],
                     ],
                   ),
-                  trailing: Text(
-                    member.score.format(),
-                    style: TextStyle(
-                      fontSize: 14.0,
-                      fontWeight: FontWeight.bold,
-                      color: isSelf ? scheme.primary : null,
-                    ),
+                  trailing: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      // 上次在线固定列：文本右对齐紧贴分数列；
+                      // 联网返回后在列内线性展开（右缘锚定向左生长），
+                      // 首帧已有数据（缓存命中）时 AnimatedSize 不播放
+                      SizedBox(
+                        width: _timeColumnWidth,
+                        child: Align(
+                          alignment: Alignment.centerRight,
+                          child: AnimatedSize(
+                            duration: const Duration(milliseconds: 300),
+                            curve: Curves.linear,
+                            alignment: Alignment.centerRight,
+                            child: (lastOnline == null || lastOnline.isEmpty)
+                                ? const SizedBox(width: 0)
+                                : Text(
+                                    lastOnline,
+                                    style: _timeStyle.copyWith(
+                                      color: scheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6.0),
+                      SizedBox(
+                        width: _scoreColumnWidth,
+                        child: Text(
+                          member.score.format(),
+                          textAlign: TextAlign.right,
+                          style: _scoreStyle.copyWith(
+                            color: isSelf ? scheme.primary : null,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 );
               },

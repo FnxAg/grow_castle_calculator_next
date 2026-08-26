@@ -7,14 +7,25 @@ class AppSettingsStore {
   static const String _themeModeKey = 'themeMode';
   static const String _apiUrlKey = 'apiUrl';
   static const String _thirdPartyApiEnabledKey = 'thirdPartyApiEnabled';
+  static const String _autoLastOnlineEnabledKey = 'autoLastOnlineEnabled';
+  static const String _lastOnlineConcurrencyKey = 'lastOnlineConcurrency';
 
   /// 第三方 API 默认地址（正式接口部署前的占位地址）
   static const String defaultApiUrl = 'https://fnxag.eu.org/gcapi';
+
+  /// 公会成员"上次在线"默认并发查询数
+  static const int defaultLastOnlineConcurrency = 3;
 
   final Box _box;
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<String> apiUrlNotifier;
   final ValueNotifier<bool> thirdPartyApiEnabledNotifier;
+
+  /// 公会成员"上次在线"自动查询开关
+  final ValueNotifier<bool> autoLastOnlineEnabledNotifier;
+
+  /// 公会成员"上次在线"并发查询数（1-10）
+  final ValueNotifier<int> lastOnlineConcurrencyNotifier;
 
   AppSettingsStore()
       : _box = Hive.box(_boxName),
@@ -26,6 +37,12 @@ class AppSettingsStore {
         ),
         thirdPartyApiEnabledNotifier = ValueNotifier<bool>(
           _readThirdPartyApiEnabled(Hive.box(_boxName)),
+        ),
+        autoLastOnlineEnabledNotifier = ValueNotifier<bool>(
+          _readAutoLastOnlineEnabled(Hive.box(_boxName)),
+        ),
+        lastOnlineConcurrencyNotifier = ValueNotifier<int>(
+          _readLastOnlineConcurrency(Hive.box(_boxName)),
         );
 
   static ThemeMode _readThemeMode(Box box) {
@@ -78,5 +95,39 @@ class AppSettingsStore {
     }
     apiUrlNotifier.value = value;
     _box.put(_apiUrlKey, value);
+  }
+
+  /// 读取"自动查询上次在线"开关；未设置过时默认开启（保持原有行为）
+  static bool _readAutoLastOnlineEnabled(Box box) {
+    final raw = box.get(_autoLastOnlineEnabledKey);
+    return raw is bool ? raw : true;
+  }
+
+  /// 设置"自动查询上次在线"开关并持久化
+  void setAutoLastOnlineEnabled(bool enabled) {
+    if (autoLastOnlineEnabledNotifier.value == enabled) {
+      return;
+    }
+    autoLastOnlineEnabledNotifier.value = enabled;
+    _box.put(_autoLastOnlineEnabledKey, enabled);
+  }
+
+  /// 读取"查询并发数"；未设置过或非法值时回退默认值
+  static int _readLastOnlineConcurrency(Box box) {
+    final raw = box.get(_lastOnlineConcurrencyKey);
+    if (raw is int && raw >= 1) {
+      return raw.clamp(1, 10);
+    }
+    return defaultLastOnlineConcurrency;
+  }
+
+  /// 设置"查询并发数"并持久化（限制 1-10）
+  void setLastOnlineConcurrency(int concurrency) {
+    final value = concurrency.clamp(1, 10);
+    if (lastOnlineConcurrencyNotifier.value == value) {
+      return;
+    }
+    lastOnlineConcurrencyNotifier.value = value;
+    _box.put(_lastOnlineConcurrencyKey, value);
   }
 }
