@@ -66,10 +66,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
                           duration: const Duration(milliseconds: 300),
                           curve: Curves.easeOutCubic,
                           alignment: Alignment.topCenter,
-                          child: Text(
-                            lastOnline,
-                            style: const TextStyle(fontSize: 12.0),
-                          ),
+                          child: _LastOnlineFadeIn(lastOnline: lastOnline),
                         ),
                       if (guild.isNotEmpty)
                         Text(guild, style: const TextStyle(fontSize: 12.0)),
@@ -157,6 +154,37 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// “上次在线”文案首次出现时淡入一次（300ms）；同一会话内页面销毁重建后
+/// 直接展示、不再重复播放动画（static 标志位存活于整个 App 生命周期）。
+class _LastOnlineFadeIn extends StatelessWidget {
+  const _LastOnlineFadeIn({required this.lastOnline});
+
+  final String lastOnline;
+
+  /// 本会话是否已播放过淡入动画；已播放则后续直接渲染不带动画
+  static bool _played = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final text = Text(
+      lastOnline,
+      style: const TextStyle(fontSize: 12.0),
+    );
+    if (_played) return text;
+    _played = true;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 300),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: child,
+      ),
+      child: text,
     );
   }
 }

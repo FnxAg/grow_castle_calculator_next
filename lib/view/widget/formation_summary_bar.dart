@@ -123,24 +123,12 @@ class FormationSummaryBar extends StatelessWidget {
                     (playerRank != null ||
                         hellRank != null ||
                         guildRank != null)
-                    ? TweenAnimationBuilder<double>(
-                        tween: Tween(begin: 0.0, end: 1.0),
-                        duration: const Duration(milliseconds: 350),
-                        curve: Curves.easeOutCubic,
-                        builder: (context, value, child) => Opacity(
-                          opacity: value,
-                          child: Transform.translate(
-                            offset: Offset(0, 8 * (1 - value)),
-                            child: child,
-                          ),
-                        ),
-                        child: _RankRow(
-                          playerRank: playerRank,
-                          playerGapPrev: playerGapPrev,
-                          playerGapNext: playerGapNext,
-                          hellRank: hellRank,
-                          guildRank: guildRank,
-                        ),
+                    ? _RankIntro(
+                        playerRank: playerRank,
+                        playerGapPrev: playerGapPrev,
+                        playerGapNext: playerGapNext,
+                        hellRank: hellRank,
+                        guildRank: guildRank,
                       )
                     : const SizedBox(width: double.infinity),
               ),
@@ -270,6 +258,53 @@ class _SummaryRow extends StatelessWidget {
         const Spacer(),
         value,
       ],
+    );
+  }
+}
+
+/// 排名行首次展示时播放入场过渡（淡入上移 350ms）；同一会话内页面销毁重建后
+/// 直接展示、不再重复播放动画（static 标志位存活于整个 App 生命周期）。
+class _RankIntro extends StatelessWidget {
+  const _RankIntro({
+    required this.playerRank,
+    required this.playerGapPrev,
+    required this.playerGapNext,
+    required this.hellRank,
+    required this.guildRank,
+  });
+
+  final int? playerRank;
+  final int? playerGapPrev;
+  final int? playerGapNext;
+  final int? hellRank;
+  final int? guildRank;
+
+  /// 本会话是否已播放过入场动画；已播放则后续直接渲染不带动画
+  static bool _played = false;
+
+  @override
+  Widget build(BuildContext context) {
+    final row = _RankRow(
+      playerRank: playerRank,
+      playerGapPrev: playerGapPrev,
+      playerGapNext: playerGapNext,
+      hellRank: hellRank,
+      guildRank: guildRank,
+    );
+    if (_played) return row;
+    _played = true;
+    return TweenAnimationBuilder<double>(
+      tween: Tween(begin: 0.0, end: 1.0),
+      duration: const Duration(milliseconds: 350),
+      curve: Curves.easeOutCubic,
+      builder: (context, value, child) => Opacity(
+        opacity: value,
+        child: Transform.translate(
+          offset: Offset(0, 8 * (1 - value)),
+          child: child,
+        ),
+      ),
+      child: row,
     );
   }
 }

@@ -27,6 +27,14 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 仍会为新用户触发自动查询。
   static final Set<String> _autoQueriedUsers = {};
 
+  /// 最近一次查询到的排名快照（会话级，按用户名缓存）。
+  ///
+  /// 页面销毁重建（底部 tab 切换）后 initState 同步恢复，保证重建后首帧
+  /// 即有排名——否则先空白、排名异步到达后再出现，会重新触发排名行的
+  /// 入场动画（AnimatedSize 高度展开 + 淡入上移）。
+  static (String username, int? playerRank, int? playerGapPrev,
+      int? playerGapNext, int? hellRank, int? guildRank)? _rankCache;
+
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
@@ -107,6 +115,18 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     super.initState();
     // 未配置用户（userId == 0）不加载，与底部联网查询按钮的显示条件一致
     if (Stores.infoStore.getCurrentUserId() != 0) {
+      // 页面销毁重建（底部 tab / 抽屉切换）后同步恢复上次排名：首帧即展示，
+      // 避免"先空白后出现"再次触发排名行入场动画；随后 _loadRanks 从
+      // TTL 缓存重新推导（缓存命中零请求，过期则按缓存语义后台静默刷新）。
+      final cache = _rankCache;
+      final username = Stores.infoStore.getCurrentUsername();
+      if (cache != null && cache.$1 == username) {
+        _playerRank = cache.$2;
+        _playerGapPrev = cache.$3;
+        _playerGapNext = cache.$4;
+        _hellRank = cache.$5;
+        _guildRank = cache.$6;
+      }
       // 从榜单 TTL 缓存重新推导排名胶囊：页面被销毁重建（底部 tab /
       // 抽屉切换）后胶囊状态丢失，这里恢复——缓存命中零请求，
       // 过期则按缓存语义后台静默刷新，不会随页面重建反复请求。
@@ -114,7 +134,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       // 启动时静默查询当前用户波数：打开应用最先想看到的就是自己的最新数据，
       // 查询成功后的预取逻辑顺带刷新榜单与排名展示，无需单独 prewarm。
       // 会话级去重：页面因 tab/抽屉切换被销毁重建时不再重复自动查询。
-      final username = Stores.infoStore.getCurrentUsername();
       if (_autoQueriedUsers.add(username)) {
         _performQuery(silent: true);
       }
@@ -172,6 +191,16 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
           }
         }
       }
+      // 快照本次查询结果：页面销毁重建后由 initState 同步恢复，
+      // 保证重建首帧即有排名、不重放入场动画
+      _rankCache = (
+        currentUser,
+        _playerRank,
+        _playerGapPrev,
+        _playerGapNext,
+        _hellRank,
+        _guildRank,
+      );
     });
   }
 
