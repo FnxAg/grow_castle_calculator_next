@@ -27,12 +27,13 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 仍会为新用户触发自动查询。
   static final Set<String> _autoQueriedUsers = {};
 
-  /// 最近一次查询到的排名快照（会话级，按用户名缓存）。
+  /// 最近一次查询到的排名快照（会话级，按用户 id 缓存——用户名可重命名，
+  /// 不能作为身份标识）。
   ///
   /// 页面销毁重建（底部 tab 切换）后 initState 同步恢复，保证重建后首帧
   /// 即有排名——否则先空白、排名异步到达后再出现，会重新触发排名行的
   /// 入场动画（AnimatedSize 高度展开 + 淡入上移）。
-  static (String username, int? playerRank, int? playerGapPrev,
+  static (int userId, int? playerRank, int? playerGapPrev,
       int? playerGapNext, int? hellRank, int? guildRank)? _rankCache;
 
   final Map<int, FocusNode> _numberFocusNodes = {};
@@ -120,7 +121,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       // TTL 缓存重新推导（缓存命中零请求，过期则按缓存语义后台静默刷新）。
       final cache = _rankCache;
       final username = Stores.infoStore.getCurrentUsername();
-      if (cache != null && cache.$1 == username) {
+      if (cache != null && cache.$1 == Stores.infoStore.getCurrentUserId()) {
         _playerRank = cache.$2;
         _playerGapPrev = cache.$3;
         _playerGapNext = cache.$4;
@@ -145,6 +146,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// [force] 为 true（手动同步）时忽略缓存强制重新抓取，失败保留旧缓存。
   /// 挂载时调用用于恢复页面重建后丢失的胶囊；查询成功后调用刷新为最新数据。
   Future<void> _loadRanks({bool force = false}) async {
+    // 查询起始时记录用户 id：快照按数据归属的 id 缓存，
+    // 即使 await 期间切换用户也不会错配
+    final userId = Stores.infoStore.getCurrentUserId();
     final currentUser = Stores.infoStore.getCurrentUsername();
     final lower = currentUser.toLowerCase();
     final guild = Stores.infoStore.getCurrentUserGuild();
@@ -194,7 +198,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       // 快照本次查询结果：页面销毁重建后由 initState 同步恢复，
       // 保证重建首帧即有排名、不重放入场动画
       _rankCache = (
-        currentUser,
+        userId,
         _playerRank,
         _playerGapPrev,
         _playerGapNext,

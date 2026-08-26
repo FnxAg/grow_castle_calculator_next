@@ -9,7 +9,7 @@ import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart'
 /// 按金挂成本（gabCost = 456 × 当前总波数 − 29264）计算收益率：
 /// （收入 − 成本）÷ 成本，底部卡片汇总平均每波收入与百分比，
 /// 可一键填入当前用户的「金挂平均收益」。
-/// 样本保存在内存中（static），页面退出重进不丢失。
+/// 样本按用户保存在内存中（static），页面退出重进不丢失，切换用户互不干扰。
 class BonusGoldCalcPage extends StatefulWidget {
   const BonusGoldCalcPage({super.key});
 
@@ -18,11 +18,29 @@ class BonusGoldCalcPage extends StatefulWidget {
 }
 
 class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
-  /// 用户添加的每波金币收入样本（顺序即展示顺序）。
-  /// static 保存在内存：页面被 pop 销毁后数据仍在，重进继续编辑。
-  static final List<int> _incomes = [];
+  /// 各用户的每波金币收入样本（会话级，按用户 id 缓存——用户名可重命名，
+  /// 不能作为身份标识；顺序即展示顺序）。
+  ///
+  /// static 保存在内存：页面被 pop 销毁后数据仍在，重进继续编辑；
+  /// 切换用户（UserPageScaffold 换 key 重建本页）时各自的样本互不干扰。
+  static final Map<int, List<int>> _incomesByUser = {};
+
+  /// 当前用户的样本列表：initState 按当前用户名从 [_incomesByUser] 取出
+  late List<int> _incomes;
 
   static final ValueNotifier<int> _listLen = ValueNotifier(0);
+
+  @override
+  void initState() {
+    super.initState();
+    // 切换用户后 State 重建：取出新用户自己的样本（首次进入为空列表），
+    // 并同步列表长度通知，避免残留上一个用户的数值
+    _incomes = _incomesByUser.putIfAbsent(
+      Stores.infoStore.getCurrentUserId(),
+      () => [],
+    );
+    _listLen.value = _incomes.length;
+  }
 
   double _gabCost(int wave) => 456.0 * wave - 29264;
 
