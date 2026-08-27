@@ -55,6 +55,8 @@ class _RankRow {
 }
 
 class _RankingPageState extends State<RankingPage> {
+  static const List<int> _milestoneRanks = [1, 3, 5, 10, 50, 100, 200, 300];
+
   /// 首屏加载中（仅当界面尚无任何内容时显示全屏转圈）
   bool _firstLoading = true;
   String? _error;
@@ -151,13 +153,69 @@ class _RankingPageState extends State<RankingPage> {
     };
   }
 
+  void _showMilestoneRanks() {
+    showDialog<void>(
+      context: context,
+      builder: (dialogContext) {
+        return AlertDialog(
+          title: Text('${widget.kind.title}重点排名'),
+          content: SizedBox(
+            width: 420,
+            child: ListView.separated(
+              shrinkWrap: true,
+              itemCount: _milestoneRanks.length,
+              separatorBuilder: (_, _) => const Divider(height: 1),
+              itemBuilder: (context, index) {
+                final rank = _milestoneRanks[index];
+                final row = _rows.cast<_RankRow?>().firstWhere(
+                      (item) => item?.rank == rank,
+                      orElse: () => null,
+                    );
+                return ListTile(
+                  leading: CircleAvatar(
+                    radius: 14,
+                    child: Text('$rank', style: const TextStyle(fontSize: 11)),
+                  ),
+                  title: Text(row?.name ?? '暂无数据'),
+                  subtitle: row == null ? null : Text(row.score.format()),
+                  enabled: row != null,
+                  onTap: row == null
+                      ? null
+                      : () {
+                          Navigator.of(dialogContext).pop();
+                          FocusManager.instance.primaryFocus?.unfocus();
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => switch (widget.kind) {
+                                RankingKind.guild =>
+                                  GuildDetailPage(guildName: row.name),
+                                RankingKind.player || RankingKind.hell =>
+                                  PlayerDetailPage(playerName: row.name),
+                              },
+                            ),
+                          );
+                        },
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: const Text('关闭'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.kind.title),
-        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        // action 区：赛季进度胶囊（个人/公会 5 天赛季，无尽一周赛季，各用各的）
+        // action 区：赛季进度胶囊
         actions: [
           SeasonIndicator(
             notifier: switch (widget.kind) {
@@ -165,6 +223,11 @@ class _RankingPageState extends State<RankingPage> {
               RankingKind.guild => RankingCache.guildSeasonNotifier,
               RankingKind.hell => RankingCache.hellSeasonNotifier,
             },
+          ),
+          IconButton(
+            icon: const Icon(Icons.format_list_numbered),
+            tooltip: '查看重点排名',
+            onPressed: _rows.isEmpty ? null : _showMilestoneRanks,
           ),
         ],
       ),
