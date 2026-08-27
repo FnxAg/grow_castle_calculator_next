@@ -87,7 +87,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
                           const SizedBox(width: 1.0),
                           PillChip(
                             text: Text(
-                              infoStore.getUserTotalGold(username).formatCompact(fractionDigits: 3, english: true),
+                              infoStore.getUserTotalGold(username).formatCompact(fractionDigits: 2, english: false),
                               style: TextStyle(
                                 fontSize: 12.0,
                                 color: Theme.of(context).textTheme.bodySmall?.color,

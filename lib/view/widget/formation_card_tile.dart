@@ -110,6 +110,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
       child: PopupMenuButton(
         padding: EdgeInsets.zero,
         iconSize: 20,
+        tooltip: '操作',
         itemBuilder: (context) => [
           PopupMenuItem(
             onTap: _toggleApplied,

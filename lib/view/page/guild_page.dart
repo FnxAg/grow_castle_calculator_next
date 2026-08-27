@@ -234,7 +234,7 @@ class _GuildPageState extends State<GuildPage> {
           if (!mounted || value == null) return;
           final key = m.name.toLowerCase();
           // 相同值跳过：避免无谓重建与动画重放
-          if (_lastOnlineByLower[key] == value) return;
+          // if (_lastOnlineByLower[key] == value) return;
           setState(() => _lastOnlineByLower[key] = value);
         });
       }
@@ -489,7 +489,6 @@ class _GuildPageState extends State<GuildPage> {
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                // 无尽模式：∞ 无限符号
                                 icon: Icons.all_inclusive,
                               ),
                           ],
@@ -513,12 +512,23 @@ class _GuildPageState extends State<GuildPage> {
                             alignment: Alignment.centerRight,
                             child: (lastOnline == null || lastOnline.isEmpty)
                                 ? const SizedBox(width: 0)
-                                : Text(
-                                    lastOnline,
-                                    style: _timeStyle.copyWith(
-                                      color: scheme.onSurfaceVariant,
+                                : TweenAnimationBuilder(
+                                    tween: Tween<double>(begin: 0.0, end: 1.0),
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeOutCubic,
+                                    builder: (context, value, child) {
+                                      return Opacity(
+                                        opacity: value,
+                                        child: child,
+                                      );
+                                    },
+                                    child: Text(
+                                        lastOnline,
+                                        style: _timeStyle.copyWith(
+                                          color: scheme.onSurfaceVariant,
+                                        ),
                                     ),
-                                  ),
+                                ),
                           ),
                         ),
                       ),

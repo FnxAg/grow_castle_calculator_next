@@ -210,14 +210,8 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
           padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           child: Column(
             children: [
-              Text(
-                '当前总波数 ${wave.format()} · 金挂成本 ${_gabCost(wave).format()}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: scheme.primary),
-              ),
-              const SizedBox(height: 8.0),
-              _SummaryRow(icon: Icons.monetization_on, label: '平均每波收入', value: avgIncome.format()),
+              _SummaryRow(icon: Icons.money, label: '金挂成本', value: _gabCost(wave).format()),
+              _SummaryRow(icon: Icons.monetization_on, label: '平均收入', value: avgIncome.format()),
               _SummaryRow(
                 icon: Icons.percent,
                 label: '百分比',

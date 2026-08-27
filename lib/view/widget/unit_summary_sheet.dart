@@ -52,24 +52,14 @@ class _UnitSummarySheet extends StatelessWidget {
     final cardIds = data.cardIds;
     return Column(
       children: [
-        // 拖拽把手
-        // Container(
-        //   margin: const EdgeInsets.only(top: 8.0),
-        //   width: 36.0,
-        //   height: 4.0,
-        //   decoration: BoxDecoration(
-        //     color: theme.colorScheme.outlineVariant,
-        //     borderRadius: BorderRadius.circular(2.0),
-        //   ),
-        // ),
         Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 8.0),
           child: Row(
             children: [
-              Text('单位汇总', style: theme.textTheme.titleMedium),
+              Text('账号信息', style: theme.textTheme.titleMedium),
               const Spacer(),
               Text(
-                '用户：$username',
+                username,
                 style: theme.textTheme.bodySmall?.copyWith(
                   color: theme.colorScheme.onSurfaceVariant,
                 ),
@@ -98,7 +88,6 @@ class _UnitSummarySheet extends StatelessWidget {
   }
 }
 
-/// 单个单位汇总行：第一行 序号/名称/等级/金币，第二行 占比/1比例/比例
 class _UnitSummaryRow extends StatelessWidget {
   const _UnitSummaryRow({
     required this.id,
@@ -146,12 +135,10 @@ class _UnitSummaryRow extends StatelessWidget {
               children: [
                 Row(
                   children: [
-                    Flexible(
-                      child: Text(
-                        name.isNotEmpty ? name : '单位 $id',
-                        overflow: TextOverflow.ellipsis,
-                        style: nameStyle,
-                      ),
+                    Text(
+                      name.isNotEmpty ? name : id == 1 ? '城堡' : id == 2 ? '城弓' : '单位 $id',
+                      overflow: TextOverflow.ellipsis,
+                      style: nameStyle,
                     ),
                     const SizedBox(width: 8.0),
                     Text(
@@ -162,7 +149,7 @@ class _UnitSummaryRow extends StatelessWidget {
                     ),
                     const Spacer(),
                     Text(
-                      gold.formatCompact(english: _useEnglishUnits(context)),
+                      gold.formatCompact(english: false),
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         color: applied
@@ -294,7 +281,7 @@ class _UnitSummaryBar extends StatelessWidget {
           _SummaryStat(
             label: '总金币',
             value: data.totalGold.formatCompact(
-              english: _useEnglishUnits(context),
+              english: false,
             ),
             labelStyle: labelStyle,
             valueStyle: valueStyle,
