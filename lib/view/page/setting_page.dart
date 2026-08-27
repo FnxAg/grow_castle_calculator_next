@@ -221,14 +221,11 @@ class _SettingPageState extends State<SettingPage> {
       ),
       body: ListView(
         children: [
-          // 用户管理：创建/切换游戏账号（从用户页 AppBar 迁移至此）
           ListTile(
             leading: const Icon(Icons.group),
             title: const Text('用户管理'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // 先释放焦点：避免页面切走后焦点恢复，
-              // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
               FocusManager.instance.primaryFocus?.unfocus();
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const SelectUserPage()),
@@ -274,23 +271,10 @@ class _SettingPageState extends State<SettingPage> {
             valueListenable: appSettingsStore.thirdPartyApiEnabledNotifier,
             builder: (context, enabled, _) {
               return ListTile(
-                enabled: enabled,
                 leading: const Icon(Icons.api),
                 title: const Text('第三方 API'),
-                subtitle: ValueListenableBuilder<String>(
-                  valueListenable: appSettingsStore.apiUrlNotifier,
-                  builder: (context, url, _) {
-                    return Text(
-                      url,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                    );
-                  },
-                ),
-                // 开关关闭时禁止编辑（onTap 置空，整行置灰）
-                onTap: enabled
-                    ? () => _showApiUrlDialog(context, appSettingsStore)
-                    : null,
+                subtitle: Text('玩家详情页获取波速信息'),
+                onTap: () => appSettingsStore.setThirdPartyApiEnabled(!enabled),
                 trailing: Switch(
                   value: enabled,
                   onChanged: appSettingsStore.setThirdPartyApiEnabled,
@@ -298,14 +282,34 @@ class _SettingPageState extends State<SettingPage> {
               );
             },
           ),
-          // 自动查询上次在线：公会成员列表加载后自动逐人查询"上次在线"
+          ValueListenableBuilder<String>(
+            valueListenable: appSettingsStore.apiUrlNotifier,
+            builder: (context, url, _) {
+              return ValueListenableBuilder<bool>(
+                valueListenable: appSettingsStore.thirdPartyApiEnabledNotifier,
+                builder: (context, enabled, child) {
+                  return ListTile(
+                    enabled: enabled,
+                    leading: const Icon(Icons.link),
+                    title: const Text('API 地址'),
+                    subtitle: const Text('第三方 API 请求地址'),
+                    trailing: Icon(Icons.settings),
+                    onTap: () => _showApiUrlDialog(context, appSettingsStore),
+                  );
+                }
+              );
+            },
+          ),
           ValueListenableBuilder<bool>(
             valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
             builder: (context, enabled, _) {
               return ListTile(
+                onTap: () {
+                  appSettingsStore.setAutoLastOnlineEnabled(!enabled);
+                },
                 leading: const Icon(Icons.schedule),
                 title: const Text('自动查询上次在线'),
-                subtitle: const Text('公会成员列表加载后自动查询各成员"上次在线"'),
+                subtitle: const Text('公会详情页自动查询各成员"上次在线"'),
                 trailing: Switch(
                   value: enabled,
                   onChanged: appSettingsStore.setAutoLastOnlineEnabled,
@@ -317,11 +321,11 @@ class _SettingPageState extends State<SettingPage> {
           ValueListenableBuilder<int>(
             valueListenable: appSettingsStore.lastOnlineConcurrencyNotifier,
             builder: (context, concurrency, _) {
-              return ValueListenableBuilder(
+              return ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
-                builder: (context, value, child) {
+                builder: (context, enabled, child) {
                   return ListTile(
-                    enabled: appSettingsStore.autoLastOnlineEnabledNotifier.value,
+                    enabled: enabled,
                     leading: const Icon(Icons.network_check),
                     title: const Text('查询并发数'),
                     subtitle: const Text('公会成员"上次在线"同时查询的请求数'),
@@ -331,7 +335,6 @@ class _SettingPageState extends State<SettingPage> {
                         fontWeight: FontWeight.bold,
                         fontSize: 16.0,
                         ),
-                  
                     ),
                     onTap: () => _showConcurrencyDialog(context, appSettingsStore),
                   );
@@ -359,8 +362,6 @@ class _SettingPageState extends State<SettingPage> {
             title: const Text('关于'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // 先释放焦点：避免对话框关闭后焦点恢复，
-              // 触发 PageView(allowImplicitScrolling) 自动滚回焦点所在的页面
               FocusManager.instance.primaryFocus?.unfocus();
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const AboutPage()),
