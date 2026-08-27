@@ -316,14 +316,14 @@ class _ItemCard extends StatelessWidget {
                 ),
               ),
             // itemQuality 提示
-            if (quality != null)
-              Padding(
-                padding: const EdgeInsets.only(top: 4),
-                child: Text(
-                  'Item Quality ${_natural(quality)}% → 前 3 条 ×${_natural(1 + quality / 100)}',
-                  style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary),
-                ),
-              ),
+            // if (quality != null)
+            //   Padding(
+            //     padding: const EdgeInsets.only(top: 4),
+            //     child: Text(
+            //       'Item Quality ${_natural(quality)}% → 前 3 条 ×${_natural(1 + quality / 100)}',
+            //       style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary),
+            //     ),
+            //   ),
           ],
         ),
       ),

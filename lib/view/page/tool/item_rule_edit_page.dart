@@ -33,6 +33,15 @@ String _conditionLabel(LineCondition condition, ItemLine line) {
   return parts.join(' ');
 }
 
+String? _valueRangeHelperText(ItemLine line, {required bool isMin}) {
+  final range = line.overallValueRange();
+  if (range == null) return null;
+  final (min, max) = range;
+  return isMin
+      ? '${min.format(fractionDigits: 1)} ≤ value ≤ ${max.format()}'
+      : '${min.format(fractionDigits: 1)} < value ≤ ${max.format()}';
+}
+
 /// 高亮规则管理页：查看、新增、编辑、删除用户自定义高亮规则
 class ItemRuleEditPage extends StatelessWidget {
   const ItemRuleEditPage({super.key});
@@ -233,14 +242,14 @@ class _RuleFormPageState extends State<_RuleFormPage> {
       line == ItemLine.itemQuality ||
       (line.color == LineColor.red && !line.isFixed);
 
-  /// 勾选/取消一个词条（含防呆：红/黄同色最多 1 条，白 3 条与红互斥）
+  /// 勾选/取消一个词条（含防呆：红/金同色最多 1 条，白 3 条与红互斥）
   void _toggleLine(ItemLine line, bool checked) {
     setState(() {
       if (!checked) {
         _counts.remove(line);
         return;
       }
-      // 红/黄词条同色最多一条：选择新词条时自动取消同色已选项
+      // 红/金词条同色最多一条：选择新词条时自动取消同色已选项
       if (line.color == LineColor.red || line.color == LineColor.yellow) {
         final sameColor =
             _counts.keys.where((l) => l.color == line.color).toList();
@@ -430,7 +439,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                   child: Text(
                     '提示：红/金词条各最多选 1 条；白色词条合计 3 条时不能选红色词条；\n'
                     '输入数值范围时，判断的是词条原始值（加强前的值），留空表示不限。\n\n'
-                    '注意：数值范围没有强校验，请确认后再保存，否则可能导致规则无法命中。',
+                    '大于下限必须小于上限；输入值还需在词条的允许范围内。',
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
@@ -480,7 +489,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                             ],
                           ),
                           // 数值范围（留空不限）：判断的是词条原始值（加强前的值）。
-                          // 没有数值范围的词条（黄词条、固定值红词条）不显示
+                          // 没有数值范围的词条（金词条、固定值红词条）不显示
                           if (_counts.containsKey(line) &&
                               _hasValueRange(line))
                             Padding(
@@ -494,6 +503,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                   Expanded(
                                     child: TextField(
                                       controller: _minControllers[line],
+                                      textAlign: TextAlign.center,
                                       keyboardType:
                                           const TextInputType.numberWithOptions(
                                               decimal: true),
@@ -503,19 +513,27 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                           RegExp(r'^\d*\.?\d*$'),
                                         ),
                                       ],
-                                      decoration: const InputDecoration(
-                                        labelText: '大于',
-                                        isDense: true,
-                                        contentPadding:
-                                            EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 8),
+                                      // 下限校验允许等于词条最小值，但必须小于最大值。
+                                      decoration: InputDecoration(
+                                        helperText: _valueRangeHelperText(
+                                          line,
+                                          isMin: true,
+                                        ),
+                                        suffixText: line.numType == LineNumType.percent ? '%' : null,
+                                        // isDense: true,
                                       ),
                                     ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  const Text(
+                                    ' ≤ target ≤ ', 
+                                    style: TextStyle(fontSize: 16)
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: TextField(
                                       controller: _maxControllers[line],
+                                      textAlign: TextAlign.center,
                                       keyboardType:
                                           const TextInputType.numberWithOptions(
                                               decimal: true),
@@ -524,12 +542,13 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                           RegExp(r'^\d*\.?\d*$'),
                                         ),
                                       ],
-                                      decoration: const InputDecoration(
-                                        labelText: '小于',
-                                        isDense: true,
-                                        contentPadding:
-                                            EdgeInsets.symmetric(
-                                                horizontal: 8, vertical: 8),
+                                      decoration: InputDecoration(
+                                        helperText: _valueRangeHelperText(
+                                          line,
+                                          isMin: false,
+                                        ),
+                                        suffixText: line.numType == LineNumType.percent ? '%' : null,
+                                        // isDense: true,
                                       ),
                                     ),
                                   ),

@@ -4,10 +4,6 @@ import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-/// 「关于」页：应用信息头部 + 说明 / 链接 / 法律与授权分组条目。
-///
-/// 条目由 [_AboutEntry] 数据驱动：后续新增链接/说明只需在
-/// [_infoEntries] / [_linkEntries] / [_legalEntries] 里追加一条记录。
 class AboutPage extends StatefulWidget {
   const AboutPage({super.key});
 
@@ -68,7 +64,6 @@ class _AboutPageState extends State<AboutPage> {
         // ),
       ];
 
-  /// 链接区条目：新增链接只需追加一行 [_linkEntry]
   List<_AboutEntry> get _linkEntries => [
         _linkEntry(
           Icons.code,
@@ -242,7 +237,6 @@ class _AboutPageState extends State<AboutPage> {
   //   );
   // }
 
-  /// 链接条目构造：点击用系统浏览器打开 [url]；[display] 可覆盖副标题展示文本
   _AboutEntry _linkEntry(IconData icon, String title, String url,
           {String? display}) =>
       _AboutEntry(

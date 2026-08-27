@@ -81,6 +81,19 @@ enum LineType {
   cooldown;
 }
 
+enum LineNumType {
+  /// 百分比类型
+  percent,
+  /// 整数类型
+  integer,
+  /// 小数类型
+  decimal,
+  /// 固定值类型
+  fixed,
+  /// 静态类型
+  static;
+}
+
 /// 白词条各等级数值范围（最低值, 最高值, 强化每级涨幅）
 typedef WhiteLineRange = (double min, double max, double increase);
 
@@ -95,7 +108,7 @@ typedef LineRange = (double min, double max);
 /// - itemQuality 特殊：数值在 20%~25% 随机，用于加强前 3 条词条
 enum ItemLine {
   // ── 白词条（第 1、2 槽）────────────────────────────
-  damageInt('Damage +', LineColor.white, perLevel: {
+  damageInt('Damage +', LineColor.white, LineNumType.integer, perLevel: {
     ItemLevel.B: (10, 80, 3),
     ItemLevel.A: (10, 80, 3),
     ItemLevel.S: (80, 100, 3),
@@ -103,7 +116,7 @@ enum ItemLine {
     ItemLevel.E: (80, 100, 3),
   }),
 
-  damagePercent('Damage %', LineColor.white, perLevel: {
+  damagePercent('Damage %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (2, 8, 0.1),
     ItemLevel.A: (2, 8, 0.1),
     ItemLevel.S: (8, 10, 0.1),
@@ -111,7 +124,7 @@ enum ItemLine {
     ItemLevel.E: (8, 10, 0.1),
   }),
 
-  coldDamage('Cold Damage %', LineColor.white, perLevel: {
+  coldDamage('Cold Damage %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (5, 12, 0.1),
     ItemLevel.A: (5, 12, 0.1),
     ItemLevel.S: (12, 15, 0.1),
@@ -119,7 +132,7 @@ enum ItemLine {
     ItemLevel.E: (12, 15, 0.1),
   }),
 
-  fireDamage('Fire Damage %', LineColor.white, perLevel: {
+  fireDamage('Fire Damage %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (5, 12, 0.1),
     ItemLevel.A: (5, 12, 0.1),
     ItemLevel.S: (12, 15, 0.1),
@@ -127,7 +140,7 @@ enum ItemLine {
     ItemLevel.E: (12, 15, 0.1),
   }),
 
-  poisonDamage('Poison Damage %', LineColor.white, perLevel: {
+  poisonDamage('Poison Damage %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (5, 12, 0.1),
     ItemLevel.A: (5, 12, 0.1),
     ItemLevel.S: (12, 15, 0.1),
@@ -135,7 +148,7 @@ enum ItemLine {
     ItemLevel.E: (12, 15, 0.1),
   }),
 
-  lightningDamage('Lightning Damage %', LineColor.white, perLevel: {
+  lightningDamage('Lightning Damage %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (5, 12, 0.1),
     ItemLevel.A: (5, 12, 0.1),
     ItemLevel.S: (12, 15, 0.1),
@@ -143,7 +156,7 @@ enum ItemLine {
     ItemLevel.E: (12, 15, 0.1),
   }),
 
-  physicalDamage('Physical Damage %', LineColor.white, perLevel: {
+  physicalDamage('Physical Damage %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (5, 12, 0.1),
     ItemLevel.A: (5, 12, 0.1),
     ItemLevel.S: (12, 15, 0.1),
@@ -151,7 +164,7 @@ enum ItemLine {
     ItemLevel.E: (12, 15, 0.1),
   }),
 
-  attackSpeed('Attack Speed %', LineColor.white, perLevel: {
+  attackSpeed('Attack Speed %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (2, 8, 0.1),
     ItemLevel.A: (2, 8, 0.1),
     ItemLevel.S: (8, 10, 0.1),
@@ -159,7 +172,7 @@ enum ItemLine {
     ItemLevel.E: (8, 10, 0.1),
   }),
 
-  criticalChance('Critical Chance %', LineColor.white, perLevel: {
+  criticalChance('Critical Chance %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (1, 4, 0.05),
     ItemLevel.A: (1, 4, 0.05),
     ItemLevel.S: (4, 5, 0.05),
@@ -167,7 +180,7 @@ enum ItemLine {
     ItemLevel.E: (4, 5, 0.05),
   }),
 
-  criticalDamage('Critical Damage %', LineColor.white, perLevel: {
+  criticalDamage('Critical Damage %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (10, 24, 0.2),
     ItemLevel.A: (10, 24, 0.2),
     ItemLevel.S: (24, 30, 0.2),
@@ -175,7 +188,7 @@ enum ItemLine {
     ItemLevel.E: (24, 30, 0.2),
   }),
 
-  mpCost('MP Cost %', LineColor.white, perLevel: {
+  mpCost('MP Cost %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (2, 8, 0.1),
     ItemLevel.A: (2, 8, 0.1),
     ItemLevel.S: (8, 10, 0.1),
@@ -183,7 +196,7 @@ enum ItemLine {
     ItemLevel.E: (8, 10, 0.1),
   }),
 
-  cooldown('Cooldown %', LineColor.white,
+  cooldown('Cooldown %', LineColor.white, LineNumType.percent,
       conflictType: LineType.cooldown, perLevel: {
     ItemLevel.B: (1, 4, 0.05),
     ItemLevel.A: (1, 4, 0.05),
@@ -192,7 +205,7 @@ enum ItemLine {
     ItemLevel.E: (4, 5, 0.05),
   }),
 
-  goldPerHit('Gold per Hit', LineColor.white, perLevel: {
+  goldPerHit('Gold per Hit', LineColor.white, LineNumType.integer, perLevel: {
     ItemLevel.B: (10, 25, 1),
     ItemLevel.A: (10, 25, 1),
     ItemLevel.S: (25, 31, 1),
@@ -200,7 +213,7 @@ enum ItemLine {
     ItemLevel.E: (25, 31, 1),
   }),
 
-  knockbackChance('Knockback Chance %', LineColor.white, perLevel: {
+  knockbackChance('Knockback Chance %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (2, 8, 0.1),
     ItemLevel.A: (2, 8, 0.1),
     ItemLevel.S: (8, 10, 0.1),
@@ -208,7 +221,7 @@ enum ItemLine {
     ItemLevel.E: (8, 10, 0.1),
   }),
 
-  stunChance('Stun Chance %', LineColor.white, perLevel: {
+  stunChance('Stun Chance %', LineColor.white, LineNumType.percent, perLevel: {
     ItemLevel.B: (2, 8, 0.1),
     ItemLevel.A: (2, 8, 0.1),
     ItemLevel.S: (8, 10, 0.1),
@@ -217,26 +230,26 @@ enum ItemLine {
   }),
 
   // ── 红词条（第 3 槽）────────────────────────────────
-  redCooldown('Cooldown -', LineColor.red,
+  redCooldown('Cooldown -', LineColor.red, LineNumType.decimal,
       range: (1.6, 2.0), conflictType: LineType.cooldown),
 
-  areaSkillDamage('Area Skill Damage %', LineColor.red, range: (80, 100)),
+  areaSkillDamage('Area Skill Damage %', LineColor.red, LineNumType.percent, range: (80, 100)),
 
-  slow('Slow Seconds', LineColor.red, range: (1.6, 2.0)),
+  slow('Slow Seconds', LineColor.red, LineNumType.decimal, range: (1.6, 2.0)),
 
-  airDamage('Air Damage %', LineColor.red, range: (40, 50)),
+  airDamage('Air Damage %', LineColor.red, LineNumType.percent, range: (40, 50)),
 
-  bossDamage('Boss Damage %', LineColor.red, range: (40, 50)),
+  bossDamage('Boss Damage %', LineColor.red, LineNumType.percent, range: (40, 50)),
 
-  damageReduced('Damage Reduced %', LineColor.red, range: (20, 25)),
+  damageReduced('Damage Reduced %', LineColor.red, LineNumType.percent, range: (20, 25)),
 
-  summonedTime('Summoned Time +', LineColor.red, range: (1.6, 2.0)),
+  summonedTime('Summoned Time +', LineColor.red, LineNumType.decimal, range: (1.6, 2.0)),
 
   /// 固定值词条
-  chainLightning('Chain Lightning +', LineColor.red, range: (2, 2)),
+  chainLightning('Chain Lightning +', LineColor.red, LineNumType.fixed, range: (2, 2)),
 
   /// 固定值词条，仅弓类武器与饰品可出现
-  arrow('Arrow +', LineColor.red,
+  arrow('Arrow +', LineColor.red, LineNumType.fixed, 
       range: (1, 1),
       allowedTypes: {
         ItemType.bow,
@@ -247,37 +260,38 @@ enum ItemLine {
       }),
 
   /// 固定值词条
-  summonedUnits('Summoned Units +', LineColor.red, range: (1, 1)),
+  summonedUnits('Summoned Units +', LineColor.red, LineNumType.fixed, range: (1, 1)),
 
-  // ── 黄词条（第 4 槽，技能等级 +1）───────────────────
-  skillBonusGold('Bonus Gold Skill LV +1', LineColor.yellow),
-  skillBonusExp('Bonus Exp Skill LV +1', LineColor.yellow),
-  skillCooldown('Cooldown Skill LV +1', LineColor.yellow),
-  skillDamage('Damage Skill LV +1', LineColor.yellow),
-  skillCriticalChance('Critical Chance Skill LV +1', LineColor.yellow),
-  skillDefense('Defense Skill LV +1', LineColor.yellow),
-  skillArcherSpeed('Archer Speed Skill LV +1', LineColor.yellow),
-  skillHeroDamage('Hero Damage Skill LV +1', LineColor.yellow),
-  skillLeaderDefense('Leader, Summoner Defense Skill LV +1', LineColor.yellow),
-  skillPhysicalMastery('Physical Mastery Skill LV +1', LineColor.yellow),
-  skillColonyGold('Colony Gold Skill LV +1', LineColor.yellow),
-  skillColonyCooldown('Colony Cooldown Skill LV +1', LineColor.yellow),
-  skillFireMastery('Fire Mastery Skill LV +1', LineColor.yellow),
-  skillIceMastery('Ice Mastery Skill LV +1', LineColor.yellow),
-  skillArcherRange('Archer Range Skill LV +1', LineColor.yellow),
-  skillLightningMastery('Lightning Mastery Skill LV +1', LineColor.yellow),
-  skillPoisonMastery('Poison Mastery Skill LV +1', LineColor.yellow),
-  skillCriticalDamage('Critical Damage Skill LV +1', LineColor.yellow),
-  skillPerfectGold('Perfect Gold Skill LV +1', LineColor.yellow),
-  skillMimicChance('Mimic Chance Skill LV +1', LineColor.yellow),
-  skillMpRecovery('MP Recovery Skill LV +1', LineColor.yellow),
+  // ── 金词条（第 4 槽，技能等级 +1）───────────────────
+  skillBonusGold('Bonus Gold Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillBonusExp('Bonus Exp Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillCooldown('Cooldown Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillDamage('Damage Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillCriticalChance('Critical Chance Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillDefense('Defense Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillArcherSpeed('Archer Speed Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillHeroDamage('Hero Damage Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillLeaderDefense('Leader, Summoner Defense Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillPhysicalMastery('Physical Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillColonyGold('Colony Gold Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillColonyCooldown('Colony Cooldown Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillFireMastery('Fire Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillIceMastery('Ice Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillArcherRange('Archer Range Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillLightningMastery('Lightning Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillPoisonMastery('Poison Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillCriticalDamage('Critical Damage Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillPerfectGold('Perfect Gold Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillMimicChance('Mimic Chance Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillMpRecovery('MP Recovery Skill LV +1', LineColor.yellow, LineNumType.static),
 
   /// 特殊词条：数值在 20%~25% 随机，加强前 3 条词条
-  itemQuality('Item Quality', LineColor.yellow);
+  itemQuality('Item Quality +', LineColor.yellow, LineNumType.percent, range: (20, 25));
 
   const ItemLine(
     this.label,
-    this.color, {
+    this.color, 
+    this.numType, {
     this.perLevel,
     this.range,
     this.conflictType,
@@ -289,6 +303,9 @@ enum ItemLine {
 
   /// 词条颜色
   final LineColor color;
+
+  /// 数值类型（整数、百分比、小数），null 表示按 label 判断
+  final LineNumType? numType;
 
   /// 白词条各等级数值范围
   final Map<ItemLevel, WhiteLineRange>? perLevel;
@@ -354,14 +371,17 @@ enum ItemLine {
   }
 
   /// 是否为固定值词条（红词条中 min == max）
-  bool get isFixed => color == LineColor.red && range!.$1 == range!.$2;
+  // bool get isFixed => color == LineColor.red && range!.$1 == range!.$2;
+  bool get isFixed => numType == LineNumType.fixed;
 
   /// 是否为百分比词条（label 带 % 或 itemQuality），精度为 1 位小数（如 4.5）
-  bool get isPercent => label.contains('%') || this == ItemLine.itemQuality;
+  // bool get isPercent => label.contains('%') || this == ItemLine.itemQuality;
+  bool get isPercent => numType == LineNumType.percent;
 
   /// 是否只 roll 整数（Damage +、Gold per Hit）
-  bool get rollsInteger =>
-      this == ItemLine.damageInt || this == ItemLine.goldPerHit;
+  // bool get rollsInteger =>
+  //     this == ItemLine.damageInt || this == ItemLine.goldPerHit;
+  bool get rollsInteger => numType == LineNumType.integer;
 
   /// 随机初始值（范围内均匀随机；固定值词条返回固定值）。
   /// 精度：整数词条 0 位小数，百分比词条 1 位小数（如 4.5），
