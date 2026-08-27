@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/wave_status_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
@@ -43,6 +44,16 @@ class FunctionPage extends StatelessWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const IncomePage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.timeline),
+            title: const Text('游戏轨迹'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const GameTrackPage()),
               );
             },
           ),

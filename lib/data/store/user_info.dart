@@ -4,6 +4,8 @@ import 'package:flutter/foundation.dart';
 import 'package:grow_castle_calculator_next/core/calc/gold_income.dart';
 import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
+import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
+import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/data/store/user_data.dart';
 import 'package:grow_castle_calculator_next/data/store/widget_snapshot.dart';
 import 'package:hive_flutter/hive_flutter.dart';
@@ -408,6 +410,7 @@ class InfoStore {
     _userIdsLower.removeWhere((name, id) => id == userId);
     _data.remove(userId);
     _usersBox.delete(userId);
+    GameTrackStore().removeUser(userId);
     _persistMeta();
   }
 
@@ -892,6 +895,48 @@ class InfoStore {
     _saveCurrentState();
   }
 
+  Future<void> _recordGameTrack() async {
+    final settings = AppSettingsStore();
+    if (!settings.gameTrackEnabledNotifier.value) return;
+    final now = DateTime.now();
+    final trackStore = GameTrackStore();
+    final interval = Duration(
+      minutes: settings.gameTrackIntervalMinutesNotifier.value,
+    );
+    if (!trackStore.canRecord(_currentUserId, now, interval)) return;
+
+    final units = _cardIds
+        .map(
+          (id) {
+            final customName = _textValues[id]?.trim() ?? '';
+            final name = customName.isNotEmpty
+                ? customName
+                : id == 1
+                    ? '城堡'
+                    : id == 2
+                        ? '城弓'
+                        : '单位$id';
+            return GameTrackUnit(
+              name: name,
+              level: int.tryParse(_numberValues[id] ?? '') ?? 0,
+            );
+          },
+        )
+        .toList(growable: false);
+    await trackStore.addRecord(
+      _currentUserId,
+      GameTrackRecord(
+        id: now.microsecondsSinceEpoch.toString(),
+        recordedAt: now,
+        wave: _wave,
+        totalGold: _totalGold,
+        gp: _gp,
+        gpCN: _gpCN,
+        units: units,
+      ),
+    );
+  }
+
   /// 联网同步当前用户：拉取个人赛季数据并写入 store。
   ///
   /// 成功返回 [PlayerQueryResult]（波数与赛季波数已写入；封禁时仅标记
@@ -911,6 +956,7 @@ class InfoStore {
           result.seasonalScore,
           lastOnline: lastOnline,
         );
+        await _recordGameTrack();
       }
     }
     return result;

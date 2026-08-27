@@ -2,6 +2,7 @@ import 'package:get_it/get_it.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_rule_store.dart';
+import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
 
 abstract final class Stores {
@@ -34,5 +35,12 @@ abstract final class Stores {
       _getIt.registerSingleton<ItemComparerStore>(ItemComparerStore());
     }
     return _getIt<ItemComparerStore>();
+  }
+
+  static GameTrackStore get gameTrackStore {
+    if (!_getIt.isRegistered<GameTrackStore>()) {
+      _getIt.registerSingleton<GameTrackStore>(GameTrackStore());
+    }
+    return _getIt<GameTrackStore>();
   }
 }

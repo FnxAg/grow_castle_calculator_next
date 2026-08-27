@@ -253,7 +253,6 @@ class _ItemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final quality = item.quality;
     final rule = this.rule;
     final highlight = rule != null;
     return Card(

@@ -211,13 +211,55 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  void _showGameTrackIntervalDialog(
+    BuildContext context,
+    AppSettingsStore store,
+  ) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    showDialog<void>(
+      context: context,
+      builder: (context) {
+        final controller = TextEditingController(
+          text: '${store.gameTrackIntervalMinutesNotifier.value}',
+        );
+        return AlertDialog(
+          title: const Text('记录间隔'),
+          content: SelectAllTextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: const InputDecoration(
+              labelText: '分钟',
+              helperText: '1-1440',
+              isDense: true,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('取消'),
+            ),
+            TextButton(
+              onPressed: () {
+                final value = int.tryParse(controller.text);
+                if (value != null) store.setGameTrackIntervalMinutes(value);
+                Navigator.of(context).pop();
+              },
+              child: const Text('保存'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appSettingsStore = Stores.appSettingsStore;
     return Scaffold(
       appBar: AppBar(
         title: const Text('设置'),
-        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: ListView(
         children: [
@@ -292,8 +334,7 @@ class _SettingPageState extends State<SettingPage> {
                     enabled: enabled,
                     leading: const Icon(Icons.link),
                     title: const Text('API 地址'),
-                    subtitle: const Text('第三方 API 请求地址'),
-                    trailing: Icon(Icons.settings),
+                    subtitle: Text(url),
                     onTap: () => _showApiUrlDialog(context, appSettingsStore),
                   );
                 }
@@ -309,7 +350,7 @@ class _SettingPageState extends State<SettingPage> {
                 },
                 leading: const Icon(Icons.schedule),
                 title: const Text('自动查询上次在线'),
-                subtitle: const Text('公会详情页自动查询各成员"上次在线"'),
+                subtitle: const Text('公会详情页查询成员"上次在线"'),
                 trailing: Switch(
                   value: enabled,
                   onChanged: appSettingsStore.setAutoLastOnlineEnabled,
@@ -328,17 +369,45 @@ class _SettingPageState extends State<SettingPage> {
                     enabled: enabled,
                     leading: const Icon(Icons.network_check),
                     title: const Text('查询并发数'),
-                    subtitle: const Text('公会成员"上次在线"同时查询的请求数'),
-                    trailing: Text(
-                      '$concurrency',
-                      style: const TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 16.0,
-                        ),
-                    ),
+                    subtitle: Text('$concurrency'),
                     onTap: () => _showConcurrencyDialog(context, appSettingsStore),
                   );
                 }
+              );
+            },
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: appSettingsStore.gameTrackEnabledNotifier,
+            builder: (context, enabled, _) {
+              return ListTile(
+                leading: const Icon(Icons.timeline),
+                title: const Text('游戏轨迹记录'),
+                subtitle: const Text('记录个人数据变化'),
+                onTap: () => appSettingsStore.setGameTrackEnabled(!enabled),
+                trailing: Switch(
+                  value: enabled,
+                  onChanged: appSettingsStore.setGameTrackEnabled,
+                ),
+              );
+            },
+          ),
+          ValueListenableBuilder<int>(
+            valueListenable: appSettingsStore.gameTrackIntervalMinutesNotifier,
+            builder: (context, minutes, _) {
+              return ValueListenableBuilder<bool>(
+                valueListenable: appSettingsStore.gameTrackEnabledNotifier,
+                builder: (context, enabled, _) {
+                  return ListTile(
+                    enabled: enabled,
+                    leading: const Icon(Icons.timer_outlined),
+                    title: const Text('轨迹记录最小间隔'),
+                    subtitle: Text('$minutes 分钟'),
+                    onTap: () => _showGameTrackIntervalDialog(
+                      context,
+                      appSettingsStore,
+                    ),
+                  );
+                },
               );
             },
           ),

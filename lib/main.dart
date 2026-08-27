@@ -39,6 +39,9 @@ Future<void> _initializeHive() async {
   if (!Hive.isBoxOpen('item_rules')) {
     await Hive.openBox('item_rules');
   }
+  if (!Hive.isBoxOpen('game_track')) {
+    await Hive.openBox('game_track');
+  }
 }
 
 Future<void> _initializeGetIt() async {

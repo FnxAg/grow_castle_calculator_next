@@ -9,12 +9,15 @@ class AppSettingsStore {
   static const String _thirdPartyApiEnabledKey = 'thirdPartyApiEnabled';
   static const String _autoLastOnlineEnabledKey = 'autoLastOnlineEnabled';
   static const String _lastOnlineConcurrencyKey = 'lastOnlineConcurrency';
+  static const String _gameTrackEnabledKey = 'gameTrackEnabled';
+  static const String _gameTrackIntervalMinutesKey = 'gameTrackIntervalMinutes';
 
   /// 第三方 API 默认地址（正式接口部署前的占位地址）
   static const String defaultApiUrl = 'https://fnxag.eu.org/gcapi';
 
   /// 公会成员"上次在线"默认并发查询数
   static const int defaultLastOnlineConcurrency = 3;
+  static const int defaultGameTrackIntervalMinutes = 5;
 
   final Box _box;
   final ValueNotifier<ThemeMode> themeModeNotifier;
@@ -26,6 +29,8 @@ class AppSettingsStore {
 
   /// 公会成员"上次在线"并发查询数（1-10）
   final ValueNotifier<int> lastOnlineConcurrencyNotifier;
+  final ValueNotifier<bool> gameTrackEnabledNotifier;
+  final ValueNotifier<int> gameTrackIntervalMinutesNotifier;
 
   AppSettingsStore()
       : _box = Hive.box(_boxName),
@@ -43,6 +48,12 @@ class AppSettingsStore {
         ),
         lastOnlineConcurrencyNotifier = ValueNotifier<int>(
           _readLastOnlineConcurrency(Hive.box(_boxName)),
+        ),
+        gameTrackEnabledNotifier = ValueNotifier<bool>(
+          _readGameTrackEnabled(Hive.box(_boxName)),
+        ),
+        gameTrackIntervalMinutesNotifier = ValueNotifier<int>(
+          _readGameTrackIntervalMinutes(Hive.box(_boxName)),
         );
 
   static ThemeMode _readThemeMode(Box box) {
@@ -129,5 +140,29 @@ class AppSettingsStore {
     }
     lastOnlineConcurrencyNotifier.value = value;
     _box.put(_lastOnlineConcurrencyKey, value);
+  }
+
+  static bool _readGameTrackEnabled(Box box) {
+    final raw = box.get(_gameTrackEnabledKey);
+    return raw is bool ? raw : false;
+  }
+
+  void setGameTrackEnabled(bool enabled) {
+    if (gameTrackEnabledNotifier.value == enabled) return;
+    gameTrackEnabledNotifier.value = enabled;
+    _box.put(_gameTrackEnabledKey, enabled);
+  }
+
+  static int _readGameTrackIntervalMinutes(Box box) {
+    final raw = box.get(_gameTrackIntervalMinutesKey);
+    if (raw is int && raw >= 1) return raw.clamp(1, 1440);
+    return defaultGameTrackIntervalMinutes;
+  }
+
+  void setGameTrackIntervalMinutes(int minutes) {
+    final value = minutes.clamp(1, 1440);
+    if (gameTrackIntervalMinutesNotifier.value == value) return;
+    gameTrackIntervalMinutesNotifier.value = value;
+    _box.put(_gameTrackIntervalMinutesKey, value);
   }
 }
