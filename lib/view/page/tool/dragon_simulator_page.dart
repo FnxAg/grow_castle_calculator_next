@@ -8,7 +8,6 @@ import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_rule_edit_page.dart';
 
-/// 刷龙模拟器：按装备来源与装备类型随机生成装备（草案 UI）
 class DragonSimulatorPage extends StatefulWidget {
   const DragonSimulatorPage({super.key});
 
@@ -31,7 +30,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   @override
   void initState() {
     super.initState();
-    _generate();
+    // _generate();
   }
 
   void _generate() {
