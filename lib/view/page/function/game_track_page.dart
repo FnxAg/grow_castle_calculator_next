@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
+import 'package:grow_castle_calculator_next/view/page/function/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 class GameTrackPage extends StatefulWidget {
@@ -64,6 +65,17 @@ class _GameTrackPageState extends State<GameTrackPage> {
     return UserPageScaffold(
       title: '游戏轨迹',
       actions: [
+        IconButton(
+          icon: const Icon(Icons.show_chart),
+          tooltip: '查看轨迹图表',
+          onPressed: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => const GameTrackChartPage(),
+              ),
+            );
+          },
+        ),
         IconButton(
           icon: const Icon(Icons.sort),
           tooltip: _newestFirst ? '按时间由远到近' : '按时间由近到远',
