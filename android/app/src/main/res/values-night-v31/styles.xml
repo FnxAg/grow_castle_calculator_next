@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Android 12+ 深色模式下的 LaunchTheme。
+         资源限定符同时命中 night 与 v31 时 night 优先，因此这里需重复声明。
+         背景色取 @color/splash_background（与 drawable-night 同源） -->
+    <style name="LaunchTheme" parent="@android:style/Theme.Black.NoTitleBar">
+        <item name="android:windowSplashScreenBackground">@color/splash_background</item>
+        <item name="android:windowSplashScreenAnimatedIcon">@drawable/splash_logo</item>
+        <item name="android:windowBackground">@drawable/launch_background</item>
+    </style>
+</resources>

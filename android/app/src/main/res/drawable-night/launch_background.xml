@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 启动首屏（Android 5.0+）：白色背景 + 居中 logo。
-     固定为白色而非系统背景色，原因见 drawable/launch_background.xml 的注释 -->
+<!-- 深色模式启动首屏：深灰背景（Material 深色表面色）+ 居中 logo。
+     注意 logo 的深棕部分在深底上会变淡，金色/橙色高光仍清晰 -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
     <item android:drawable="@color/splash_background" />
 

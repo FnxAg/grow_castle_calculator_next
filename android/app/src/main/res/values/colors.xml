@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- 启动首屏背景色（浅色主题），深色见 values-night/colors.xml -->
+    <color name="splash_background">#FFFFFF</color>
     <!-- 桌面小组件配色（浅色主题） -->
     <color name="widget_background_color">#F5F5F5</color>
     <color name="widget_text_primary">#1A1A1A</color>
