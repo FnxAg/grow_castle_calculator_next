@@ -1,19 +1,29 @@
 import 'package:hive_flutter/hive_flutter.dart';
 
 class GameTrackUnit {
-  const GameTrackUnit({required this.name, required this.level});
+  const GameTrackUnit({
+    required this.name,
+    required this.level,
+    this.enabled = true,
+  });
 
   final String name;
   final int level;
+  final bool enabled;
 
   factory GameTrackUnit.fromMap(Map<dynamic, dynamic> map) {
     return GameTrackUnit(
       name: map['name']?.toString() ?? '',
       level: _asInt(map['level']),
+      enabled: map['enabled'] is bool ? map['enabled'] as bool : true,
     );
   }
 
-  Map<String, dynamic> toMap() => {'name': name, 'level': level};
+  Map<String, dynamic> toMap() => {
+        'name': name,
+        'level': level,
+        'enabled': enabled,
+      };
 }
 
 class GameTrackRecord {

@@ -919,6 +919,7 @@ class InfoStore {
             return GameTrackUnit(
               name: name,
               level: int.tryParse(_numberValues[id] ?? '') ?? 0,
+              enabled: _applyFlags[id] ?? true,
             );
           },
         )

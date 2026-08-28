@@ -147,7 +147,14 @@ class _TrackCard extends StatelessWidget {
                 runSpacing: 4,
                 children: [
                   for (final unit in record.units)
-                    PillChip(text: Text('${unit.name} Lv.${unit.level}')),
+                    Builder(
+                      builder: (context) => PillChip(
+                        text: Text('${unit.name} Lv.${unit.level}'),
+                        backgroundColor: unit.enabled
+                            ? null
+                            : Theme.of(context).colorScheme.surfaceContainerHighest,
+                      ),
+                    ),
                 ],
               ),
             ],
