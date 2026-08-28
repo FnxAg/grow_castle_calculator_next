@@ -43,6 +43,7 @@ dependencies:
   url_launcher: ^6.3.2
   fl_chart: ^1.1.1
   material_ui: any
+  dynamic_color: ^2.1.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

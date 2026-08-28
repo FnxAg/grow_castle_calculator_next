@@ -1,21 +1,21 @@
-import 'package:flutter/services.dart';
-import 'package:material_ui/material_ui.dart';
+// import 'package:flutter/services.dart';
+// import 'package:material_ui/material_ui.dart';
 
-class NativeDynamicColorUtil {
-  static const MethodChannel _channel = MethodChannel("fnxag.dynamic_color/native");
+// class NativeDynamicColorUtil {
+//   static const MethodChannel _channel = MethodChannel("fnxag.dynamic_color/native");
 
-  /// 获取系统动态ColorScheme
-  static Future<ColorScheme?> getDynamicColorScheme(Brightness brightness) async {
-    try {
-      final int? argb = await _channel.invokeMethod("getSystemWallpaperSeedColor");
-      if (argb == null) return null;
-      final seedColor = Color(argb);
-      return ColorScheme.fromSeed(
-        seedColor: seedColor,
-        brightness: brightness,
-      );
-    } catch (_) {
-      return null;
-    }
-  }
-}
+//   /// 获取系统动态ColorScheme
+//   static Future<ColorScheme?> getDynamicColorScheme(Brightness brightness) async {
+//     try {
+//       final int? argb = await _channel.invokeMethod("getSystemWallpaperSeedColor");
+//       if (argb == null) return null;
+//       final seedColor = Color(argb);
+//       return ColorScheme.fromSeed(
+//         seedColor: seedColor,
+//         brightness: brightness,
+//       );
+//     } catch (_) {
+//       return null;
+//     }
+//   }
+// }
