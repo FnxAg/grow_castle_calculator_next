@@ -39,15 +39,16 @@ class _FormationCardTileState extends State<FormationCardTile> {
 
   @override
   Widget build(BuildContext context) {
-    return Listener(
-      onPointerDown: (_) {
-        // 必须在拖拽代理创建之前清除焦点，否则持有焦点
-        // 的 TextField 被移入 Overlay 时会导致崩溃
-        FocusManager.instance.primaryFocus?.unfocus();
-      },
-      child: ListTile(
-        // 显式拖拽句柄：避免在 TextField 区域长按触发重排
-        leading: ReorderableDragStartListener(
+    final scheme = Theme.of(context).colorScheme;
+    return ListTile(
+      // 显式拖拽句柄：避免在 TextField 区域长按触发重排
+      leading: Listener(
+        onPointerDown: (_) {
+          // 拖拽时条目会暂时移入 Overlay，先释放输入框焦点避免 Debug
+          // 模式下 EditableText 的焦点与 RenderObject 状态不一致。
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: ReorderableDragStartListener(
           index: widget.index,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 24),
@@ -56,7 +57,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
               height: 24,
               alignment: Alignment.center,
               decoration: BoxDecoration(
-                color: Theme.of(context).colorScheme.primaryContainer,
+                color: scheme.primaryContainer,
                 borderRadius: BorderRadius.circular(999.0),
               ),
               child: Text(
@@ -69,17 +70,17 @@ class _FormationCardTileState extends State<FormationCardTile> {
             ),
           ),
         ),
-        // 名称 + 等级两个输入框作为主体
-        title: Row(
-          children: [
-            Expanded(flex: 9, child: _nameField()),
-            const SizedBox(width: 8.0),
-            Expanded(flex: 9, child: _levelField()),
-          ],
-        ),
-        trailing: _menuButton(),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
       ),
+      // 名称 + 等级两个输入框作为主体
+      title: Row(
+        children: [
+          Expanded(flex: 9, child: _nameField()),
+          const SizedBox(width: 8.0),
+          Expanded(flex: 9, child: _levelField()),
+        ],
+      ),
+      trailing: _menuButton(),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
     );
   }
 
