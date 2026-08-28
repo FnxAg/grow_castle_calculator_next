@@ -124,7 +124,22 @@ class _ChartPanel extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(title, style: Theme.of(context).textTheme.titleMedium),
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
+                    style: Theme.of(context).textTheme.titleMedium,
+                  ),
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  '${formatValue(minimumY)} ~ ${formatValue(maximumY)}',
+                  textAlign: TextAlign.right,
+                  style: Theme.of(context).textTheme.bodySmall,
+                ),
+              ],
+            ),
             const SizedBox(height: 12),
             SizedBox(
               height: 240,
@@ -187,8 +202,9 @@ class _ChartPanel extends StatelessWidget {
                     ),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 48,
+                        showTitles: false,
+                        reservedSize: 60,
+                        interval: null,
                         getTitlesWidget: (value, meta) => Text(
                           formatValue(value),
                           style: Theme.of(context).textTheme.bodySmall,
