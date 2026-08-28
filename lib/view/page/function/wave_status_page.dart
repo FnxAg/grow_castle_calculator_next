@@ -108,7 +108,7 @@ class WaveStatusPage extends StatelessWidget {
                 entries: _autoBattleEntries,
                 infoContent: const Text(
                   '时挂 (TAB) 选项默认启用释放乐队技能 (BAND SKILL) ，'
-                  '且兽人号角 (ORC BAND) 和经验号角 (MILITARY BANDS(F)) 同时上场。',
+                  '且兽人号角和经验号角同时上场。',
                 ),
                 onChanged: store.setCurrentUserIsGoldAutoBattle,
               ),
