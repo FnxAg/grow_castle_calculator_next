@@ -231,7 +231,7 @@ class _SettingPageState extends State<SettingPage> {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: const InputDecoration(
               labelText: '分钟',
-              helperText: '1-1440',
+              helperText: '1-43200',
               isDense: true,
             ),
           ),

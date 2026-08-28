@@ -155,12 +155,12 @@ class AppSettingsStore {
 
   static int _readGameTrackIntervalMinutes(Box box) {
     final raw = box.get(_gameTrackIntervalMinutesKey);
-    if (raw is int && raw >= 1) return raw.clamp(1, 1440);
+    if (raw is int && raw >= 1) return raw.clamp(1, 43200);
     return defaultGameTrackIntervalMinutes;
   }
 
   void setGameTrackIntervalMinutes(int minutes) {
-    final value = minutes.clamp(1, 1440);
+    final value = minutes.clamp(1, 43200);
     if (gameTrackIntervalMinutesNotifier.value == value) return;
     gameTrackIntervalMinutesNotifier.value = value;
     _box.put(_gameTrackIntervalMinutesKey, value);
