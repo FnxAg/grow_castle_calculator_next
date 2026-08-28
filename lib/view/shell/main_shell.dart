@@ -16,6 +16,7 @@ class _MainShellState extends State<MainShell> {
 
   @override
   void dispose() {
+    _selectIndex.dispose();
     _pageController.dispose();
     super.dispose();
   }

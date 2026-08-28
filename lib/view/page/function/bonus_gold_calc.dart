@@ -96,7 +96,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
           ],
         );
       },
-    );
+    ).whenComplete(controller.dispose);
   }
 
   @override
@@ -201,7 +201,6 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
     double avgIncome,
     double percent,
   ) {
-    final scheme = Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(

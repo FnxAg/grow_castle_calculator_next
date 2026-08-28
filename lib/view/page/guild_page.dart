@@ -234,7 +234,7 @@ class _GuildPageState extends State<GuildPage> {
           if (!mounted || value == null) return;
           final key = m.name.toLowerCase();
           // 相同值跳过：避免无谓重建与动画重放
-          // if (_lastOnlineByLower[key] == value) return;
+          if (_lastOnlineByLower[key] == value) return;
           setState(() => _lastOnlineByLower[key] = value);
         });
       }
