@@ -898,6 +898,11 @@ class InfoStore {
   Future<void> _recordGameTrack() async {
     final settings = AppSettingsStore();
     if (!settings.gameTrackEnabledNotifier.value) return;
+    final hasFormationInput = _cardIds.any(
+      (id) => (_textValues[id]?.trim().isNotEmpty ?? false) ||
+          (_numberValues[id]?.trim().isNotEmpty ?? false),
+    );
+    if (!hasFormationInput) return;
     final now = DateTime.now();
     final trackStore = GameTrackStore();
     final interval = Duration(
