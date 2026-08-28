@@ -82,7 +82,7 @@ class _GuildPageState extends State<GuildPage> {
   /// 联网返回时布局不漂移；开关关闭时为 0（不占位）
   double _timeColumnWidth = 0;
 
-  /// 分数列测量/展示样式（颜色不影响宽度，行内样式需保持一致）
+  /// 分数列测量/展示样式
   static const TextStyle _scoreStyle = TextStyle(
     fontSize: 14.0,
     fontWeight: FontWeight.bold,
@@ -91,13 +91,19 @@ class _GuildPageState extends State<GuildPage> {
   /// "上次在线"时间列测量/展示样式
   static const TextStyle _timeStyle = TextStyle(fontSize: 12.0);
 
-  /// 测量单行文本宽度（TextPainter，逻辑像素）
+  /// 测量单行文本宽度（TextPainter，逻辑像素）。
+  /// 合并当前默认样式和文字缩放，确保与实际 Text 渲染一致。
   double _textWidth(String text, TextStyle style) {
     return (TextPainter(
-      text: TextSpan(text: text, style: style),
+      text: TextSpan(
+        text: text,
+        style: DefaultTextStyle.of(context).style.merge(style),
+      ),
       textDirection: TextDirection.ltr,
+      textScaler: MediaQuery.textScalerOf(context),
     )..layout())
-        .width;
+        .width
+        .ceilToDouble();
   }
 
   @override
@@ -171,12 +177,18 @@ class _GuildPageState extends State<GuildPage> {
         final lastOnlineEnabled =
             Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
         _scoreColumnWidth = members.fold<double>(0, (max, m) {
-          final w = _textWidth(m.score.format(), _scoreStyle);
+          final w = _textWidth('9,999,999', _scoreStyle);
           return w > max ? w : max;
         });
-        // "1000d" 覆盖时间格式的最长常见形态（Nd），按此固定时间列宽
-        _timeColumnWidth =
-            lastOnlineEnabled ? _textWidth('1000d', _timeStyle) : 0;
+        // 覆盖 formatLastOnline 的单位格式，避免 min 比 Nd 更宽而被截断。
+        _timeColumnWidth = lastOnlineEnabled
+            ? [
+                '999min',
+                '1000d',
+              ].map((text) => _textWidth(text, _timeStyle)).reduce(
+                (max, width) => width > max ? width : max,
+              )
+            : 0;
         // 同步回填各成员"上次在线"（缓存命中首帧即展示，不重放入场动画）；
         // 重建映射顺带清理已退出公会成员的旧条目；未缓存成员留空待异步拉取
         _lastOnlineByLower = {};
@@ -235,7 +247,13 @@ class _GuildPageState extends State<GuildPage> {
           final key = m.name.toLowerCase();
           // 相同值跳过：避免无谓重建与动画重放
           if (_lastOnlineByLower[key] == value) return;
-          setState(() => _lastOnlineByLower[key] = value);
+          final valueWidth = _textWidth(value, _timeStyle);
+          setState(() {
+            _lastOnlineByLower[key] = value;
+            if (valueWidth > _timeColumnWidth) {
+              _timeColumnWidth = valueWidth;
+            }
+          });
         });
       }
     }
@@ -527,6 +545,7 @@ class _GuildPageState extends State<GuildPage> {
                                         style: _timeStyle.copyWith(
                                           color: scheme.onSurfaceVariant,
                                         ),
+                                        maxLines: 1,
                                     ),
                                 ),
                           ),
@@ -541,6 +560,7 @@ class _GuildPageState extends State<GuildPage> {
                           style: _scoreStyle.copyWith(
                             color: isSelf ? scheme.primary : null,
                           ),
+                          maxLines: 1,
                         ),
                       ),
                     ],
