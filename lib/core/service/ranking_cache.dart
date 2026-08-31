@@ -31,19 +31,29 @@ class RankingCache {
 
   /// 获取公会成员列表：命中缓存直接返回；[force] 为 true（用户手动刷新）
   /// 时忽略缓存重新请求，成功后覆盖缓存，失败保留旧缓存。
+  /// 并发调用同一公会时复用同一个请求（[_inflight] 去重，与榜单一致）：
+  /// 启动时首页预热与公会页首拉几乎同时发生，无去重会发出重复请求。
   static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */> guildDetail(
     String guildName, {
     bool force = false,
   }) async {
     final cached = _guildDetails[guildName];
     if (!force && cached != null) return cached;
-    final result = await PlayerApiService.queryGuildDetail(guildName);
-    if (result is SeasonQueryResult<GuildMember>) {
-      _guildDetails[guildName] = result;
-      // 公会成员数据与公会榜单同赛季（个人/公会 5 天赛季）
-      guildSeasonNotifier.value = result.season;
+    final inflight = _inflight['guild:$guildName'];
+    if (inflight != null) return inflight;
+    final future = PlayerApiService.queryGuildDetail(guildName);
+    _inflight['guild:$guildName'] = future;
+    try {
+      final result = await future;
+      if (result is SeasonQueryResult<GuildMember>) {
+        _guildDetails[guildName] = result;
+        // 公会成员数据与公会榜单同赛季（个人/公会 5 天赛季）
+        guildSeasonNotifier.value = result.season;
+      }
+      return result;
+    } finally {
+      _inflight.remove('guild:$guildName');
     }
-    return result;
   }
 
   // ── 公开榜单（TTL 过期自动刷新）───────────────────────────────────
