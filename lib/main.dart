@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:dynamic_color/dynamic_color.dart';
 import 'package:get_it/get_it.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
@@ -10,8 +11,8 @@ import 'package:grow_castle_calculator_next/data/store/user_info.dart';
 
 void main() async {
   await _init();
-
-  runApp(const MyApp());
+  final (lightDynamic, darkDynamic) = await _fetchDynamicColorSchemes();
+  runApp(MyApp(lightDynamic: lightDynamic, darkDynamic: darkDynamic));
 }
 
 Future<void> _init() async {
@@ -52,6 +53,34 @@ Future<void> _initializeGetIt() async {
   if (!getIt.isRegistered<AppSettingsStore>()) {
     getIt.registerSingleton<AppSettingsStore>(AppSettingsStore());
   }
+}
+
+Future<(ColorScheme?, ColorScheme?)> _fetchDynamicColorSchemes() async {
+  try {
+    final corePalette = await DynamicColorPlugin.getCorePalette()
+        .timeout(const Duration(milliseconds: 500));
+    if (corePalette != null) {
+      return (
+        corePalette.toColorScheme(),
+        corePalette.toColorScheme(brightness: Brightness.dark),
+      );
+    }
+  } catch (e) {
+    debugPrint('Failed to fetch dynamic colors: $e');
+  }
+  try {
+    final accent = await DynamicColorPlugin.getAccentColor()
+        .timeout(const Duration(milliseconds: 500));
+    if (accent != null) {
+      return (
+        ColorScheme.fromSeed(seedColor: accent, brightness: Brightness.light),
+        ColorScheme.fromSeed(seedColor: accent, brightness: Brightness.dark),
+      );
+    }
+  } catch (e) {
+    debugPrint('Failed to fetch accent color: $e');
+  }
+  return (null, null);
 }
 
 
