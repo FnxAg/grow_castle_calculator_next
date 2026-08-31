@@ -16,6 +16,7 @@ class FormationInputField extends StatelessWidget {
     required this.keyboardType,
     this.inputFormatters,
     required this.enabled,
+    this.visualDisabled = false,
   });
 
   final TextEditingController controller;
@@ -24,20 +25,25 @@ class FormationInputField extends StatelessWidget {
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
 
-  /// 是否可编辑（未应用的条目置灰不可输入）
+  /// 是否可编辑；与视觉禁用状态分离，允许“看起来禁用但依然可输入”。
   final bool enabled;
+
+  /// 是否以禁用样式显示，且不影响实质可编辑状态。
+  final bool visualDisabled;
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final isVisualDisabled = visualDisabled || !enabled;
+
     return Container(
       decoration: BoxDecoration(
-        color: enabled
-            ? colorScheme.primaryContainer
-            : colorScheme.surfaceContainerHighest,
+        color: isVisualDisabled
+            ? colorScheme.surfaceContainerHighest
+            : colorScheme.primaryContainer,
         border: Border(
           left: BorderSide(
-            color: enabled ? colorScheme.primary : colorScheme.outlineVariant,
+            color: isVisualDisabled ? colorScheme.outlineVariant : colorScheme.primary,
             width: 2.0,
           ),
         ),

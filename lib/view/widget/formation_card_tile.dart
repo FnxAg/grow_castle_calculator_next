@@ -88,7 +88,8 @@ class _FormationCardTileState extends State<FormationCardTile> {
     return FormationInputField(
       controller: widget.textController,
       focusNode: widget.textFocusNode,
-      enabled: _applied,
+      enabled: true,
+      visualDisabled: !_applied,
       labelText: '${widget.id == 1 ? '城堡' : widget.id == 2 ? '城弓' : ''}名称',
       keyboardType: TextInputType.text,
     );
@@ -98,7 +99,8 @@ class _FormationCardTileState extends State<FormationCardTile> {
     return FormationInputField(
       controller: widget.numberController,
       focusNode: widget.numberFocusNode,
-      enabled: _applied,
+      enabled: true,
+      visualDisabled: !_applied,
       labelText: '等级',
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
