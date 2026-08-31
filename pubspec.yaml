@@ -14,6 +14,7 @@ dependencies:
   get_it: ^9.2.1
   hive_flutter: ^1.1.0
   flutter_displaymode: ^0.7.0
+  flutter_native_splash: ^2.4.8
   http: ^1.6.0
   package_info_plus: ^10.2.1
   path_provider: ^2.1.6
@@ -31,3 +32,8 @@ flutter:
   uses-material-design: true
   assets:
     - assets/images/
+
+flutter_native_splash:
+  color: "#ffffff"
+  image: assets/images/app_icon.png
+  color_dark: "#121212"

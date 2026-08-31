@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <string name="app_name">GCC Next</string>
     <!-- 桌面小组件文案 -->
     <string name="widget_label">GCC Next 数据</string>
     <string name="widget_description">显示当前用户的总波数、赛季波数和在线情况</string>

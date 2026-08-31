@@ -1,12 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 启动首屏：白色背景 + 居中 logo（splash_logo 由 content.png 按密度缩放生成，
-     深色模式同款白色背景，保证 logo 深色部分在两种模式下都清晰可见） -->
 <layer-list xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:drawable="@color/splash_background" />
-
     <item>
-        <bitmap
-            android:gravity="center"
-            android:src="@drawable/splash_logo" />
+        <bitmap android:gravity="fill" android:src="@drawable/background"/>
+    </item>
+    <item>
+        <bitmap android:gravity="center" android:src="@drawable/splash"/>
     </item>
 </layer-list>
