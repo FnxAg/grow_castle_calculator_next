@@ -152,7 +152,6 @@ class _AboutPageState extends State<AboutPage> {
               fit: BoxFit.cover,
             ),
           ),
-          const SizedBox(height: 16),
           Text(
             info?.appName ?? 'GCC Next',
             style: textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),

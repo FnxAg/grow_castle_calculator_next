@@ -40,7 +40,6 @@ class GuildDetailPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text(guildName),
-        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: GuildPage(guildName: guildName, userHeader: false),
     );

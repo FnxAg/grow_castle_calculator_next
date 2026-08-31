@@ -94,6 +94,16 @@ class GameTrackStore {
     return records;
   }
 
+  int getRecordCount(int userId) => getRecords(userId).length;
+
+  DateTime? getLastRecordTime(int userId) {
+    final records = getRecords(userId);
+    if (records.isEmpty) {
+      return null;
+    }
+    return records.last.recordedAt;
+  }
+
   bool canRecord(int userId, DateTime now, Duration interval) {
     final records = getRecords(userId);
     return records.isEmpty || now.difference(records.last.recordedAt) >= interval;

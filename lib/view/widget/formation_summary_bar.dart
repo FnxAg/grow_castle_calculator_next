@@ -133,7 +133,7 @@ class FormationSummaryBar extends StatelessWidget {
                     : const SizedBox(width: double.infinity),
               ),
               _SummaryRow(
-                icon: Icons.monetization_on_outlined,
+                icon: Icons.monetization_on,
                 label: Text('总金币'),
                 value: ValueListenableBuilder<double>(
                   valueListenable: Stores.infoStore.totalGoldNotifier,
@@ -148,16 +148,7 @@ class FormationSummaryBar extends StatelessWidget {
                 label: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [
-                    const Text('GP'),
-                    SizedBox(
-                      height: 14.0,
-                      child: VerticalDivider(
-                        width: 12.0,
-                        thickness: 1.0,
-                        color: Theme.of(context).colorScheme.outlineVariant,
-                      ),
-                    ),
-                    const Text('指数'),
+                    const Text('GP · 指数'),
                   ],
                 ),
                 value: ListenableBuilder(

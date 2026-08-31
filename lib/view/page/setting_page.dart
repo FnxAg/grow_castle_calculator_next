@@ -266,6 +266,12 @@ class _SettingPageState extends State<SettingPage> {
           ListTile(
             leading: const Icon(Icons.group),
             title: const Text('用户管理'),
+            subtitle: ValueListenableBuilder(
+              valueListenable: Stores.infoStore.currentUserNotifier,
+              builder: (context, value, child) {
+                return Text(Stores.infoStore.getCurrentUsername());
+              }
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
@@ -315,7 +321,7 @@ class _SettingPageState extends State<SettingPage> {
               return ListTile(
                 leading: const Icon(Icons.api),
                 title: const Text('第三方 API'),
-                subtitle: Text('玩家详情页获取波速信息'),
+                subtitle: const Text('玩家详情页获取波速信息'),
                 onTap: () => appSettingsStore.setThirdPartyApiEnabled(!enabled),
                 trailing: Switch(
                   value: enabled,

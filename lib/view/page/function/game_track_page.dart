@@ -19,6 +19,7 @@ class _GameTrackPageState extends State<GameTrackPage> {
   bool _newestFirst = true;
 
   int get _userId => Stores.infoStore.getCurrentUserId();
+  bool get _gameTrackEnabled => Stores.appSettingsStore.gameTrackEnabledNotifier.value;
 
   @override
   void initState() {
@@ -62,9 +63,49 @@ class _GameTrackPageState extends State<GameTrackPage> {
 
   @override
   Widget build(BuildContext context) {
+    final summary = Padding(
+      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+      child: Align(
+        alignment: Alignment.centerLeft,
+        child: Text(
+          '共 ${_records.length} 条记录',
+          style: Theme.of(context).textTheme.titleSmall?.copyWith(
+            color: Theme.of(context).colorScheme.primary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ),
+    );
+
     return UserPageScaffold(
       title: '游戏轨迹',
       actions: [
+        if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
+          IconButton(
+            icon: const Icon(
+              Icons.warning,
+              color: Colors.orange,
+            ),
+            tooltip: '注意',
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  title: const Text('注意'),
+                  content: const Text(
+                    '游戏轨迹记录功能已关闭，'
+                    '无法记录新的轨迹数据。',
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(context).pop(),
+                      child: const Text('知道了'),
+                    ),
+                  ],
+                ),
+              );
+            }
+          ),
         IconButton(
           icon: const Icon(Icons.show_chart),
           tooltip: '查看轨迹图表',
@@ -82,23 +123,54 @@ class _GameTrackPageState extends State<GameTrackPage> {
           onPressed: _toggleSort,
         ),
       ],
-      body: _records.isEmpty
-          ? const Center(child: Text('暂无轨迹记录'))
-          : ListView.builder(
-              padding: const EdgeInsets.all(12),
-              itemCount: _records.length * 2 - 1,
-              itemBuilder: (context, index) {
-                if (index.isOdd) {
-                  return _TrackDelta(
-                    previous: _records[index ~/ 2 + 1],
-                    current: _records[index ~/ 2],
-                  );
-                }
-                return _TrackCard(
-                  record: _records[index ~/ 2],
-                  onDelete: () => _deleteRecord(_records[index ~/ 2]),
-                );
-              },
+      body: _userId == 0
+          ? const Center(
+              child: Text('当前为默认用户，无法记录轨迹'),
+            )
+          : _records.isEmpty && !_gameTrackEnabled
+          ? Column(
+              children: [
+                summary,
+                const Expanded(
+                  child: Center(
+                    child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」'),
+                  ),
+                ),
+              ],
+            )
+          : _records.isEmpty
+          ? Column(
+              children: [
+                summary,
+                const Expanded(
+                  child: Center(
+                    child: Text('暂无轨迹记录'),
+                  ),
+                ),
+              ],
+            )
+          : Column(
+              children: [
+                summary,
+                Expanded(
+                  child: ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                    itemCount: _records.length * 2 - 1,
+                    itemBuilder: (context, index) {
+                      if (index.isOdd) {
+                        return _TrackDelta(
+                          previous: _records[index ~/ 2 + 1],
+                          current: _records[index ~/ 2],
+                        );
+                      }
+                      return _TrackCard(
+                        record: _records[index ~/ 2],
+                        onDelete: () => _deleteRecord(_records[index ~/ 2]),
+                      );
+                    },
+                  ),
+                ),
+              ],
             ),
     );
   }

@@ -1,4 +1,7 @@
 import 'package:material_ui/material_ui.dart';
+
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
+import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
@@ -11,6 +14,11 @@ class FunctionPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final store = Stores.infoStore;
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      fontWeight: FontWeight.w600,
+    );
     return UserPageScaffold(
       title: '功能',
       body: ListView(
@@ -27,7 +35,21 @@ class FunctionPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.percent),
-            title: const Text('收入百分比计算'),
+            title: Row(
+              children: [
+                const Text('推波收益计算'),
+                const Spacer(),
+                ValueListenableBuilder(
+                  valueListenable: store.incomeNotifier,
+                  builder: (context, value, child) {
+                    return Text(
+                      '${store.getCurrentUserGabBonus().toStringAsFixed(2)}%',
+                      style: style,
+                    );
+                  },
+                ),
+              ],
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -39,7 +61,27 @@ class FunctionPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.monetization_on),
-            title: const Text('收入'),
+            title: Row(
+              children: [
+                const Text('收入'),
+                const Spacer(),
+                ValueListenableBuilder(
+                  valueListenable: store.incomeNotifier,
+                  builder: (context, _, child) {
+                    final totalIncome = store
+                        .getCurrentUserDailyIncomeBreakdown()
+                        .total;
+                    return Text(
+                      totalIncome.formatCompact(
+                        fractionDigits: 2,
+                        english: false,
+                      ),
+                      style: style,
+                    );
+                  },
+                ),
+              ],
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -49,7 +91,24 @@ class FunctionPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.timeline),
-            title: const Text('游戏轨迹'),
+            title: Row(
+              children: [
+                const Text('游戏轨迹'),
+                const Spacer(),
+                ValueListenableBuilder(
+                  valueListenable: Stores.appSettingsStore.gameTrackEnabledNotifier,
+                  builder: (context, _, child) {
+                    final lastTime = Stores.gameTrackStore.getLastRecordTime(
+                      store.getCurrentUserId(),
+                    );
+                    final text = lastTime == null
+                        ? '无记录'
+                        : _formatRelativeTime(lastTime.toLocal());
+                    return Text(text, style: style);
+                  },
+                ),
+              ],
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -61,4 +120,26 @@ class FunctionPage extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatRelativeTime(DateTime time) {
+  final duration = DateTime.now().difference(time);
+  if (duration.inSeconds < 60) {
+    return '${duration.inSeconds} 秒前';
+  }
+  if (duration.inMinutes < 60) {
+    return '${duration.inMinutes} 分钟前';
+  }
+  if (duration.inHours < 24) {
+    return '${duration.inHours} 小时前';
+  }
+  if (duration.inDays < 30) {
+    return '${duration.inDays} 天前';
+  }
+  final months = duration.inDays ~/ 30;
+  if (months < 12) {
+    return '$months 月前';
+  }
+  final years = months ~/ 12;
+  return '$years 年前';
 }

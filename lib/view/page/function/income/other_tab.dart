@@ -13,7 +13,6 @@ class OtherTab extends StatelessWidget {
     final store = Stores.infoStore;
     return ListView(
       children: [
-        // 开关类的值来自 store，切换后由 incomeNotifier 驱动回显
         IncomeSwitchTile(
           label: '赛季殖民地',
           readValue: store.getCurrentUserSeasonColony,

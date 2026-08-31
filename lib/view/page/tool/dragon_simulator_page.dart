@@ -19,7 +19,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   final _generator = ItemGenerator(random: Random());
 
   ItemSource _source = ItemSource.dragon6;
-  int _count = 10;
+  int _count = 1000;
   List<GeneratedItem> _items = [];
 
   /// roll到死 状态
@@ -144,13 +144,15 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                   onSelectionChanged: (s) => setState(() => _source = s.first),
                 ),
                 const SizedBox(height: 16),
-                Text('抽取数量', style: theme.textTheme.labelLarge),
+                Text('roll 单次数量', style: theme.textTheme.labelLarge),
                 const SizedBox(height: 8),
                 SegmentedButton<int>(
                   segments: const [
                     ButtonSegment(value: 1, label: Text('1')),
                     ButtonSegment(value: 10, label: Text('10')),
                     ButtonSegment(value: 100, label: Text('100')),
+                    ButtonSegment(value: 1000, label: Text('1000')),
+                    ButtonSegment(value: 10000, label: Text('10000')),
                   ],
                   selected: {_count},
                   showSelectedIcon: false,
@@ -163,7 +165,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                       child: FilledButton.icon(
                         onPressed: _generate,
                         icon: const Icon(Icons.casino_outlined),
-                        label: const Text('抽装备'),
+                        label: const Text('roll 单次'),
                       ),
                     ),
                     const SizedBox(width: 8),
@@ -171,7 +173,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                       child: FilledButton.tonalIcon(
                         onPressed: _rolling ? _stopRollToHit : _startRollToHit,
                         icon: Icon(_rolling ? Icons.stop : Icons.autorenew),
-                        label: Text(_rolling ? '停止' : 'roll到死'),
+                        label: Text(_rolling ? '停止' : 'roll 到死'),
                       ),
                     ),
                   ],
@@ -182,7 +184,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                     padding: const EdgeInsets.only(top: 8),
                     child: Text(
                       _rolling
-                          ? 'roll到死进行中：已 roll ${_rollCount.format()} 次…'
+                          ? 'roll 到死进行中：已 roll ${_rollCount.format()} 次…'
                           : _rollResult!,
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: _rolling ? theme.colorScheme.primary : null,

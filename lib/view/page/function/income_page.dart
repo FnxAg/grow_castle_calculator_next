@@ -30,6 +30,11 @@ class IncomePage extends StatelessWidget {
         // 汇总条固定在底部，tab 内容在剩余高度内各自滚动
         body: const Column(
           children: [
+            ListTile(
+              leading: Icon(Icons.info_outline),
+              title: Text('提示'),
+              subtitle: Text('填写“跳波状态”后再填写此处，否则计算结果不准确'),
+            ),
             Expanded(
               child: TabBarView(
                 children: [

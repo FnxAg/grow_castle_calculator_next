@@ -55,14 +55,17 @@ class _ColonyTabState extends State<ColonyTab> {
               ValueListenableBuilder<int>(
                 valueListenable: Stores.infoStore.incomeNotifier,
                 builder: (context, _, _) {
+                  final style = Theme.of(context).textTheme.bodyMedium
+                      ?.copyWith(
+                        color: Theme.of(context).colorScheme.primary,
+                        fontWeight: FontWeight.w600,
+                      );
                   final wave = store.getCurrentUserWave();
                   final value = wave > 0
-                      ? (store.getCurrentUserInfiniteColony() / wave * 1000).format()
+                      ? (store.getCurrentUserInfiniteColony() / wave * 1000)
+                            .format()
                       : '0';
-                  return Text(
-                    value,
-                    style: const TextStyle(fontSize: 12, color: Colors.grey),
-                  );
+                  return Text(value, style: style);
                 },
               ),
             ],

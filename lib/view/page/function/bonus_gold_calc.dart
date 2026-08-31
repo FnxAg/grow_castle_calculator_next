@@ -102,7 +102,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
   @override
   Widget build(BuildContext context) {
     return UserPageScaffold(
-      title: '收入百分比计算',
+      title: '推波收益计算',
       actions: [
         IconButton(
           icon: const Icon(Icons.add),
