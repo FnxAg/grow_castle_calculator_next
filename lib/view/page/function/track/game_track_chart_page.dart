@@ -37,25 +37,31 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
       return records;
     }
 
-    final bucketSize = (records.length / _maxChartPoints).ceil();
+    final bucketSize = (records.length + _maxChartPoints - 1) ~/ _maxChartPoints;
     final downsampled = <GameTrackRecord>[];
 
-    for (var i = 0; i < records.length; i += bucketSize) {
-      final end = (i + bucketSize).clamp(0, records.length);
-      final bucket = records.sublist(i, end);
-      if (bucket.isEmpty) continue;
-
-      final first = bucket.first;
-      final middle = bucket[(bucket.length / 2).floor()];
-      final last = bucket.last;
-
-      for (final candidate in [first, middle, last]) {
-        if (downsampled.isEmpty || downsampled.last.id != candidate.id) {
-          downsampled.add(candidate);
-        }
+    void addIfNew(GameTrackRecord record) {
+      if (downsampled.isEmpty || downsampled.last.id != record.id) {
+        downsampled.add(record);
       }
     }
 
+    addIfNew(records.first);
+    for (var i = 1; i < records.length - 1; i += bucketSize) {
+      final end = i + bucketSize < records.length - 1
+          ? i + bucketSize
+          : records.length - 1;
+      var min = records[i];
+      var max = records[i];
+      for (var j = i + 1; j < end; j++) {
+        final record = records[j];
+        if (record.totalGold < min.totalGold) min = record;
+        if (record.totalGold > max.totalGold) max = record;
+      }
+      addIfNew(min);
+      addIfNew(max);
+    }
+    addIfNew(records.last);
     return downsampled;
   }
 
@@ -86,7 +92,7 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
-                      '已压缩显示：保留关键时间点（共 ${_records.length} 条，显示 ${_chartRecords.length} 条）',
+                      '已压缩显示：共 ${_records.length} 条，显示 ${_chartRecords.length} 条',
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
