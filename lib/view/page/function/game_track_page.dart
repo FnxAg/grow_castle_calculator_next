@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
-import 'package:grow_castle_calculator_next/view/page/function/game_track_chart_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function/track/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 class GameTrackPage extends StatefulWidget {

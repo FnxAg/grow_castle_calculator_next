@@ -14,7 +14,10 @@ class GameTrackChartPage extends StatefulWidget {
 }
 
 class _GameTrackChartPageState extends State<GameTrackChartPage> {
+  static const int _maxChartPoints = 300;
+
   late List<GameTrackRecord> _records;
+  late List<GameTrackRecord> _chartRecords;
 
   int get _userId => Stores.infoStore.getCurrentUserId();
 
@@ -26,6 +29,34 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
 
   void _loadRecords() {
     _records = Stores.gameTrackStore.getRecords(_userId);
+    _chartRecords = _downsampleRecords(_records);
+  }
+
+  List<GameTrackRecord> _downsampleRecords(List<GameTrackRecord> records) {
+    if (records.length <= _maxChartPoints) {
+      return records;
+    }
+
+    final bucketSize = (records.length / _maxChartPoints).ceil();
+    final downsampled = <GameTrackRecord>[];
+
+    for (var i = 0; i < records.length; i += bucketSize) {
+      final end = (i + bucketSize).clamp(0, records.length);
+      final bucket = records.sublist(i, end);
+      if (bucket.isEmpty) continue;
+
+      final first = bucket.first;
+      final middle = bucket[(bucket.length / 2).floor()];
+      final last = bucket.last;
+
+      for (final candidate in [first, middle, last]) {
+        if (downsampled.isEmpty || downsampled.last.id != candidate.id) {
+          downsampled.add(candidate);
+        }
+      }
+    }
+
+    return downsampled;
   }
 
   @override
@@ -46,11 +77,19 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
             ),
           ),
       ],
-      body: _records.length < 2
+      body: _chartRecords.length < 2
           ? const Center(child: Text('至少需要两条轨迹记录'))
           : ListView(
               padding: const EdgeInsets.all(12),
               children: [
+                if (_chartRecords.length != _records.length)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      '已压缩显示：保留关键时间点（共 ${_records.length} 条，显示 ${_chartRecords.length} 条）',
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
                 for (final chart in [
                   (
                     '总波数',
@@ -75,9 +114,9 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
                 ])
                   _ChartPanel(
                     title: chart.$1,
-                    records: _records,
+                    records: _chartRecords,
                     valueOf: chart.$2,
-                      formatValue: chart.$3,
+                    formatValue: chart.$3,
                   ),
               ],
             ),
