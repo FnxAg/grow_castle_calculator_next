@@ -53,7 +53,6 @@ class _SelectUserPageState extends State<SelectUserPage> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 用户名 + 公会徽标（无公会的用户不显示）
                       Wrap(
                         spacing: 8.0,
                         crossAxisAlignment: WrapCrossAlignment.center,
@@ -68,7 +67,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
                                   fontWeight: FontWeight.w600,
                                 ),
                               ),
-                              // icon: Icons.groups,
+                              icon: Icons.flag_circle,
                             ),
                         ],
                       ),
