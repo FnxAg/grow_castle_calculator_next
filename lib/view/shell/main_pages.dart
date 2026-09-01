@@ -25,7 +25,7 @@ final List<MainPageEntry> mainPages = [
   // 阵容经济计算
   MainPageEntry(
     title: '阵容',
-    icon: Icons.calculate,
+    icon: Icons.castle,
     builder: (_) => const FormationCalcPage(),
   ),
   // 用户功能
