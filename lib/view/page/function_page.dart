@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -9,8 +11,16 @@ import 'package:grow_castle_calculator_next/view/page/function/wave_status_page.
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 /// 当前用户的更多信息与状态
-class FunctionPage extends StatelessWidget {
+class FunctionPage extends StatefulWidget {
   const FunctionPage({super.key});
+
+  @override
+  State<FunctionPage> createState() => _FunctionPageState();
+}
+
+class _FunctionPageState extends State<FunctionPage> {
+  final Stream<DateTime> _tickStream =
+      Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
 
   @override
   Widget build(BuildContext context) {
@@ -95,15 +105,16 @@ class FunctionPage extends StatelessWidget {
               children: [
                 const Text('游戏轨迹'),
                 const Spacer(),
-                ValueListenableBuilder(
-                  valueListenable: Stores.appSettingsStore.gameTrackEnabledNotifier,
-                  builder: (context, _, child) {
+                StreamBuilder<DateTime>(
+                  stream: _tickStream,
+                  builder: (context, snapshot) {
+                    final now = snapshot.data ?? DateTime.now();
                     final lastTime = Stores.gameTrackStore.getLastRecordTime(
                       store.getCurrentUserId(),
                     );
                     final text = lastTime == null
                         ? '无记录'
-                        : _formatRelativeTime(lastTime.toLocal());
+                        : _formatRelativeTime(lastTime.toLocal(), now);
                     return Text(text, style: style);
                   },
                 ),
@@ -122,8 +133,8 @@ class FunctionPage extends StatelessWidget {
   }
 }
 
-String _formatRelativeTime(DateTime time) {
-  final duration = DateTime.now().difference(time);
+String _formatRelativeTime(DateTime time, DateTime now) {
+  final duration = now.difference(time);
   if (duration.inSeconds < 60) {
     return '${duration.inSeconds} 秒前';
   }
