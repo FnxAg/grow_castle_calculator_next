@@ -313,9 +313,11 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
         title: Row(
           children: [
             const Text('装备对比'),
-            // const SizedBox(width: 8),
+          ],
+        ),
+        actions: [
             IconButton(
-              icon: const Icon(Icons.help_outline, size: 20),
+              icon: const Icon(Icons.help_outline),
               tooltip: '使用说明',
               onPressed: () => showDialog<void>(
                 context: context,
@@ -357,13 +359,29 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
                 ),
               ),
             ),
-          ],
-        ),
-        actions: [
           IconButton(
             tooltip: '重置',
             icon: const Icon(Icons.restore_page),
-            onPressed: _reset,
+            onPressed:() => showDialog<void>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: const Text('重置'),
+                content: const Text('是否清空所有输入？'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('取消'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      _reset();
+                    },
+                    child: const Text('确认'),
+                  ),
+                ],
+              ),
+            ),
           ),
         ],
       ),

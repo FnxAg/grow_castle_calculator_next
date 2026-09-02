@@ -11,10 +11,11 @@ class IncomeSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
+    Theme.of(context).colorScheme;
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(
+        elevation: 3.0,
         margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
@@ -24,15 +25,6 @@ class IncomeSummaryBar extends StatelessWidget {
           final income = Stores.infoStore.getCurrentUserDailyIncomeBreakdown();
           return Column(
             children: [
-              Center(
-                child: Text(
-                  "每日收入",
-                  style: TextStyle(
-                    color: scheme.primary,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
               _IncomeRow(
                 icon: Icons.terrain,
                 label: '殖民地',

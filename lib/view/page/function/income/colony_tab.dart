@@ -9,7 +9,11 @@ import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.da
 ///
 /// 输入实时写入 store（data 字段持久化），结果汇总见页面底部 IncomeSummaryBar。
 class ColonyTab extends StatefulWidget {
-  const ColonyTab({super.key});
+  const ColonyTab({super.key, this.bottomInset = 0.0});
+
+  /// 悬浮汇总条占位高度：作为列表底部滚动留白，内容滚动时可从条下方穿过，
+  /// 滚到底时最后一条恰好完整停在条上方
+  final double bottomInset;
 
   @override
   State<ColonyTab> createState() => _ColonyTabState();
@@ -44,6 +48,7 @@ class _ColonyTabState extends State<ColonyTab> {
   Widget build(BuildContext context) {
     final store = Stores.infoStore;
     return ListView(
+      padding: EdgeInsets.only(bottom: widget.bottomInset),
       children: [
         ListTile(
           title: Row(

@@ -4,12 +4,14 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
+import 'package:measure_size/measure_size.dart';
 
-/// 收入百分比计算页：添加若干「每波金币收入」样本，
-/// 按金挂成本（gabCost = 456 × 当前总波数 − 29264）计算收益率：
-/// （收入 − 成本）÷ 成本，底部卡片汇总平均每波收入与百分比，
-/// 可一键填入当前用户的「金挂平均收益」。
-/// 样本按用户保存在内存中（static），页面退出重进不丢失，切换用户互不干扰。
+/// 单条收入相对金挂成本的收益率（%）：成本非正（当前波数过低）时记 0，
+/// 避免负成本导致的除零/噪音百分比
+double _sampleRate(num income, double safeCost) =>
+    safeCost > 0 ? (income - safeCost) / safeCost * 100 : 0.0;
+
+/// 收入百分比计算页：输入样本计算平均收益率。
 class BonusGoldCalcPage extends StatefulWidget {
   const BonusGoldCalcPage({super.key});
 
@@ -18,53 +20,77 @@ class BonusGoldCalcPage extends StatefulWidget {
 }
 
 class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
-  /// 各用户的每波金币收入样本（会话级，按用户 id 缓存——用户名可重命名，
-  /// 不能作为身份标识；顺序即展示顺序）。
+  /// 各用户的每波金币收入样本，会话级按用户 id 缓存。
   ///
-  /// static 保存在内存：页面被 pop 销毁后数据仍在，重进继续编辑；
   /// 切换用户（UserPageScaffold 换 key 重建本页）时各自的样本互不干扰。
   static final Map<int, List<int>> _incomesByUser = {};
 
   /// 当前用户的样本列表：initState 按当前用户名从 [_incomesByUser] 取出
   late List<int> _incomes;
 
-  static final ValueNotifier<int> _listLen = ValueNotifier(0);
+  /// 悬浮汇总卡实测高度：MeasureSize 测量后写入，驱动列表底部留白，
+  /// 保证条目滚到最底时恰好完整停在悬浮卡上方
+  final ValueNotifier<double> _summaryBarHeightNotifier = ValueNotifier(0.0);
 
   @override
   void initState() {
     super.initState();
-    // 切换用户后 State 重建：取出新用户自己的样本（首次进入为空列表），
-    // 并同步列表长度通知，避免残留上一个用户的数值
     _incomes = _incomesByUser.putIfAbsent(
       Stores.infoStore.getCurrentUserId(),
       () => [],
     );
-    _listLen.value = _incomes.length;
+  }
+
+  @override
+  void dispose() {
+    _summaryBarHeightNotifier.dispose();
+    super.dispose();
   }
 
   double _gabCost(int wave) => 456.0 * wave - 29264;
 
   void _addIncome(int gold) {
-    _incomes.add(gold);
-    _listLen.value = _incomes.length;
+    setState(() => _incomes.add(gold));
   }
 
   void _removeIncome(int index) {
-    _incomes.removeAt(index);
-    _listLen.value = _incomes.length;
+    setState(() => _incomes.removeAt(index));
   }
 
-  /// 填入「金挂平均收益」：保留两位小数，写入后由 store 驱动收入汇总刷新
   void _applyPercent(double percent) {
     final filled = (percent * 100).roundToDouble() / 100;
-    Stores.infoStore.setCurrentUserGabBonus(filled);
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('已填入金挂平均收益 ${filled.format(fractionDigits: 2)}%')),
+    showDialog<void>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('确认填入收益'),
+        content: Text(
+          '金挂收益：${Stores.infoStore.getCurrentUserGabBonus()}% -> ${filled.format(fractionDigits: 2)}%？',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('取消'),
+          ),
+          TextButton(
+            onPressed: () {
+              Navigator.of(context).pop();
+              Stores.infoStore.setCurrentUserGabBonus(filled);
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(
+                    '已填入金挂平均收益 ${filled.format(fractionDigits: 2)}%',
+                  ),
+                ),
+              );
+            },
+            child: const Text('确认'),
+          ),
+        ],
+      ),
     );
   }
 
-  /// 添加收入样本弹窗：输入每波金币收入（控制器由对话框自身 State 持有）
-  void _showDialog() {
+  void _addIncomeDialog() {
     showDialog<void>(
       context: context,
       builder: (dialogContext) => _AddIncomeDialog(onAdd: _addIncome),
@@ -77,125 +103,147 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
       title: '推波收益计算',
       actions: [
         IconButton(
-          icon: const Icon(Icons.add),
-          tooltip: '添加收入',
-          onPressed: _showDialog,
+          icon: const Icon(Icons.restore_page),
+          tooltip: '重置',
+          onPressed: () {
+            showDialog<void>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: const Text('重置'),
+                content: const Text('确认清空当前用户的所有收入样本？'),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('取消'),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      Navigator.of(dialogContext).pop();
+                      setState(() => _incomes.clear());
+                    },
+                    child: const Text('确认'),
+                  ),
+                ],
+              ),
+            );
+          },
         ),
       ],
-      body: ValueListenableBuilder<int>(
-        valueListenable: Stores.infoStore.waveNotifier,
-        builder: (context, wave, _) {
+      body: ListenableBuilder(
+        listenable: Listenable.merge([
+          Stores.infoStore.waveNotifier,
+          _summaryBarHeightNotifier,
+        ]),
+        builder: (context, _) {
+          final wave = Stores.infoStore.waveNotifier.value;
           final gabCost = _gabCost(wave);
           final safeCost = gabCost > 0 ? gabCost : 0.0;
-          return ValueListenableBuilder<int>(
-            valueListenable: _listLen,
-            builder: (context, _, _) {
-              final avgIncome = _incomes.isEmpty
-                  ? 0.0
-                  : _incomes.reduce((a, b) => a + b) / _incomes.length;
-              final percent = _incomes.isNotEmpty ? (safeCost > 0
-                  ? (avgIncome - safeCost) / safeCost * 100
-                  : 0.0) : 0.0;
-              return Column(
-                children: [
-                  Expanded(
-                    child: _incomes.isEmpty
-                        ? const Center(
-                            child: Text(
-                              '暂无收入样本，点击右上角 + 添加',
-                              style: TextStyle(color: Colors.grey),
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: _incomes.length,
-                            itemBuilder: (context, index) {
-                              final income = _incomes[index];
-                              final scheme = Theme.of(context).colorScheme;
-                              return ListTile(
-                                leading: Container(
-                                  width: 24,
-                                  height: 24,
-                                  alignment: Alignment.center,
-                                  decoration: BoxDecoration(
-                                    color: scheme.primaryContainer,
-                                    borderRadius: BorderRadius.circular(999.0),
-                                  ),
-                                  child: Text(
-                                    '${index + 1}',
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 16.0,
-                                      color: scheme.onPrimaryContainer,
-                                    ),
-                                  ),
-                                ),
-                                title: Text(
-                                  income.format(),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 16.0,
-                                  ),
-                                ),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Text(
-                                      '${(safeCost > 0 ? (income - safeCost) / safeCost * 100 : 0.0).format(fractionDigits: 2)}%',
-                                      style: TextStyle(
-                                        color: Theme.of(
-                                          context,
-                                        ).colorScheme.onSurfaceVariant,
-                                      ),
-                                    ),
-                                    IconButton(
-                                      onPressed: () => _removeIncome(index),
-                                      icon: const Icon(Icons.delete),
-                                    ),
-                                  ],
-                                ),
-                              );
-                            },
-                          ),
-                  ),
-                  _buildSummaryCard(context, wave, avgIncome, percent),
-                ],
-              );
-            },
+          final avgIncome = _incomes.isEmpty
+              ? 0.0
+              : _incomes.reduce((a, b) => a + b) / _incomes.length;
+          final percent = _incomes.isEmpty
+              ? 0.0
+              : _sampleRate(avgIncome, safeCost);
+          final summary = _buildSummaryCard(
+            gabCost: gabCost,
+            avgIncome: avgIncome,
+            percent: percent,
+          );
+          return Stack(
+            children: [
+              Positioned.fill(
+                child: _incomes.isEmpty
+                    ? const Center(
+                        child: Text(
+                          '暂无收入样本，点击右上角 + 添加',
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      )
+                    : ListView.builder(
+                        padding: EdgeInsets.only(
+                          bottom: _summaryBarHeightNotifier.value,
+                        ),
+                        itemCount: _incomes.length,
+                        itemBuilder: (context, index) {
+                          final income = _incomes[index];
+                          return _IncomeTile(
+                            index: index,
+                            income: income,
+                            rate: _sampleRate(income, safeCost),
+                            onRemove: () => _removeIncome(index),
+                          );
+                        },
+                      ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: MeasureSize(
+                  onChange: (size) {
+                    final next = size.height;
+                    final current = _summaryBarHeightNotifier.value;
+                    if ((current - next).abs() > 0.5) {
+                      _summaryBarHeightNotifier.value = next;
+                    }
+                  },
+                  child: summary,
+                ),
+              ),
+            ],
           );
         },
       ),
     );
   }
 
-  Widget _buildSummaryCard(
-    BuildContext context,
-    int wave,
-    double avgIncome,
-    double percent,
-  ) {
+  Widget _buildSummaryCard({
+    required double gabCost,
+    required double avgIncome,
+    required double percent,
+  }) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Card(
+        elevation: 3.0,
         margin: EdgeInsets.zero,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
           child: Column(
             children: [
-              _SummaryRow(icon: Icons.money, label: '金挂成本', value: _gabCost(wave).format()),
-              _SummaryRow(icon: Icons.monetization_on, label: '平均收入', value: avgIncome.format()),
+              _SummaryRow(
+                icon: Icons.money,
+                label: '金挂成本',
+                value: gabCost.format(),
+              ),
+              _SummaryRow(
+                icon: Icons.monetization_on,
+                label: '平均收入',
+                value: avgIncome.format(),
+              ),
               _SummaryRow(
                 icon: Icons.percent,
                 label: '百分比',
                 value: '${percent.format(fractionDigits: 2)}%',
               ),
               const SizedBox(height: 12.0),
-              FilledButton.icon(
-                // 无样本时禁用
-                onPressed: _incomes.isEmpty
-                    ? null
-                    : () => _applyPercent(percent),
-                icon: const Icon(Icons.draw),
-                label: const Text('填入收益'),
+              Row(
+                mainAxisAlignment: .center,
+                children: [
+                  FilledButton.icon(
+                    onPressed: _incomes.isEmpty
+                        ? null
+                        : () => _applyPercent(percent),
+                    icon: const Icon(Icons.draw),
+                    label: const Text('填入收益'),
+                  ),
+                  const SizedBox(width: 12.0),
+                  FilledButton.tonalIcon(
+                    onPressed: () => _addIncomeDialog(),
+                    icon: const Icon(Icons.add),
+                    label: const Text('添加收入'),
+                  ),
+                ],
               ),
             ],
           ),
@@ -205,9 +253,70 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
   }
 }
 
+/// 单条收入样本行：序号徽标 + 金额 + 相对金挂成本的收益率 + 删除按钮
+class _IncomeTile extends StatelessWidget {
+  const _IncomeTile({
+    required this.index,
+    required this.income,
+    required this.rate,
+    required this.onRemove,
+  });
+
+  /// 样本序号（展示从 1 开始）
+  final int index;
+  final int income;
+
+  /// 该样本相对金挂成本的收益率（%）
+  final double rate;
+  final VoidCallback onRemove;
+
+  @override
+  Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      fontWeight: FontWeight.w600,
+    );
+    return ListTile(
+      leading: Container(
+        width: 24,
+        height: 24,
+        alignment: Alignment.center,
+        decoration: BoxDecoration(
+          color: scheme.primaryContainer,
+          borderRadius: BorderRadius.circular(999.0),
+        ),
+        child: Text(
+          '${index + 1}',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 16.0,
+            color: scheme.onPrimaryContainer,
+          ),
+        ),
+      ),
+      title: Text(
+        income.format(),
+        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16.0),
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text('${rate.format(fractionDigits: 2)}%', style: style),
+          IconButton(onPressed: onRemove, icon: const Icon(Icons.delete)),
+        ],
+      ),
+    );
+  }
+}
+
 /// 汇总行：标签 + 右侧数值
 class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({required this.icon, required this.label, required this.value});
+  const _SummaryRow({
+    required this.icon,
+    required this.label,
+    required this.value,
+  });
 
   final IconData icon;
   final String label;
@@ -285,10 +394,7 @@ class _AddIncomeDialogState extends State<_AddIncomeDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: const Text('取消'),
         ),
-        TextButton(
-          onPressed: _submit,
-          child: const Text('添加'),
-        ),
+        TextButton(onPressed: _submit, child: const Text('添加')),
       ],
     );
   }
