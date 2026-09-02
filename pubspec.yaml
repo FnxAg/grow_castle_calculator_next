@@ -22,6 +22,7 @@ dependencies:
   fl_chart: ^1.1.1
   material_ui: ^1.1.0
   dynamic_color: ^2.1.0
+  measure_size: ^5.0.2
 
 dev_dependencies:
   flutter_test:

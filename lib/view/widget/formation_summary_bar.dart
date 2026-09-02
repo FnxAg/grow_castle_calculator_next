@@ -44,6 +44,7 @@ class FormationSummaryBar extends StatelessWidget {
       padding: const EdgeInsets.all(16.0),
       child: Card(
         margin: EdgeInsets.zero,
+        elevation: 3.0,
         child: Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
           child: Column(

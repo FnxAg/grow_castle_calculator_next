@@ -6,8 +6,8 @@ import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.da
 /// （单行、≤14 字符、仅允许 0-9 a-z A-Z - _ 空格），
 /// 通过 [labelText]/[helperText] 区分用途。
 /// 聚焦时自动全选内容（见 SelectAllTextField）。
-class UsernameTextField extends StatelessWidget {
-  const UsernameTextField({
+class NameTextField extends StatelessWidget {
+  const NameTextField({
     super.key,
     required this.controller,
     this.labelText = '用户名',

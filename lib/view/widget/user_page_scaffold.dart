@@ -22,7 +22,7 @@ class UserPageScaffold extends StatefulWidget {
   final Widget body;
   final List<Widget> actions;
 
-  /// AppBar 底部组件（如 TabBar），透传给 AppBar.bottom
+  /// AppBar 底部组件，透传给 AppBar.bottom
   final PreferredSizeWidget? bottom;
 
   @override
@@ -32,9 +32,6 @@ class UserPageScaffold extends StatefulWidget {
 class _UserPageScaffoldState extends State<UserPageScaffold> {
   @override
   Widget build(BuildContext context) {
-    // 全局监听当前用户：切换用户时所有用户页外壳一起重建（PageView 保活的
-    // 其他页面同样收到通知），AppBar 用户名与 body 的 KeyedSubtree key 同步
-    // 更新，各页面 State 随之重新读取新用户数据并释放旧控制器/焦点
     return ValueListenableBuilder<String>(
       valueListenable: Stores.infoStore.currentUserNotifier,
       builder: (context, currentUser, _) {
@@ -45,8 +42,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
               crossAxisAlignment: .start,
               children: [
                 Text(widget.title),
-                // 用户名 + 联网查询到的"上次在线"时间 + 所属公会，
-                // 中间以主题色细竖线分隔（空段自动隐藏）
+                // 用户名  ·  "上次在线"时间  ·  所属公会，
                 ListenableBuilder(
                   listenable: Listenable.merge([
                     Stores.infoStore.lastOnlineNotifier,
@@ -58,38 +54,37 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
                     final guild = Stores.infoStore.guildNotifier.value;
                     final segments = <Widget>[
                       Text(
-                        currentUser,
-                        style: const TextStyle(fontSize: 12.0),
+                        currentUser, 
+                        style: const TextStyle(fontSize: 12.0)
                       ),
                       if (lastOnline.isNotEmpty)
-                        AnimatedSize(
-                          duration: const Duration(milliseconds: 300),
-                          curve: Curves.easeOutCubic,
-                          alignment: Alignment.topCenter,
-                          child: _LastOnlineFadeIn(lastOnline: lastOnline),
+                        AnimatedSwitcher(
+                          duration: const Duration(milliseconds: 150),
+                          transitionBuilder: (child, animation) =>
+                              FadeTransition(opacity: animation, child: child),
+                          child: Text(
+                            '$lastOnline ago',
+                            key: ValueKey(lastOnline),
+                            style: const TextStyle(fontSize: 12.0),
+                          ),
                         ),
                       if (guild.isNotEmpty)
-                        Text(guild, style: const TextStyle(fontSize: 12.0)),
+                        Text(
+                          guild, 
+                          style: const TextStyle(fontSize: 12.0)
+                        ),
                     ];
-                    // 段间以主题色细竖线分隔
                     return Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         for (var i = 0; i < segments.length; i++) ...[
                           if (i > 0)
-                            SizedBox(
-                              height: 12.0,
-                              child: VerticalDivider(
-                                width: 12.0,
-                                thickness: 1.0,
-                                color: Theme.of(context)
-                                    .colorScheme
-                                    .outlineVariant,
-                              ),
+                            Text(
+                              '  ·  ',
+                              style: const TextStyle(fontSize: 12.0),
                             ),
                           segments[i],
                         ],
-                        // 默认用户（未配置账号）：追加说明按钮，引导填写账号信息
                         if (Stores.infoStore.getCurrentUserId() == 0) ...[
                           const SizedBox(width: 4.0),
                           SizedBox(
@@ -110,22 +105,14 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
                 ),
               ],
             ),
-            actions: [
-              // 当前页面声明的操作按钮
-              ...widget.actions,
-            ],
+            actions: [...widget.actions],
           ),
-          // 切换用户后用户名变化 → key 变化 → 页面整体重建（控制器/焦点随之释放）
-          body: KeyedSubtree(
-            key: ValueKey(currentUser),
-            child: widget.body,
-          ),
+          body: KeyedSubtree(key: ValueKey(currentUser), child: widget.body),
         );
       },
     );
   }
 
-  /// 默认用户说明弹窗：引导用户到「设置」页的用户管理创建并填写自己的账号
   void _showDefaultUserHint(BuildContext context) {
     showDialog<void>(
       context: context,
@@ -146,7 +133,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
               navigator.pop();
               navigator.push(
                 MaterialPageRoute(
-                  builder: (context) => const SelectUserPage(),
+                  builder: (context) => const SelectUserPage()
                 ),
               );
             },
@@ -154,37 +141,6 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// “上次在线”文案首次出现时淡入一次（300ms）；同一会话内页面销毁重建后
-/// 直接展示、不再重复播放动画（static 标志位存活于整个 App 生命周期）。
-class _LastOnlineFadeIn extends StatelessWidget {
-  const _LastOnlineFadeIn({required this.lastOnline});
-
-  final String lastOnline;
-
-  /// 本会话是否已播放过淡入动画；已播放则后续直接渲染不带动画
-  static bool _played = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final text = Text(
-      lastOnline,
-      style: const TextStyle(fontSize: 12.0),
-    );
-    if (_played) return text;
-    _played = true;
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 300),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) => Opacity(
-        opacity: value,
-        child: child,
-      ),
-      child: text,
     );
   }
 }

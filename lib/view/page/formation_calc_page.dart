@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:measure_size/measure_size.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
@@ -35,6 +36,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 入场动画（AnimatedSize 高度展开 + 淡入上移）。
   static (int userId, int? playerRank, int? playerGapPrev,
       int? playerGapNext, int? hellRank, int? guildRank)? _rankCache;
+
+  final ValueNotifier<double> _summaryBarHeightNotifier = ValueNotifier(0.0);
 
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
@@ -81,6 +84,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     for (final c in _textControllers.values) {
       c.dispose();
     }
+    _summaryBarHeightNotifier.dispose();
     super.dispose();
   }
 
@@ -98,16 +102,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   DateTime? _lastQueryAt;
   bool _querying = false;
 
-  /// 玩家赛季榜排名（前 300 内才显示，不在榜单则隐藏）
   int? _playerRank;
-
-  /// 无尽榜排名（前 300 内才显示，不在榜单则隐藏）
   int? _hellRank;
-
-  /// 当前用户所属公会在公会榜上的排名（前 300 内才显示）
   int? _guildRank;
-
-  /// 个人赛季榜中与上一名/下一名的分数差距；首名/末名时对应侧为 null
   int? _playerGapPrev;
   int? _playerGapNext;
 
@@ -253,14 +250,12 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     setState(() => _querying = true);
 
     final name = Stores.infoStore.getCurrentUsername();
-    // 拉取个人赛季数据并写入 store（含封禁标记与上次在线）
     final result = await Stores.infoStore.syncCurrentUser();
 
     if (!mounted) return;
     setState(() => _querying = false);
 
     if (result is PlayerQueryResult) {
-      // 封禁检测：仅标记「已封禁」（AppBar 副标题展示），不写入波数
       if (result.wave == 0 && result.queryDate.isEmpty) {
         if (!silent) {
           ScaffoldMessenger.of(
@@ -269,8 +264,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         }
         return;
       }
-      // 查询后刷新排名展示：手动同步强制重新拉取三类榜单（TTL 缓存仅对
-      // 静默自动查询生效），失败保留旧缓存与胶囊，成功则胶囊立即更新
       _loadRanks(force: !silent);
       if (!silent) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -302,7 +295,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   Widget build(BuildContext context) {
     return UserPageScaffold(
       title: '阵容',
-      // 新增条目按钮：列表重建由 store 的 cardIdsNotifier 驱动
       actions: [
         IconButton(
           icon: const Icon(Icons.add),
@@ -310,10 +302,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
           onPressed: () => Stores.infoStore.addNewCard(),
         ),
       ],
-      body: Column(
+      body: Stack(
         children: [
-          // 卡片列表监听 store 的结构变化（新增/删除/排序），自动重建
-          Expanded(
+          Positioned.fill(
             child: ValueListenableBuilder<int>(
               valueListenable: Stores.infoStore.cardIdsNotifier,
               builder: (context, _, _) {
@@ -326,57 +317,74 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                     ),
                   );
                 }
-                return ReorderableListView.builder(
-                  itemCount: cardIds.length,
-                  proxyDecorator: (child, index, animation) {
-                    return AnimatedBuilder(
-                      animation: animation,
-                      builder: (context, child) {
-                        final double elevation = 4.0 * animation.value;
-                        return Material(
-                          elevation: elevation,
-                          shadowColor: Colors.black26,
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: IgnorePointer(child: child),
+                return ValueListenableBuilder(
+                  valueListenable: _summaryBarHeightNotifier,
+                  builder: (context, paddingHeight, child) {
+                    return ReorderableListView.builder(
+                      itemCount: cardIds.length,
+                      padding: EdgeInsets.only(bottom: paddingHeight),
+                      proxyDecorator: (child, index, animation) {
+                        return AnimatedBuilder(
+                          animation: animation,
+                          builder: (context, child) {
+                            final double elevation = 4.0 * animation.value;
+                            return Material(
+                              elevation: elevation,
+                              shadowColor: Colors.black26,
+                              borderRadius: BorderRadius.circular(8.0),
+                              child: IgnorePointer(child: child),
+                            );
+                          },
+                          child: child,
                         );
                       },
-                      child: child,
+                      onReorderItem: (oldIndex, newIndex) {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        Stores.infoStore.reorderCard(oldIndex, newIndex);
+                      },
+                      itemBuilder: (context, index) {
+                        final id = cardIds[index];
+                        return FormationCardTile(
+                          key: ValueKey(id),
+                          id: id,
+                          index: index,
+                          textController: _textControllerFor(id),
+                          numberController: _numberControllerFor(id),
+                          textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                          numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                          onRemove: _removeCard,
+                        );
+                      },
+                      buildDefaultDragHandles: false,
+                      scrollDirection: .vertical,
                     );
-                  },
-                  onReorderItem: (oldIndex, newIndex) {
-                    // 拖拽前先清除焦点，避免 TextField 的 FocusNode
-                    // 在 widget 临时脱离树时产生不一致状态导致崩溃
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    Stores.infoStore.reorderCard(oldIndex, newIndex);
-                  },
-                  itemBuilder: (context, index) {
-                    final id = cardIds[index];
-                    return FormationCardTile(
-                      // ReorderableListView 要求每个列表项（直接子项）有唯一 key
-                      key: ValueKey(id),
-                      id: id,
-                      index: index,
-                      textController: _textControllerFor(id),
-                      numberController: _numberControllerFor(id),
-                      textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                      numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                      onRemove: _removeCard,
-                    );
-                  },
-                  buildDefaultDragHandles: false,
-                  scrollDirection: .vertical,
+                  }
                 );
               },
             ),
           ),
-          FormationSummaryBar(
-            querying: _querying,
-            playerRank: _playerRank,
-            playerGapPrev: _playerGapPrev,
-            playerGapNext: _playerGapNext,
-            hellRank: _hellRank,
-            guildRank: _guildRank,
-            onQuery: _queryOnline,
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: MeasureSize(
+              onChange: (Size value) { 
+                final next = value.height;
+                final current = _summaryBarHeightNotifier.value;
+                if ((current - next).abs() > 0.5) {
+                  _summaryBarHeightNotifier.value = value.height;
+                }
+              },
+              child: FormationSummaryBar(
+                querying: _querying,
+                playerRank: _playerRank,
+                playerGapPrev: _playerGapPrev,
+                playerGapNext: _playerGapNext,
+                hellRank: _hellRank,
+                guildRank: _guildRank,
+                onQuery: _queryOnline,
+              ),
+            ),
           ),
         ],
       ),

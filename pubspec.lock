@@ -357,6 +357,14 @@ packages:
       url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
     source: hosted
     version: "1.1.0"
+  measure_size:
+    dependency: "direct main"
+    description:
+      name: measure_size
+      sha256: "4b2de7b29567501434902a2f4080cf12a8bc7038b2eb97dfae91b71791620b68"
+      url: "https://mirrors.tuna.tsinghua.edu.cn/dart-pub/"
+    source: hosted
+    version: "5.0.2"
   meta:
     dependency: transitive
     description:
