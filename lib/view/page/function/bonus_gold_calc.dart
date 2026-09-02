@@ -63,40 +63,12 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
     );
   }
 
-  /// 添加收入样本弹窗：输入每波金币收入
+  /// 添加收入样本弹窗：输入每波金币收入（控制器由对话框自身 State 持有）
   void _showDialog() {
-    final controller = TextEditingController();
     showDialog<void>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('输入每波金币收入'),
-          content: SelectAllTextField(
-            controller: controller,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(helperText: '0-9', labelText: '每波金币收入'),
-            autofocus: true,
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                final gold = int.tryParse(controller.text);
-                if (gold != null) {
-                  _addIncome(gold);
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('添加'),
-            ),
-          ],
-        );
-      },
-    ).whenComplete(controller.dispose);
+      builder: (dialogContext) => _AddIncomeDialog(onAdd: _addIncome),
+    );
   }
 
   @override
@@ -262,6 +234,62 @@ class _SummaryRow extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+}
+
+/// 每波金币收入输入对话框：输入控制器由 State 持有，随对话框销毁自动释放
+class _AddIncomeDialog extends StatefulWidget {
+  const _AddIncomeDialog({required this.onAdd});
+
+  /// 输入可解析为整数时回调；输入为空/非法时仅关闭对话框、不回调
+  final ValueChanged<int> onAdd;
+
+  @override
+  State<_AddIncomeDialog> createState() => _AddIncomeDialogState();
+}
+
+class _AddIncomeDialogState extends State<_AddIncomeDialog> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final gold = int.tryParse(_controller.text);
+    if (gold != null) {
+      widget.onAdd(gold);
+    }
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('输入每波金币收入'),
+      content: SelectAllTextField(
+        controller: _controller,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: const InputDecoration(
+          helperText: '0-9',
+          labelText: '每波金币收入',
+        ),
+        autofocus: true,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: const Text('添加'),
+        ),
+      ],
     );
   }
 }

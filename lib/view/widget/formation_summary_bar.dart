@@ -173,10 +173,6 @@ class FormationSummaryBar extends StatelessWidget {
   }
 }
 
-/// 弹窗输入整数（波数/赛季波数），确定后调用 [onSave]；空输入回退 [fallback]。
-///
-/// 控制器随对话框路由销毁后由 GC 回收，不手动 dispose：若 pop 后立即释放，
-/// 路由退场动画期间 TextField 仍挂载，访问已释放的控制器会抛异常导致路由卡死。
 Future<void> showWaveEditDialog(
   BuildContext context, {
   required String title,
@@ -186,34 +182,72 @@ Future<void> showWaveEditDialog(
 }) {
   return showDialog<void>(
     context: context,
-    builder: (context) {
-      final controller = TextEditingController();
-      return AlertDialog(
-        title: Text(title),
-        content: SelectAllTextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: TextInputType.number,
-          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-          decoration: InputDecoration(labelText: labelText, helperText: '0-9'),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
-          ),
-          TextButton(
-            onPressed: () {
-              final value = int.tryParse(controller.text) ?? fallback;
-              onSave(value);
-              Navigator.of(context).pop();
-            },
-            child: const Text('保存'),
-          ),
-        ],
-      );
-    },
+    builder: (context) => _WaveEditDialog(
+      title: title,
+      labelText: labelText,
+      fallback: fallback,
+      onSave: onSave,
+    ),
   );
+}
+
+class _WaveEditDialog extends StatefulWidget {
+  const _WaveEditDialog({
+    required this.title,
+    required this.labelText,
+    required this.fallback,
+    required this.onSave,
+  });
+
+  final String title;
+  final String labelText;
+
+  final int fallback;
+  final ValueChanged<int> onSave;
+
+  @override
+  State<_WaveEditDialog> createState() => _WaveEditDialogState();
+}
+
+class _WaveEditDialogState extends State<_WaveEditDialog> {
+  late final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: SelectAllTextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: InputDecoration(
+          labelText: widget.labelText,
+          helperText: '0-9',
+        ),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: () {
+            final value = int.tryParse(_controller.text) ?? widget.fallback;
+            widget.onSave(value);
+            Navigator.of(context).pop();
+          },
+          child: const Text('保存'),
+        ),
+      ],
+    );
+  }
 }
 
 /// 汇总行：图标 + 标签 + 行内操作按钮 + 右侧数值

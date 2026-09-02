@@ -130,38 +130,12 @@ class _SettingPageState extends State<SettingPage> {
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
-      builder: (context) {
-        // 控制器在 builder 内创建、随对话框路由销毁后由 GC 回收，
-        // 不手动 dispose：若 pop 后立即释放，路由退场动画期间
-        // TextField 仍挂载，访问已释放的控制器会抛异常导致路由卡死
-        final controller = TextEditingController(
-          text: store.apiUrlNotifier.value,
-        );
-        return AlertDialog(
-          title: const Text('第三方 API'),
-          content: SelectAllTextField(
-            controller: controller,
-            autofocus: true,
-            keyboardType: TextInputType.url,
-            decoration: const InputDecoration(
-              labelText: 'API 地址',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                store.setApiUrl(controller.text);
-                Navigator.of(context).pop();
-              },
-              child: const Text('保存'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => _SettingEditDialog(
+        title: '第三方 API',
+        initialValue: store.apiUrlNotifier.value,
+        decoration: const InputDecoration(labelText: 'API 地址'),
+        onSubmit: store.setApiUrl,
+      ),
     );
   }
 
@@ -172,42 +146,21 @@ class _SettingPageState extends State<SettingPage> {
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
-      builder: (context) {
-        // 控制器在 builder 内创建、随对话框路由销毁后由 GC 回收（同 API 地址对话框）
-        final controller = TextEditingController(
-          text: '${store.lastOnlineConcurrencyNotifier.value}',
-        );
-        return AlertDialog(
-          title: const Text('查询并发数'),
-          content: SelectAllTextField(
-            controller: controller,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: '并发数',
-              helperText: '1-10',
-              isDense: true,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = int.tryParse(controller.text);
-                if (value != null) {
-                  store.setLastOnlineConcurrency(value);
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('保存'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => _SettingEditDialog(
+        title: '查询并发数',
+        initialValue: '${store.lastOnlineConcurrencyNotifier.value}',
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: const InputDecoration(
+          labelText: '并发数',
+          helperText: '1-10',
+          isDense: true,
+        ),
+        onSubmit: (text) {
+          final value = int.tryParse(text);
+          if (value != null) store.setLastOnlineConcurrency(value);
+        },
+      ),
     );
   }
 
@@ -218,39 +171,21 @@ class _SettingPageState extends State<SettingPage> {
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
-      builder: (context) {
-        final controller = TextEditingController(
-          text: '${store.gameTrackIntervalMinutesNotifier.value}',
-        );
-        return AlertDialog(
-          title: const Text('记录间隔'),
-          content: SelectAllTextField(
-            controller: controller,
-            autofocus: true,
-            keyboardType: TextInputType.number,
-            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: const InputDecoration(
-              labelText: '分钟',
-              helperText: '1-43200',
-              isDense: true,
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                final value = int.tryParse(controller.text);
-                if (value != null) store.setGameTrackIntervalMinutes(value);
-                Navigator.of(context).pop();
-              },
-              child: const Text('保存'),
-            ),
-          ],
-        );
-      },
+      builder: (context) => _SettingEditDialog(
+        title: '记录间隔',
+        initialValue: '${store.gameTrackIntervalMinutesNotifier.value}',
+        keyboardType: TextInputType.number,
+        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        decoration: const InputDecoration(
+          labelText: '分钟',
+          helperText: '1-43200',
+          isDense: true,
+        ),
+        onSubmit: (text) {
+          final value = int.tryParse(text);
+          if (value != null) store.setGameTrackIntervalMinutes(value);
+        },
+      ),
     );
   }
 
@@ -445,6 +380,72 @@ class _SettingPageState extends State<SettingPage> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _SettingEditDialog extends StatefulWidget {
+  const _SettingEditDialog({
+    required this.title,
+    required this.initialValue,
+    required this.decoration,
+    required this.onSubmit,
+    this.keyboardType = TextInputType.text,
+    this.inputFormatters = const [],
+  });
+
+  final String title;
+
+  final String initialValue;
+  final TextInputType keyboardType;
+  final List<TextInputFormatter> inputFormatters;
+  final InputDecoration decoration;
+
+  final ValueChanged<String> onSubmit;
+
+  @override
+  State<_SettingEditDialog> createState() => _SettingEditDialogState();
+}
+
+class _SettingEditDialogState extends State<_SettingEditDialog> {
+  late final TextEditingController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = TextEditingController(text: widget.initialValue);
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: Text(widget.title),
+      content: SelectAllTextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: widget.keyboardType,
+        inputFormatters: widget.inputFormatters,
+        decoration: widget.decoration,
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: () {
+            widget.onSubmit(_controller.text);
+            Navigator.of(context).pop();
+          },
+          child: const Text('保存'),
+        ),
+      ],
     );
   }
 }

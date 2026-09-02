@@ -26,7 +26,6 @@ class _SelectUserPageState extends State<SelectUserPage> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('用户管理'),
-        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         actions: [
           IconButton(
             icon: Icon(
@@ -110,7 +109,6 @@ class _SelectUserPageState extends State<SelectUserPage> {
                 : infoStore.getUserId(username) == 0
                     ? null
                     : Row(
-                      // 必须收缩到内容宽度：默认 max 会占满整行触发 ListTile 断言
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         IconButton(
@@ -121,7 +119,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
                                 const SnackBar(content: Text('默认用户不可重命名')),
                               );
                             },
-                            _ => () => _showRenameDialog(infoStore, username),
+                            _ => () => _renameDialog(infoStore, username),
                           },
                         ),
                         IconButton(
@@ -164,130 +162,32 @@ class _SelectUserPageState extends State<SelectUserPage> {
           );
         },
       ),
-      // extended 变体：宽度自适应内容（图标 + 文字 + 内边距）
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: _showAddUserDialog,
+        onPressed: _addUserDialog,
         icon: const Icon(Icons.add),
         label: const Text('添加用户'),
       ),
     );
   }
 
-  /// 添加用户对话框
-  void _showAddUserDialog() {
-    final controller = TextEditingController();
-    final guildController = TextEditingController();
-    showDialog(
+  void _addUserDialog() {
+    showDialog<void>(
       context: context,
-      builder: (context) {
-        return AlertDialog(
-          title: const Text('添加用户'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              UsernameTextField(controller: controller),
-              const SizedBox(height: 8.0),
-              UsernameTextField(
-                controller: guildController,
-                labelText: '公会（选填）',
-                autofocus: false,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                final username = controller.text.trim();
-                if (username.isNotEmpty) {
-                  try {
-                    Stores.infoStore.createUser(
-                      username,
-                      guild: guildController.text.trim(),
-                    );
-                    Stores.infoStore.setCurrentUser(username);
-                    setState(() {});
-                  } catch (e) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text(e.toString())),
-                    );
-                  }
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('添加'),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => _AddUserDialog(
+        infoStore: Stores.infoStore,
+        onAdded: () => setState(() {}),
+      ),
     );
   }
 
-  /// 编辑用户对话框：修改用户名与公会（默认用户不可编辑，由调用方拦截）
-  void _showRenameDialog(InfoStore infoStore, String username) {
-    showDialog(
+  void _renameDialog(InfoStore infoStore, String username) {
+    showDialog<void>(
       context: context,
-      builder: (context) {
-        final TextEditingController controller =
-            TextEditingController(text: username);
-        final TextEditingController guildController =
-            TextEditingController(
-          text: infoStore.getUserGuild(username),
-        );
-        return AlertDialog(
-          title: const Text('编辑用户'),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              UsernameTextField(controller: controller),
-              const SizedBox(height: 8.0),
-              UsernameTextField(
-                controller: guildController,
-                labelText: '公会',
-                autofocus: false,
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: const Text('取消'),
-            ),
-            TextButton(
-              onPressed: () {
-                final String newUsername = controller.text.trim();
-                final String newGuild = guildController.text.trim();
-                // 改名前先取旧公会：改名后旧用户名将失效
-                final String oldGuild =
-                    infoStore.getUserData(username)?.guild ?? '';
-                final bool renamed = newUsername.isNotEmpty && newUsername != username;
-                try {
-                  if (renamed) {
-                    infoStore.renameUser(username, newUsername);
-                  }
-                  if (newGuild != oldGuild) {
-                    infoStore.setUserGuild(renamed ? newUsername : username, newGuild);
-                  }
-                  setState(() {});
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text(e.toString())),
-                  );
-                }
-                Navigator.of(context).pop();
-              },
-              child: const Text('保存'),
-            ),
-          ],
-        );
-      },
+      builder: (dialogContext) => _EditUserDialog(
+        infoStore: infoStore,
+        username: username,
+        onSaved: () => setState(() {}),
+      ),
     );
   }
 }
@@ -359,6 +259,181 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
             ready ? '删除' : '$_remaining s',
             style: const TextStyle(color: Colors.red),
           ),
+        ),
+      ],
+    );
+  }
+}
+
+class _AddUserDialog extends StatefulWidget {
+  const _AddUserDialog({
+    required this.infoStore,
+    required this.onAdded,
+  });
+
+  final InfoStore infoStore;
+
+  final VoidCallback onAdded;
+
+  @override
+  State<_AddUserDialog> createState() => _AddUserDialogState();
+}
+
+class _AddUserDialogState extends State<_AddUserDialog> {
+  final TextEditingController _userController = TextEditingController();
+  final TextEditingController _guildController = TextEditingController();
+
+  @override
+  void dispose() {
+    _userController.dispose();
+    _guildController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final username = _userController.text.trim();
+    if (username.isNotEmpty) {
+      try {
+        widget.infoStore.createUser(
+          username,
+          guild: _guildController.text.trim(),
+        );
+        widget.infoStore.setCurrentUser(username);
+        widget.onAdded();
+      } catch (e) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
+      }
+    }
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('添加用户'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NameTextField(
+            controller: _userController,
+            labelText: '用户名',
+            autofocus: true,
+          ),
+          const SizedBox(height: 8.0),
+          NameTextField(
+            controller: _guildController,
+            labelText: '公会（选填）',
+            autofocus: false,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: const Text('添加'),
+        ),
+      ],
+    );
+  }
+}
+
+class _EditUserDialog extends StatefulWidget {
+  const _EditUserDialog({
+    required this.infoStore,
+    required this.username,
+    required this.onSaved,
+  });
+
+  final InfoStore infoStore;
+
+  final String username;
+
+  final VoidCallback onSaved;
+
+  @override
+  State<_EditUserDialog> createState() => _EditUserDialogState();
+}
+
+class _EditUserDialogState extends State<_EditUserDialog> {
+  late final TextEditingController _userController;
+  late final TextEditingController _guildController;
+
+  @override
+  void initState() {
+    super.initState();
+    _userController = TextEditingController(text: widget.username);
+    _guildController = TextEditingController(
+      text: widget.infoStore.getUserGuild(widget.username),
+    );
+  }
+
+  @override
+  void dispose() {
+    _userController.dispose();
+    _guildController.dispose();
+    super.dispose();
+  }
+
+  void _submit() {
+    final String newUsername = _userController.text.trim();
+    final String newGuild = _guildController.text.trim();
+    final String oldGuild =
+        widget.infoStore.getUserData(widget.username)?.guild ?? '';
+    final bool renamed =
+        newUsername.isNotEmpty && newUsername != widget.username;
+    try {
+      if (renamed) {
+        widget.infoStore.renameUser(widget.username, newUsername);
+      }
+      if (newGuild != oldGuild) {
+        widget.infoStore.setUserGuild(
+          renamed ? newUsername : widget.username,
+          newGuild,
+        );
+      }
+      widget.onSaved();
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(e.toString())),
+      );
+    }
+    Navigator.of(context).pop();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AlertDialog(
+      title: const Text('编辑用户'),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          NameTextField(
+            controller: _userController,
+            labelText: '用户名',
+            autofocus: true,
+          ),
+          const SizedBox(height: 8.0),
+          NameTextField(
+            controller: _guildController,
+            labelText: '公会',
+            autofocus: false,
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: const Text('取消'),
+        ),
+        TextButton(
+          onPressed: _submit,
+          child: const Text('保存'),
         ),
       ],
     );
