@@ -1,15 +1,15 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:measure_size/measure_size.dart';
+
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
-import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
-/// 装备对比：填写无装备面板与两件装备的 DPS 相关白词条，
-/// 通过期望 DPS（暴击与非暴击的加权平均）判断哪件装备更好。
+/// 装备对比
 class ItemComparerPage extends StatefulWidget {
   const ItemComparerPage({super.key});
 
@@ -17,13 +17,8 @@ class ItemComparerPage extends StatefulWidget {
   State<ItemComparerPage> createState() => _ItemComparerPageState();
 }
 
-/// 一件装备最多可对比的词条数
-/// （真实装备第 1、2 槽必定白，第 3 槽为白或红，最多 3 白）
 const int kMaxLinesPerItem = 3;
 
-/// 词条下拉选项：白词条或特殊词条。
-/// - Element Damage：白词条池中 5 种元素伤害的整合项，与普通增伤无差异
-/// - More Dmg：累乘进更多伤害（见 computeItemDps）
 class _LineOption {
   const _LineOption._({
     this.line,
@@ -34,7 +29,7 @@ class _LineOption {
   /// 普通白词条
   const _LineOption.item(ItemLine line) : this._(line: line);
 
-  /// Element Damage（元素伤害整合项，视为普通增伤）
+  /// Element Damage 词条
   const _LineOption.elementDamage() : this._(isElementDamage: true);
 
   /// More Dmg 词条
@@ -47,13 +42,11 @@ class _LineOption {
   String get label => isMoreDmg
       ? 'More Dmg %'
       : isElementDamage
-          ? 'Element Damage %'
-          : line!.label;
+      ? 'Element Damage %'
+      : line!.label;
 
   bool get isPercent => isMoreDmg || isElementDamage || line!.isPercent;
 
-  /// 值相等：恢复内存时新建的实例需与下拉框 items 中的实例匹配
-  /// （DropdownButton 通过 == 查找当前选中项，身份比较会断言失败）
   @override
   bool operator ==(Object other) =>
       other is _LineOption &&
@@ -65,7 +58,6 @@ class _LineOption {
   int get hashCode => Object.hash(isMoreDmg, isElementDamage, line);
 }
 
-/// 装备词条下拉选项：DPS 相关白词条 + 特殊词条
 final List<_LineOption> _lineOptions = [
   _LineOption.item(ItemLine.damageInt),
   _LineOption.item(ItemLine.damagePercent),
@@ -85,17 +77,20 @@ class _LineInput {
   final VoidCallback _onChanged;
   final valueCtrl = TextEditingController();
 
-  /// 已选择的词条选项；null 表示尚未选择
   _LineOption? line;
 
+  bool _disposed = false;
+
+  /// 幂等：处于退场动画中的行可能经由页面 dispose / 重置路径被二次释放
   void dispose() {
+    if (_disposed) return;
+    _disposed = true;
     valueCtrl.removeListener(_onChanged);
     valueCtrl.dispose();
   }
 }
 
 class _ItemComparerPageState extends State<ItemComparerPage> {
-  // ── 无装备面板 ──
   final _baseAttackCtrl = TextEditingController();
   final _increasedDmgCtrl = TextEditingController();
   final _moreDmgCtrl = TextEditingController();
@@ -108,34 +103,33 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   /// 面板 Increased Speed：与 [_baseApsCtrl] 一起参与攻击次数计算
   final _speedCtrl = TextEditingController();
 
-  // ── 两件装备的词条行 ──
   final _item1Lines = <_LineInput>[];
   final _item2Lines = <_LineInput>[];
+  int _lineListGeneration = 0;
 
-  /// 从内存恢复输入期间为 true，跳过保存与重建（恢复时监听器尚未就绪）
+  final ValueNotifier<double> _summaryBarHeightNotifier = ValueNotifier(0.0);
+
   bool _restoring = false;
 
   List<TextEditingController> get _panelCtrls => [
-        _baseAttackCtrl,
-        _increasedDmgCtrl,
-        _moreDmgCtrl,
-        _critChanceCtrl,
-        _critDmgCtrl,
-        _baseApsCtrl,
-        _speedCtrl,
-      ];
+    _baseAttackCtrl,
+    _increasedDmgCtrl,
+    _moreDmgCtrl,
+    _critChanceCtrl,
+    _critDmgCtrl,
+    _baseApsCtrl,
+    _speedCtrl,
+  ];
 
   @override
   void initState() {
     super.initState();
-    // 先恢复上次输入，再挂监听（避免恢复过程触发重建）
     _restoring = true;
     _restoreFromStore();
     _restoring = false;
     for (final ctrl in _panelCtrls) {
       ctrl.addListener(_onInputChanged);
     }
-    // 恢复后仍为空时补一条空词条行
     if (_item1Lines.isEmpty) _item1Lines.add(_createLineInput());
     if (_item2Lines.isEmpty) _item2Lines.add(_createLineInput());
   }
@@ -148,10 +142,10 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     for (final input in [..._item1Lines, ..._item2Lines]) {
       input.dispose();
     }
+    _summaryBarHeightNotifier.dispose();
     super.dispose();
   }
 
-  /// 输入变化：持久化并重算结果区
   void _onInputChanged() {
     if (_restoring) return;
     _saveToStore();
@@ -160,25 +154,13 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   _LineInput _createLineInput() => _LineInput(_onInputChanged);
 
-  void _addLine(List<_LineInput> lines) {
-    if (lines.length >= kMaxLinesPerItem) return;
-    setState(() => lines.add(_createLineInput()));
-    _saveToStore();
-  }
-
-  void _removeLine(List<_LineInput> lines, _LineInput input) {
-    setState(() => lines.remove(input));
-    _saveToStore();
-    // 输入框本帧卸载后才释放控制器，避免 dispose 时序问题
-    WidgetsBinding.instance.addPostFrameCallback((_) => input.dispose());
-  }
-
-  /// 重置所有输入：清空面板，两件装备各恢复为一条空词条行
   void _reset() {
-    for (final ctrl in _panelCtrls) {
-      ctrl.clear(); // 触发 _onInputChanged 保存（此时词条行尚未重置）
+    for (final input in [..._item1Lines, ..._item2Lines]) {
+      input.dispose();
     }
-    // 被移除行的控制器随页面销毁统一释放（本帧卸载输入框时仍在使用）
+    for (final ctrl in _panelCtrls) {
+      ctrl.clear();
+    }
     setState(() {
       _item1Lines
         ..clear()
@@ -186,11 +168,10 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
       _item2Lines
         ..clear()
         ..add(_createLineInput());
+      _lineListGeneration++;
     });
     _saveToStore();
   }
-
-  // ── 持久化（Hive，app_meta box）───────────────────────
 
   void _restoreFromStore() {
     final store = Stores.itemComparerStore;
@@ -237,10 +218,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     store.save();
   }
 
-  void _saveLines(
-    List<_LineInput> source,
-    List<ItemComparerLineInput> target,
-  ) {
+  void _saveLines(List<_LineInput> source, List<ItemComparerLineInput> target) {
     target
       ..clear()
       ..addAll([
@@ -257,7 +235,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   double _valueOf(TextEditingController ctrl) =>
       double.tryParse(ctrl.text.trim()) ?? 0;
 
-  /// 文本为空返回 null（表示未填写，用于攻击速度的两项开关），否则解析数值
   double? _optionalValue(TextEditingController ctrl) =>
       ctrl.text.trim().isEmpty ? null : double.tryParse(ctrl.text.trim()) ?? 0;
 
@@ -295,7 +272,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 三组结果随输入实时重算：无装备基准 / 装备 1 / 装备 2
     final baseResult = computeItemDps(
       baseAttack: _valueOf(_baseAttackCtrl),
       increasedDmg: _valueOf(_increasedDmgCtrl),
@@ -310,59 +286,66 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: [
-            const Text('装备对比'),
-          ],
-        ),
+        title: Row(children: [const Text('装备对比')]),
         actions: [
-            IconButton(
-              icon: const Icon(Icons.help_outline),
-              tooltip: '使用说明',
-              onPressed: () => showDialog<void>(
-                context: context,
-                builder: (dialogContext) => AlertDialog(
-                  title: const Text('使用说明'),
-                  content: const Text.rich(
-                    TextSpan(
-                      style: TextStyle(fontSize: 14),
-                      children: [
-                        TextSpan(
-                          text: '该工具用于对比两件装备的期望。\n\n',
-                        ),
-                        TextSpan(
-                          text: '使用步骤：\n',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        TextSpan(
-                          text: '1. 确认需要对比的装备 / 宝珠 / 宝物槽位，然后将对应的物品卸下，根据此时的面板填写“无装备面板”数据；\n',
-                        ),
-                        TextSpan(
-                          text: '2. 将两件装备的白词条填写到“装备 1 / 装备 2”中，',
-                        ),
-                        TextSpan(
-                          text: '请注意词条类型，元素伤害统一并入 "Element Damage"，请自行根据单位属性填入对应元素伤害词条；\n',
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        TextSpan(
-                          text: '3. 对比结果：实时显示三组 DPS 结果，并给出结论。',
-                        ),
-                      ],
-                    ),
+          IconButton(
+            icon: const Icon(Icons.help_outline),
+            tooltip: '使用说明',
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (dialogContext) => AlertDialog(
+                title: const Text('使用说明'),
+                content: const Text.rich(
+                  TextSpan(
+                    style: TextStyle(fontSize: 14),
+                    children: [
+                      TextSpan(text: '该工具用于对比两件装备的期望。\n\n'),
+                      TextSpan(
+                        text: '使用步骤：\n',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text: '1. 确认需要对比的装备 / 宝珠 / 宝物槽位，然后将对应的物品卸下，根据此时的面板填写“无装备面板”数据；\n',
+                      ),
+                      TextSpan(text: '2. 将两件装备的白词条填写到“装备 1 / 装备 2”中，'),
+                      TextSpan(
+                        text: '请注意词条类型，元素伤害统一并入 "Element Damage"，请自行根据单位属性填入对应元素伤害词条；\n',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: '3. 对比结果：实时显示三组 DPS 结果，并给出结论。\n\n\n'),
+                      TextSpan(
+                        text: '普攻型单位：',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(
+                        text: '需要填写 Attacks Per Second 和 Increased Speed，Attack Speed % 词条参与计算。\n',
+                      ),
+                      TextSpan(
+                        text: '技能型单位：',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: '不填写上述两项，Attack Speed % 词条不参与计算。'),
+                      TextSpan(
+                        text: '\n\n注：',
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      TextSpan(text: '宝珠、宝物等词条也可用于计算，但需要注意词条类型。'),
+                    ],
                   ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(dialogContext).pop(),
-                      child: const Text('关闭'),
-                    ),
-                  ],
                 ),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(dialogContext).pop(),
+                    child: const Text('关闭'),
+                  ),
+                ],
               ),
             ),
+          ),
           IconButton(
             tooltip: '重置',
             icon: const Icon(Icons.restore_page),
-            onPressed:() => showDialog<void>(
+            onPressed: () => showDialog<void>(
               context: context,
               builder: (dialogContext) => AlertDialog(
                 title: const Text('重置'),
@@ -385,25 +368,66 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.fromLTRB(16, 0, 16, 24),
+      body: Stack(
         children: [
-          const SectionHeader('无装备面板'),
-          Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
-          const SectionHeader('装备 1'),
-          Card(margin: EdgeInsets.zero, child: _buildItemCard(_item1Lines)),
-          const SectionHeader('装备 2'),
-          Card(margin: EdgeInsets.zero, child: _buildItemCard(_item2Lines)),
-          const SectionHeader('对比结果'),
-          Card(
-            margin: EdgeInsets.zero,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: _ResultView(
-                baseResult: baseResult,
-                item1Result: item1Result,
-                item2Result: item2Result,
-                ready: _valueOf(_baseAttackCtrl) > 0,
+          Positioned.fill(
+            child: ValueListenableBuilder(
+              valueListenable: _summaryBarHeightNotifier,
+              builder: (context, height, child) {
+                return ListView(
+                  padding: EdgeInsets.fromLTRB(16, 16, 16, height),
+                  children: [
+                    Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
+                    const SizedBox(height: 16),
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: _buildItemCard(
+                        _item1Lines,
+                        '装备 1 词条',
+                        'item1',
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: _buildItemCard(
+                        _item2Lines,
+                        '装备 2 词条',
+                        'item2',
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: MeasureSize(
+              onChange: (size) {
+                final next = size.height;
+                final current = _summaryBarHeightNotifier.value;
+                if ((current - next).abs() > 0.5) {
+                  _summaryBarHeightNotifier.value = next;
+                }
+              },
+              child: Padding(
+                padding: const EdgeInsets.all(16.0),
+                child: Card(
+                  elevation: 3.0,
+                  margin: EdgeInsets.zero,
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: _ResultView(
+                      baseResult: baseResult,
+                      item1Result: item1Result,
+                      item2Result: item2Result,
+                      ready: _valueOf(_baseAttackCtrl) > 0,
+                    ),
+                  ),
+                ),
               ),
             ),
           ),
@@ -412,13 +436,15 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
   }
 
-  // ── 无装备面板 ──────────────────────────────────────
-
   Widget _buildPanelCard() {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 16),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
+          Text(
+            '无装备面板',
+            style: Theme.of(context).textTheme.titleMedium,
+          ),
           _panelField('Base Attack', _baseAttackCtrl, isPercent: false),
           _panelField('Increased Dmg', _increasedDmgCtrl),
           _panelField('More Dmg', _moreDmgCtrl),
@@ -426,35 +452,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           _panelField('Critical Dmg', _critDmgCtrl),
           _panelField('Attacks Per Second', _baseApsCtrl, isPercent: false),
           _panelField('Increased Speed', _speedCtrl),
-          const SizedBox(height: 8),
-          Text.rich(
-            const TextSpan(
-              style: TextStyle(fontSize: 12),
-              children: [
-                TextSpan(
-                  text: '普攻型单位：',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextSpan(
-                  text: '需要填写 Attacks Per Second 和 Increased Speed，Attack Speed % 词条参与计算。\n',
-                ),
-                TextSpan(
-                  text: '技能型单位：',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextSpan(
-                  text: '不填写上述两项，Attack Speed % 词条不参与计算。',
-                ),
-                TextSpan(
-                  text: '\n\n注：',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                TextSpan(
-                  text: '宝珠、宝物等词条也可用于计算，但需要注意词条类型。',
-                ),
-              ],
-            ),
-          ),
         ],
       ),
     );
@@ -477,7 +474,9 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           Expanded(
             child: SelectAllTextField(
               controller: ctrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
               ],
@@ -492,32 +491,21 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
   }
 
-  // ── 装备卡片 ────────────────────────────────────────
-
-  Widget _buildItemCard(List<_LineInput> lines) {
+  Widget _buildItemCard(
+    List<_LineInput> lines,
+    String title,
+    String listId,
+  ) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+      padding: const EdgeInsets.all(16.0),
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          for (final input in lines)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: _ItemLineRow(
-                key: ObjectKey(input),
-                input: input,
-                onChanged: _onInputChanged,
-                onRemove: () => _removeLine(lines, input),
-              ),
-            ),
-          if (lines.length < kMaxLinesPerItem)
-            Padding(
-              padding: const EdgeInsets.only(top: 8),
-              child: TextButton.icon(
-                onPressed: () => _addLine(lines),
-                icon: const Icon(Icons.add),
-                label: const Text('添加词条'),
-              ),
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          _AnimatedItemLineList(
+            key: ValueKey('$listId-$_lineListGeneration'),
+            lines: lines,
+            onChanged: _onInputChanged,
+            createLine: _createLineInput,
             ),
         ],
       ),
@@ -525,7 +513,219 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   }
 }
 
-/// 一条装备词条输入行：词条类型下拉框 + 数值输入框 + 删除
+class _AnimatedItemLineList extends StatefulWidget {
+  const _AnimatedItemLineList({
+    super.key,
+    required this.lines,
+    required this.onChanged,
+    required this.createLine,
+  });
+
+  final List<_LineInput> lines;
+  final VoidCallback onChanged;
+  final _LineInput Function() createLine;
+
+  @override
+  State<_AnimatedItemLineList> createState() => _AnimatedItemLineListState();
+}
+
+class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
+  static const _animationDuration = Duration(milliseconds: 280);
+
+  final _listKey = GlobalKey<AnimatedListState>();
+  final _removingInputs = <_LineInput>{};
+
+  @override
+  void dispose() {
+    // 页面或列表被重建时，退场动画可能还没走完；此时统一兜底释放。
+    for (final input in _removingInputs) {
+      input.dispose();
+    }
+    super.dispose();
+  }
+
+  void _addLine() {
+    if (widget.lines.length >= kMaxLinesPerItem) return;
+    final index = widget.lines.length;
+    widget.lines.add(widget.createLine());
+    _listKey.currentState?.insertItem(
+      index,
+      duration: _animationDuration,
+    );
+    widget.onChanged();
+  }
+
+  void _removeLine(_LineInput input) {
+    final index = widget.lines.indexOf(input);
+    if (index < 0 || !_removingInputs.add(input)) return;
+
+    widget.lines.removeAt(index);
+    _listKey.currentState?.removeItem(
+      index,
+      (context, animation) => _RemovedLineItem(
+        key: ObjectKey(input),
+        input: input,
+        animation: animation,
+        onRemoved: _finishRemove,
+      ),
+      duration: _animationDuration,
+    );
+    widget.onChanged();
+  }
+
+  void _finishRemove(_LineInput input) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _removingInputs.remove(input);
+      input.dispose();
+    });
+  }
+
+  /// 构建带入场动画的词条行（itemBuilder 使用）
+  Widget _buildAnimatedRow(
+    _LineInput input,
+    Animation<double> animation,
+  ) {
+    final curvedAnimation = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    final offset = Tween<Offset>(
+      begin: const Offset(0.12, 0),
+      end: Offset.zero,
+    ).animate(curvedAnimation);
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: SizeTransition(
+        sizeFactor: curvedAnimation,
+        alignment: const Alignment(-1.0, -1.0),
+        child: FadeTransition(
+          opacity: curvedAnimation,
+          child: SlideTransition(
+            position: offset,
+            child: _ItemLineRow(
+              key: ObjectKey(input),
+              input: input,
+              onChanged: widget.onChanged,
+              onRemove: () => _removeLine(input),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        AnimatedList(
+          key: _listKey,
+          shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
+          initialItemCount: widget.lines.length,
+          itemBuilder: (context, index, animation) => _buildAnimatedRow(
+            widget.lines[index],
+            animation,
+          ),
+        ),
+        if (widget.lines.length < kMaxLinesPerItem)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TextButton.icon(
+              onPressed: _addLine,
+              icon: const Icon(Icons.add),
+              label: const Text('添加词条'),
+            ),
+          ),
+      ],
+    );
+  }
+}
+
+/// 删除退场动画期间挂在树上的占位行。
+///
+/// AnimatedList 的 removeItem builder 产物会一直留在树上直到退场动画结束，
+/// 因此不能在动画结束（dismissed）回调里直接释放 controller —— 此刻该行
+/// 组件尚未卸载，若期间发生重建或输入法事件访问到已销毁的 controller，
+/// 会抛出 "A TextEditingController was used after being disposed"。
+/// 这里把释放推迟到本组件真正被卸载时（State.dispose），保证行已离开树。
+class _RemovedLineItem extends StatefulWidget {
+  const _RemovedLineItem({
+    super.key,
+    required this.input,
+    required this.animation,
+    required this.onRemoved,
+  });
+
+  final _LineInput input;
+
+  /// 退场动画（AnimatedList 传入，播放方向为 1 -> 0）
+  final Animation<double> animation;
+  final ValueChanged<_LineInput> onRemoved;
+
+  @override
+  State<_RemovedLineItem> createState() => _RemovedLineItemState();
+}
+
+class _RemovedLineItemState extends State<_RemovedLineItem> {
+  late final CurvedAnimation _curved = CurvedAnimation(
+    parent: widget.animation,
+    curve: Curves.easeOutCubic,
+    reverseCurve: Curves.easeInCubic,
+  );
+  late final Animation<Offset> _offset = Tween<Offset>(
+    begin: Offset.zero,
+    end: const Offset(0.12, 0),
+  ).animate(_curved);
+
+  @override
+  void initState() {
+    super.initState();
+    widget.animation.addStatusListener(_onAnimationStatusChanged);
+  }
+
+  void _onAnimationStatusChanged(AnimationStatus status) {
+    if (status == AnimationStatus.dismissed) {
+      widget.onRemoved(widget.input);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.animation.removeStatusListener(_onAnimationStatusChanged);
+    _curved.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 退场期间禁止交互，避免焦点/输入法在释放边界上访问行内容
+    return IgnorePointer(
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8),
+        child: SizeTransition(
+          sizeFactor: _curved,
+          alignment: const Alignment(-1.0, -1.0),
+          child: FadeTransition(
+            opacity: _curved,
+            child: SlideTransition(
+              position: _offset,
+              child: _ItemLineRow(
+                key: ObjectKey(widget.input),
+                input: widget.input,
+                onChanged: () {},
+                onRemove: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class _ItemLineRow extends StatelessWidget {
   const _ItemLineRow({
     super.key,
@@ -548,7 +748,6 @@ class _ItemLineRow extends StatelessWidget {
           child: DropdownButtonFormField<_LineOption>(
             initialValue: line,
             hint: const Text('选择词条类型'),
-            // isDense: true,
             items: [
               for (final option in _lineOptions)
                 DropdownMenuItem(value: option, child: Text(option.label)),
@@ -559,9 +758,10 @@ class _ItemLineRow extends StatelessWidget {
             },
             decoration: const InputDecoration(
               isDense: true,
-              // border: OutlineInputBorder(),
-              contentPadding:
-                  EdgeInsets.symmetric(horizontal: 12, vertical: 12),
+              contentPadding: EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 12,
+              ),
             ),
           ),
         ),
@@ -576,8 +776,6 @@ class _ItemLineRow extends StatelessWidget {
               FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
             ],
             decoration: InputDecoration(
-              // isDense: true,
-              // border: const OutlineInputBorder(),
               hintText: '数值',
               suffixText: line?.isPercent == true ? '%' : null,
             ),
@@ -593,7 +791,6 @@ class _ItemLineRow extends StatelessWidget {
   }
 }
 
-/// 对比结果：结论横幅 + 无装备/装备 1/装备 2 的伤害明细表
 class _ResultView extends StatelessWidget {
   const _ResultView({
     required this.baseResult,
@@ -606,7 +803,6 @@ class _ResultView extends StatelessWidget {
   final ItemDpsResult item1Result;
   final ItemDpsResult item2Result;
 
-  /// 已填写基础攻击（Base Attack > 0）时才开始对比
   final bool ready;
 
   @override
@@ -625,25 +821,27 @@ class _ResultView extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 结论横幅
         Container(
           width: double.infinity,
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: BoxDecoration(
-            color: ready ? scheme.primaryContainer : scheme.surfaceContainerHighest,
+            color: ready
+                ? scheme.primaryContainer
+                : scheme.surfaceContainerHighest,
             borderRadius: BorderRadius.circular(8),
           ),
           child: Text(
             text,
             textAlign: TextAlign.center,
             style: theme.textTheme.titleMedium?.copyWith(
-              color: ready ? scheme.onPrimaryContainer : scheme.onSurfaceVariant,
+              color: ready
+                  ? scheme.onPrimaryContainer
+                  : scheme.onSurfaceVariant,
               fontWeight: FontWeight.bold,
             ),
           ),
         ),
         const SizedBox(height: 16),
-        // 表头
         Row(
           children: [
             const SizedBox(width: 68),
@@ -675,13 +873,17 @@ class _ResultView extends StatelessWidget {
   }
 
   (String, int) _verdict(double item1Dps, double item2Dps) {
-    if (!ready) return ('填写上方数据后自动对比', -1);
+    if (!ready) return ('填写数据后自动对比', -1);
     if (item1Dps > item2Dps) {
-      final gap = item2Dps > 0 ? '，DPS 比装备 2 高 ${_pct(item1Dps / item2Dps - 1)}' : '';
+      final gap = item2Dps > 0
+          ? '，DPS 比装备 2 高 ${_pct(item1Dps / item2Dps - 1)}'
+          : '';
       return ('装备 1 更优$gap', 0);
     }
     if (item2Dps > item1Dps) {
-      final gap = item1Dps > 0 ? '，DPS 比装备 1 高 ${_pct(item2Dps / item1Dps - 1)}' : '';
+      final gap = item1Dps > 0
+          ? '，DPS 比装备 1 高 ${_pct(item2Dps / item1Dps - 1)}'
+          : '';
       return ('装备 2 更优$gap', 1);
     }
     return ('两件装备 DPS 相同', -1);
@@ -738,7 +940,7 @@ class _ResultView extends StatelessWidget {
   }
 }
 
-/// 比率转百分比文本（1 位小数，整数不带小数）
+/// 比率转百分比文本
 String _pct(double ratio) {
   final value = ratio * 100;
   return value == value.roundToDouble()
