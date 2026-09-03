@@ -19,7 +19,8 @@ class _GameTrackPageState extends State<GameTrackPage> {
   bool _newestFirst = true;
 
   int get _userId => Stores.infoStore.getCurrentUserId();
-  bool get _gameTrackEnabled => Stores.appSettingsStore.gameTrackEnabledNotifier.value;
+  bool get _gameTrackEnabled =>
+      Stores.appSettingsStore.gameTrackEnabledNotifier.value;
 
   @override
   void initState() {
@@ -63,16 +64,15 @@ class _GameTrackPageState extends State<GameTrackPage> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final summary = Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
       child: Align(
         alignment: Alignment.centerLeft,
         child: Text(
           '共 ${_records.length} 条记录',
-          style: Theme.of(context).textTheme.titleSmall?.copyWith(
-            color: Theme.of(context).colorScheme.primary,
-            fontWeight: FontWeight.w600,
-          ),
+          style: Theme.of(context).textTheme.bodySmall
+              ?.copyWith(color: scheme.primary),
         ),
       ),
     );
@@ -82,10 +82,7 @@ class _GameTrackPageState extends State<GameTrackPage> {
       actions: [
         if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
           IconButton(
-            icon: const Icon(
-              Icons.warning,
-              color: Colors.orange,
-            ),
+            icon: const Icon(Icons.warning, color: Colors.orange),
             tooltip: '注意',
             onPressed: () {
               showDialog(
@@ -104,7 +101,7 @@ class _GameTrackPageState extends State<GameTrackPage> {
                   ],
                 ),
               );
-            }
+            },
           ),
         IconButton(
           icon: const Icon(Icons.show_chart),
@@ -123,36 +120,19 @@ class _GameTrackPageState extends State<GameTrackPage> {
           onPressed: _toggleSort,
         ),
       ],
-      body: _userId == 0
-          ? const Center(
-              child: Text('当前为默认用户，无法记录轨迹'),
-            )
-          : _records.isEmpty && !_gameTrackEnabled
-          ? Column(
-              children: [
-                summary,
-                const Expanded(
-                  child: Center(
-                    child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」'),
-                  ),
-                ),
-              ],
-            )
-          : _records.isEmpty
-          ? Column(
-              children: [
-                summary,
-                const Expanded(
-                  child: Center(
-                    child: Text('暂无轨迹记录'),
-                  ),
-                ),
-              ],
-            )
-          : Column(
-              children: [
-                summary,
-                Expanded(
+      body: Column(
+        children: [
+          summary,
+          const Divider(height: 1),
+          _userId == 0
+              ? const Center(child: Text('当前为默认用户，无法记录轨迹'))
+              : _records.isEmpty && !_gameTrackEnabled
+              ? const Expanded(
+                  child: Center(child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」')),
+                )
+              : _records.isEmpty
+              ? const Expanded(child: Center(child: Text('暂无轨迹记录')))
+              : Expanded(
                   child: ListView.builder(
                     padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
                     itemCount: _records.length * 2 - 1,
@@ -170,8 +150,8 @@ class _GameTrackPageState extends State<GameTrackPage> {
                     },
                   ),
                 ),
-              ],
-            ),
+        ],
+      ),
     );
   }
 }
@@ -224,7 +204,9 @@ class _TrackCard extends StatelessWidget {
                         text: Text('${unit.name} Lv.${unit.level}'),
                         backgroundColor: unit.enabled
                             ? null
-                            : Theme.of(context).colorScheme.surfaceContainerHighest,
+                            : Theme.of(context)
+                                  .colorScheme
+                                  .surfaceContainerHighest,
                       ),
                     ),
                 ],
@@ -278,7 +260,6 @@ String _formatDuration(Duration value) {
   return hours > 0
       ? '$hours小时$minutes分$seconds秒'
       : minutes > 0
-          ? '$minutes分$seconds秒'
-          : '$seconds秒';
+      ? '$minutes分$seconds秒'
+      : '$seconds秒';
 }
-

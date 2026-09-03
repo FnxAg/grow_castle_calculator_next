@@ -397,13 +397,12 @@ class _GuildPageState extends State<GuildPage> {
       children: [
         // 公会名 + 公会排名（前 300 内）+ 成员数
         Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 8.0),
+          padding: const EdgeInsets.fromLTRB(16.0, 10.0, 24.0, 8.0),
           child: Row(
             children: [
               // 公会榜排名（前 300 内才显示），前后为与上一名/下一名的分数差距
               for (var i = 0; i < chips.length; i++) ...[
                 chips[i].$1,
-                // 间距取下一个胶囊的原始前置间距：只插在胶囊之间
                 if (i < chips.length - 1) SizedBox(width: chips[i + 1].$2),
               ],
               const Spacer(),
