@@ -38,9 +38,7 @@ class GuildDetailPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(guildName),
-      ),
+      appBar: AppBar(title: Text(guildName)),
       body: GuildPage(guildName: guildName, userHeader: false),
     );
   }
@@ -100,9 +98,7 @@ class _GuildPageState extends State<GuildPage> {
       ),
       textDirection: TextDirection.ltr,
       textScaler: MediaQuery.textScalerOf(context),
-    )..layout())
-        .width
-        .ceilToDouble();
+    )..layout()).width.ceilToDouble();
   }
 
   @override
@@ -181,12 +177,9 @@ class _GuildPageState extends State<GuildPage> {
         });
         // 覆盖 formatLastOnline 的单位格式，避免 min 比 Nd 更宽而被截断。
         _timeColumnWidth = lastOnlineEnabled
-            ? [
-                '999min',
-                '1000d',
-              ].map((text) => _textWidth(text, _timeStyle)).reduce(
-                (max, width) => width > max ? width : max,
-              )
+            ? ['999min', '1000d']
+                  .map((text) => _textWidth(text, _timeStyle))
+                  .reduce((max, width) => width > max ? width : max)
             : 0;
         // 同步回填各成员"上次在线"（缓存命中首帧即展示，不重放入场动画）；
         // 重建映射顺带清理已退出公会成员的旧条目；未缓存成员留空待异步拉取
@@ -230,9 +223,8 @@ class _GuildPageState extends State<GuildPage> {
     });
 
     if (refreshFailure != null) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('刷新失败：$refreshFailure')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('刷新失败：$refreshFailure')));
     }
 
     // 成员列表加载成功且开关开启才发起各成员"上次在线"查询：
@@ -417,9 +409,8 @@ class _GuildPageState extends State<GuildPage> {
               const Spacer(),
               Text(
                 '${_members.length} 人 · ${totalScore.format()}',
-                style: Theme.of(
-                  context,
-                ).textTheme.bodySmall?.copyWith(color: scheme.primary),
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: scheme.primary),
               ),
             ],
           ),
@@ -510,37 +501,27 @@ class _GuildPageState extends State<GuildPage> {
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      // 上次在线固定列：文本右对齐紧贴分数列；
-                      // 联网返回后在列内线性展开（右缘锚定向左生长），
-                      // 首帧已有数据（缓存命中）时 AnimatedSize 不播放
                       SizedBox(
                         width: _timeColumnWidth,
                         child: Align(
                           alignment: Alignment.centerRight,
-                          child: AnimatedSize(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.linear,
-                            alignment: Alignment.centerRight,
+                          child: AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 150),
+                            transitionBuilder: (child, animation) =>
+                                FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
                             child: (lastOnline == null || lastOnline.isEmpty)
                                 ? const SizedBox(width: 0)
-                                : TweenAnimationBuilder(
-                                    tween: Tween<double>(begin: 0.0, end: 1.0),
-                                    duration: const Duration(milliseconds: 300),
-                                    curve: Curves.easeOutCubic,
-                                    builder: (context, value, child) {
-                                      return Opacity(
-                                        opacity: value,
-                                        child: child,
-                                      );
-                                    },
-                                    child: Text(
-                                        lastOnline,
-                                        style: _timeStyle.copyWith(
-                                          color: scheme.onSurfaceVariant,
-                                        ),
-                                        maxLines: 1,
+                                : Text(
+                                    lastOnline,
+                                    key: ValueKey(lastOnline),
+                                    style: _timeStyle.copyWith(
+                                      color: scheme.onSurfaceVariant,
                                     ),
-                                ),
+                                    maxLines: 1,
+                                  ),
                           ),
                         ),
                       ),
