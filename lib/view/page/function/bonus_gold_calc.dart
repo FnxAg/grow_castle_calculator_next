@@ -4,7 +4,6 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
-import 'package:measure_size/measure_size.dart';
 
 /// 单条收入相对金挂成本的收益率（%）：成本非正（当前波数过低）时记 0，
 /// 避免负成本导致的除零/噪音百分比
@@ -28,10 +27,6 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
   /// 当前用户的样本列表：initState 按当前用户名从 [_incomesByUser] 取出
   late List<int> _incomes;
 
-  /// 悬浮汇总卡实测高度：MeasureSize 测量后写入，驱动列表底部留白，
-  /// 保证条目滚到最底时恰好完整停在悬浮卡上方
-  final ValueNotifier<double> _summaryBarHeightNotifier = ValueNotifier(0.0);
-
   @override
   void initState() {
     super.initState();
@@ -43,7 +38,6 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
 
   @override
   void dispose() {
-    _summaryBarHeightNotifier.dispose();
     super.dispose();
   }
 
@@ -130,10 +124,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
         ),
       ],
       body: ListenableBuilder(
-        listenable: Listenable.merge([
-          Stores.infoStore.waveNotifier,
-          _summaryBarHeightNotifier,
-        ]),
+        listenable: Stores.infoStore.waveNotifier,
         builder: (context, _) {
           final wave = Stores.infoStore.waveNotifier.value;
           final gabCost = _gabCost(wave);
@@ -149,9 +140,9 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
             avgIncome: avgIncome,
             percent: percent,
           );
-          return Stack(
+          return Column(
             children: [
-              Positioned.fill(
+              Expanded(
                 child: _incomes.isEmpty
                     ? const Center(
                         child: Text(
@@ -160,9 +151,6 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
                         ),
                       )
                     : ListView.builder(
-                        padding: EdgeInsets.only(
-                          bottom: _summaryBarHeightNotifier.value,
-                        ),
                         itemCount: _incomes.length,
                         itemBuilder: (context, index) {
                           final income = _incomes[index];
@@ -175,21 +163,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
                         },
                       ),
               ),
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: MeasureSize(
-                  onChange: (size) {
-                    final next = size.height;
-                    final current = _summaryBarHeightNotifier.value;
-                    if ((current - next).abs() > 0.5) {
-                      _summaryBarHeightNotifier.value = next;
-                    }
-                  },
-                  child: summary,
-                ),
-              ),
+              summary,
             ],
           );
         },

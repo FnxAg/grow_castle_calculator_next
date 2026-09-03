@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:measure_size/measure_size.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
@@ -36,8 +35,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 入场动画（AnimatedSize 高度展开 + 淡入上移）。
   static (int userId, int? playerRank, int? playerGapPrev,
       int? playerGapNext, int? hellRank, int? guildRank)? _rankCache;
-
-  final ValueNotifier<double> _summaryBarHeightNotifier = ValueNotifier(0.0);
 
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
@@ -84,7 +81,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     for (final c in _textControllers.values) {
       c.dispose();
     }
-    _summaryBarHeightNotifier.dispose();
     super.dispose();
   }
 
@@ -302,9 +298,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
           onPressed: () => Stores.infoStore.addNewCard(),
         ),
       ],
-      body: Stack(
+      body: Column(
         children: [
-          Positioned.fill(
+          Expanded(
             child: ValueListenableBuilder<int>(
               valueListenable: Stores.infoStore.cardIdsNotifier,
               builder: (context, _, _) {
@@ -317,74 +313,54 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                     ),
                   );
                 }
-                return ValueListenableBuilder(
-                  valueListenable: _summaryBarHeightNotifier,
-                  builder: (context, paddingHeight, child) {
-                    return ReorderableListView.builder(
-                      itemCount: cardIds.length,
-                      padding: EdgeInsets.only(bottom: paddingHeight),
-                      proxyDecorator: (child, index, animation) {
-                        return AnimatedBuilder(
-                          animation: animation,
-                          builder: (context, child) {
-                            final double elevation = 4.0 * animation.value;
-                            return Material(
-                              elevation: elevation,
-                              shadowColor: Colors.black26,
-                              borderRadius: BorderRadius.circular(8.0),
-                              child: IgnorePointer(child: child),
-                            );
-                          },
-                          child: child,
+                return ReorderableListView.builder(
+                  itemCount: cardIds.length,
+                  proxyDecorator: (child, index, animation) {
+                    return AnimatedBuilder(
+                      animation: animation,
+                      builder: (context, child) {
+                        final double elevation = 4.0 * animation.value;
+                        return Material(
+                          elevation: elevation,
+                          shadowColor: Colors.black26,
+                          borderRadius: BorderRadius.circular(8.0),
+                          child: IgnorePointer(child: child),
                         );
                       },
-                      onReorderItem: (oldIndex, newIndex) {
-                        FocusManager.instance.primaryFocus?.unfocus();
-                        Stores.infoStore.reorderCard(oldIndex, newIndex);
-                      },
-                      itemBuilder: (context, index) {
-                        final id = cardIds[index];
-                        return FormationCardTile(
-                          key: ValueKey(id),
-                          id: id,
-                          index: index,
-                          textController: _textControllerFor(id),
-                          numberController: _numberControllerFor(id),
-                          textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                          numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                          onRemove: _removeCard,
-                        );
-                      },
-                      buildDefaultDragHandles: false,
-                      scrollDirection: .vertical,
+                      child: child,
                     );
-                  }
+                  },
+                  onReorderItem: (oldIndex, newIndex) {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    Stores.infoStore.reorderCard(oldIndex, newIndex);
+                  },
+                  itemBuilder: (context, index) {
+                    final id = cardIds[index];
+                    return FormationCardTile(
+                      key: ValueKey(id),
+                      id: id,
+                      index: index,
+                      textController: _textControllerFor(id),
+                      numberController: _numberControllerFor(id),
+                      textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                      numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                      onRemove: _removeCard,
+                    );
+                  },
+                  buildDefaultDragHandles: false,
+                  scrollDirection: .vertical,
                 );
               },
             ),
           ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: MeasureSize(
-              onChange: (Size value) { 
-                final next = value.height;
-                final current = _summaryBarHeightNotifier.value;
-                if ((current - next).abs() > 0.5) {
-                  _summaryBarHeightNotifier.value = value.height;
-                }
-              },
-              child: FormationSummaryBar(
-                querying: _querying,
-                playerRank: _playerRank,
-                playerGapPrev: _playerGapPrev,
-                playerGapNext: _playerGapNext,
-                hellRank: _hellRank,
-                guildRank: _guildRank,
-                onQuery: _queryOnline,
-              ),
-            ),
+          FormationSummaryBar(
+            querying: _querying,
+            playerRank: _playerRank,
+            playerGapPrev: _playerGapPrev,
+            playerGapNext: _playerGapNext,
+            hellRank: _hellRank,
+            guildRank: _guildRank,
+            onQuery: _queryOnline,
           ),
         ],
       ),

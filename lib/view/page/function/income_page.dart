@@ -4,7 +4,6 @@ import 'package:grow_castle_calculator_next/view/page/function/income/other_tab.
 import 'package:grow_castle_calculator_next/view/page/function/income/wave_tab.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_summary_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
-import 'package:measure_size/measure_size.dart';
 
 /// 收入计算页：按收入来源分 tab（殖民地/推波/其他）。
 class IncomePage extends StatefulWidget {
@@ -59,35 +58,18 @@ class _IncomePageState extends State<IncomePage> {
             Tab(text: '其他'),
           ],
         ),
-        body: Stack(
+        body: Column(
           children: [
-            Positioned.fill(
-              child: ValueListenableBuilder<double>(
-                valueListenable: _summaryBarHeightNotifier,
-                builder: (context, inset, _) => TabBarView(
-                  children: [
-                    ColonyTab(bottomInset: inset),
-                    WaveTab(bottomInset: inset),
-                    OtherTab(bottomInset: inset),
-                  ],
-                ),
+            Expanded(
+              child: TabBarView(
+                children: [
+                  ColonyTab(),
+                  WaveTab(),
+                  OtherTab(),
+                ],
               ),
             ),
-            Positioned(
-              left: 0,
-              right: 0,
-              bottom: 0,
-              child: MeasureSize(
-                onChange: (size) {
-                  final next = size.height;
-                  final current = _summaryBarHeightNotifier.value;
-                  if ((current - next).abs() > 0.5) {
-                    _summaryBarHeightNotifier.value = next;
-                  }
-                },
-                child: IncomeSummaryBar(),
-              ),
-            ),
+            IncomeSummaryBar(),
           ],
         ),
       ),

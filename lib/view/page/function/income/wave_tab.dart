@@ -1,5 +1,4 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
@@ -8,10 +7,7 @@ import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.da
 /// 输入实时写入 store（data 字段持久化），结果汇总见页面底部 IncomeSummaryBar。
 /// 金挂 + 时挂合计超过 24h（一天时长）时，在「时挂时间」输入框以 errorText 实时提示。
 class WaveTab extends StatefulWidget {
-  const WaveTab({super.key, this.bottomInset = 0.0});
-
-  /// 底部填充
-  final double bottomInset;
+  const WaveTab({super.key});
 
   @override
   State<WaveTab> createState() => _WaveTabState();
@@ -65,7 +61,6 @@ class _WaveTabState extends State<WaveTab> {
         : null;
 
     return ListView(
-      padding: EdgeInsets.only(bottom: widget.bottomInset),
       children: [
         ListTile(
           title: const Text('金挂平均收益'),

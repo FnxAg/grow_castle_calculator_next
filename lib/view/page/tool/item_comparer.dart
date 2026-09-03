@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:measure_size/measure_size.dart';
 
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -107,8 +106,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   final _item2Lines = <_LineInput>[];
   int _lineListGeneration = 0;
 
-  final ValueNotifier<double> _summaryBarHeightNotifier = ValueNotifier(0.0);
-
   bool _restoring = false;
 
   List<TextEditingController> get _panelCtrls => [
@@ -142,7 +139,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     for (final input in [..._item1Lines, ..._item2Lines]) {
       input.dispose();
     }
-    _summaryBarHeightNotifier.dispose();
     super.dispose();
   }
 
@@ -368,65 +364,46 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ],
       ),
-      body: Stack(
+      body: Column(
         children: [
-          Positioned.fill(
-            child: ValueListenableBuilder(
-              valueListenable: _summaryBarHeightNotifier,
-              builder: (context, height, child) {
-                return ListView(
-                  padding: EdgeInsets.fromLTRB(16, 16, 16, height),
-                  children: [
-                    Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
-                    const SizedBox(height: 16),
-                    Card(
-                      margin: EdgeInsets.zero,
-                      child: _buildItemCard(
-                        _item1Lines,
-                        '装备 1 词条',
-                        'item1',
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    Card(
-                      margin: EdgeInsets.zero,
-                      child: _buildItemCard(
-                        _item2Lines,
-                        '装备 2 词条',
-                        'item2',
-                      ),
-                    ),
-                  ],
-                );
-              },
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.all(16.0),
+              children: [
+                Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
+                const SizedBox(height: 16),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: _buildItemCard(
+                    _item1Lines,
+                    '装备 1 词条',
+                    'item1',
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Card(
+                  margin: EdgeInsets.zero,
+                  child: _buildItemCard(
+                    _item2Lines,
+                    '装备 2 词条',
+                    'item2',
+                  ),
+                ),
+              ],
             ),
           ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: MeasureSize(
-              onChange: (size) {
-                final next = size.height;
-                final current = _summaryBarHeightNotifier.value;
-                if ((current - next).abs() > 0.5) {
-                  _summaryBarHeightNotifier.value = next;
-                }
-              },
+          Padding(
+            padding: const EdgeInsets.all(16.0),
+            child: Card(
+              elevation: 3.0,
+              margin: EdgeInsets.zero,
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Card(
-                  elevation: 3.0,
-                  margin: EdgeInsets.zero,
-                  child: Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: _ResultView(
-                      baseResult: baseResult,
-                      item1Result: item1Result,
-                      item2Result: item2Result,
-                      ready: _valueOf(_baseAttackCtrl) > 0,
-                    ),
-                  ),
+                child: _ResultView(
+                  baseResult: baseResult,
+                  item1Result: item1Result,
+                  item2Result: item2Result,
+                  ready: _valueOf(_baseAttackCtrl) > 0,
                 ),
               ),
             ),
