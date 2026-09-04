@@ -374,20 +374,12 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
                 const SizedBox(height: 16),
                 Card(
                   margin: EdgeInsets.zero,
-                  child: _buildItemCard(
-                    _item1Lines,
-                    '装备 1 词条',
-                    'item1',
-                  ),
+                  child: _buildItemCard(_item1Lines, '装备 1 词条', 'item1'),
                 ),
                 const SizedBox(height: 16),
                 Card(
                   margin: EdgeInsets.zero,
-                  child: _buildItemCard(
-                    _item2Lines,
-                    '装备 2 词条',
-                    'item2',
-                  ),
+                  child: _buildItemCard(_item2Lines, '装备 2 词条', 'item2'),
                 ),
               ],
             ),
@@ -417,10 +409,14 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
+        crossAxisAlignment: .start,
         children: [
           Text(
             '无装备面板',
-            style: Theme.of(context).textTheme.titleMedium,
+            style: Theme.of(context).textTheme.titleMedium?.copyWith(
+              color: Theme.of(context).colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
           _panelField('Base Attack', _baseAttackCtrl, isPercent: false),
           _panelField('Increased Dmg', _increasedDmgCtrl),
@@ -448,18 +444,22 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
             width: 120,
             child: Text(label, style: theme.textTheme.bodyMedium),
           ),
+          Spacer(),
           Expanded(
-            child: SelectAllTextField(
-              controller: ctrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-              ],
-              decoration: InputDecoration(
-                isDense: true,
-                suffixText: isPercent ? '%' : null,
+            child: SizedBox(
+              width: 80,
+              child: SelectAllTextField(
+                controller: ctrl,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                ],
+                decoration: InputDecoration(
+                  isDense: true,
+                  suffixText: isPercent ? '%' : null,
+                ),
               ),
             ),
           ),
@@ -468,22 +468,25 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
   }
 
-  Widget _buildItemCard(
-    List<_LineInput> lines,
-    String title,
-    String listId,
-  ) {
+  Widget _buildItemCard(List<_LineInput> lines, String title, String listId) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: Column(
         children: [
-          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          Row(
+            children: [
+              Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                color: Theme.of(context).colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              )),
+            ],
+          ),
           _AnimatedItemLineList(
             key: ValueKey('$listId-$_lineListGeneration'),
             lines: lines,
             onChanged: _onInputChanged,
             createLine: _createLineInput,
-            ),
+          ),
         ],
       ),
     );
@@ -525,10 +528,7 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
     if (widget.lines.length >= kMaxLinesPerItem) return;
     final index = widget.lines.length;
     widget.lines.add(widget.createLine());
-    _listKey.currentState?.insertItem(
-      index,
-      duration: _animationDuration,
-    );
+    _listKey.currentState?.insertItem(index, duration: _animationDuration);
     widget.onChanged();
   }
 
@@ -558,10 +558,7 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
   }
 
   /// 构建带入场动画的词条行（itemBuilder 使用）
-  Widget _buildAnimatedRow(
-    _LineInput input,
-    Animation<double> animation,
-  ) {
+  Widget _buildAnimatedRow(_LineInput input, Animation<double> animation) {
     final curvedAnimation = CurvedAnimation(
       parent: animation,
       curve: Curves.easeOutCubic,
@@ -602,10 +599,8 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
           initialItemCount: widget.lines.length,
-          itemBuilder: (context, index, animation) => _buildAnimatedRow(
-            widget.lines[index],
-            animation,
-          ),
+          itemBuilder: (context, index, animation) =>
+              _buildAnimatedRow(widget.lines[index], animation),
         ),
         if (widget.lines.length < kMaxLinesPerItem)
           Padding(
