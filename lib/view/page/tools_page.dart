@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/view/page/tool/best_line_calc_page.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
@@ -12,7 +13,6 @@ class ToolsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('工具'),
-        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
       ),
       body: ListView(
         children: [
@@ -22,8 +22,6 @@ class ToolsPage extends StatelessWidget {
               title: Text(kind.title),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
-                // 先释放焦点：避免首页 TextField 的焦点触发
-                // PageView(allowImplicitScrolling) 自动滚回首页
                 FocusManager.instance.primaryFocus?.unfocus();
                 Navigator.of(context).push(
                   MaterialPageRoute(
@@ -37,8 +35,6 @@ class ToolsPage extends StatelessWidget {
             title: const Text('刷龙模拟器'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // 先释放焦点：避免首页 TextField 的焦点触发
-              // PageView(allowImplicitScrolling) 自动滚回首页
               FocusManager.instance.primaryFocus?.unfocus();
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -52,8 +48,6 @@ class ToolsPage extends StatelessWidget {
             title: const Text('装备对比'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
-              // 先释放焦点：避免首页 TextField 的焦点触发
-              // PageView(allowImplicitScrolling) 自动滚回首页
               FocusManager.instance.primaryFocus?.unfocus();
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -62,6 +56,19 @@ class ToolsPage extends StatelessWidget {
               );
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.thumb_up),
+            title: const Text('最优装备词条组合'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const BestLineCalcPage(),
+                ),
+              );
+            },
+          )
         ],
       ),
     );
