@@ -1,7 +1,7 @@
 name: grow_castle_calculator_next
 description: "A tool for mobile game Grow Castle."
 publish_to: 'none'
-version: 1.5.2+1
+version: 1.5.3+1
 
 environment:
   sdk: ">=3.13.1"
