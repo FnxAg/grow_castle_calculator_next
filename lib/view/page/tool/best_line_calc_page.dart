@@ -191,7 +191,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
               builder: (dialogContext) => AlertDialog(
                 scrollable: true,
                 title: const Text('使用说明'),
-                content: MarkdownBody(data: _helpMarkdown),
+                content: const Text('Avg. Dmg 和下方列表中的 Damage 都是 Damage 与 Elemental Damage 的均值。'),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
@@ -407,10 +407,5 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
         ? '${abs.round()}%'
         : '${abs.toStringAsFixed(1)}%';
     return '$prefix$text';
-  }
-
-  /// 使用说明（Markdown）：词条区间随 [presetLines] 动态生成
-  String get _helpMarkdown {
-    return '**Avg. Dmg** 和 **下方列表中的 Damage** 都是 Damage 与 Elemental Damage 的均值。';
   }
 }
