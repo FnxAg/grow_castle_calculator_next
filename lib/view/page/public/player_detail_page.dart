@@ -76,20 +76,25 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text(widget.playerName)),
+      appBar: AppBar(
+        title: Text(widget.playerName),
+        bottom: _loading
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(3.0),
+                child: LinearProgressIndicator(minHeight: 3.0),
+              )
+            : null,
+      ),
       body: _buildBody(),
     );
   }
 
   Widget _buildBody() {
-    if (_loading) {
-      return const Center(child: CircularProgressIndicator());
-    }
+    if (_loading && _result == null) return const SizedBox.shrink();
     if (_error != null) {
       return _buildError();
     }
     final r = _result!;
-    // 封禁检测：无波数且无查询日期视为已封禁
     if (r.wave == 0 && r.queryDate.isEmpty) {
       return _buildBanned();
     }
@@ -149,54 +154,57 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
       r.queryDate,
       DateTime.now(),
     );
-    return ListView(
-      padding: const EdgeInsets.only(left: 16.0, top: 8.0, right: 16.0, bottom: 8.0),
-      children: <Widget>[
-        SummaryCard(
-          children: <Widget>[
-            SummaryRow(
-              leadingIcon: Icons.emoji_events,
-              title: const Text('总波数'),
-              trailing: SummaryRowValueText(text: r.wave.format()),
-            ),
-            SummaryRow(
-              leadingIcon: Icons.eco,
-              title: const Text('赛季波数'),
-              trailing: SummaryRowValueText(text: r.seasonalScore.format()),
-            ),
-            SummaryRow(
-              leadingIcon: Icons.schedule,
-              title: const Text('上次在线'),
-              trailing: SummaryRowValueText(text: '$lastOnline ago'),
-            ),
-          ],
-        ),
-        // 第三方 API：赛季标题 + 每小时波速胶囊流（无数据/失败时整个区块不展示）
-        if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
-          Padding(
-            padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
-            child: Text(
-              '每小时波速（第三方 API）',
-              style: Theme.of(context).textTheme.titleSmall
-                  ?.copyWith(color: scheme.onSurfaceVariant),
-            ),
+    return RefreshIndicator(
+      onRefresh: _load,
+      child: ListView(
+        padding: const EdgeInsets.only(left: 16.0, top: 8.0, right: 16.0, bottom: 8.0),
+        children: <Widget>[
+          SummaryCard(
+            children: <Widget>[
+              SummaryRow(
+                leadingIcon: Icons.emoji_events,
+                title: const Text('总波数'),
+                trailing: SummaryRowValueText(text: r.wave.format()),
+              ),
+              SummaryRow(
+                leadingIcon: Icons.eco,
+                title: const Text('赛季波数'),
+                trailing: SummaryRowValueText(text: r.seasonalScore.format()),
+              ),
+              SummaryRow(
+                leadingIcon: Icons.schedule,
+                title: const Text('上次在线'),
+                trailing: SummaryRowValueText(text: '$lastOnline ago'),
+              ),
+            ],
           ),
-          for (final group in _wphHistory!) ...[
+          // 第三方 API：赛季标题 + 每小时波速胶囊流（无数据/失败时整个区块不展示）
+          if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
             Padding(
-              padding: const EdgeInsets.only(top: 8.0),
+              padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
               child: Text(
-                '赛季 ${group.season}',
-                style: const TextStyle(fontWeight: FontWeight.w600),
+                '每小时波速（第三方 API）',
+                style: Theme.of(context).textTheme.titleSmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
               ),
             ),
-            Padding(
-              padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
-              // 固定高度、行内拉伸铺满：右侧无空白
-              child: _wphGrid(group.wphs),
-            ),
+            for (final group in _wphHistory!) ...[
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  '赛季 ${group.season}',
+                  style: const TextStyle(fontWeight: FontWeight.w600),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+                // 固定高度、行内拉伸铺满：右侧无空白
+                child: _wphGrid(group.wphs),
+              ),
+            ],
           ],
         ],
-      ],
+      ),
     );
   }
 
