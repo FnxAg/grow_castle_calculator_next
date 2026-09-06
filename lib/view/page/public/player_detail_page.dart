@@ -1,7 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
+import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:measure_size/render_object.dart';
 
@@ -31,6 +33,15 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
 
   /// 第三方 API 的每赛季每小时波速快照（null 表示未加载/失败，区块不展示）
   List<SeasonWphGroup>? _wphHistory;
+
+  /// 玩家赛季榜排名；不在榜单或榜单请求失败时为 null
+  int? _playerRank;
+
+  /// 无尽榜分数；不在榜单或榜单请求失败时为 null
+  int? _hellScore;
+
+  /// 无尽榜排名；不在榜单或榜单请求失败时为 null
+  int? _hellRank;
 
   @override
   void initState() {
@@ -97,19 +108,29 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
 
     final thirdPartyEnabled =
         Stores.appSettingsStore.thirdPartyApiEnabledNotifier.value;
-    final (result, history) = thirdPartyEnabled
+    final (result, history, players, hell) = thirdPartyEnabled
         ? await (
             PlayerApiService.query(widget.playerName),
             PlayerApiService.queryPlayerWphHistory(
               widget.playerName,
               Stores.appSettingsStore.apiUrlNotifier.value,
             ),
+            RankingCache.playerRanking(),
+            RankingCache.hellRanking(),
           ).wait
-        : (await PlayerApiService.query(widget.playerName), null);
+        : await (
+            PlayerApiService.query(widget.playerName),
+            Future<Object?>.value(null),
+            RankingCache.playerRanking(),
+            RankingCache.hellRanking(),
+          ).wait;
 
     if (!mounted) return;
     setState(() {
       _loading = false;
+      _playerRank = null;
+      _hellScore = null;
+      _hellRank = null;
       if (result is PlayerQueryResult) {
         _result = result;
         if (history is List<SeasonWphGroup>) {
@@ -117,6 +138,24 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
         }
       } else if (result is QueryError) {
         _error = _errorMessage(result);
+      }
+      final lowerName = widget.playerName.toLowerCase();
+      if (players is SeasonQueryResult<PlayerRankInfo>) {
+        for (final player in players.items) {
+          if (player.name.toLowerCase() == lowerName) {
+            _playerRank = player.rank;
+            break;
+          }
+        }
+      }
+      if (hell is SeasonQueryResult<HellRankInfo>) {
+        for (final player in hell.items) {
+          if (player.name.toLowerCase() == lowerName) {
+            _hellScore = player.score;
+            _hellRank = player.rank;
+            break;
+          }
+        }
       }
     });
   }
@@ -279,6 +318,10 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                 final opacity = height <= 0.0
                     ? 1.0
                     : (1.0 - offset / height).clamp(0.0, 1.0);
+                const chipTextStyle = TextStyle(
+                  fontSize: 11.0,
+                  fontWeight: FontWeight.w600,
+                );
                 return Positioned(
                   top: -offset,
                   left: 0,
@@ -308,10 +351,48 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                               SummaryRow(
                                 leadingIcon: Icons.eco,
                                 title: const Text('赛季波数'),
-                                trailing: SummaryRowValueText(
-                                  text: r.seasonalScore.format(),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    if (_playerRank != null) ...[
+                                      PillChip(
+                                        text: Text(
+                                          '#$_playerRank',
+                                          style: chipTextStyle,
+                                        ),
+                                        icon: Icons.eco,
+                                      ),
+                                      const SizedBox(width: 8.0),
+                                    ],
+                                    SummaryRowValueText(
+                                      text: r.seasonalScore.format(),
+                                    ),
+                                  ],
                                 ),
                               ),
+                              if (_hellScore != null)
+                                SummaryRow(
+                                  leadingIcon: Icons.all_inclusive,
+                                  title: const Text('无尽分数'),
+                                  trailing: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      if (_hellRank != null) ...[
+                                        PillChip(
+                                          text: Text(
+                                            '#$_hellRank',
+                                            style: chipTextStyle,
+                                          ),
+                                          icon: Icons.all_inclusive,
+                                        ),
+                                        const SizedBox(width: 8.0),
+                                      ],
+                                      SummaryRowValueText(
+                                        text: _hellScore!.format(),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                               SummaryRow(
                                 leadingIcon: Icons.schedule,
                                 title: const Text('上次在线'),
