@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:measure_size/render_object.dart';
 
 /// 玩家详情页：并行调用官方 API（[PlayerApiService.query]）与第三方 API
 /// （每小时波速历史）获取该玩家数据并展示。
@@ -16,10 +17,17 @@ class PlayerDetailPage extends StatefulWidget {
   State<PlayerDetailPage> createState() => _PlayerDetailPageState();
 }
 
-class _PlayerDetailPageState extends State<PlayerDetailPage> {
+class _PlayerDetailPageState extends State<PlayerDetailPage>
+    with TickerProviderStateMixin {
   bool _loading = true;
   String? _error;
   PlayerQueryResult? _result;
+  final ValueNotifier<double> paddingHeight = ValueNotifier<double>(0.0);
+  final ValueNotifier<double> summaryOffset = ValueNotifier<double>(0.0);
+
+  late final AnimationController _snapController;
+  double _snapStart = 0.0;
+  double _snapEnd = 0.0;
 
   /// 第三方 API 的每赛季每小时波速快照（null 表示未加载/失败，区块不展示）
   List<SeasonWphGroup>? _wphHistory;
@@ -27,7 +35,55 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
   @override
   void initState() {
     super.initState();
+
+    _snapController =
+        AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 300),
+        )..addListener(() {
+          summaryOffset.value =
+              _snapStart + (_snapEnd - _snapStart) * _snapController.value;
+        });
+
     _load();
+  }
+
+  @override
+  void dispose() {
+    _snapController.dispose();
+    paddingHeight.dispose();
+    summaryOffset.dispose();
+    super.dispose();
+  }
+
+  bool _handleScroll(ScrollNotification notification) {
+    if (notification.metrics.axis != Axis.vertical) return false;
+
+    if (notification is ScrollUpdateNotification) {
+      final delta = notification.scrollDelta;
+      final height = paddingHeight.value;
+      if (delta != null && delta != 0.0 && height > 0.0) {
+        _snapController.stop();
+        summaryOffset.value = (summaryOffset.value + delta)
+            .clamp(0.0, height)
+            .toDouble();
+      }
+    } else if (notification is ScrollEndNotification) {
+      _snapSummary();
+    }
+
+    return false;
+  }
+
+  void _snapSummary() {
+    final height = paddingHeight.value;
+    if (height <= 0.0) return;
+
+    _snapStart = summaryOffset.value;
+    _snapEnd = summaryOffset.value >= height / 2.0 ? height : 0.0;
+    _snapController
+      ..reset()
+      ..forward();
   }
 
   /// 官方 API 与第三方 API 并行查询（均不缓存，每次进入重新抓取）；
@@ -156,54 +212,124 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
     );
     return RefreshIndicator(
       onRefresh: _load,
-      child: ListView(
-        padding: const EdgeInsets.only(left: 16.0, top: 8.0, right: 16.0, bottom: 8.0),
-        children: <Widget>[
-          SummaryCard(
-            children: <Widget>[
-              SummaryRow(
-                leadingIcon: Icons.emoji_events,
-                title: const Text('总波数'),
-                trailing: SummaryRowValueText(text: r.wave.format()),
-              ),
-              SummaryRow(
-                leadingIcon: Icons.eco,
-                title: const Text('赛季波数'),
-                trailing: SummaryRowValueText(text: r.seasonalScore.format()),
-              ),
-              SummaryRow(
-                leadingIcon: Icons.schedule,
-                title: const Text('上次在线'),
-                trailing: SummaryRowValueText(text: '$lastOnline ago'),
-              ),
-            ],
-          ),
-          // 第三方 API：赛季标题 + 每小时波速胶囊流（无数据/失败时整个区块不展示）
-          if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
-            Padding(
-              padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
-              child: Text(
-                '每小时波速（第三方 API）',
-                style: Theme.of(context).textTheme.titleSmall
-                    ?.copyWith(color: scheme.onSurfaceVariant),
+      child: NotificationListener<ScrollNotification>(
+        onNotification: _handleScroll,
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: ValueListenableBuilder<double>(
+                valueListenable: paddingHeight,
+                builder: (context, value, child) {
+                  return ValueListenableBuilder<double>(
+                    valueListenable: summaryOffset,
+                    builder: (context, offset, child) {
+                      return ListView(
+                        padding: EdgeInsets.only(
+                          left: 16.0,
+                          top: (value - offset).clamp(0.0, value),
+                          right: 16.0,
+                          bottom: 8.0,
+                        ),
+                        children: <Widget>[
+                          // 第三方 API：赛季标题 + 每小时波速胶囊流（无数据/失败时整个区块不展示）
+                          if (_wphHistory != null &&
+                              _wphHistory!.isNotEmpty) ...[
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                top: 12.0,
+                                bottom: 4.0,
+                              ),
+                              child: Text(
+                                '每小时波速（第三方 API）',
+                                style: Theme.of(context).textTheme.titleSmall
+                                    ?.copyWith(color: scheme.onSurfaceVariant),
+                              ),
+                            ),
+                            for (final group in _wphHistory!) ...[
+                              Padding(
+                                padding: const EdgeInsets.only(top: 8.0),
+                                child: Text(
+                                  '赛季 ${group.season}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ),
+                              Padding(
+                                padding: const EdgeInsets.only(
+                                  top: 8.0,
+                                  bottom: 4.0,
+                                ),
+                                // 固定高度、行内拉伸铺满：右侧无空白
+                                child: _wphGrid(group.wphs),
+                              ),
+                            ],
+                          ],
+                        ],
+                      );
+                    },
+                  );
+                },
               ),
             ),
-            for (final group in _wphHistory!) ...[
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0),
-                child: Text(
-                  '赛季 ${group.season}',
-                  style: const TextStyle(fontWeight: FontWeight.w600),
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
-                // 固定高度、行内拉伸铺满：右侧无空白
-                child: _wphGrid(group.wphs),
-              ),
-            ],
+            ValueListenableBuilder<double>(
+              valueListenable: summaryOffset,
+              builder: (context, offset, child) {
+                final height = paddingHeight.value;
+                final opacity = height <= 0.0
+                    ? 1.0
+                    : (1.0 - offset / height).clamp(0.0, 1.0);
+                return Positioned(
+                  top: -offset,
+                  left: 0,
+                  right: 0,
+                  child: IgnorePointer(
+                    ignoring: opacity == 0.0,
+                    child: Opacity(
+                      opacity: opacity,
+                      child: MeasureSize(
+                        onChange: (value) {
+                          paddingHeight.value = value.height;
+                          if (summaryOffset.value > value.height) {
+                            summaryOffset.value = value.height;
+                          }
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: SummaryCard(
+                            children: <Widget>[
+                              SummaryRow(
+                                leadingIcon: Icons.emoji_events,
+                                title: const Text('总波数'),
+                                trailing: SummaryRowValueText(
+                                  text: r.wave.format(),
+                                ),
+                              ),
+                              SummaryRow(
+                                leadingIcon: Icons.eco,
+                                title: const Text('赛季波数'),
+                                trailing: SummaryRowValueText(
+                                  text: r.seasonalScore.format(),
+                                ),
+                              ),
+                              SummaryRow(
+                                leadingIcon: Icons.schedule,
+                                title: const Text('上次在线'),
+                                trailing: SummaryRowValueText(
+                                  text: '$lastOnline ago',
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
           ],
-        ],
+        ),
       ),
     );
   }
