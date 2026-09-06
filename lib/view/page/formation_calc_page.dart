@@ -252,7 +252,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     final result = await Stores.infoStore.syncCurrentUser();
 
     if (!mounted) return;
-    setState(() => _querying = false);
 
     if (result is PlayerQueryResult) {
       if (result.wave == 0 && result.queryDate.isEmpty) {
@@ -263,7 +262,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         }
         return;
       }
-      _loadRanks(force: !silent);
+      await _loadRanks(force: !silent);
+      if (!mounted) return;
       if (!silent) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -280,6 +280,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         );
       }
     }
+    setState(() => _querying = false);
   }
 
   String _queryErrorMessage(String name, QueryError error) {
