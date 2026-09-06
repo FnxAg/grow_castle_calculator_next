@@ -150,7 +150,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
       DateTime.now(),
     );
     return ListView(
-      padding: const EdgeInsets.all(16.0),
+      padding: const EdgeInsets.only(left: 16.0, top: 8.0, right: 16.0, bottom: 8.0),
       children: <Widget>[
         SummaryCard(
           children: <Widget>[
