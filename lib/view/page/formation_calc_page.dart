@@ -97,6 +97,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   static const Duration _queryCooldown = Duration(seconds: 5);
   DateTime? _lastQueryAt;
   bool _querying = false;
+  bool _loadingRanks = false;
 
   int? _playerRank;
   int? _hellRank;
@@ -146,6 +147,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     final lower = currentUser.toLowerCase();
     final guild = Stores.infoStore.getCurrentUserGuild();
     final guildLower = guild.toLowerCase();
+    setState(() => _loadingRanks = true);
     final (players, hell, guilds) = await (
       RankingCache.playerRanking(force: force),
       RankingCache.hellRanking(force: force),
@@ -161,6 +163,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     }
     if (!mounted) return;
     setState(() {
+      _loadingRanks = false;
       _playerRank = null;
       _playerGapPrev = null;
       _playerGapNext = null;
@@ -291,6 +294,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   Widget build(BuildContext context) {
     return UserPageScaffold(
       title: '阵容',
+      isLoading: _querying || _loadingRanks,
       actions: [
         IconButton(
           icon: const Icon(Icons.add),

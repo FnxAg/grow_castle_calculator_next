@@ -16,6 +16,7 @@ class UserPageScaffold extends StatefulWidget {
     required this.body,
     this.actions = const [],
     this.bottom,
+    this.isLoading = false,
   });
 
   final String title;
@@ -24,6 +25,9 @@ class UserPageScaffold extends StatefulWidget {
 
   /// AppBar 底部组件，透传给 AppBar.bottom
   final PreferredSizeWidget? bottom;
+
+  /// 页面内容是否正在加载；为 true 时在底部显示线性加载条
+  final bool isLoading;
 
   @override
   State<UserPageScaffold> createState() => _UserPageScaffoldState();
@@ -37,7 +41,10 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
       builder: (context, currentUser, _) {
         return Scaffold(
           appBar: AppBar(
-            bottom: widget.bottom,
+            bottom: _LoadingAppBarBottom(
+              bottom: widget.bottom,
+              isLoading: widget.isLoading,
+            ),
             title: Column(
               crossAxisAlignment: .start,
               children: [
@@ -141,6 +148,37 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
           ),
         ],
       ),
+    );
+  }
+}
+
+class _LoadingAppBarBottom extends StatelessWidget
+    implements PreferredSizeWidget {
+  const _LoadingAppBarBottom({
+    required this.bottom,
+    required this.isLoading,
+  });
+
+  final PreferredSizeWidget? bottom;
+  final bool isLoading;
+
+  @override
+  Size get preferredSize => Size.fromHeight(
+    (bottom?.preferredSize.height ?? 0) + (isLoading ? 3.0 : 0),
+  );
+
+  @override
+  Widget build(BuildContext context) {
+    if (!isLoading) return bottom ?? const SizedBox.shrink();
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        const SizedBox(
+          height: 3.0,
+          child: LinearProgressIndicator(minHeight: 3.0),
+        ),
+        ?bottom,
+      ],
     );
   }
 }

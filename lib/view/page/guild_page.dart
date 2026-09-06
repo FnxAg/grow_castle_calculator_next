@@ -47,6 +47,7 @@ class GuildDetailPage extends StatelessWidget {
 class _GuildPageState extends State<GuildPage> {
   /// 首屏加载中（仅当界面尚无任何内容时显示全屏转圈）
   bool _firstLoading = true;
+  bool _loading = true;
   String? _error;
 
   /// 公会未配置的引导错误：按钮跳转「用户管理」而非重试
@@ -114,13 +115,14 @@ class _GuildPageState extends State<GuildPage> {
         .trim();
     final hasContent = _members.isNotEmpty;
     setState(() {
+      _loading = true;
       _firstLoading = !hasContent;
       _error = null;
       _emptyGuild = false;
     });
-
     if (guild.isEmpty) {
       setState(() {
+        _loading = false;
         _firstLoading = false;
         if (!hasContent) {
           _error = _emptyGuildMessage();
@@ -144,6 +146,9 @@ class _GuildPageState extends State<GuildPage> {
     // 成员详情是否加载成功：成功才发起各成员"上次在线"查询
     var membersLoaded = false;
     setState(() {
+      if (!Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value) {
+        _loading = false;
+      }
       _firstLoading = false;
 
       // 玩家赛季榜 / 无尽榜索引，供成员行查询各自排名
@@ -228,25 +233,33 @@ class _GuildPageState extends State<GuildPage> {
     }
 
     // 成员列表加载成功且开关开启才发起各成员"上次在线"查询：
-    // 缓存命中零请求零动画；联网返回的新值触发逐行线性展开；
     // 失败返回 null 保留现有展示
-    if (membersLoaded &&
-        Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value) {
-      for (final m in _members) {
-        LastOnlineCache.fetch(m.name, force: force).then((value) {
-          if (!mounted || value == null) return;
-          final key = m.name.toLowerCase();
-          // 相同值跳过：避免无谓重建与动画重放
-          if (_lastOnlineByLower[key] == value) return;
-          final valueWidth = _textWidth(value, _timeStyle);
-          setState(() {
-            _lastOnlineByLower[key] = value;
-            if (valueWidth > _timeColumnWidth) {
-              _timeColumnWidth = valueWidth;
-            }
-          });
-        });
-      }
+    final loadLastOnline =
+        membersLoaded &&
+        Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
+    if (loadLastOnline) {
+      await Future.wait([
+        for (final m in _members)
+          LastOnlineCache.fetch(m.name, force: force).then<void>(
+            (value) {
+              if (!mounted || value == null) return;
+              final key = m.name.toLowerCase();
+              final valueWidth = _textWidth(value, _timeStyle);
+              setState(() {
+                _lastOnlineByLower[key] = value;
+                if (valueWidth > _timeColumnWidth) {
+                  _timeColumnWidth = valueWidth;
+                }
+              });
+            },
+            onError: (_, _) {},
+          ),
+      ]);
+    }
+    if (mounted) {
+      setState(() {
+        _loading = false;
+      });
     }
   }
 
@@ -302,6 +315,7 @@ class _GuildPageState extends State<GuildPage> {
     }
     return UserPageScaffold(
       title: '公会',
+      isLoading: _loading,
       // AppBar action 区：公会赛季进度（点击查看详情）
       actions: [SeasonIndicator(notifier: RankingCache.guildSeasonNotifier)],
       body: body,
