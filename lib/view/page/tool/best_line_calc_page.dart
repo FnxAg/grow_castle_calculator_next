@@ -1,5 +1,4 @@
 import 'package:flutter/services.dart';
-import 'package:flutter_markdown_plus/flutter_markdown_plus.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
@@ -10,6 +9,13 @@ import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.da
 ///
 /// 装备加成不提供 More Damage，故只枚举四种输出词条。
 typedef _LineCombo = (int, int, int, int);
+
+/// 最优词条计算页的会话级输入缓存；应用进程结束后自动清空。
+class _BestLineCalcSessionCache {
+  static List<double>? presetValues;
+  static List<String>? baseValues;
+  static bool? speedEnabled;
+}
 
 /// 词条位上限 [slot] 的全部数量搭配：每种词条 0–4 条、
 /// 合计不超过 [slot]（其余词条位为不影响本 DPS 模型的词条）。
@@ -80,6 +86,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
   @override
   void initState() {
     super.initState();
+    _restoreFromSessionCache();
     for (final ctrl in _baseCtrls) {
       ctrl.addListener(_onInputChanged);
     }
@@ -93,7 +100,35 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
     super.dispose();
   }
 
-  void _onInputChanged() => setState(() {});
+  void _onInputChanged() {
+    _saveToSessionCache();
+    setState(() {});
+  }
+
+  void _restoreFromSessionCache() {
+    final presetValues = _BestLineCalcSessionCache.presetValues;
+    if (presetValues != null && presetValues.length == _presetValues.length) {
+      for (var i = 0; i < _presetValues.length; i++) {
+        _presetValues[i] = presetValues[i];
+      }
+    }
+    final baseValues = _BestLineCalcSessionCache.baseValues;
+    if (baseValues != null && baseValues.length == _baseCtrls.length) {
+      for (var i = 0; i < _baseCtrls.length; i++) {
+        _baseCtrls[i].text = baseValues[i];
+      }
+    }
+    _speedEnabled =
+        _BestLineCalcSessionCache.speedEnabled ?? _speedEnabled;
+  }
+
+  void _saveToSessionCache() {
+    _BestLineCalcSessionCache.presetValues = List<double>.from(_presetValues);
+    _BestLineCalcSessionCache.baseValues = [
+      for (final ctrl in _baseCtrls) ctrl.text,
+    ];
+    _BestLineCalcSessionCache.speedEnabled = _speedEnabled;
+  }
 
   double _valueOf(TextEditingController ctrl) =>
       double.tryParse(ctrl.text.trim()) ?? 0;
@@ -269,6 +304,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
                       max: max,
                       onChanged: (v) => setState(() {
                         _presetValues[i] = (v * 10).round() / 10;
+                        _saveToSessionCache();
                       }),
                     ),
                   ),
@@ -309,7 +345,10 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
                 height: 24,
                 child: Checkbox(
                   value: _speedEnabled,
-                  onChanged: (v) => setState(() => _speedEnabled = v!),
+                  onChanged: (v) => setState(() {
+                    _speedEnabled = v!;
+                    _saveToSessionCache();
+                  }),
                 ),
               ),
               enabled: _speedEnabled,
