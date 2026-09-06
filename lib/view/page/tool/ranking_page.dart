@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:fl_chart/fl_chart.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
@@ -13,17 +14,237 @@ enum RankingKind {
   guild(title: '公会排行榜', icon: Icons.flag_circle, crossIcon: null),
   hell(title: '无尽排行榜', icon: Icons.all_inclusive, crossIcon: Icons.eco);
 
-  const RankingKind({
-    required this.title,
-    required this.icon,
-    this.crossIcon,
-  });
+  const RankingKind({required this.title, required this.icon, this.crossIcon});
 
   final String title;
   final IconData icon;
 
   /// 行内显示的另一榜排名胶囊图标（个人榜↔无尽榜互显；公会榜无交叉数据）
   final IconData? crossIcon;
+}
+
+/// 排行榜分数趋势图：展示指定榜单前 50/100/300 名的分数走势。
+class RankingChartPage extends StatefulWidget {
+  const RankingChartPage({super.key, required this.kind});
+
+  final RankingKind kind;
+
+  @override
+  State<RankingChartPage> createState() => _RankingChartPageState();
+}
+
+class _RankingChartPageState extends State<RankingChartPage> {
+  int _selectedRange = 50;
+  bool _loading = true;
+  String? _error;
+  List<_RankRow> _rows = const [];
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await switch (widget.kind) {
+      RankingKind.player => RankingCache.playerRanking(),
+      RankingKind.guild => RankingCache.guildRanking(),
+      RankingKind.hell => RankingCache.hellRanking(),
+    };
+    if (!mounted) return;
+    setState(() {
+      _loading = false;
+      if (result is QueryError) {
+        _error = _errorMessage(result);
+        return;
+      }
+      _rows = switch (widget.kind) {
+        RankingKind.player when result is SeasonQueryResult<PlayerRankInfo> =>
+          result.items
+              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .toList(),
+        RankingKind.guild when result is SeasonQueryResult<GuildInfo> =>
+          result.items
+              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .toList(),
+        RankingKind.hell when result is SeasonQueryResult<HellRankInfo> =>
+          result.items
+              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .toList(),
+        _ => const <_RankRow>[],
+      };
+    });
+  }
+
+  String _errorMessage(QueryError error) {
+    return switch (error) {
+      NameNotFound() => '暂无榜单数据',
+      TimeoutError() => '查询超时，请稍后重试',
+      NetworkError(:final message) => message,
+    };
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('${widget.kind.title}趋势')),
+      body: _buildBody(),
+    );
+  }
+
+  Widget _buildBody() {
+    if (_loading) return const Center(child: CircularProgressIndicator());
+    if (_error != null) {
+      return Center(
+        child: FilledButton.icon(
+          onPressed: _load,
+          icon: const Icon(Icons.refresh),
+          label: Text(_error!),
+        ),
+      );
+    }
+    if (_rows.isEmpty) return const Center(child: Text('暂无数据'));
+
+    final visibleRows = _rows.take(_selectedRange).toList();
+    final maxScore = visibleRows.fold<int>(
+      0,
+      (max, row) => row.score > max ? row.score : max,
+    );
+    final minScore = visibleRows.fold<int>(
+      maxScore,
+      (min, row) => row.score < min ? row.score : min,
+    );
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
+      children: [
+        SegmentedButton<int>(
+          showSelectedIcon: false,
+          segments: const [
+            ButtonSegment(value: 50, label: Text('前 50')),
+            ButtonSegment(value: 100, label: Text('前 100')),
+            ButtonSegment(value: 300, label: Text('前 300')),
+          ],
+          selected: {_selectedRange},
+          onSelectionChanged: (selection) => setState(() {
+            _selectedRange = selection.first;
+          }),
+        ),
+        const SizedBox(height: 20.0),
+        SizedBox(
+          height: 320.0,
+          child: LineChart(_chartData(visibleRows, minScore, maxScore)),
+        ),
+        const SizedBox(height: 16.0),
+        Text(
+          '显示前 ${visibleRows.length} 名 · 最高 ${maxScore.format()} · 最低 ${minScore.format()}',
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurfaceVariant,
+          ),
+        ),
+      ],
+    );
+  }
+
+  LineChartData _chartData(List<_RankRow> rows, int minScore, int maxScore) {
+    final scheme = Theme.of(context).colorScheme;
+    final scoreRange = (maxScore - minScore).abs();
+    final chartMinY = (minScore - scoreRange * 0.08).clamp(0, double.infinity);
+    final chartMaxY = maxScore + (scoreRange == 0 ? 1 : scoreRange * 0.08);
+    final labelInterval = rows.length <= 50 ? 10.0 : 50.0;
+    return LineChartData(
+      minX: 1.0,
+      maxX: rows.length.toDouble(),
+      minY: chartMinY.toDouble(),
+      maxY: chartMaxY.toDouble(),
+      gridData: FlGridData(
+        show: true,
+        drawVerticalLine: false,
+        horizontalInterval: scoreRange == 0 ? 1 : scoreRange / 4,
+      ),
+      borderData: FlBorderData(show: false),
+      titlesData: FlTitlesData(
+        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+        rightTitles: const AxisTitles(
+          sideTitles: SideTitles(showTitles: false),
+        ),
+        leftTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            reservedSize: 42.0,
+            getTitlesWidget: (value, meta) {
+              if (value <= chartMinY || value >= chartMaxY) {
+                return const SizedBox.shrink();
+              }
+              return Text(
+                _formatAxisValue(value),
+                style: const TextStyle(fontSize: 10.0),
+              );
+            },
+          ),
+        ),
+        bottomTitles: AxisTitles(
+          sideTitles: SideTitles(
+            showTitles: true,
+            interval: labelInterval,
+            getTitlesWidget: (value, meta) => Text(
+              '#${value.round()}',
+              style: const TextStyle(fontSize: 10.0),
+            ),
+          ),
+        ),
+      ),
+      lineTouchData: LineTouchData(
+        touchTooltipData: LineTouchTooltipData(
+          fitInsideVertically: true,
+          fitInsideHorizontally: true,
+          getTooltipItems: (spots) => spots.map((spot) {
+            final row = rows[spot.x.round() - 1];
+            return LineTooltipItem(
+              '${row.name}\n#${row.rank}  ${row.score.format()}',
+              TextStyle(color: scheme.onInverseSurface),
+            );
+          }).toList(),
+        ),
+      ),
+      lineBarsData: [
+        LineChartBarData(
+          spots: [
+            for (final row in rows)
+              FlSpot(row.rank.toDouble(), row.score.toDouble()),
+          ],
+          isCurved: false,
+          color: scheme.primary,
+          barWidth: 2.5,
+          dotData: FlDotData(show: rows.length <= 50),
+          belowBarData: BarAreaData(
+            show: true,
+            color: scheme.primary.withValues(alpha: 0.12),
+          ),
+        ),
+      ],
+    );
+  }
+
+  String _formatAxisValue(double value) {
+    if (widget.kind != RankingKind.hell) return value.round().format();
+    final absolute = value.abs();
+    if (absolute >= 1000000000000) {
+      return '${(value / 1000000000000).toStringAsFixed(1)}万亿';
+    }
+    if (absolute >= 100000000) {
+      return '${(value / 100000000).toStringAsFixed(1)}亿';
+    }
+    if (absolute >= 10000) {
+      return '${(value / 10000).toStringAsFixed(1)}万';
+    }
+    return value.round().format();
+  }
 }
 
 /// 通用榜单页（个人/公会/无尽）：与当前用户无关。
@@ -43,11 +264,7 @@ class RankingPage extends StatefulWidget {
 
 /// 归一化后的榜单行（三个榜单模型字段一致：rank/name/score）
 class _RankRow {
-  const _RankRow({
-    required this.rank,
-    required this.name,
-    required this.score,
-  });
+  const _RankRow({required this.rank, required this.name, required this.score});
 
   final int rank;
   final String name;
@@ -103,15 +320,18 @@ class _RankingPageState extends State<RankingPage> {
       _error = null;
 
       final rows = switch (widget.kind) {
-        RankingKind.player when result is SeasonQueryResult<PlayerRankInfo> => result.items
-            .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
-            .toList(),
-        RankingKind.guild when result is SeasonQueryResult<GuildInfo> => result.items
-            .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
-            .toList(),
-        RankingKind.hell when result is SeasonQueryResult<HellRankInfo> => result.items
-            .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
-            .toList(),
+        RankingKind.player when result is SeasonQueryResult<PlayerRankInfo> =>
+          result.items
+              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .toList(),
+        RankingKind.guild when result is SeasonQueryResult<GuildInfo> =>
+          result.items
+              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .toList(),
+        RankingKind.hell when result is SeasonQueryResult<HellRankInfo> =>
+          result.items
+              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .toList(),
         _ => const <_RankRow>[],
       };
 
@@ -127,10 +347,12 @@ class _RankingPageState extends State<RankingPage> {
 
       // 交叉榜单索引（另一榜排名，行内胶囊）：成功才覆盖，失败保留旧索引
       final crossRanks = switch (widget.kind) {
-        RankingKind.player when cross is SeasonQueryResult<HellRankInfo> =>
-          {for (final e in cross.items) e.name.toLowerCase(): e.rank},
-        RankingKind.hell when cross is SeasonQueryResult<PlayerRankInfo> =>
-          {for (final e in cross.items) e.name.toLowerCase(): e.rank},
+        RankingKind.player when cross is SeasonQueryResult<HellRankInfo> => {
+          for (final e in cross.items) e.name.toLowerCase(): e.rank,
+        },
+        RankingKind.hell when cross is SeasonQueryResult<PlayerRankInfo> => {
+          for (final e in cross.items) e.name.toLowerCase(): e.rank,
+        },
         _ => null,
       };
       if (crossRanks != null) {
@@ -139,9 +361,8 @@ class _RankingPageState extends State<RankingPage> {
     });
 
     if (refreshFailure != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('刷新失败：$refreshFailure')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text('刷新失败：$refreshFailure')));
     }
   }
 
@@ -168,9 +389,9 @@ class _RankingPageState extends State<RankingPage> {
               itemBuilder: (context, index) {
                 final rank = _milestoneRanks[index];
                 final row = _rows.cast<_RankRow?>().firstWhere(
-                      (item) => item?.rank == rank,
-                      orElse: () => null,
-                    );
+                  (item) => item?.rank == rank,
+                  orElse: () => null,
+                );
                 return ListTile(
                   leading: CircleAvatar(
                     radius: 14,
@@ -187,8 +408,9 @@ class _RankingPageState extends State<RankingPage> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => switch (widget.kind) {
-                                RankingKind.guild =>
-                                  GuildDetailPage(guildName: row.name),
+                                RankingKind.guild => GuildDetailPage(
+                                  guildName: row.name,
+                                ),
                                 RankingKind.player || RankingKind.hell =>
                                   PlayerDetailPage(playerName: row.name),
                               },
@@ -222,6 +444,17 @@ class _RankingPageState extends State<RankingPage> {
               RankingKind.player => RankingCache.playerSeasonNotifier,
               RankingKind.guild => RankingCache.guildSeasonNotifier,
               RankingKind.hell => RankingCache.hellSeasonNotifier,
+            },
+          ),
+          IconButton(
+            icon: const Icon(Icons.show_chart),
+            tooltip: '查看分数趋势',
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => RankingChartPage(kind: widget.kind),
+                ),
+              );
             },
           ),
           IconButton(
@@ -298,8 +531,8 @@ class _RankingPageState extends State<RankingPage> {
                 MaterialPageRoute(
                   builder: (context) => switch (widget.kind) {
                     RankingKind.guild => GuildDetailPage(guildName: row.name),
-                    RankingKind.player || RankingKind.hell =>
-                      PlayerDetailPage(playerName: row.name),
+                    RankingKind.player ||
+                    RankingKind.hell => PlayerDetailPage(playerName: row.name),
                   },
                 ),
               );
