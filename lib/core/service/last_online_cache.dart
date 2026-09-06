@@ -7,10 +7,10 @@ import 'api.dart';
 /// 公会成员「上次在线」会话级缓存（按玩家名精确 key，TTL 15 分钟）。
 ///
 /// - 条目存原始 queryDate，读取时用当前时间重新格式化（相对时间保持准确）。
-/// - TTL 内：`cached()` 同步返回（含 '' = 封禁/无数据），`fetch()` 返回 null
-///   （页面已展示，不发请求、不重放动画）。
+/// - TTL 内：`cached()` 同步返回（含 '' = 封禁/无数据），失败条目返回 null；
+///   `fetch()` 返回 null（页面已展示或此前查询失败，不发请求、不重放动画）。
 /// - 过期/未命中/force：进入有界并发队列（[_maxConcurrent] 路并发），成功
-///   覆盖缓存并返回新值，失败返回 null（页面保留旧值）。
+///   覆盖缓存并返回新值，失败也写入负缓存，页面保留旧值。
 /// - 同名并发去重（[_inflight]），跨页面实例共享同一请求。
 class LastOnlineCache {
   LastOnlineCache._();
@@ -62,11 +62,14 @@ class LastOnlineCache {
   static String? cached(String name) {
     final entry = _entries[name];
     if (entry == null) return null;
-    return PlayerApiService.formatLastOnline(entry.queryDate, DateTime.now());
+    final queryDate = entry.queryDate;
+    if (queryDate == null) return null;
+    return PlayerApiService.formatLastOnline(queryDate, DateTime.now());
   }
 
-  /// 异步获取：TTL 内新鲜缓存直接返回 null（页面已展示，无需刷新）；
-  /// 过期/未命中/[force] 排队请求，成功返回新值，失败（QueryError）返回 null。
+  /// 异步获取：TTL 内新鲜缓存直接返回 null（页面已展示或此前失败，无需刷新）；
+  /// 过期/未命中/[force] 排队请求，成功返回新值，失败（QueryError）返回 null
+  /// 并记录负缓存。
   static Future<String?> fetch(String name, {bool force = false}) {
     final entry = _entries[name];
     final now = DateTime.now();
@@ -86,7 +89,9 @@ class LastOnlineCache {
           DateTime.now(),
         );
       }
-      return null; // QueryError：不覆盖缓存，页面保留旧值
+      // QueryError 也记录查询完成时间，避免页面重建后重复请求同一玩家。
+      _entries[name] = _Entry(null, DateTime.now());
+      return null;
     });
     _inflight[name] = future;
     future.whenComplete(() => _inflight.remove(name));
@@ -97,7 +102,7 @@ class LastOnlineCache {
 class _Entry {
   const _Entry(this.queryDate, this.fetchedAt);
 
-  /// 原始"上次在线"日期串（'' = 封禁/无数据）
-  final String queryDate;
+  /// 原始"上次在线"日期串（'' = 封禁/无数据，null = 查询失败）
+  final String? queryDate;
   final DateTime fetchedAt;
 }

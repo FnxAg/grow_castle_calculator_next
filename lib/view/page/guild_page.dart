@@ -72,6 +72,10 @@ class _GuildPageState extends State<GuildPage> {
   /// 每次成员加载成功后整体重建（清理已退出公会的成员）
   Map<String, String> _lastOnlineByLower = {};
 
+  /// 已尝试查询过「上次在线」的玩家。
+  /// 查询失败返回 null 时也记录，避免后续页面重建重复请求；强制刷新会重试。
+  final Set<String> _lastOnlineAttempted = {};
+
   /// 分数列宽（像素）：取全部成员 score 展示串的最大宽度固定列宽，
   /// 使各行 score 与"上次在线"分别纵向对齐
   double _scoreColumnWidth = 0;
@@ -240,8 +244,8 @@ class _GuildPageState extends State<GuildPage> {
     if (loadLastOnline) {
       await Future.wait([
         for (final m in _members)
-          LastOnlineCache.fetch(m.name, force: force).then<void>(
-            (value) {
+          if (force || _lastOnlineAttempted.add(m.name.toLowerCase()))
+            LastOnlineCache.fetch(m.name, force: force).then<void>((value) {
               if (!mounted || value == null) return;
               final key = m.name.toLowerCase();
               final valueWidth = _textWidth(value, _timeStyle);
@@ -251,9 +255,7 @@ class _GuildPageState extends State<GuildPage> {
                   _timeColumnWidth = valueWidth;
                 }
               });
-            },
-            onError: (_, _) {},
-          ),
+            }, onError: (_, _) {}),
       ]);
     }
     if (mounted) {
