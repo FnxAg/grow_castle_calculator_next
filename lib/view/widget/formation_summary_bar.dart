@@ -53,6 +53,7 @@ class FormationSummaryBar extends StatelessWidget {
                 icon: Icons.emoji_events,
                 label: Text('总波数'),
                 actions: [
+                  if (Stores.infoStore.getCurrentUserId() == 0)
                   _SmallIconButton(
                     icon: const Icon(Icons.edit),
                     tooltip: '修改总波数',
@@ -67,7 +68,6 @@ class FormationSummaryBar extends StatelessWidget {
                       );
                     },
                   ),
-                  // 未配置用户（userId == 0）不显示联网查询按钮
                   if (Stores.infoStore.getCurrentUserId() != 0)
                     _SmallIconButton(
                       icon: querying
@@ -93,6 +93,7 @@ class FormationSummaryBar extends StatelessWidget {
                 icon: Icons.eco,
                 label: Text('赛季波数'),
                 actions: [
+                  if (Stores.infoStore.getCurrentUserId() == 0)
                   _SmallIconButton(
                     icon: const Icon(Icons.edit),
                     tooltip: '修改赛季波数',
@@ -260,8 +261,6 @@ class _SummaryRow extends StatelessWidget {
   });
 
   final IconData icon;
-
-  /// 标签（可为组合文本，如合并行的 "GP | 指数" 分段布局）
   final Widget label;
 
   /// 标签与数值之间的行内操作按钮（编辑/联网查询）
