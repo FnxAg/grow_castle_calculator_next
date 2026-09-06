@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
@@ -12,79 +13,58 @@ class IncomeSummaryBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Card(
-        elevation: 3.0,
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-          child: ValueListenableBuilder<int>(
-        valueListenable: Stores.infoStore.incomeNotifier,
-        builder: (context, _, _) {
-          final income = Stores.infoStore.getCurrentUserDailyIncomeBreakdown();
-          return Column(
-            children: [
-              _IncomeRow(
-                icon: Icons.terrain,
-                label: '殖民地',
-                value: income.colony,
+    return ValueListenableBuilder<int>(
+      valueListenable: Stores.infoStore.incomeNotifier,
+      builder: (context, _, _) {
+        final income = Stores.infoStore.getCurrentUserDailyIncomeBreakdown();
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+          child: SummaryCard(
+            children: <Widget>[
+              SummaryRow(
+                leadingIcon: Icons.terrain,
+                title: Text('殖民地'),
+                trailing: SummaryRowValueText(
+                  text: income.colony.formatCompact(
+                    fractionDigits: 2,
+                    english: false,
+                  ),
+                ),
               ),
-              _IncomeRow(
-                icon: Icons.bolt,
-                label: '推波',
-                value: income.autoBattle,
+              SummaryRow(
+                leadingIcon: Icons.bolt,
+                title: Text('推波'),
+                trailing: SummaryRowValueText(
+                  text: income.autoBattle.formatCompact(
+                    fractionDigits: 2,
+                    english: false,
+                  ),
+                ),
               ),
-              _IncomeRow(
-                icon: Icons.park,
-                label: '其他',
-                value: income.other,
+              SummaryRow(
+                leadingIcon: Icons.park,
+                title: Text('其他'),
+                trailing: SummaryRowValueText(
+                  text: income.other.formatCompact(
+                    fractionDigits: 2,
+                    english: false,
+                  ),
+                ),
               ),
-              _IncomeRow(
-                icon: Icons.monetization_on_outlined,
-                label: '总收入',
-                value: income.total,
+              SummaryRow(
+                leadingIcon: Icons.monetization_on_outlined,
+                title: Text('总收入'),
+                trailing: SummaryRowValueText(
+                  text: income.total.formatCompact(
+                    fractionDigits: 2,
+                    english: false,
+                  ),
+                ),
               ),
             ],
-          );
-        },
           ),
-        ),
-      ),
-    );
-  }
-}
-
-/// 汇总行：图标 + 标签 + 右侧数值（中文数量级缩写，与阵容页总金币风格一致）
-class _IncomeRow extends StatelessWidget {
-  const _IncomeRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final double value;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Row(
-      children: [
-        Icon(icon, size: 20.0, color: colorScheme.primary),
-        const SizedBox(width: 8.0),
-        Text(label),
-        const Spacer(),
-        Text(
-          value.formatCompact(fractionDigits: 2, english: false),
-          style: TextStyle(
-            fontSize: 16.0,
-            fontWeight: FontWeight.bold,
-            color: colorScheme.primary,
-          ),
-        ),
-      ],
+        );
+      },
     );
   }
 }

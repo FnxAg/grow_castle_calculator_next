@@ -2,6 +2,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 
 /// 玩家详情页：并行调用官方 API（[PlayerApiService.query]）与第三方 API
 /// （每小时波速历史）获取该玩家数据并展示。
@@ -75,10 +76,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.playerName),
-        // backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-      ),
+      appBar: AppBar(title: Text(widget.playerName)),
       body: _buildBody(),
     );
   }
@@ -147,47 +145,52 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
 
   Widget _buildResult(PlayerQueryResult r) {
     final scheme = Theme.of(context).colorScheme;
-    final lastOnline =
-        PlayerApiService.formatLastOnline(r.queryDate, DateTime.now());
+    final lastOnline = PlayerApiService.formatLastOnline(
+      r.queryDate,
+      DateTime.now(),
+    );
     return ListView(
-      children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Card(
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(0, 8.0, 0, 8.0),
-              child: Column(
-                children: [
-                  _buildRow(Icons.emoji_events, '总波数', r.wave.format()),
-                  _buildRow(Icons.eco, '赛季波数', r.seasonalScore.format()),
-                  _buildRow(Icons.schedule, '上次在线', lastOnline),
-                ],
-              ),
+      padding: const EdgeInsets.all(16.0),
+      children: <Widget>[
+        SummaryCard(
+          children: <Widget>[
+            SummaryRow(
+              leadingIcon: Icons.emoji_events,
+              title: const Text('总波数'),
+              trailing: SummaryRowValueText(text: r.wave.format()),
             ),
-          ),
+            SummaryRow(
+              leadingIcon: Icons.eco,
+              title: const Text('赛季波数'),
+              trailing: SummaryRowValueText(text: r.seasonalScore.format()),
+            ),
+            SummaryRow(
+              leadingIcon: Icons.schedule,
+              title: const Text('上次在线'),
+              trailing: SummaryRowValueText(text: '$lastOnline ago'),
+            ),
+          ],
         ),
         // 第三方 API：赛季标题 + 每小时波速胶囊流（无数据/失败时整个区块不展示）
         if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
-          // const Divider(),
           Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 4.0),
+            padding: const EdgeInsets.only(top: 12.0, bottom: 4.0),
             child: Text(
               '每小时波速（第三方 API）',
-              style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+              style: Theme.of(context).textTheme.titleSmall
+                  ?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ),
           for (final group in _wphHistory!) ...[
             Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 0),
+              padding: const EdgeInsets.only(top: 8.0),
               child: Text(
                 '赛季 ${group.season}',
                 style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 4.0),
+              padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
               // 固定高度、行内拉伸铺满：右侧无空白
               child: _wphGrid(group.wphs),
             ),
@@ -207,8 +210,8 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
         const minCell = 48.0;
         const spacing = 6.0;
         // 每行格子数：保证格子不小于最小宽度
-        final perRow =
-            ((constraints.maxWidth + spacing) / (minCell + spacing)).floor();
+        final perRow = ((constraints.maxWidth + spacing) / (minCell + spacing))
+            .floor();
         final rows = <List<int?>>[];
         for (var i = 0; i < wphs.length; i += perRow) {
           final end = i + perRow < wphs.length ? i + perRow : wphs.length;
@@ -251,22 +254,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage> {
           ],
         );
       },
-    );
-  }
-
-  Widget _buildRow(IconData icon, String label, String value) {
-    final scheme = Theme.of(context).colorScheme;
-    return ListTile(
-      leading: Icon(icon, size: 20.0, color: scheme.primary),
-      title: Text(label),
-      trailing: Text(
-        value,
-        style: TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.bold,
-          color: scheme.primary,
-        ),
-      ),
     );
   }
 }

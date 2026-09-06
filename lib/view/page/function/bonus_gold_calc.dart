@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -178,50 +179,43 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
   }) {
     return Padding(
       padding: const EdgeInsets.all(16.0),
-      child: Card(
-        elevation: 3.0,
-        margin: EdgeInsets.zero,
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 12.0, 16.0, 12.0),
-          child: Column(
+      child: SummaryCard(
+        children: <Widget>[
+          SummaryRow(
+            leadingIcon: Icons.money,
+            title: Text('金挂成本'),
+            trailing: SummaryRowValueText(text: gabCost.format()),
+          ),
+          SummaryRow(
+            leadingIcon: Icons.monetization_on,
+            title: Text('平均收入'),
+            trailing: SummaryRowValueText(text: avgIncome.format()),
+          ),
+          SummaryRow(
+            leadingIcon: Icons.percent,
+            title: Text('百分比'),
+            trailing: SummaryRowValueText(text: '${percent.format(fractionDigits: 2)}%'),
+          ),
+          const SizedBox(height: 12.0),
+          Row(
+            mainAxisAlignment: .center,
             children: [
-              _SummaryRow(
-                icon: Icons.money,
-                label: '金挂成本',
-                value: gabCost.format(),
+              FilledButton.icon(
+                onPressed: _incomes.isEmpty
+                    ? null
+                    : () => _applyPercent(percent),
+                icon: const Icon(Icons.draw),
+                label: const Text('填入收益'),
               ),
-              _SummaryRow(
-                icon: Icons.monetization_on,
-                label: '平均收入',
-                value: avgIncome.format(),
-              ),
-              _SummaryRow(
-                icon: Icons.percent,
-                label: '百分比',
-                value: '${percent.format(fractionDigits: 2)}%',
-              ),
-              const SizedBox(height: 12.0),
-              Row(
-                mainAxisAlignment: .center,
-                children: [
-                  FilledButton.icon(
-                    onPressed: _incomes.isEmpty
-                        ? null
-                        : () => _applyPercent(percent),
-                    icon: const Icon(Icons.draw),
-                    label: const Text('填入收益'),
-                  ),
-                  const SizedBox(width: 12.0),
-                  FilledButton.tonalIcon(
-                    onPressed: () => _addIncomeDialog(),
-                    icon: const Icon(Icons.add),
-                    label: const Text('添加收入'),
-                  ),
-                ],
+              const SizedBox(width: 12.0),
+              FilledButton.tonalIcon(
+                onPressed: () => _addIncomeDialog(),
+                icon: const Icon(Icons.add),
+                label: const Text('添加收入'),
               ),
             ],
           ),
-        ),
+        ],
       ),
     );
   }
@@ -278,43 +272,6 @@ class _IncomeTile extends StatelessWidget {
         children: [
           Text('${rate.format(fractionDigits: 2)}%', style: style),
           IconButton(onPressed: onRemove, icon: const Icon(Icons.delete)),
-        ],
-      ),
-    );
-  }
-}
-
-/// 汇总行：标签 + 右侧数值
-class _SummaryRow extends StatelessWidget {
-  const _SummaryRow({
-    required this.icon,
-    required this.label,
-    required this.value,
-  });
-
-  final IconData icon;
-  final String label;
-  final String value;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 2.0),
-      child: Row(
-        children: [
-          Icon(icon, size: 20.0, color: colorScheme.primary),
-          const SizedBox(width: 8.0),
-          Text(label),
-          const Spacer(),
-          Text(
-            value,
-            style: TextStyle(
-              fontSize: 16.0,
-              fontWeight: FontWeight.bold,
-              color: colorScheme.primary,
-            ),
-          ),
         ],
       ),
     );

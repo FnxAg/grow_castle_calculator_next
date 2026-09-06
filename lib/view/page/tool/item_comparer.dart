@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
@@ -385,19 +386,16 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
             ),
           ),
           Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Card(
-              elevation: 3.0,
-              margin: EdgeInsets.zero,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: _ResultView(
+            padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+            child: SummaryCard(
+              children: <Widget>[
+                _ResultView(
                   baseResult: baseResult,
                   item1Result: item1Result,
                   item2Result: item2Result,
                   ready: _valueOf(_baseAttackCtrl) > 0,
                 ),
-              ),
+              ],
             ),
           ),
         ],
