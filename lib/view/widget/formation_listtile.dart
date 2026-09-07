@@ -1,5 +1,7 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_input_field.dart';
 
@@ -16,6 +18,8 @@ class FormationCardTile extends StatefulWidget {
     required this.numberController,
     required this.textFocusNode,
     required this.numberFocusNode,
+    required this.viewMode,
+    required this.dataVersion,
     required this.onRemove,
   });
 
@@ -25,6 +29,8 @@ class FormationCardTile extends StatefulWidget {
   final TextEditingController numberController;
   final FocusNode textFocusNode;
   final FocusNode numberFocusNode;
+  final bool viewMode;
+  final ValueListenable<int> dataVersion;
 
   /// 删除回调（菜单删除使用）
   final ValueChanged<int> onRemove;
@@ -71,17 +77,126 @@ class _FormationCardTileState extends State<FormationCardTile> {
           ),
         ),
       ),
-      // 名称 + 等级两个输入框作为主体
-      title: Row(
-        children: [
-          Expanded(flex: 9, child: _nameField()),
-          const SizedBox(width: 8.0),
-          Expanded(flex: 9, child: _levelField()),
-        ],
+      title: ListenableBuilder(
+        listenable: Listenable.merge([
+          widget.dataVersion,
+          Stores.infoStore.totalGoldNotifier,
+          Stores.infoStore.waveNotifier,
+        ]),
+        builder: (context, _) => AnimatedSwitcher(
+          duration: const Duration(milliseconds: 220),
+          switchInCurve: Curves.easeOutCubic,
+          switchOutCurve: Curves.easeInCubic,
+          transitionBuilder: (child, animation) => FadeTransition(
+            opacity: animation,
+            child: SizeTransition(
+              sizeFactor: animation,
+              axis: Axis.horizontal,
+              child: child,
+            ),
+          ),
+          child: widget.viewMode ? _summaryView() : _inputView(),
+        ),
       ),
       trailing: _menuButton(),
       contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
     );
+  }
+
+  Widget _inputView() {
+    return Row(
+      key: const ValueKey('input'),
+      children: [
+        Expanded(flex: 9, child: _nameField()),
+        const SizedBox(width: 8.0),
+        Expanded(flex: 9, child: _levelField()),
+      ],
+    );
+  }
+
+  Widget _summaryView() {
+    final theme = Theme.of(context);
+    final store = Stores.infoStore;
+    final applied = _applied;
+    final name = store.getTextValue(widget.id);
+    final level = int.tryParse(store.getNumberValue(widget.id)) ?? 0;
+    final gold = store.getCurrentUserUnitGold(widget.id);
+    final totalGold = store.totalGoldNotifier.value;
+    final wave = store.waveNotifier.value;
+    final share = applied && totalGold > 0 ? gold / totalGold * 100 : 0.0;
+    final oneOverRatio = applied && wave > 0 && level > 0
+        ? level / wave
+        : 0.0;
+    final ratio = oneOverRatio > 0 ? 1 / oneOverRatio : 0.0;
+    final nameStyle = TextStyle(
+      fontWeight: FontWeight.w600,
+      decoration: applied ? null : TextDecoration.lineThrough,
+      color: applied ? theme.colorScheme.primary : theme.disabledColor,
+    );
+
+    return Padding(
+      key: const ValueKey('summary'),
+      padding: const EdgeInsets.symmetric(vertical: 2.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  name.isNotEmpty
+                      ? name
+                      : widget.id == 1
+                      ? '城堡'
+                      : widget.id == 2
+                      ? '城弓'
+                      : '单位 ${widget.id}',
+                  overflow: TextOverflow.ellipsis,
+                  style: nameStyle,
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              Text(
+                '${level.format()} · ${gold.formatCompact(english: false)}',
+                style: TextStyle(
+                  fontWeight: FontWeight.bold,
+                  color: applied ? theme.colorScheme.primary : theme.disabledColor,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 2.0),
+          Row(
+            children: [
+              _metric(theme, '占比', '${_formatMetric(share)}%', applied),
+              const SizedBox(width: 10.0),
+              _metric(theme, '1/比例', _formatMetric(oneOverRatio), applied),
+              const SizedBox(width: 10.0),
+              _metric(theme, '比例', _formatMetric(ratio), applied),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _metric(ThemeData theme, String label, String value, bool applied) {
+    return Text(
+      '$label $value',
+      style: theme.textTheme.bodySmall?.copyWith(
+        color: applied ? theme.colorScheme.onSurfaceVariant : theme.disabledColor,
+      ),
+    );
+  }
+
+  String _formatMetric(double value) {
+    if (value == 0) return '0';
+    final digits = value.abs() < 0.0001
+        ? 6
+        : value.abs() < 0.01
+        ? 4
+        : 2;
+    return value.format(fractionDigits: digits);
   }
 
   Widget _nameField() {

@@ -3,7 +3,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/view/widget/formation_card_tile.dart';
+import 'package:grow_castle_calculator_next/view/widget/formation_listtile.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_summary_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
@@ -40,6 +40,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
   final Map<int, TextEditingController> _textControllers = {};
+  final ValueNotifier<int> _formationDataVersion = ValueNotifier(0);
+  static bool _viewMode = false;
 
   FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
     return cache.putIfAbsent(id, () => FocusNode());
@@ -52,6 +54,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       );
       c.addListener(() {
         Stores.infoStore.setNumberValue(id, c.text);
+        _formationDataVersion.value++;
       });
       return c;
     });
@@ -62,6 +65,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       final c = TextEditingController(text: Stores.infoStore.getTextValue(id));
       c.addListener(() {
         Stores.infoStore.setTextValue(id, c.text);
+        _formationDataVersion.value++;
       });
       return c;
     });
@@ -81,6 +85,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     for (final c in _textControllers.values) {
       c.dispose();
     }
+    _formationDataVersion.dispose();
     super.dispose();
   }
 
@@ -296,7 +301,15 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     return UserPageScaffold(
       title: '阵容',
       isLoading: _querying || _loadingRanks,
-      actions: [
+      appBarActions: [
+        IconButton(
+          icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
+          tooltip: _viewMode ? '输入模式' : '查看模式',
+          onPressed: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            setState(() => _viewMode = !_viewMode);
+          },
+        ),
         IconButton(
           icon: const Icon(Icons.add),
           tooltip: '新增条目',
@@ -349,6 +362,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                       numberController: _numberControllerFor(id),
                       textFocusNode: _focusNodeFor(id, _textFocusNodes),
                       numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                      viewMode: _viewMode,
+                      dataVersion: _formationDataVersion,
                       onRemove: _removeCard,
                     );
                   },

@@ -319,7 +319,7 @@ class _GuildPageState extends State<GuildPage> {
       title: '公会',
       isLoading: _loading,
       // AppBar action 区：公会赛季进度（点击查看详情）
-      actions: [SeasonIndicator(notifier: RankingCache.guildSeasonNotifier)],
+      appBarActions: [SeasonIndicator(notifier: RankingCache.guildSeasonNotifier)],
       body: body,
     );
   }

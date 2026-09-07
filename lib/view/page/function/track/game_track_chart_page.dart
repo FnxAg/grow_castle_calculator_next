@@ -69,7 +69,7 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
   Widget build(BuildContext context) {
     return UserPageScaffold(
       title: '轨迹图表',
-      actions: [
+      appBarActions: [
         if (_records.isNotEmpty)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12),

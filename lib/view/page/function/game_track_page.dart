@@ -79,7 +79,7 @@ class _GameTrackPageState extends State<GameTrackPage> {
 
     return UserPageScaffold(
       title: '游戏轨迹',
-      actions: [
+      appBarActions: [
         if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
           IconButton(
             icon: const Icon(Icons.warning, color: Colors.orange),

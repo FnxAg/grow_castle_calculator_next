@@ -4,7 +4,7 @@ import 'package:grow_castle_calculator_next/view/page/public/select_user_page.da
 
 /// 与当前用户数据相关页面的公共框架（首页三个 tab：阵容/收入/公会）：
 /// AppBar = 页面标题 + 用户名/上次在线/所属公会 + 页面声明的操作按钮，
-/// 可选 [bottom]（如 TabBar）挂在 AppBar 底部。
+/// 可选 [appBarBottom]（如 TabBar）挂在 AppBar 底部。
 ///
 /// 全局监听 store 的 currentUserNotifier：切换用户时所有用户页外壳一起重建
 /// （PageView 保活的其他页面同样收到通知），通过更换 [KeyedSubtree] 的 key
@@ -14,17 +14,17 @@ class UserPageScaffold extends StatefulWidget {
     super.key,
     required this.title,
     required this.body,
-    this.actions = const [],
-    this.bottom,
+    this.appBarActions = const [],
+    this.appBarBottom,
     this.isLoading = false,
   });
 
   final String title;
   final Widget body;
-  final List<Widget> actions;
+  final List<Widget> appBarActions;
 
   /// AppBar 底部组件，透传给 AppBar.bottom
-  final PreferredSizeWidget? bottom;
+  final PreferredSizeWidget? appBarBottom;
 
   /// 页面内容是否正在加载；为 true 时在底部显示线性加载条
   final bool isLoading;
@@ -42,7 +42,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
         return Scaffold(
           appBar: AppBar(
             bottom: _LoadingAppBarBottom(
-              bottom: widget.bottom,
+              bottom: widget.appBarBottom,
               isLoading: widget.isLoading,
             ),
             title: Column(
@@ -112,7 +112,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
                 ),
               ],
             ),
-            actions: [...widget.actions],
+            actions: [...widget.appBarActions],
           ),
           body: KeyedSubtree(key: ValueKey(currentUser), child: widget.body),
         );

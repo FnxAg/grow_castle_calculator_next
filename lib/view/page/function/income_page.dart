@@ -28,7 +28,7 @@ class _IncomePageState extends State<IncomePage> {
       length: 3,
       child: UserPageScaffold(
         title: '收入',
-        actions: [
+        appBarActions: [
           IconButton(
             icon: const Icon(Icons.info_outline),
             tooltip: '提示',
@@ -51,7 +51,7 @@ class _IncomePageState extends State<IncomePage> {
             },
           ),
         ],
-        bottom: const TabBar(
+        appBarBottom: const TabBar(
           tabs: [
             Tab(text: '殖民地'),
             Tab(text: '推波'),

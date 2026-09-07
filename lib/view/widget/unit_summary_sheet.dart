@@ -136,7 +136,7 @@ class _UnitSummaryRow extends StatelessWidget {
                     ),
                     const SizedBox(width: 8.0),
                     Text(
-                      'Lv.${level.format()}',
+                      'Lv. ${level.format()}',
                       style: theme.textTheme.bodySmall?.copyWith(
                         color: theme.colorScheme.onSurfaceVariant,
                       ),
@@ -213,7 +213,6 @@ class _IndexBadge extends StatelessWidget {
   }
 }
 
-/// 第二行指标项：标签与数值分居两端，保证同列数值纵向对齐
 Widget _metric(ThemeData theme, String label, String value, bool applied) {
   final labelStyle = TextStyle(
     fontSize: 11.0,
@@ -298,7 +297,6 @@ class _UnitSummaryBar extends StatelessWidget {
   }
 }
 
-/// 汇总条单项：标签 + 数值，数值过长时自动缩放
 class _SummaryStat extends StatelessWidget {
   const _SummaryStat({
     required this.label,

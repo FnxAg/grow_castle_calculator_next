@@ -96,7 +96,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
   Widget build(BuildContext context) {
     return UserPageScaffold(
       title: '推波收益计算',
-      actions: [
+      appBarActions: [
         IconButton(
           icon: const Icon(Icons.restore_page),
           tooltip: '重置',
