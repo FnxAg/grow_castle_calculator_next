@@ -3,8 +3,10 @@ cmake_minimum_required(VERSION 3.14)
 project(grow_castle_calculator_next LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
-# the on-disk name of your application.
-set(BINARY_NAME "grow_castle_calculator_next")
+# the on-disk name of your application. Note: this name is used both as the
+# CMake target name and by the Flutter tooling to locate the executable, so it
+# must not contain spaces.
+set(BINARY_NAME "GCCNext")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.

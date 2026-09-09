@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "fnxag" "\0"
-            VALUE "FileDescription", "grow_castle_calculator_next" "\0"
+            VALUE "FileDescription", "GCC Next" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "grow_castle_calculator_next" "\0"
+            VALUE "InternalName", "GCCNext" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 fnxag. All rights reserved." "\0"
-            VALUE "OriginalFilename", "grow_castle_calculator_next.exe" "\0"
-            VALUE "ProductName", "grow_castle_calculator_next" "\0"
+            VALUE "OriginalFilename", "GCCNext.exe" "\0"
+            VALUE "ProductName", "GCC Next" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END
