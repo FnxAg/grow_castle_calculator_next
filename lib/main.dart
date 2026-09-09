@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:get_it/get_it.dart';
@@ -17,10 +19,12 @@ void main() async {
 
 Future<void> _init() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await FlutterDisplayMode.setHighRefreshRate();
-  } catch (e) {
-    debugPrint('Failed to set high refresh rate: $e');
+  if (Platform.isAndroid) {
+    try {
+      await FlutterDisplayMode.setHighRefreshRate();
+    } catch (e) {
+      debugPrint('Failed to set high refresh rate: $e');
+    }
   }
   await _initializeHive();
   await _initializeGetIt();
