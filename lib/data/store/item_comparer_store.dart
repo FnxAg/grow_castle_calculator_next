@@ -98,6 +98,12 @@ class ItemComparerStore {
       ]);
   }
 
+  /// 重新从 box 加载输入并覆盖当前字段（数据恢复/导入后调用）。
+  /// 页面输入框的文本回填由 BackupService 的 dataRestoredNotifier 驱动
+  void reload() {
+    _load();
+  }
+
   /// 持久化当前输入（每次输入变化后调用，数据量小，直接写盘）
   void save() {
     _box.put(

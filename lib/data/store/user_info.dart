@@ -96,8 +96,29 @@ class InfoStore {
   /// 「发起切换的页面」的局部 setState 重建，必须由这里统一驱动
   final ValueNotifier<String> currentUserNotifier = ValueNotifier<String>('default');
 
+  /// 数据整体替换（云端恢复/本地导入）后递增。
+  ///
+  /// 用户名未变时 currentUserNotifier 不触发，UserPageScaffold 的
+  /// KeyedSubtree 不会重建（残留的 TextEditingController 会覆盖新数据），
+  /// 由 dataVersion 强制整树重建；与 currentUserNotifier merge 监听
+  ValueNotifier<int> dataVersionNotifier = ValueNotifier<int>(0);
+
   InfoStore() {
     _loadFromHive();
+  }
+
+  /// 数据整体被替换（云端恢复/本地导入）后重新从 Hive 全量加载。
+  ///
+  /// 先取消待执行的延迟保存（防抖中的旧内存态会被恢复前的 flush 落盘），
+  /// 再走与构造相同的加载路径 [_loadFromHive]（clear 索引 → 迁移 → 兜底
+  /// 当前用户 → _loadUserState 刷新各 notifier），最后补两个 _loadUserState
+  /// 不触发的通知：卡片列表结构与 dataVersion（强制页面整树重建）。
+  void reload() {
+    _saveDebounce?.cancel();
+    _saveDebounce = null;
+    _loadFromHive();
+    cardIdsNotifier.value++;
+    dataVersionNotifier.value++;
   }
 
   /// 获取当前用户资料（无数据时返回默认用户副本，避免外部改动污染常量）

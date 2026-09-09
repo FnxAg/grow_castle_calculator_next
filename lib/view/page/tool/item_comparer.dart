@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
+import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
@@ -122,6 +123,8 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   @override
   void initState() {
     super.initState();
+    // 数据恢复/导入后从 store 重新回填输入（结构可能与旧输入不一致）
+    BackupService.instance.dataRestoredNotifier.addListener(_onDataRestored);
     _restoring = true;
     _restoreFromStore();
     _restoring = false;
@@ -134,6 +137,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   @override
   void dispose() {
+    BackupService.instance.dataRestoredNotifier.removeListener(_onDataRestored);
     for (final ctrl in _panelCtrls) {
       ctrl.dispose();
     }
@@ -141,6 +145,20 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
       input.dispose();
     }
     super.dispose();
+  }
+
+  /// 数据恢复/导入完成：整页输入按新 store 数据重建
+  void _onDataRestored() {
+    if (!mounted) return;
+    _restoring = true;
+    for (final input in [..._item1Lines, ..._item2Lines]) {
+      input.dispose();
+    }
+    _item1Lines.clear();
+    _item2Lines.clear();
+    _restoreFromStore();
+    _restoring = false;
+    setState(() => _lineListGeneration++);
   }
 
   void _onInputChanged() {

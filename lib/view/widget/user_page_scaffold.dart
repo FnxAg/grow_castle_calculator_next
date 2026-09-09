@@ -36,9 +36,16 @@ class UserPageScaffold extends StatefulWidget {
 class _UserPageScaffoldState extends State<UserPageScaffold> {
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder<String>(
-      valueListenable: Stores.infoStore.currentUserNotifier,
-      builder: (context, currentUser, _) {
+    return ListenableBuilder(
+      // 除切换用户（currentUserNotifier）外，数据整体替换（恢复/导入）后
+      // 也需整树重建：reload 会 bump dataVersionNotifier（用户名未变时
+      // KeyedSubtree 不随 currentUserNotifier 重建，残留的控制器会覆盖新数据）
+      listenable: Listenable.merge([
+        Stores.infoStore.currentUserNotifier,
+        Stores.infoStore.dataVersionNotifier,
+      ]),
+      builder: (context, _) {
+        final currentUser = Stores.infoStore.getCurrentUsername();
         return Scaffold(
           appBar: AppBar(
             bottom: _LoadingAppBarBottom(

@@ -59,6 +59,18 @@ class AppSettingsStore {
     return ThemeMode.system;
   }
 
+  /// 重新从 box 读取全部设置并刷新各 notifier（数据恢复/导入后调用；
+  /// ValueNotifier 等值不触发通知，安全）
+  void reload() {
+    themeModeNotifier.value = _readThemeMode(_box);
+    apiUrlNotifier.value = _readApiUrl(_box);
+    thirdPartyApiEnabledNotifier.value = _readThirdPartyApiEnabled(_box);
+    autoLastOnlineEnabledNotifier.value = _readAutoLastOnlineEnabled(_box);
+    lastOnlineConcurrencyNotifier.value = _readLastOnlineConcurrency(_box);
+    gameTrackEnabledNotifier.value = _readGameTrackEnabled(_box);
+    gameTrackIntervalMinutesNotifier.value = _readGameTrackIntervalMinutes(_box);
+  }
+
   void setThemeMode(ThemeMode mode) {
     if (themeModeNotifier.value == mode) {
       return;

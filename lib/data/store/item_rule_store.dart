@@ -45,6 +45,11 @@ class ItemRuleStore {
     return [_exampleRule()];
   }
 
+  /// 重新从 box 加载规则并刷新 notifier（数据恢复/导入后调用）
+  void reload() {
+    rulesNotifier.value = _load(_box);
+  }
+
   void addRule(UserHighlightRule rule) {
     rulesNotifier.value = [...rules, rule];
     _persist();

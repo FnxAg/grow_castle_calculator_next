@@ -4,6 +4,7 @@ import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart'
 import 'package:grow_castle_calculator_next/data/store/item_rule_store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
+import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
 
 abstract final class Stores {
   static final GetIt _getIt = GetIt.instance;
@@ -42,5 +43,13 @@ abstract final class Stores {
       _getIt.registerSingleton<GameTrackStore>(GameTrackStore());
     }
     return _getIt<GameTrackStore>();
+  }
+
+  /// WebDAV 备份配置（持久化于 app_meta box 的 webdav* 键）
+  static WebDavConfigStore get webDavConfigStore {
+    if (!_getIt.isRegistered<WebDavConfigStore>()) {
+      _getIt.registerSingleton<WebDavConfigStore>(WebDavConfigStore());
+    }
+    return _getIt<WebDavConfigStore>();
   }
 }

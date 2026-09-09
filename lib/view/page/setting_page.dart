@@ -8,7 +8,8 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/about_page.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/page/setting/backup_page.dart';
+import 'package:grow_castle_calculator_next/view/widget/setting_edit_dialog.dart';
 
 /// 设置页
 class SettingPage extends StatefulWidget {
@@ -116,7 +117,7 @@ class _SettingPageState extends State<SettingPage> {
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
-      builder: (context) => _SettingEditDialog(
+      builder: (context) => SettingEditDialog(
         title: '第三方 API',
         initialValue: store.apiUrlNotifier.value,
         decoration: const InputDecoration(labelText: 'API 地址'),
@@ -129,7 +130,7 @@ class _SettingPageState extends State<SettingPage> {
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
-      builder: (context) => _SettingEditDialog(
+      builder: (context) => SettingEditDialog(
         title: '查询并发数',
         initialValue: '${store.lastOnlineConcurrencyNotifier.value}',
         keyboardType: TextInputType.number,
@@ -154,7 +155,7 @@ class _SettingPageState extends State<SettingPage> {
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
-      builder: (context) => _SettingEditDialog(
+      builder: (context) => SettingEditDialog(
         title: '记录间隔',
         initialValue: '${store.gameTrackIntervalMinutesNotifier.value}',
         keyboardType: TextInputType.number,
@@ -372,6 +373,19 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ],
           ),
+          // 数据备份：WebDAV 云备份/恢复 + 本地导入导出
+          ListTile(
+            leading: const Icon(Icons.cloud_outlined),
+            title: const Text('数据备份'),
+            subtitle: const Text('WebDAV 云备份 · 本地导入导出'),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const BackupPage()),
+              );
+            },
+          ),
           // 检查更新：查询 GitHub 最新发布（镜像备用），发现新版弹窗展示
           ListTile(
             leading: const Icon(Icons.system_update_alt),
@@ -401,72 +415,6 @@ class _SettingPageState extends State<SettingPage> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _SettingEditDialog extends StatefulWidget {
-  const _SettingEditDialog({
-    required this.title,
-    required this.initialValue,
-    required this.decoration,
-    required this.onSubmit,
-    this.keyboardType = TextInputType.text,
-    this.inputFormatters = const [],
-  });
-
-  final String title;
-
-  final String initialValue;
-  final TextInputType keyboardType;
-  final List<TextInputFormatter> inputFormatters;
-  final InputDecoration decoration;
-
-  final ValueChanged<String> onSubmit;
-
-  @override
-  State<_SettingEditDialog> createState() => _SettingEditDialogState();
-}
-
-class _SettingEditDialogState extends State<_SettingEditDialog> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(text: widget.initialValue);
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return AlertDialog(
-      title: Text(widget.title),
-      content: SelectAllTextField(
-        controller: _controller,
-        autofocus: true,
-        keyboardType: widget.keyboardType,
-        inputFormatters: widget.inputFormatters,
-        decoration: widget.decoration,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
-        ),
-        TextButton(
-          onPressed: () {
-            widget.onSubmit(_controller.text);
-            Navigator.of(context).pop();
-          },
-          child: const Text('保存'),
-        ),
-      ],
     );
   }
 }

@@ -7,6 +7,7 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 
 import 'package:grow_castle_calculator_next/app.dart';
+import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
 
@@ -57,6 +58,11 @@ Future<void> _initializeGetIt() async {
   if (!getIt.isRegistered<AppSettingsStore>()) {
     getIt.registerSingleton<AppSettingsStore>(AppSettingsStore());
   }
+  if (!getIt.isRegistered<BackupService>()) {
+    getIt.registerSingleton<BackupService>(BackupService());
+  }
+  // 订阅 Hive box 变更流并启动自动备份调度（不依赖 widget，_init 阶段可调用）
+  BackupService.instance.start();
 }
 
 Future<(ColorScheme?, ColorScheme?)> _fetchDynamicColorSchemes() async {
