@@ -147,7 +147,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
                 child: _incomes.isEmpty
                     ? const Center(
                         child: Text(
-                          '暂无收入样本，点击右上角 + 添加',
+                          '暂无收入样本',
                           style: TextStyle(color: Colors.grey),
                         ),
                       )
