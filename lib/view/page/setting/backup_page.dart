@@ -98,9 +98,7 @@ class _BackupPageState extends State<BackupPage> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
             child: Text(
-              '导入或恢复会覆盖本机全部数据，建议先导出备份。\n'
-              '云端只保留一份备份，「立即备份」会先检查云端那份的新旧，确认后才覆盖。\n'
-              'WebDAV 账号密码明文保存在本机，不会包含在导出文件中。',
+              '导入或恢复会覆盖本机全部数据，建议先导出备份。',
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
