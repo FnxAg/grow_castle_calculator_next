@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
@@ -326,7 +328,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                       return ListView(
                         padding: EdgeInsets.only(
                           left: 16.0,
-                          top: (value - offset).clamp(0.0, value),
+                          top: !Platform.isWindows ? (value - offset).clamp(0.0, value) : value,
                           right: 16.0,
                           bottom: 8.0,
                         ),
