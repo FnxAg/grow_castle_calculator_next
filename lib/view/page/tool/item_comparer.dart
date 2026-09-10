@@ -385,43 +385,48 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ],
       ),
-      body: ContentFrame(child: ShortWindowFallback(minHeight: 340, child: Column(
-        children: [
-          Expanded(
-            child: ListView(
-              // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
-              key: const PageStorageKey('item_comparer_list'),
-              padding: EdgeInsets.all(16.0),
-              children: [
-                Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
-                const SizedBox(height: 16),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: _buildItemCard(_item1Lines, '装备 1 词条', 'item1'),
+      body: ContentFrame(
+        child: ShortWindowFallback(
+          minHeight: 340,
+          child: Column(
+            children: [
+              Expanded(
+                child: ListView(
+                  // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
+                  key: const PageStorageKey('item_comparer_list'),
+                  padding: EdgeInsets.all(16.0),
+                  children: [
+                    Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
+                    const SizedBox(height: 16),
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: _buildItemCard(_item1Lines, '装备 1 词条', 'item1'),
+                    ),
+                    const SizedBox(height: 16),
+                    Card(
+                      margin: EdgeInsets.zero,
+                      child: _buildItemCard(_item2Lines, '装备 2 词条', 'item2'),
+                    ),
+                  ],
                 ),
-                const SizedBox(height: 16),
-                Card(
-                  margin: EdgeInsets.zero,
-                  child: _buildItemCard(_item2Lines, '装备 2 词条', 'item2'),
+              ),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+                child: SummaryCard(
+                  children: <Widget>[
+                    _ResultView(
+                      baseResult: baseResult,
+                      item1Result: item1Result,
+                      item2Result: item2Result,
+                      ready: _valueOf(_baseAttackCtrl) > 0,
+                    ),
+                  ],
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-            child: SummaryCard(
-              children: <Widget>[
-                _ResultView(
-                  baseResult: baseResult,
-                  item1Result: item1Result,
-                  item2Result: item2Result,
-                  ready: _valueOf(_baseAttackCtrl) > 0,
-                ),
-              ],
-            ),
-          ),
-        ],
-      ))),
+        ),
+      ),
     );
   }
 
@@ -450,6 +455,13 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
   }
 
+  /// 面板字段行：定宽标签列 + 右对齐的定宽输入框。
+  ///
+  /// 标签列必须定宽：各行标签长短不一，不固定就没有公共起点，输入框会跟着
+  /// 标签宽度左右漂。行内也只能有一个弹性空白 —— [Spacer] 本身就是
+  /// `Expanded(flex: 1)`，之前它和包住输入框的 `Expanded` 同时存在，等于把
+  /// 剩余空间对半分；且 `Expanded` 给子级的是紧约束，里面
+  /// `SizedBox(width: 80)` 的宽度被完全覆盖，形同虚设。
   Widget _panelField(
     String label,
     TextEditingController ctrl, {
@@ -461,25 +473,29 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
       child: Row(
         children: [
           SizedBox(
-            width: 120,
-            child: Text(label, style: theme.textTheme.bodyMedium),
+            width: 140.0,
+            child: Text(
+              label,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.bodyMedium,
+            ),
           ),
-          Spacer(),
-          Expanded(
-            child: SizedBox(
-              width: 80,
-              child: SelectAllTextField(
-                controller: ctrl,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                ],
-                decoration: InputDecoration(
-                  isDense: true,
-                  suffixText: isPercent ? '%' : null,
-                ),
+          const Spacer(), // 唯一弹性空白：把输入框推到右边缘
+          SizedBox(
+            // 与装备词条行的数值框同宽：整页数值框的左右边缘都对齐
+            width: 88.0,
+            child: SelectAllTextField(
+              controller: ctrl,
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+              ],
+              decoration: InputDecoration(
+                isDense: true,
+                suffixText: isPercent ? '%' : null,
               ),
             ),
           ),
@@ -495,10 +511,13 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
         children: [
           Row(
             children: [
-              Text(title, style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                color: Theme.of(context).colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              )),
+              Text(
+                title,
+                style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                  color: Theme.of(context).colorScheme.primary,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
             ],
           ),
           _AnimatedItemLineList(

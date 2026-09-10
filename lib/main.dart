@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:get_it/get_it.dart';
@@ -19,7 +18,7 @@ void main() async {
 
 Future<void> _init() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isAndroid) {
+  if (isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
     } catch (e) {
