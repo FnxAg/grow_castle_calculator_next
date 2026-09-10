@@ -19,9 +19,6 @@ class FunctionPage extends StatefulWidget {
 }
 
 class _FunctionPageState extends State<FunctionPage> {
-  final Stream<DateTime> _tickStream =
-      Stream.periodic(const Duration(seconds: 1), (_) => DateTime.now());
-
   @override
   Widget build(BuildContext context) {
     final store = Stores.infoStore;
@@ -105,19 +102,7 @@ class _FunctionPageState extends State<FunctionPage> {
               children: [
                 const Text('游戏轨迹'),
                 const Spacer(),
-                StreamBuilder<DateTime>(
-                  stream: _tickStream,
-                  builder: (context, snapshot) {
-                    final now = snapshot.data ?? DateTime.now();
-                    final lastTime = Stores.gameTrackStore.getLastRecordTime(
-                      store.getCurrentUserId(),
-                    );
-                    final text = lastTime == null
-                        ? '无记录'
-                        : _formatRelativeTime(lastTime.toLocal(), now);
-                    return Text(text, style: style);
-                  },
-                ),
+                _RelativeTimeText(style: style),
               ],
             ),
             trailing: const Icon(Icons.chevron_right),
@@ -130,6 +115,52 @@ class _FunctionPageState extends State<FunctionPage> {
         ],
       ),
     );
+  }
+}
+
+/// 「游戏轨迹」右侧的相对时间，每秒自刷新。
+///
+/// 每秒 tick 的资源必须由**这个 widget 自己**持有，不能挂在外层
+/// [_FunctionPageState] 上：这一段子树会被整体重建（横竖屏切换时
+/// ShortWindowFallback 换布局分支、切换用户时 UserPageScaffold 的
+/// KeyedSubtree 换 key），外层 State 存活而本 widget 是新的。若用外层 State
+/// 持有的单订阅流（`Stream.periodic`），新实例会二次 listen 同一个流，抛
+/// "Bad state: Stream has already been listened to."，整个 ListTile 被替换成
+/// ErrorWidget —— 在 Android 上就是一块高度无界的灰块，且不会自愈。
+class _RelativeTimeText extends StatefulWidget {
+  const _RelativeTimeText({required this.style});
+
+  final TextStyle? style;
+
+  @override
+  State<_RelativeTimeText> createState() => _RelativeTimeTextState();
+}
+
+class _RelativeTimeTextState extends State<_RelativeTimeText> {
+  Timer? _timer;
+
+  @override
+  void initState() {
+    super.initState();
+    _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // 用户 id 每次 tick 重新读：切换用户后本 widget 不重建也能显示新用户的数据
+    final lastTime = Stores.gameTrackStore.getLastRecordTime(
+      Stores.infoStore.getCurrentUserId(),
+    );
+    final text = lastTime == null
+        ? '无记录'
+        : _formatRelativeTime(lastTime.toLocal(), DateTime.now());
+    return Text(text, style: widget.style);
   }
 }
 
