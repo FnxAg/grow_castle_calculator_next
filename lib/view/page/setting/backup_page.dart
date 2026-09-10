@@ -1,18 +1,27 @@
 import 'dart:convert';
+import 'dart:typed_data';
 
 import 'package:file_picker/file_picker.dart';
-import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/core/service/data_archive.dart';
-import 'package:grow_castle_calculator_next/core/service/webdav_client.dart';
+import 'package:grow_castle_calculator_next/core/service/webdav_backup_client.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/setting_edit_dialog.dart';
 
+/// 覆盖确认弹窗的选择结果
+enum _OverwriteDecision { overwrite, restoreFromCloud }
+
+/// 确认弹窗里的附加提示（error 为 true 时用错误色）
+typedef _ConfirmWarning = ({String text, bool isError});
+
 /// 数据备份页：WebDAV 配置与手动备份/云端恢复 + 本地导出/导入。
+///
+/// 上传前先探测云端元信息、与本机上次成功备份比对，弹窗确认后才覆盖——
+/// 云端只有一份文件，覆盖不可找回，因此本页不存在静默上传路径。
 class BackupPage extends StatefulWidget {
   const BackupPage({super.key});
 
@@ -24,8 +33,9 @@ class _BackupPageState extends State<BackupPage> {
   final BackupService _service = BackupService.instance;
   late final WebDavConfigStore _config;
 
-  /// 从云端拉取预览/恢复中（手动备份的进行中状态由 service.busyNotifier 驱动）
-  bool _cloudBusy = false;
+  /// 本页正在与云端交互（探测元信息 / 下载预览）；
+  /// 上传与恢复的执行期由 service.busyNotifier 驱动
+  bool _remoteBusy = false;
 
   @override
   void initState() {
@@ -41,32 +51,8 @@ class _BackupPageState extends State<BackupPage> {
       body: ListView(
         children: [
           SectionHeader('WebDAV 备份'),
-          // 自动备份开关
-          ValueListenableBuilder<bool>(
-            valueListenable: _config.autoEnabledNotifier,
-            builder: (context, enabled, _) => ListTile(
-              leading: const Icon(Icons.autorenew),
-              title: const Text('自动备份'),
-              subtitle: const Text('数据变化后自动上传到云端，打开应用超过间隔补传'),
-              trailing: Switch(
-                value: enabled,
-                onChanged: _config.setAutoEnabled,
-              ),
-              onTap: () => _config.setAutoEnabled(!enabled),
-            ),
-          ),
-          // 服务器配置行（自动备份关闭时同样需要，手动备份入口共用）
+          // 服务器配置行（手动备份与云端恢复共用）
           _buildConfigRows(scheme),
-          ValueListenableBuilder<int>(
-            valueListenable: _config.intervalHoursNotifier,
-            builder: (context, hours, _) => ListTile(
-              leading: const Icon(Icons.timer_outlined),
-              title: const Text('自动备份间隔'),
-              subtitle: Text('距上次成功备份超过 $hours 小时时补传'),
-              trailing: const Icon(Icons.chevron_right),
-              onTap: () => _showIntervalDialog(hours),
-            ),
-          ),
           // 手动操作与状态
           ValueListenableBuilder<bool>(
             valueListenable: _service.busyNotifier,
@@ -76,30 +62,18 @@ class _BackupPageState extends State<BackupPage> {
                   leading: const Icon(Icons.cloud_upload_outlined),
                   title: const Text('立即备份'),
                   subtitle: Text(
-                    _config.isConfigured ? '上传到 WebDAV 服务器' : '未配置服务器',
+                    _config.isConfigured ? '检查云端新旧后上传覆盖' : '未配置服务器',
                   ),
-                  trailing: busy
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        )
-                      : null,
-                  enabled: !busy,
+                  trailing: busy || _remoteBusy ? _spinner() : null,
+                  enabled: !busy && !_remoteBusy,
                   onTap: _onManualBackup,
                 ),
                 ListTile(
                   leading: const Icon(Icons.cloud_download_outlined),
                   title: const Text('从云端恢复'),
                   subtitle: const Text('下载云端备份并覆盖本机数据'),
-                  trailing: _cloudBusy
-                      ? const SizedBox(
-                          width: 18,
-                          height: 18,
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        )
-                      : null,
-                  enabled: !busy && !_cloudBusy,
+                  trailing: _remoteBusy ? _spinner() : null,
+                  enabled: !busy && !_remoteBusy,
                   onTap: _onRestoreFromCloud,
                 ),
               ],
@@ -124,6 +98,7 @@ class _BackupPageState extends State<BackupPage> {
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
             child: Text(
               '导入或恢复会覆盖本机全部数据，建议先导出备份。\n'
+              '云端只保留一份备份，「立即备份」会先检查云端那份的新旧，确认后才覆盖。\n'
               'WebDAV 账号密码明文保存在本机，不会包含在导出文件中。',
               style: Theme.of(context)
                   .textTheme
@@ -136,7 +111,13 @@ class _BackupPageState extends State<BackupPage> {
     );
   }
 
-  /// 服务器地址/账号/密码配置行（可折叠在自动开关下的次级展示）
+  static Widget _spinner() => const SizedBox(
+        width: 18,
+        height: 18,
+        child: CircularProgressIndicator(strokeWidth: 2.0),
+      );
+
+  /// 服务器地址/账号/密码配置行
   Widget _buildConfigRows(ColorScheme scheme) {
     return Column(
       mainAxisSize: MainAxisSize.min,
@@ -175,7 +156,7 @@ class _BackupPageState extends State<BackupPage> {
     );
   }
 
-  /// 备份状态区：上次成功/失败时间（成功/失败留痕供自动备份静默时查看）
+  /// 备份状态区：上次成功/失败时间（手动备份的留痕；探测失败不写入）
   Widget _buildStatusArea() {
     final scheme = Theme.of(context).colorScheme;
     return ListenableBuilder(
@@ -258,34 +239,26 @@ class _BackupPageState extends State<BackupPage> {
     );
   }
 
-  void _showIntervalDialog(int current) {
-    FocusManager.instance.primaryFocus?.unfocus();
-    showDialog<void>(
-      context: context,
-      builder: (_) => SettingEditDialog(
-        title: '自动备份间隔',
-        initialValue: '$current',
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(
-          labelText: '小时（1-720）',
-          helperText: '打开应用距上次成功备份超过该时长时自动补传',
-        ),
-        onSubmit: (text) {
-          final value = int.tryParse(text);
-          if (value != null) {
-            _config.setIntervalHours(value);
-          }
-        },
-      ),
-    );
-  }
-
-  // ── 手动备份 / 云端恢复 / 本地导入导出 ─────────────────────────
+  // ── 手动备份：探测 → 确认 → 上传 ───────────────────────────────
 
   Future<void> _onManualBackup() async {
+    // 未配置守卫必须在探测之前：否则会发出真实网络请求
     if (!_config.isConfigured) {
       _snack('请先配置 WebDAV 服务器地址、账号与密码');
+      return;
+    }
+    if (_remoteBusy || _service.busyNotifier.value) return; // 防同帧双击
+
+    final info = await _probeRemoteBackup();
+    if (info == null || !mounted) return; // 探测失败即拦截，不提供"忽略检测"
+    final relation = BackupService.compareRemoteBackup(
+      info: info,
+      lastSuccessAtMs: _config.lastSuccessAtNotifier.value,
+    );
+    final decision = await _confirmOverwrite(info, relation);
+    if (decision == null || !mounted) return;
+    if (decision == _OverwriteDecision.restoreFromCloud) {
+      await _onRestoreFromCloud();
       return;
     }
     final error = await _service.manualBackup();
@@ -293,12 +266,120 @@ class _BackupPageState extends State<BackupPage> {
     _snack(error == null ? '已备份到云端' : '备份失败：$error');
   }
 
+  /// 探测云端备份元信息；失败只提示并返回 null（不写失败留痕：
+  /// 备份根本没发起，记进状态区会谎报"上次备份失败"）
+  Future<WebDavFileInfo?> _probeRemoteBackup() async {
+    setState(() => _remoteBusy = true);
+    try {
+      return await _service.fetchRemoteInfo();
+    } on WebDavException catch (e) {
+      if (mounted) _snack('检测云端备份失败：${e.message}');
+      return null;
+    } catch (_) {
+      if (mounted) _snack('检测云端备份失败，请稍后重试');
+      return null;
+    } finally {
+      if (mounted) setState(() => _remoteBusy = false);
+    }
+  }
+
+  /// 覆盖确认弹窗：并列展示云端与本机记录，云端显新时高亮警告。
+  /// 只有 remoteNewer 额外给"恢复云端"捷径——警告语已在说云端更新，
+  /// 用户的自然反应就是改用云端那份；其余结论下不该暗示某一侧更优。
+  Future<_OverwriteDecision?> _confirmOverwrite(
+    WebDavFileInfo info,
+    RemoteBackupRelation relation,
+  ) {
+    final scheme = Theme.of(context).colorScheme;
+    final lastSuccessMs = _config.lastSuccessAtNotifier.value;
+    final warn = relation == RemoteBackupRelation.remoteNewer ||
+        relation == RemoteBackupRelation.remoteUnknown;
+    final remoteLine = info.exists
+        ? '云端备份：${_clockOrUnknown(info.lastModified)}'
+            '${info.contentLength == null ? '' : '，${info.contentLength! ~/ 1024} KB'}'
+        : '云端备份：还没有备份文件（将新建一份）';
+    final localLine = lastSuccessMs == null
+        ? '本机上次成功备份：从未'
+        : '本机上次成功备份：${_formatClock(lastSuccessMs)}';
+    return showDialog<_OverwriteDecision>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('上传备份到云端'),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(remoteLine),
+            Text(localLine),
+            if (warn) ...[
+              const SizedBox(height: 12),
+              Text(
+                _overwriteWarning(info, relation, lastSuccessMs),
+                style: TextStyle(color: scheme.error),
+              ),
+            ],
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: const Text('取消'),
+          ),
+          if (relation == RemoteBackupRelation.remoteNewer)
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext)
+                  .pop(_OverwriteDecision.restoreFromCloud),
+              child: const Text('恢复云端'),
+            ),
+          FilledButton(
+            onPressed: () =>
+                Navigator.of(dialogContext).pop(_OverwriteDecision.overwrite),
+            style: warn
+                ? FilledButton.styleFrom(
+                    backgroundColor: scheme.error,
+                    foregroundColor: scheme.onError,
+                  )
+                : null,
+            child: Text(!info.exists
+                ? '上传'
+                : warn
+                    ? '仍要覆盖'
+                    : '覆盖上传'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// 警告文案：remoteNewer 一种成因；remoteUnknown 分"取不到时间"与
+  /// "本机无成功记录"两种，措辞分开便于用户判断该不该继续
+  static String _overwriteWarning(
+    WebDavFileInfo info,
+    RemoteBackupRelation relation,
+    int? lastSuccessMs,
+  ) {
+    if (relation == RemoteBackupRelation.remoteNewer) {
+      return '云端备份比本机上次成功备份更新，可能来自其他设备；'
+          '覆盖后云端那份将无法找回。';
+    }
+    if (info.lastModified == null) {
+      return '无法获取云端备份时间；覆盖后云端那份将无法找回。';
+    }
+    if (lastSuccessMs == null) {
+      return '本机没有成功备份记录，无法确认云端那份的来源；覆盖后无法找回。';
+    }
+    return '';
+  }
+
+  // ── 云端恢复 ───────────────────────────────────────────────────
+
   Future<void> _onRestoreFromCloud() async {
     if (!_config.isConfigured) {
       _snack('请先配置 WebDAV 服务器地址、账号与密码');
       return;
     }
-    setState(() => _cloudBusy = true);
+    if (_remoteBusy || _service.busyNotifier.value) return;
+    setState(() => _remoteBusy = true);
     RemoteBackupPreview? preview;
     try {
       preview = await _service.fetchRemotePreview();
@@ -307,7 +388,7 @@ class _BackupPageState extends State<BackupPage> {
     } on DataArchiveException catch (e) {
       if (mounted) _snack('云端文件无效：${e.message}');
     } finally {
-      if (mounted) setState(() => _cloudBusy = false);
+      if (mounted) setState(() => _remoteBusy = false);
     }
     if (preview == null || !mounted) {
       if (preview == null && mounted) {
@@ -325,8 +406,43 @@ class _BackupPageState extends State<BackupPage> {
       title: '从云端恢复',
       source: source,
       contents: preview.contents,
+      warning: _restoreWarning(fileInfo),
     );
   }
+
+  /// 恢复方向的提示：危险方与上传相反——云端较旧意味着会退回旧数据。
+  /// 复用预览已带回的 fileInfo，不再多发请求
+  _ConfirmWarning? _restoreWarning(WebDavFileInfo info) {
+    final relation = BackupService.compareRemoteBackup(
+      info: info,
+      lastSuccessAtMs: _config.lastSuccessAtNotifier.value,
+    );
+    final localMs = _config.lastSuccessAtNotifier.value;
+    switch (relation) {
+      case RemoteBackupRelation.remoteOlder:
+        return (
+          text: '云端备份早于本机上次成功备份'
+              '${localMs == null ? '' : '（${_formatClock(localMs)}）'}，'
+              '恢复会退回较旧的数据。',
+          isError: true,
+        );
+      case RemoteBackupRelation.remoteNewer:
+        return (
+          text: '云端备份比本机上次成功备份更新，可能来自其他设备。',
+          isError: false,
+        );
+      case RemoteBackupRelation.remoteUnknown:
+        return (
+          text: '无法判断云端备份与本机记录的新旧，恢复前请确认来源。',
+          isError: false,
+        );
+      case RemoteBackupRelation.noRemote:
+        // 有预览必然存在云端文件，此分支不会走到
+        return null;
+    }
+  }
+
+  // ── 本地导出/导入 ──────────────────────────────────────────────
 
   Future<void> _onExportFile() async {
     final Uint8List bytes;
@@ -391,15 +507,34 @@ class _BackupPageState extends State<BackupPage> {
     required String title,
     required String source,
     required ArchiveContents contents,
+    _ConfirmWarning? warning,
   }) async {
+    final scheme = Theme.of(context).colorScheme;
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
         title: Text(title),
-        content: Text(
-          '来源：$source\n\n'
-          '${_describeArchive(contents)}\n\n'
-          '导入或恢复会覆盖本机全部数据，建议先导出备份。',
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '来源：$source\n\n'
+              '${_describeArchive(contents)}\n\n'
+              '导入或恢复会覆盖本机全部数据，建议先导出备份。',
+            ),
+            if (warning != null) ...[
+              const SizedBox(height: 12),
+              Text(
+                warning.text,
+                style: TextStyle(
+                  color: warning.isError
+                      ? scheme.error
+                      : scheme.onSurfaceVariant,
+                ),
+              ),
+            ],
+          ],
         ),
         actions: [
           TextButton(
@@ -444,6 +579,10 @@ class _BackupPageState extends State<BackupPage> {
       ..hideCurrentSnackBar()
       ..showSnackBar(SnackBar(content: Text(message)));
   }
+
+  static String _clockOrUnknown(DateTime? time) => time == null
+      ? '时间未知'
+      : _formatClock(time.millisecondsSinceEpoch);
 
   static String _formatClock(int epochMs) {
     final t = DateTime.fromMillisecondsSinceEpoch(epochMs).toLocal();

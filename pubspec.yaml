@@ -25,6 +25,7 @@ dependencies:
   measure_size: ^5.0.2
   flutter_markdown_plus: ^1.0.12
   file_picker: ^12.2.0
+  webdav_client_plus: ^2.0.0
 
 dev_dependencies:
   flutter_test:

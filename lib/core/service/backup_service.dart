@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/widgets.dart';
@@ -7,9 +6,31 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 
 import 'package:grow_castle_calculator_next/core/service/data_archive.dart';
-import 'package:grow_castle_calculator_next/core/service/webdav_client.dart';
+import 'package:grow_castle_calculator_next/core/service/webdav_backup_client.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
+
+/// 构造 [WebDavBackupClient] 的工厂：测试经此注入假实现，全程不触网
+typedef WebDavBackupClientFactory = WebDavBackupClient Function({
+  required String url,
+  required String username,
+  required String password,
+});
+
+/// 云端备份与本机记录的新旧关系（备份前探测的判定结论）
+enum RemoteBackupRelation {
+  /// 云端还没有备份文件
+  noRemote,
+
+  /// 云端明显晚于本机上次成功备份：可能来自其他设备，覆盖有丢失风险
+  remoteNewer,
+
+  /// 云端不晚于本机上次成功备份：本机自己的旧档，覆盖安全
+  remoteOlder,
+
+  /// 有文件但无法判断：缺修改时间，或本机从无成功备份记录
+  remoteUnknown,
+}
 
 /// 云端备份预览（从云端下载并解析后的产物，供恢复前确认弹窗展示）
 class RemoteBackupPreview {
@@ -19,30 +40,29 @@ class RemoteBackupPreview {
   final ArchiveContents contents;
 }
 
-/// 备份/恢复编排与自动调度。
+/// 备份/恢复编排：全部手动触发，无任何自动上传路径。
 ///
-/// 自动触发靠监听 Hive 5 个 box 的 watch() 事件流（零侵入各 store 落盘路径：
-/// 输入防抖、轨迹记录、规则/装备对比写盘都自然产生事件），统一 30s 防抖；
-/// 恢复/导入期间（[_suspended]）到达的事件只置 dirty，结束后补一次，
-/// 让恢复后的新状态也立刻有一份云端备份。
-///
-/// 自动上传全程静默：失败仅记录到 WebDavConfigStore（备份页可查），
-/// 不弹提示、不打扰游戏输入；失败不自动重试，下次变更/启动/手动自然再试。
-/// 自动与手动共用一个单飞锁，避免请求风暴。
-class BackupService with WidgetsBindingObserver {
-  BackupService();
+/// 云端只有一份文件，覆盖即不可找回，因此上传前必须由备份页先
+/// [fetchRemoteInfo] 探测、用 [compareRemoteBackup] 判定新旧、经用户确认，
+/// 才调用 [manualBackup]。[applyArchive] 是手动导入与云端恢复的共用路径，
+/// 与上传共用一个 busy 锁避免并发写 box。
+class BackupService {
+  BackupService({WebDavBackupClientFactory? clientFactory})
+      : _clientFactory = clientFactory ?? _defaultClientFactory;
 
-  static const Duration autoDebounce = Duration(seconds: 30);
-  static const List<String> _boxNames = [
-    'user_data',
-    'user_meta',
-    'app_meta',
-    'item_rules',
-    'game_track',
-  ];
+  static WebDavBackupClient _defaultClientFactory({
+    required String url,
+    required String username,
+    required String password,
+  }) =>
+      WebDavBackupClient(url: url, username: username, password: password);
 
-  /// 单例（与 Stores 门面相同的 GetIt 惰性注册方式）；
-  /// 应用启动时在 main._initializeGetIt 显式注册并 [start]
+  /// 跨时钟比较容差：覆盖上传往返 + 设备与服务器的轻度时钟偏差。
+  /// 服务器时钟偏快只会多弹一次警告（可容忍），偏慢会漏报（危险），
+  /// 故取偏保守的小值。
+  static const Duration remoteNewerTolerance = Duration(minutes: 5);
+
+  /// 单例（与 Stores 门面相同的 GetIt 惰性注册方式）
   static BackupService get instance {
     final getIt = GetIt.instance;
     if (!getIt.isRegistered<BackupService>()) {
@@ -58,136 +78,52 @@ class BackupService with WidgetsBindingObserver {
   /// （如装备对比输入页）重新回填输入框
   final ValueNotifier<int> dataRestoredNotifier = ValueNotifier<int>(0);
 
-  final List<StreamSubscription<BoxEvent>> _subscriptions = [];
-  Timer? _debounceTimer;
-  bool _uploading = false;
-  bool _dirty = false;
-  bool _suspended = false;
-  bool _pendingOnResume = false;
-  bool _disposed = false;
-  bool _started = false;
+  final WebDavBackupClientFactory _clientFactory;
 
   WebDavConfigStore get _config => Stores.webDavConfigStore;
 
-  // ── 启动与生命周期 ──────────────────────────────────────────────
+  WebDavBackupClient _createClient() => _clientFactory(
+        url: _config.urlNotifier.value,
+        username: _config.usernameNotifier.value,
+        password: _config.passwordNotifier.value,
+      );
 
-  /// 订阅 5 个 box 的变更流并注册生命周期监听（幂等）
-  void start() {
-    if (_started) return;
-    _started = true;
-    WidgetsBinding.instance.addObserver(this);
-    for (final name in _boxNames) {
-      _subscriptions.add(Hive.box(name).watch().listen(_onBoxEvent));
+  /// 云端与本机记录的新旧判定（纯函数便于测试）。
+  /// 同一结论在上传与恢复两个方向上的"危险方"相反：上传时 remoteNewer
+  /// 危险（会盖掉别处的新数据），恢复时 remoteOlder 危险（会退回旧数据）。
+  static RemoteBackupRelation compareRemoteBackup({
+    required WebDavFileInfo info,
+    required int? lastSuccessAtMs,
+  }) {
+    if (!info.exists) return RemoteBackupRelation.noRemote;
+    final remote = info.lastModified;
+    if (remote == null || lastSuccessAtMs == null) {
+      return RemoteBackupRelation.remoteUnknown;
     }
-    // 启动补传检测：自动开启且从未成功/距上次成功超过间隔
-    _scheduleCatchUpIfNeeded();
+    final local = DateTime.fromMillisecondsSinceEpoch(lastSuccessAtMs);
+    return remote.difference(local) > remoteNewerTolerance
+        ? RemoteBackupRelation.remoteNewer
+        : RemoteBackupRelation.remoteOlder;
   }
 
-  void dispose() {
-    if (_disposed) return;
-    _disposed = true;
-    _debounceTimer?.cancel();
-    WidgetsBinding.instance.removeObserver(this);
-    for (final sub in _subscriptions) {
-      sub.cancel();
-    }
-    _subscriptions.clear();
-  }
+  // ── 探测 ────────────────────────────────────────────────────────
 
-  @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (_disposed) return;
-    if (state == AppLifecycleState.paused) {
-      // 退后台：取消待执行的防抖定时器；回前台时有变更则立即补一次
-      if (_debounceTimer != null) {
-        _debounceTimer!.cancel();
-        _debounceTimer = null;
-        _pendingOnResume = true;
-      }
-    } else if (state == AppLifecycleState.resumed) {
-      if (_pendingOnResume) {
-        _pendingOnResume = false;
-        if (_config.autoEnabledNotifier.value) {
-          _scheduleAutoUpload();
-        }
-      }
-      _scheduleCatchUpIfNeeded();
-    } else if (state == AppLifecycleState.detached) {
-      _debounceTimer?.cancel();
-      _debounceTimer = null;
-    }
-  }
+  /// 探测云端备份元信息（PROPFIND/HEAD，不下载内容）。
+  /// 云端无文件时 exists 为 false；认证/网络/服务器错误抛 [WebDavException]
+  Future<WebDavFileInfo> fetchRemoteInfo() =>
+      _createClient().fetchInfo(fileName: kBackupFileName);
 
-  // ── 变更监听与自动调度 ──────────────────────────────────────────
+  // ── 上传（仅手动） ──────────────────────────────────────────────
 
-  void _onBoxEvent(BoxEvent event) {
-    if (_disposed) return;
-    // app_meta 的 webdav* 键是备份配置自身（开关/凭据改动），不触发自动备份
-    if (event.key is String &&
-        (event.key as String).startsWith(DataArchive.appConfigExcludePrefix)) {
-      return;
-    }
-    if (_suspended) {
-      // 恢复/导入期间写入：只记 dirty，结束后按需补一次
-      _dirty = true;
-      return;
-    }
-    _scheduleAutoUpload();
-  }
-
-  void _scheduleAutoUpload() {
-    _debounceTimer?.cancel();
-    _debounceTimer = Timer(autoDebounce, () {
-      _debounceTimer = null;
-      unawaited(_performUpload());
-    });
-  }
-
-  void _scheduleCatchUpIfNeeded() {
-    final config = _config;
-    if (!config.autoEnabledNotifier.value) return;
-    if (shouldCatchUp(
-      config.lastSuccessAtNotifier.value,
-      DateTime.now(),
-      config.intervalHoursNotifier.value,
-    )) {
-      _scheduleAutoUpload();
-    }
-  }
-
-  /// 距上次成功备份超过间隔（小时）或从未成功过时需要补传；纯静态便于测试
-  static bool shouldCatchUp(
-    int? lastSuccessAtMs,
-    DateTime now,
-    int intervalHours,
-  ) {
-    if (lastSuccessAtMs == null) return true;
-    final last = DateTime.fromMillisecondsSinceEpoch(lastSuccessAtMs);
-    return now.difference(last) >= Duration(hours: intervalHours);
-  }
-
-  // ── 上传（自动/手动共用） ────────────────────────────────────────
-
-  /// 手动备份：立即上传；返回 null 表示成功，否则为错误文案
-  Future<String?> manualBackup() => _performUpload(manual: true);
-
-  /// 单飞执行一次上传；自动路径静默（结果记入配置供页面查询），
-  /// 手动路径返回错误文案。自动开关关闭时自动路径直接跳过
-  Future<String?> _performUpload({bool manual = false}) async {
-    if (_uploading) {
-      if (!manual) _dirty = true;
-      return manual ? '已有备份任务进行中' : null;
-    }
+  /// 手动备份：立即上传；返回 null 表示成功，否则为错误文案。
+  ///
+  /// **调用方必须先 [fetchRemoteInfo] 探测并经用户确认覆盖**。
+  /// 确认到 PUT 之间存在窗口：期间其他设备若上传，本机的覆盖仍会生效
+  /// （本轮不处理；用条件 PUT 封堵是后续可选加固）。
+  Future<String?> manualBackup() async {
     if (busyNotifier.value) {
-      // 恢复/导入等其他任务占用了通道：自动路径记 dirty 稍后补，手动直接拒绝
-      if (!manual) _dirty = true;
-      return manual ? '已有备份任务进行中，请稍后再试' : null;
+      return '已有备份任务进行中，请稍后再试';
     }
-    if (!manual && !_config.autoEnabledNotifier.value) {
-      _dirty = false;
-      return null;
-    }
-    _uploading = true;
     busyNotifier.value = true;
     String? error;
     try {
@@ -195,7 +131,6 @@ class BackupService with WidgetsBindingObserver {
     } catch (_) {
       error = '备份失败，请稍后重试';
     } finally {
-      _uploading = false;
       busyNotifier.value = false;
     }
     final now = DateTime.now();
@@ -204,14 +139,7 @@ class BackupService with WidgetsBindingObserver {
     } else {
       _config.recordFailure(now, error);
     }
-    // 上传期间到达的新变更（单飞合并入 dirty）：成功后补一次；
-    // 失败时丢弃——下一次变更/启动补传/手动备份自然再试
-    final hadDirty = _dirty;
-    _dirty = false;
-    if (error == null && hadDirty && _config.autoEnabledNotifier.value) {
-      _scheduleAutoUpload();
-    }
-    return manual ? error : null;
+    return error;
   }
 
   /// 生成归档文本（先 flush 当前用户防抖中的数据）并上传
@@ -220,13 +148,8 @@ class BackupService with WidgetsBindingObserver {
       return '请先配置 WebDAV 服务器地址、账号与密码';
     }
     final content = await buildArchiveText();
-    final client = WebDavClient(
-      url: _config.urlNotifier.value,
-      username: _config.usernameNotifier.value,
-      password: _config.passwordNotifier.value,
-    );
     try {
-      await client.upload(fileName: kBackupFileName, content: content);
+      await _createClient().upload(fileName: kBackupFileName, content: content);
       return null;
     } on WebDavException catch (e) {
       return e.message;
@@ -264,11 +187,7 @@ class BackupService with WidgetsBindingObserver {
   /// 下载并解析云端备份文件；云端尚无备份时返回 null；
   /// 网络/认证错误抛 [WebDavException]，内容损坏抛 [DataArchiveException]
   Future<RemoteBackupPreview?> fetchRemotePreview() async {
-    final client = WebDavClient(
-      url: _config.urlNotifier.value,
-      username: _config.usernameNotifier.value,
-      password: _config.passwordNotifier.value,
-    );
+    final client = _createClient();
     final info = await client.fetchInfo(fileName: kBackupFileName);
     if (!info.exists) {
       return null;
@@ -293,8 +212,6 @@ class BackupService with WidgetsBindingObserver {
       return '文件中不包含可恢复的数据';
     }
 
-    _suspended = true;
-    _dirty = false;
     busyNotifier.value = true;
     final failed = <String>[];
     try {
@@ -333,7 +250,7 @@ class BackupService with WidgetsBindingObserver {
       if (contents.appMeta != null) {
         final box = Hive.box('app_meta');
         try {
-          // 保留本地 webdav* 配置（凭据/开关属于本机，归档中也不含这些键），
+          // 保留本地 webdav* 配置（凭据与备份状态属于本机，归档中也不含这些键），
           // 其余键先清空再写入归档子集
           final keys = box.keys.whereType<String>().where(
                 (key) => !key.startsWith(DataArchive.appConfigExcludePrefix),
@@ -366,16 +283,8 @@ class BackupService with WidgetsBindingObserver {
       }
       _reloadStores();
     } finally {
-      _suspended = false;
       busyNotifier.value = false;
     }
-
-    if (_dirty && _config.autoEnabledNotifier.value) {
-      // 恢复后的新状态值得立刻有一份云端备份
-      _dirty = false;
-      _scheduleAutoUpload();
-    }
-    _dirty = false;
 
     if (failed.isNotEmpty) {
       return '以下数据恢复失败：${failed.join('、')}';
