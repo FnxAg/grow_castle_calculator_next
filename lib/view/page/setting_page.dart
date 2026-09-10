@@ -9,6 +9,7 @@ import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/about_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/backup_page.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/setting_edit_dialog.dart';
 
 /// 设置页
@@ -178,7 +179,7 @@ class _SettingPageState extends State<SettingPage> {
     final appSettingsStore = Stores.appSettingsStore;
     return Scaffold(
       appBar: AppBar(title: const Text('设置')),
-      body: ListView(
+      body: ContentFrame(child: ListView(
         children: [
           ListTile(
             leading: const Icon(Icons.group),
@@ -414,7 +415,7 @@ class _SettingPageState extends State<SettingPage> {
             },
           ),
         ],
-      ),
+      )),
     );
   }
 }

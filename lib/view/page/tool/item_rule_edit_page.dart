@@ -4,6 +4,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/src/item_display_rules.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 
 /// 词条颜色标识
 Color lineColorOf(LineColor color) => switch (color) {
@@ -57,7 +58,7 @@ class ItemRuleEditPage extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: const Text('新增规则'),
       ),
-      body: ValueListenableBuilder<List<UserHighlightRule>>(
+      body: ContentFrame(child: ValueListenableBuilder<List<UserHighlightRule>>(
         valueListenable: Stores.itemRuleStore.rulesNotifier,
         builder: (context, rules, _) {
           if (rules.isEmpty) {
@@ -69,7 +70,7 @@ class ItemRuleEditPage extends StatelessWidget {
             itemBuilder: (context, index) => _RuleCard(rule: rules[index]),
           );
         },
-      ),
+      )),
     );
   }
 }
@@ -380,7 +381,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
           TextButton(onPressed: _save, child: const Text('保存')),
         ],
       ),
-      body: Column(
+      body: ContentFrame(child: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(16),
@@ -563,7 +564,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
             ),
           ),
         ],
-      ),
+      )),
     );
   }
 

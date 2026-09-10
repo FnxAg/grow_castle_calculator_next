@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_input_field.dart';
 
 /// 阵容页的卡片行：拖拽排序句柄 + 名称/等级输入 + 操作菜单（应用/清空/删除）。
@@ -43,10 +44,16 @@ class _FormationCardTileState extends State<FormationCardTile> {
   /// 是否已应用：决定输入框是否可编辑、菜单项展示
   bool get _applied => Stores.infoStore.getApplyFlag(widget.id);
 
+  /// 桌面端指针是否悬停在行上：菜单按钮 hover 显露用
+  bool _hovered = false;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return ListTile(
+    // 桌面端右键整行也可弹出操作菜单（左键菜单按钮不变）
+    return GestureDetector(
+      onSecondaryTapUp: _showContextMenu,
+      child: ListTile(
       // 显式拖拽句柄：避免在 TextField 区域长按触发重排
       leading: Listener(
         onPointerDown: (_) {
@@ -100,6 +107,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
       ),
       trailing: _menuButton(),
       contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+      ),
     );
   }
 
@@ -223,50 +231,83 @@ class _FormationCardTileState extends State<FormationCardTile> {
   }
 
   Widget _menuButton() {
-    return ConstrainedBox(
+    final button = ConstrainedBox(
       constraints: const BoxConstraints(maxWidth: 24),
       child: PopupMenuButton(
         padding: EdgeInsets.zero,
         iconSize: 20,
         tooltip: '操作',
-        itemBuilder: (context) => [
-          PopupMenuItem(
-            onTap: _toggleApplied,
-            child: Row(
-              children: [
-                Icon(
-                  _applied ? Icons.done : Icons.block,
-                  color: _applied ? Colors.green : Colors.red,
-                ),
-                const SizedBox(width: 8.0),
-                Text(_applied ? '已应用' : '未应用'),
-              ],
-            ),
-          ),
-          // 清除表单
-          PopupMenuItem(
-            onTap: _clear,
-            child: const Row(
-              children: [
-                Icon(Icons.clear),
-                SizedBox(width: 8.0),
-                Text('清空'),
-              ],
-            ),
-          ),
-          PopupMenuItem(
-            enabled: widget.id != 1 && widget.id != 2,
-            onTap: () => widget.onRemove(widget.id),
-            child: const Row(
-              children: [
-                Icon(Icons.delete, color: Colors.red),
-                SizedBox(width: 8.0),
-                Text('删除', style: TextStyle(color: Colors.red)),
-              ],
-            ),
-          ),
-        ],
+        itemBuilder: (context) => _menuItems(),
       ),
+    );
+    // 移动端菜单常显（触屏无 hover）；桌面端 hover 才显露，行面更干净
+    if (!isDesktopPlatform()) return button;
+    return MouseRegion(
+      onEnter: (_) => setState(() => _hovered = true),
+      onExit: (_) => setState(() => _hovered = false),
+      child: IgnorePointer(
+        ignoring: !_hovered,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 120),
+          opacity: _hovered ? 1.0 : 0.0,
+          child: button,
+        ),
+      ),
+    );
+  }
+
+  /// 操作菜单项：左键菜单按钮与右键整行菜单共用
+  List<PopupMenuEntry<void>> _menuItems() {
+    return [
+      PopupMenuItem(
+        onTap: _toggleApplied,
+        child: Row(
+          children: [
+            Icon(
+              _applied ? Icons.done : Icons.block,
+              color: _applied ? Colors.green : Colors.red,
+            ),
+            const SizedBox(width: 8.0),
+            Text(_applied ? '已应用' : '未应用'),
+          ],
+        ),
+      ),
+      // 清除表单
+      PopupMenuItem(
+        onTap: _clear,
+        child: const Row(
+          children: [
+            Icon(Icons.clear),
+            SizedBox(width: 8.0),
+            Text('清空'),
+          ],
+        ),
+      ),
+      PopupMenuItem(
+        enabled: widget.id != 1 && widget.id != 2,
+        onTap: () => widget.onRemove(widget.id),
+        child: const Row(
+          children: [
+            Icon(Icons.delete, color: Colors.red),
+            SizedBox(width: 8.0),
+            Text('删除', style: TextStyle(color: Colors.red)),
+          ],
+        ),
+      ),
+    ];
+  }
+
+  /// 右键整行：在指针位置弹出操作菜单
+  void _showContextMenu(TapUpDetails details) {
+    showMenu<void>(
+      context: context,
+      position: RelativeRect.fromLTRB(
+        details.globalPosition.dx,
+        details.globalPosition.dy,
+        details.globalPosition.dx,
+        details.globalPosition.dy,
+      ),
+      items: _menuItems(),
     );
   }
 

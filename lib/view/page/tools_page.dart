@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/ranking_page.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 
 /// 工具页：独立 Scaffold，与当前用户无关——入口展示全局共享数据。
 class ToolsPage extends StatelessWidget {
@@ -14,62 +15,64 @@ class ToolsPage extends StatelessWidget {
       appBar: AppBar(
         title: const Text('工具'),
       ),
-      body: ListView(
-        children: [
-          for (final kind in RankingKind.values)
+      body: ContentFrame(
+        child: ListView(
+          children: [
+            for (final kind in RankingKind.values)
+              ListTile(
+                leading: Icon(kind.icon),
+                title: Text(kind.title),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => RankingPage(kind: kind),
+                    ),
+                  );
+                },
+              ),
             ListTile(
-              leading: Icon(kind.icon),
-              title: Text(kind.title),
+              leading: const Icon(Icons.casino_outlined),
+              title: const Text('刷龙模拟器'),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 FocusManager.instance.primaryFocus?.unfocus();
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (context) => RankingPage(kind: kind),
+                    builder: (context) => const DragonSimulatorPage(),
                   ),
                 );
               },
             ),
-          ListTile(
-            leading: const Icon(Icons.casino_outlined),
-            title: const Text('刷龙模拟器'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const DragonSimulatorPage(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.compare_arrows),
-            title: const Text('装备对比'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ItemComparerPage(),
-                ),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.thumb_up),
-            title: const Text('最优装备词条组合'),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const BestLineCalcPage(),
-                ),
-              );
-            },
-          )
-        ],
+            ListTile(
+              leading: const Icon(Icons.compare_arrows),
+              title: const Text('装备对比'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const ItemComparerPage(),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.thumb_up),
+              title: const Text('最优装备词条组合'),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                FocusManager.instance.primaryFocus?.unfocus();
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (context) => const BestLineCalcPage(),
+                  ),
+                );
+              },
+            )
+          ],
+        ),
       ),
     );
   }

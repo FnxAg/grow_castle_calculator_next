@@ -332,6 +332,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                   );
                 }
                 return ReorderableListView.builder(
+                  // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
+                  key: const PageStorageKey('formation_card_list'),
                   itemCount: cardIds.length,
                   proxyDecorator: (child, index, animation) {
                     return AnimatedBuilder(

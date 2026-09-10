@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
@@ -63,7 +65,7 @@ class FormationInputField extends StatelessWidget {
           focusedBorder: InputBorder.none,
           disabledBorder: InputBorder.none,
           enabled: enabled,
-          isDense: true,
+          isDense: Platform.isAndroid ? true : false,
           contentPadding: const EdgeInsetsDirectional.fromSTEB(12.0, 4.0, 12.0, 4.0),
         ),
       ),

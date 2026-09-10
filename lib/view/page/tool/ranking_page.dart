@@ -5,6 +5,8 @@ import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 
@@ -92,7 +94,11 @@ class _RankingChartPageState extends State<RankingChartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.kind.title}趋势')),
-      body: _buildBody(),
+      // 榜单行/图表都给到列表级宽度
+      body: ContentFrame(
+        maxWidth: Breakpoints.listMaxWidth,
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -135,9 +141,12 @@ class _RankingChartPageState extends State<RankingChartPage> {
           }),
         ),
         const SizedBox(height: 20.0),
-        SizedBox(
-          height: 320.0,
-          child: LineChart(_chartData(visibleRows, minScore, maxScore)),
+        // 宽屏下图表加高：趋势曲线更易读
+        LayoutBuilder(
+          builder: (context, constraints) => SizedBox(
+            height: constraints.maxWidth >= Breakpoints.large ? 440.0 : 320.0,
+            child: LineChart(_chartData(visibleRows, minScore, maxScore)),
+          ),
         ),
         const SizedBox(height: 16.0),
         Text(
@@ -282,6 +291,12 @@ class _RankingPageState extends State<RankingPage> {
   /// 交叉榜单索引：名称(小写) → 另一榜排名，行内胶囊查询用
   Map<String, int> _crossRanks = {};
 
+  /// 主从两栏下选中的玩家名；null 表示未选中
+  String? _selectedName;
+
+  /// 最近一次布局的 body 可用宽度（LayoutBuilder 回填，供点击回调判断两栏）
+  double _lastBodyWidth = 0;
+
   @override
   void initState() {
     super.initState();
@@ -404,18 +419,7 @@ class _RankingPageState extends State<RankingPage> {
                       ? null
                       : () {
                           Navigator.of(dialogContext).pop();
-                          FocusManager.instance.primaryFocus?.unfocus();
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (context) => switch (widget.kind) {
-                                RankingKind.guild => GuildDetailPage(
-                                  guildName: row.name,
-                                ),
-                                RankingKind.player || RankingKind.hell =>
-                                  PlayerDetailPage(playerName: row.name),
-                              },
-                            ),
-                          );
+                          _openRow(row);
                         },
                 );
               },
@@ -464,7 +468,11 @@ class _RankingPageState extends State<RankingPage> {
           ),
         ],
       ),
-      body: _buildBody(),
+      // 榜单行/图表都给到列表级宽度
+      body: ContentFrame(
+        maxWidth: Breakpoints.listMaxWidth,
+        child: _buildBody(),
+      ),
     );
   }
 
@@ -478,7 +486,82 @@ class _RankingPageState extends State<RankingPage> {
     if (_rows.isEmpty) {
       return const Center(child: Text('暂无数据'));
     }
-    return _buildList();
+    // 主从两栏：限宽框内局部宽度足够时右侧常驻详情面板（未选中显示占位），
+    // 否则单列表 + push。可用宽度回填给点击回调共用
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        _lastBodyWidth = constraints.maxWidth;
+        final wide = _lastBodyWidth >= Breakpoints.masterDetailMinWidth;
+        final list = _buildList(wide: wide);
+        if (!wide) return list;
+        return Row(
+          // stretch 给两栏紧的高度约束：面板内部的 Column+Expanded 需要
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Expanded(child: list),
+            const SizedBox(width: 12),
+            SizedBox(
+              width: Breakpoints.detailPaneWidth,
+              child: _buildDetailPane(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  /// 打开一行的详情：宽屏且非公会榜 → 选中并在右侧面板展示；
+  /// 其余（窄屏 / 公会榜）→ push（公会榜打开的是成员列表页，不嵌面板）
+  void _openRow(_RankRow row) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (widget.kind != RankingKind.guild &&
+        _lastBodyWidth >= Breakpoints.masterDetailMinWidth) {
+      setState(() => _selectedName = row.name);
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => switch (widget.kind) {
+          RankingKind.guild => GuildDetailPage(guildName: row.name),
+          RankingKind.player || RankingKind.hell =>
+            PlayerDetailPage(playerName: row.name),
+        },
+      ),
+    );
+  }
+
+  /// 右侧详情面板：未选中时占位提示，选中后嵌入玩家详情
+  Widget _buildDetailPane() {
+    final name = _selectedName;
+    if (name == null) {
+      final scheme = Theme.of(context).colorScheme;
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.touch_app_outlined,
+                size: 36,
+                color: scheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '点击左侧条目查看玩家详情',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return PlayerDetailPage(
+      embedded: true,
+      playerName: name,
+      onClose: () => setState(() => _selectedName = null),
+    );
   }
 
   /// 查询失败提示 + 重试
@@ -509,8 +592,9 @@ class _RankingPageState extends State<RankingPage> {
     );
   }
 
-  /// 榜单列表：排名/名称/分数，下拉刷新强制重新请求
-  Widget _buildList() {
+  /// 榜单列表：排名/名称/分数，下拉刷新强制重新请求；
+  /// [wide] 为主从两栏模式：选中行高亮，点击改为面板展示
+  Widget _buildList({required bool wide}) {
     final scheme = Theme.of(context).colorScheme;
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
@@ -524,19 +608,9 @@ class _RankingPageState extends State<RankingPage> {
               ? null
               : _crossRanks[row.name.toLowerCase()];
           return ListTile(
+            selected: wide && row.name == _selectedName,
             // 点击行：公会榜进入公会成员详情，玩家榜进入玩家详情
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => switch (widget.kind) {
-                    RankingKind.guild => GuildDetailPage(guildName: row.name),
-                    RankingKind.player ||
-                    RankingKind.hell => PlayerDetailPage(playerName: row.name),
-                  },
-                ),
-              );
-            },
+            onTap: () => _openRow(row),
             leading: CircleAvatar(
               radius: 14.0,
               backgroundColor: scheme.surfaceContainerHighest,

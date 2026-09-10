@@ -1,6 +1,9 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
+import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 
 /// 与当前用户数据相关页面的公共框架（首页三个 tab：阵容/收入/公会）：
 /// AppBar = 页面标题 + 用户名/上次在线/所属公会 + 页面声明的操作按钮，
@@ -17,11 +20,21 @@ class UserPageScaffold extends StatefulWidget {
     this.appBarActions = const [],
     this.appBarBottom,
     this.isLoading = false,
+    this.maxWidth = Breakpoints.contentMaxWidth,
+    this.minBodyHeight = 320,
   });
 
   final String title;
   final Widget body;
   final List<Widget> appBarActions;
+
+  /// 内容最大宽度（宽屏下居中留白）；列表/图表类页面可传
+  /// [Breakpoints.listMaxWidth]，传 null 表示不限宽
+  final double? maxWidth;
+
+  /// 内容区最小高度：可用高度不足时降级为可滚动（见 ShortWindowFallback），
+  /// 页面固定区更高时应调大
+  final double minBodyHeight;
 
   /// AppBar 底部组件，透传给 AppBar.bottom
   final PreferredSizeWidget? appBarBottom;
@@ -121,7 +134,18 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
             ),
             actions: [...widget.appBarActions],
           ),
-          body: KeyedSubtree(key: ValueKey(currentUser), child: widget.body),
+          // 限宽只包 body：AppBar 保持满宽，否则顶部两侧会出现空白带；
+          // 矮窗口下降级为可滚动，避免固定头尾把列表挤到溢出
+          body: ContentFrame(
+            maxWidth: widget.maxWidth,
+            child: ShortWindowFallback(
+              minHeight: widget.minBodyHeight,
+              child: KeyedSubtree(
+                key: ValueKey(currentUser),
+                child: widget.body,
+              ),
+            ),
+          ),
         );
       },
     );

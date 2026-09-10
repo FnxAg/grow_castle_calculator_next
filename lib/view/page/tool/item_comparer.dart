@@ -8,6 +8,8 @@ import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
+import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 装备对比
@@ -383,10 +385,12 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ],
       ),
-      body: Column(
+      body: ContentFrame(child: ShortWindowFallback(minHeight: 340, child: Column(
         children: [
           Expanded(
             child: ListView(
+              // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
+              key: const PageStorageKey('item_comparer_list'),
               padding: EdgeInsets.all(16.0),
               children: [
                 Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
@@ -417,7 +421,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
             ),
           ),
         ],
-      ),
+      ))),
     );
   }
 

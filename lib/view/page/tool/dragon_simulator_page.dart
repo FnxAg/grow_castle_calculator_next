@@ -7,6 +7,8 @@ import 'package:grow_castle_calculator_next/core/src/item_generator.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_rule_edit_page.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
+import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 
 class DragonSimulatorPage extends StatefulWidget {
   const DragonSimulatorPage({super.key});
@@ -117,7 +119,8 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
           ),
         ],
       ),
-      body: Column(
+      // 本页固定设置区最高（约 440），矮窗口下必须能滚
+      body: ContentFrame(child: ShortWindowFallback(minHeight: 460, child: Column(
         children: [
           // ── 设置区 ──
           Padding(
@@ -238,7 +241,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
             ),
           ),
         ],
-      ),
+      ))),
     );
   }
 }

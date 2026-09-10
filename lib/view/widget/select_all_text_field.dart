@@ -1,10 +1,12 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 
-/// 首次聚焦即全选内容的输入框。
+/// 首次聚焦即全选内容的输入框（仅移动端）。
 ///
 /// 首次获得焦点（点击或 autofocus）时自动全选现有内容，直接输入即可覆盖
 /// 旧值；之后再次点击恢复 [TextField] 默认的光标行为。
+/// 桌面端不做聚焦全选：鼠标用户需要正常的点击定位光标与拖选。
 /// 除首次全选外与 [TextField] 等价，参数原样透传。
 class SelectAllTextField extends StatefulWidget {
   const SelectAllTextField({
@@ -64,9 +66,10 @@ class _SelectAllTextFieldState extends State<SelectAllTextField> {
   }
 
   /// 首次获得焦点（点击/autofocus 都经由 FocusNode 通知）时全选当前内容，
-  /// 之后聚焦不再处理，由 TextField 默认行为放置光标
+  /// 之后聚焦不再处理，由 TextField 默认行为放置光标。
+  /// 桌面端直接跳过：保留鼠标点击定位光标与拖选的自然体验
   void _onFocusChanged() {
-    if (_focusNode.hasFocus && !_selectedOnce) {
+    if (_focusNode.hasFocus && !_selectedOnce && !isDesktopPlatform()) {
       _selectedOnce = true;
       widget.controller.selection = TextSelection(
         baseOffset: 0,

@@ -18,6 +18,16 @@ namespace {
 
 constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 
+/// Minimum window size in DIPs. Below this the pages' fixed headers/footers
+/// overflow the viewport; the layout-side fallback lives in
+/// lib/view/responsive/short_window_fallback.dart.
+///
+/// Keep this file ASCII-only: the runner is built with /WX, and MSVC warns
+/// C4819 (treated as an error) when a non-ASCII byte cannot be represented in
+/// the active code page (e.g. 936 on Chinese Windows).
+constexpr int kMinWindowWidth = 800;
+constexpr int kMinWindowHeight = 600;
+
 /// Registry key for app theme preference.
 ///
 /// A value of 0 indicates apps should use dark mode. A non-zero or missing
@@ -204,6 +214,17 @@ Win32Window::MessageHandler(HWND hwnd,
         MoveWindow(child_content_, rect.left, rect.top, rect.right - rect.left,
                    rect.bottom - rect.top, TRUE);
       }
+      return 0;
+    }
+
+    case WM_GETMINMAXINFO: {
+      // Clamp the minimum window size (frame included). ptMinTrackSize is in
+      // physical pixels, so scale by the current monitor DPI to keep the
+      // minimum at kMinWindowWidth x kMinWindowHeight DIPs on high-DPI setups.
+      auto* info = reinterpret_cast<MINMAXINFO*>(lparam);
+      const double scale_factor = FlutterDesktopGetDpiForHWND(hwnd) / 96.0;
+      info->ptMinTrackSize.x = Scale(kMinWindowWidth, scale_factor);
+      info->ptMinTrackSize.y = Scale(kMinWindowHeight, scale_factor);
       return 0;
     }
 

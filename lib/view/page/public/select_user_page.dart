@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
@@ -39,12 +40,15 @@ class _SelectUserPageState extends State<SelectUserPage> {
           ),
         ],
       ),
-      body: ListView.builder(
+      body: ContentFrame(child: ListView.builder(
         itemCount: userList.length,
         itemBuilder: (ctx, index) {
           final String username = userList[index];
           final String guild = infoStore.getUserGuild(username);
-          return ListTile(
+          // 桌面端右键也可打开单位汇总（触屏长按入口保留）
+          return GestureDetector(
+            onSecondaryTapUp: (_) => _showUnitSummary(username),
+            child: ListTile(
             title: Row(
               children: [
                 Expanded(
@@ -104,70 +108,78 @@ class _SelectUserPageState extends State<SelectUserPage> {
             leading: infoStore.getCurrentUsername() == username
                 ? const Icon(Icons.check, color: Colors.green)
                 : const SizedBox(width: 24.0),
-            trailing: !_settingState
-                ? null
-                : infoStore.getUserId(username) == 0
-                    ? null
-                    : Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        IconButton(
-                          icon: const Icon(Icons.edit),
-                          onPressed: switch (infoStore.getUserId(username)) {
-                            0 => () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('默认用户不可重命名')),
-                              );
-                            },
-                            _ => () => _renameDialog(infoStore, username),
-                          },
-                        ),
-                        IconButton(
-                          icon: const Icon(Icons.delete, color: Colors.red),
-                          onPressed: switch (infoStore.getUserId(username)) {
-                            0 => () {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                const SnackBar(content: Text('默认用户不可删除')),
-                              );
-                            },
-                            _ => () {
-                              showDialog<void>(
-                                context: context,
-                                builder: (context) => _DeleteUserDialog(
-                                  infoStore: infoStore,
-                                  userId: username,
-                                  onDeleted: () => setState(() {}),
-                                ),
-                              );
-                            },
-                          },
-                        ),
-                      ],
-                    ),
+            // 编辑态显示编辑/删除按钮；单位汇总按钮常显（长按与右键同入口）
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (_settingState && infoStore.getUserId(username) != 0) ...[
+                  IconButton(
+                    icon: const Icon(Icons.edit),
+                    onPressed: switch (infoStore.getUserId(username)) {
+                      0 => () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('默认用户不可重命名')),
+                        );
+                      },
+                      _ => () => _renameDialog(infoStore, username),
+                    },
+                  ),
+                  IconButton(
+                    icon: const Icon(Icons.delete, color: Colors.red),
+                    onPressed: switch (infoStore.getUserId(username)) {
+                      0 => () {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('默认用户不可删除')),
+                        );
+                      },
+                      _ => () {
+                        showDialog<void>(
+                          context: context,
+                          builder: (context) => _DeleteUserDialog(
+                            infoStore: infoStore,
+                            userId: username,
+                            onDeleted: () => setState(() {}),
+                          ),
+                        );
+                      },
+                    },
+                  ),
+                ],
+                IconButton(
+                  icon: const Icon(Icons.info_outline, size: 20),
+                  tooltip: '单位汇总',
+                  onPressed: () => _showUnitSummary(username),
+                ),
+              ],
+            ),
             onTap: () {
               infoStore.setCurrentUser(username);
               Navigator.pop(context);
             },
             // 长按查看该用户的单位汇总（任意用户均可用，含默认用户）
-            onLongPress: () {
-              final data = infoStore.getUserData(username);
-              if (data == null) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text('未找到用户「$username」的数据')),
-                );
-                return;
-              }
-              showUnitSummarySheet(context, username: username, data: data);
-            },
+            onLongPress: () => _showUnitSummary(username),
+          ),
           );
         },
-      ),
+      )),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addUserDialog,
         icon: const Icon(Icons.add),
         label: const Text('添加用户'),
       ),
     );
+  }
+
+  /// 打开指定用户的单位汇总（信息按钮 / 长按 / 右键共用入口）
+  void _showUnitSummary(String username) {
+    final data = Stores.infoStore.getUserData(username);
+    if (data == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('未找到用户「$username」的数据')),
+      );
+      return;
+    }
+    showUnitSummarySheet(context, username: username, data: data);
   }
 
   void _addUserDialog() {

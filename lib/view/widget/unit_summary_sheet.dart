@@ -14,15 +14,21 @@ void showUnitSummarySheet(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (context) => DraggableScrollableSheet(
-      expand: false,
-      initialChildSize: 0.62,
-      minChildSize: 0.4,
-      maxChildSize: 0.95,
-      builder: (context, scrollController) => _UnitSummarySheet(
-        username: username,
-        data: data,
-        scrollController: scrollController,
+    builder: (context) => Center(
+      // 桌面端底部弹窗不再横跨全窗；窄屏宽度不足时 ConstrainedBox 结构性不生效
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 560),
+        child: DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.62,
+          minChildSize: 0.4,
+          maxChildSize: 0.95,
+          builder: (context, scrollController) => _UnitSummarySheet(
+            username: username,
+            data: data,
+            scrollController: scrollController,
+          ),
+        ),
       ),
     ),
   );

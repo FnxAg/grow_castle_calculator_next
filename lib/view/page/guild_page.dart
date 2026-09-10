@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
@@ -309,7 +310,28 @@ class _GuildPageState extends State<GuildPage> {
     } else if (_members.isEmpty) {
       body = const Center(child: Text('该公会暂无成员'));
     } else {
-      body = _buildMemberList();
+      // 主从两栏：局部宽度足够时右侧常驻玩家详情面板（未选中显示占位），
+      // 否则单列表 + push。可用宽度回填给点击回调共用
+      body = LayoutBuilder(
+        builder: (context, constraints) {
+          _lastBodyWidth = constraints.maxWidth;
+          final wide = _lastBodyWidth >= Breakpoints.masterDetailMinWidth;
+          final list = _buildMemberList(wide: wide);
+          if (!wide) return list;
+          return Row(
+            // stretch 给两栏紧的高度约束：面板内部的 Column+Expanded 需要
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Expanded(child: list),
+              const SizedBox(width: 12),
+              SizedBox(
+                width: Breakpoints.detailPaneWidth,
+                child: _buildDetailPane(),
+              ),
+            ],
+          );
+        },
+      );
     }
     // 作为公会榜详情页嵌入外层 Scaffold 时，不带用户页外壳
     if (!widget.userHeader) {
@@ -318,6 +340,8 @@ class _GuildPageState extends State<GuildPage> {
     return UserPageScaffold(
       title: '公会',
       isLoading: _loading,
+      // 成员行是"名字 + 排名胶囊 + 分数"的多列布局，宽度给足才排得开
+      maxWidth: Breakpoints.listMaxWidth,
       // AppBar action 区：公会赛季进度（点击查看详情）
       appBarActions: [SeasonIndicator(notifier: RankingCache.guildSeasonNotifier)],
       body: body,
@@ -367,8 +391,63 @@ class _GuildPageState extends State<GuildPage> {
     );
   }
 
-  /// 成员列表：按赛季波数从大到小展示，当前用户高亮
-  Widget _buildMemberList() {
+  /// 主从两栏下选中的成员名；null 表示未选中
+  String? _selectedMember;
+
+  /// 最近一次布局的 body 可用宽度（LayoutBuilder 回填，供点击回调判断两栏）
+  double _lastBodyWidth = 0;
+
+  /// 打开成员详情：宽屏选中并在右侧面板展示，窄屏 push 全屏
+  void _openMember(GuildMember member) {
+    FocusManager.instance.primaryFocus?.unfocus();
+    if (_lastBodyWidth >= Breakpoints.masterDetailMinWidth) {
+      setState(() => _selectedMember = member.name);
+      return;
+    }
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => PlayerDetailPage(playerName: member.name),
+      ),
+    );
+  }
+
+  /// 右侧详情面板：未选中时占位提示，选中后嵌入玩家详情
+  Widget _buildDetailPane() {
+    final name = _selectedMember;
+    if (name == null) {
+      final scheme = Theme.of(context).colorScheme;
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                Icons.touch_app_outlined,
+                size: 36,
+                color: scheme.onSurfaceVariant,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                '点击左侧成员查看玩家详情',
+                textAlign: TextAlign.center,
+                style: TextStyle(color: scheme.onSurfaceVariant),
+              ),
+            ],
+          ),
+        ),
+      );
+    }
+    return PlayerDetailPage(
+      embedded: true,
+      playerName: name,
+      onClose: () => setState(() => _selectedMember = null),
+    );
+  }
+
+  /// 成员列表：按赛季波数从大到小展示，当前用户高亮；
+  /// [wide] 为主从两栏模式：选中行高亮，点击改为面板展示
+  Widget _buildMemberList({required bool wide}) {
     final scheme = Theme.of(context).colorScheme;
     final currentUser = Stores.infoStore.getCurrentUsername();
     // 公会成员赛季波数总和（成员行右侧展示的就是各自 score）
@@ -445,16 +524,9 @@ class _GuildPageState extends State<GuildPage> {
                 final hellRank = _hellRankByName[lowerName];
                 final lastOnline = _lastOnlineByLower[lowerName];
                 return ListTile(
-                  // 点击成员进入玩家详情页
-                  onTap: () {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PlayerDetailPage(playerName: member.name),
-                      ),
-                    );
-                  },
+                  selected: wide && member.name == _selectedMember,
+                  // 点击成员进入玩家详情页（宽屏下改为右侧面板展示）
+                  onTap: () => _openMember(member),
                   leading: CircleAvatar(
                     radius: 14.0,
                     backgroundColor: isSelf

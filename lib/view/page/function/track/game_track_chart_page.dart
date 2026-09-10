@@ -4,6 +4,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 class GameTrackChartPage extends StatefulWidget {
@@ -69,6 +70,8 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
   Widget build(BuildContext context) {
     return UserPageScaffold(
       title: '轨迹图表',
+      // 图表在宽窗口下更易读，给到列表级宽度（下一轮在这里做 2×2 网格）
+      maxWidth: Breakpoints.listMaxWidth,
       appBarActions: [
         if (_records.isNotEmpty)
           Padding(
@@ -96,36 +99,65 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
                   ),
-                for (final chart in [
-                  (
-                    '总波数',
-                    (GameTrackRecord r) => r.wave.toDouble(),
-                    (double value) => value.round().format(),
-                  ),
-                  (
-                    '总经济',
-                    (GameTrackRecord r) => r.totalGold,
-                    (double value) => value.formatCompact(english: false),
-                  ),
-                  (
-                    'GP',
-                    (GameTrackRecord r) => r.gp,
-                    (double value) => value.format(fractionDigits: 3),
-                  ),
-                  (
-                    '指数',
-                    (GameTrackRecord r) => r.gpCN,
-                    (double value) => value.format(fractionDigits: 3),
-                  ),
-                ])
-                  _ChartPanel(
-                    title: chart.$1,
-                    records: _chartRecords,
-                    valueOf: chart.$2,
-                    formatValue: chart.$3,
-                  ),
+                _buildChartGrid(context),
               ],
             ),
+    );
+  }
+
+  /// 4 张面板：局部宽度足够时 2×2 并排（每张 ≥310），否则纵排。
+  /// 断点用 LayoutBuilder 的局部 constraints —— 限宽框内的可用宽度，
+  /// 用 MediaQuery 会在 ContentFrame 外给出偏大的窗口宽度
+  Widget _buildChartGrid(BuildContext context) {
+    final panels = [
+      for (final chart in [
+        (
+          '总波数',
+          (GameTrackRecord r) => r.wave.toDouble(),
+          (double value) => value.round().format(),
+        ),
+        (
+          '总经济',
+          (GameTrackRecord r) => r.totalGold,
+          (double value) => value.formatCompact(english: false),
+        ),
+        (
+          'GP',
+          (GameTrackRecord r) => r.gp,
+          (double value) => value.format(fractionDigits: 3),
+        ),
+        (
+          '指数',
+          (GameTrackRecord r) => r.gpCN,
+          (double value) => value.format(fractionDigits: 3),
+        ),
+      ])
+        _ChartPanel(
+          title: chart.$1,
+          records: _chartRecords,
+          valueOf: chart.$2,
+          formatValue: chart.$3,
+        ),
+    ];
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < Breakpoints.chartGridMinWidth) {
+          return Column(children: panels);
+        }
+        return Column(
+          children: [
+            for (var row = 0; row < panels.length; row += 2)
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(child: panels[row]),
+                  const SizedBox(width: 12),
+                  Expanded(child: panels[row + 1]),
+                ],
+              ),
+          ],
+        );
+      },
     );
   }
 }

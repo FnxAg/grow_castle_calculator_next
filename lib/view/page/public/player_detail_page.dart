@@ -3,6 +3,8 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:measure_size/render_object.dart';
@@ -11,9 +13,20 @@ import 'package:measure_size/render_object.dart';
 /// （每小时波速历史）获取该玩家数据并展示。
 /// 与当前用户无关——任意榜单/公会成员中的玩家都可点击进入查看。
 class PlayerDetailPage extends StatefulWidget {
-  const PlayerDetailPage({super.key, required this.playerName});
+  const PlayerDetailPage({
+    super.key,
+    required this.playerName,
+    this.embedded = false,
+    this.onClose,
+  });
 
   final String playerName;
+
+  /// 嵌入主从两栏右侧面板：不渲染独立 Scaffold/AppBar，头部自带关闭按钮
+  final bool embedded;
+
+  /// 嵌入模式头部关闭按钮回调（清除列表页的选中态）
+  final VoidCallback? onClose;
 
   @override
   State<PlayerDetailPage> createState() => _PlayerDetailPageState();
@@ -57,6 +70,19 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
         });
 
     _load();
+  }
+
+  @override
+  void didUpdateWidget(covariant PlayerDetailPage oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // 主从面板复用同一实例切换玩家：重置展示状态并重新拉取
+    if (oldWidget.playerName != widget.playerName) {
+      paddingHeight.value = 0;
+      summaryOffset.value = 0;
+      _wphHistory = null;
+      _result = null;
+      _load();
+    }
   }
 
   @override
@@ -170,17 +196,52 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(widget.playerName),
-        bottom: _loading
-            ? const PreferredSize(
-                preferredSize: Size.fromHeight(3.0),
-                child: LinearProgressIndicator(minHeight: 3.0),
-              )
-            : null,
-      ),
-      body: _buildBody(),
+    // 波速网格 + 汇总吸顶，宽一点每行格子数更稳定
+    final body = ContentFrame(
+      maxWidth: Breakpoints.listMaxWidth,
+      child: _buildBody(),
+    );
+    if (!widget.embedded) {
+      return Scaffold(
+        appBar: AppBar(
+          title: Text(widget.playerName),
+          bottom: _loading
+              ? const PreferredSize(
+                  preferredSize: Size.fromHeight(3.0),
+                  child: LinearProgressIndicator(minHeight: 3.0),
+                )
+              : null,
+        ),
+        body: body,
+      );
+    }
+    // 嵌入主从两栏的右侧面板：紧凑头部（名字 + 关闭按钮）+ 加载条，
+    // 无独立 Scaffold/AppBar（外层列表页已有）
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
+          child: Row(
+            children: [
+              Expanded(
+                child: Text(
+                  widget.playerName,
+                  overflow: TextOverflow.ellipsis,
+                  style: Theme.of(context).textTheme.titleMedium,
+                ),
+              ),
+              IconButton(
+                icon: const Icon(Icons.close),
+                tooltip: '关闭详情',
+                onPressed: widget.onClose,
+              ),
+            ],
+          ),
+        ),
+        if (_loading) const LinearProgressIndicator(minHeight: 3.0),
+        Expanded(child: body),
+      ],
     );
   }
 

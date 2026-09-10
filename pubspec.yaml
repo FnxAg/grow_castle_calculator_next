@@ -26,6 +26,8 @@ dependencies:
   flutter_markdown_plus: ^1.0.12
   file_picker: ^12.2.0
   webdav_client_plus: ^2.0.0
+  flutter_localizations:
+    sdk: flutter
 
 dev_dependencies:
   flutter_test:

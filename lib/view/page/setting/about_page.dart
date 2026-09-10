@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -119,17 +120,19 @@ class _AboutPageState extends State<AboutPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: const Text('关于')),
-      body: ListView(
-        children: [
-          _buildHeader(context),
-          const SectionHeader('说明'),
-          for (final entry in _infoEntries) entry,
-          const SectionHeader('链接'),
-          for (final entry in _linkEntries) entry,
-          const SectionHeader('授权'),
-          for (final entry in _legalEntries) entry,
-          _buildFooter(context),
-        ],
+      body: ContentFrame(
+        child: ListView(
+          children: [
+            _buildHeader(context),
+            const SectionHeader('说明'),
+            for (final entry in _infoEntries) entry,
+            const SectionHeader('链接'),
+            for (final entry in _linkEntries) entry,
+            const SectionHeader('授权'),
+            for (final entry in _legalEntries) entry,
+            _buildFooter(context),
+          ],
+        ),
       ),
     );
   }

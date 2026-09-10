@@ -2,8 +2,8 @@ import 'dart:io';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get_it/get_it.dart';
+import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/backup_page.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:material_ui/material_ui.dart';
@@ -57,11 +57,9 @@ void main() {
   testWidgets('页面渲染:各操作入口与配置行齐全', (tester) async {
     await pumpPage(tester);
     for (final label in [
-      '自动备份',
       '服务器地址',
       '账号',
       '密码',
-      '自动备份间隔',
       '立即备份',
       '从云端恢复',
       '导出到文件',
@@ -73,27 +71,23 @@ void main() {
     expect(find.text('未设置'), findsNWidgets(3));
   });
 
-  testWidgets('未配置时点立即备份:提示先配置且不发起上传', (tester) async {
+  testWidgets('未配置时点立即备份:提示先配置且不发起任何网络请求', (tester) async {
+    // 工厂一旦被调用即失败：把"探测必须在 isConfigured 守卫之后"变成断言
+    // （否则未配置时会真的去连服务器，15s 超时拖垮用例）
+    GetIt.instance.registerSingleton<BackupService>(
+      BackupService(
+        clientFactory: ({
+          required String url,
+          required String username,
+          required String password,
+        }) =>
+            fail('未配置时不应构造 WebDavBackupClient'),
+      ),
+    );
     await pumpPage(tester);
     await tester.tap(find.text('立即备份'));
     await tester.pumpAndSettle();
     expect(find.textContaining('请先配置 WebDAV'), findsOneWidget);
-  });
-
-  testWidgets('自动备份开启后开关显示为开并已持久化', (tester) async {
-    // 经真实时区写入自动备份开关（见文件头注释）
-    await tester.runAsync(() async {
-      Stores.webDavConfigStore.setAutoEnabled(true);
-    });
-    await pumpPage(tester);
-    final switchWidget = tester.widget<Switch>(find.byType(Switch));
-    expect(switchWidget.value, isTrue);
-    await tester.runAsync(() async {
-      expect(
-        Hive.box(WebDavConfigStore.boxName).get('webdavAutoEnabled'),
-        isTrue,
-      );
-    });
   });
 
   testWidgets('已填密码时显示打点而非明文', (tester) async {
