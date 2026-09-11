@@ -92,15 +92,22 @@ class InfoStore {
 
   /// 当前用户名称变化通知：切换/重命名用户时触发。
   ///
-  /// 供 UserPageScaffold 全局监听——PageView 保活的用户页面不会随
-  /// 「发起切换的页面」的局部 setState 重建，必须由这里统一驱动
+  /// 供各用户页面全局监听——PageView 保活的用户页面不会随
+  /// 「发起切换的页面」的局部 setState 重建，必须由这里统一驱动；页面自身
+  /// State 也要靠它重新加载（见 `CurrentUserReload`）。
+  ///
+  /// 约定：触发时 store 已经是**完整**的新用户状态。切换路径
+  /// （[_loadUserState]）里它排在所有字段赋值与其余 notifier 之后，监听者
+  /// 收到通知即可同步读 store；_loadUserState 之外的改名路径同理。
   final ValueNotifier<String> currentUserNotifier = ValueNotifier<String>('default');
 
   /// 数据整体替换（云端恢复/本地导入）后递增。
   ///
-  /// 用户名未变时 currentUserNotifier 不触发，UserPageScaffold 的
-  /// KeyedSubtree 不会重建（残留的 TextEditingController 会覆盖新数据），
-  /// 由 dataVersion 强制整树重建；与 currentUserNotifier merge 监听
+  /// 用户名未变时 currentUserNotifier 不触发，页面自身 State 也就不会按用户
+  /// 重载，由 dataVersion 驱动各页面刷新；各页面与 currentUserNotifier merge
+  /// 监听。页面需要丢弃缓存重新加载的用 `CurrentUserReload`（它两个 notifier
+  /// 都听），只需重填输入框的见 lib/view/page/tool/item_comparer.dart 的
+  /// `dataRestoredNotifier` 处理
   ValueNotifier<int> dataVersionNotifier = ValueNotifier<int>(0);
 
   InfoStore() {
@@ -247,9 +254,7 @@ class InfoStore {
     }
     _currentUserId = userId;
     _currentUser = userData.username;
-    currentUserNotifier.value = userData.username;
     _guild = userData.guild;
-    guildNotifier.value = userData.guild;
 
     _cardIds = List<int>.from(userData.cardIds);
     _applyFlags = Map<int, bool>.from(userData.applyFlags);
@@ -281,7 +286,9 @@ class InfoStore {
     // 派生值（理论 WPH / RWPH）不持久化：切用户时按该用户参数重算，保证始终与参数一致
     _recalcDerivedWaves();
 
-    // 通知 UI 更新
+    // 通知 UI 更新。必须在上面所有状态换完之后才发：监听者会在回调里立刻读
+    // store（如切用户后重新加载数据的页面），提前发出会让它们读到上一个用户
+    // 的残留。currentUserNotifier 放最后——收到它即代表切换已完成
     totalGoldNotifier.value = _totalGold;
     gpNotifier.value = _gp;
     gpCNNotifier.value = _gpCN;
@@ -289,8 +296,10 @@ class InfoStore {
     seasonWaveNotifier.value = _seasonWave;
     onlineQueryNotifier.value = _onlineQuery;
     lastOnlineNotifier.value = _lastOnline[userId] ?? '';
+    guildNotifier.value = _guild;
     waveStatusNotifier.value++;
     incomeNotifier.value++;
+    currentUserNotifier.value = _currentUser;
     _persistMeta();
     _writeWidgetSnapshot();
   }

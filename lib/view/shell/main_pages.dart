@@ -7,7 +7,7 @@ import 'package:grow_castle_calculator_next/view/page/tools_page.dart';
 
 /// 主界面页面注册表：新增页面只需在此追加一条记录，
 /// 外壳（MainShell）会自动生成底部导航项并挂载页面。
-/// 各页面自带独立 Scaffold（用户相关页面自包 UserPageScaffold）。
+/// 各页面自带独立 Scaffold 与 AppBar（标题下方用 AppBarInfo 拼当前用户信息）。
 class MainPageEntry {
   const MainPageEntry({
     required this.title,

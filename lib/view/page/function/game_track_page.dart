@@ -5,7 +5,9 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/view/page/function/track/game_track_chart_page.dart';
-import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 
 class GameTrackPage extends StatefulWidget {
   const GameTrackPage({super.key});
@@ -14,7 +16,7 @@ class GameTrackPage extends StatefulWidget {
   State<GameTrackPage> createState() => _GameTrackPageState();
 }
 
-class _GameTrackPageState extends State<GameTrackPage> {
+class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
   late List<GameTrackRecord> _records;
   bool _newestFirst = true;
 
@@ -26,6 +28,12 @@ class _GameTrackPageState extends State<GameTrackPage> {
   void initState() {
     super.initState();
     _loadRecords();
+  }
+
+  /// 轨迹记录按 userId 读取，切换用户后重新取一份
+  @override
+  void reloadForCurrentUser() {
+    setState(_loadRecords);
   }
 
   void _loadRecords() {
@@ -77,81 +85,97 @@ class _GameTrackPageState extends State<GameTrackPage> {
       ),
     );
 
-    return UserPageScaffold(
-      title: '游戏轨迹',
-      appBarActions: [
-        if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
-          IconButton(
-            icon: const Icon(Icons.warning, color: Colors.orange),
-            tooltip: '注意',
-            onPressed: () {
-              showDialog(
-                context: context,
-                builder: (context) => AlertDialog(
-                  title: const Text('注意'),
-                  content: const Text(
-                    '游戏轨迹记录功能已关闭，'
-                    '无法记录新的轨迹数据。',
-                  ),
-                  actions: [
-                    TextButton(
-                      onPressed: () => Navigator.of(context).pop(),
-                      child: const Text('知道了'),
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        Stores.infoStore.currentUserNotifier,
+        Stores.infoStore.dataVersionNotifier,
+      ]),
+      builder: (context, _) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: .start,
+              children: [const Text('游戏轨迹'), _AppBarInfo()],
+            ),
+            actions: [
+              if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
+                IconButton(
+                  icon: const Icon(Icons.warning, color: Colors.orange),
+                  tooltip: '注意',
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (context) => AlertDialog(
+                        title: const Text('注意'),
+                        content: const Text(
+                          '游戏轨迹记录功能已关闭，'
+                          '无法记录新的轨迹数据。',
+                        ),
+                        actions: [
+                          TextButton(
+                            onPressed: () => Navigator.of(context).pop(),
+                            child: const Text('知道了'),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              IconButton(
+                icon: const Icon(Icons.show_chart),
+                tooltip: '查看轨迹图表',
+                onPressed: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (context) => const GameTrackChartPage(),
                     ),
-                  ],
-                ),
-              );
-            },
-          ),
-        IconButton(
-          icon: const Icon(Icons.show_chart),
-          tooltip: '查看轨迹图表',
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const GameTrackChartPage(),
+                  );
+                },
               ),
-            );
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.sort),
-          tooltip: _newestFirst ? '按时间由远到近' : '按时间由近到远',
-          onPressed: _toggleSort,
-        ),
-      ],
-      body: Column(
-        children: [
-          summary,
-          const Divider(height: 1),
-          _userId == 0
-              ? const Center(child: Text('当前为默认用户，无法记录轨迹'))
-              : _records.isEmpty && !_gameTrackEnabled
-              ? const Expanded(
-                  child: Center(child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」')),
-                )
-              : _records.isEmpty
-              ? const Expanded(child: Center(child: Text('暂无轨迹记录')))
-              : Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    itemCount: _records.length * 2 - 1,
-                    itemBuilder: (context, index) {
-                      if (index.isOdd) {
-                        return _TrackDelta(
-                          previous: _records[index ~/ 2 + 1],
-                          current: _records[index ~/ 2],
-                        );
-                      }
-                      return _TrackCard(
-                        record: _records[index ~/ 2],
-                        onDelete: () => _deleteRecord(_records[index ~/ 2]),
-                      );
-                    },
-                  ),
-                ),
-        ],
-      ),
+              IconButton(
+                icon: const Icon(Icons.sort),
+                tooltip: _newestFirst ? '按时间由远到近' : '按时间由近到远',
+                onPressed: _toggleSort,
+              ),
+            ],
+          ),
+          body: Column(
+            children: [
+              summary,
+              const Divider(height: 1),
+              _userId == 0
+                  ? const Center(child: Text('当前为默认用户，无法记录轨迹'))
+                  : _records.isEmpty && !_gameTrackEnabled
+                  ? const Expanded(
+                      child: Center(
+                        child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」'),
+                      ),
+                    )
+                  : _records.isEmpty
+                  ? const Expanded(child: Center(child: Text('暂无轨迹记录')))
+                  : Expanded(
+                      child: ListView.builder(
+                        padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                        itemCount: _records.length * 2 - 1,
+                        itemBuilder: (context, index) {
+                          if (index.isOdd) {
+                            return _TrackDelta(
+                              previous: _records[index ~/ 2 + 1],
+                              current: _records[index ~/ 2],
+                            );
+                          }
+                          final record = _records[index ~/ 2];
+                          return _TrackCard(
+                            record: record,
+                            onDelete: () => _deleteRecord(record),
+                          );
+                        },
+                      ),
+                    ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
@@ -262,4 +286,14 @@ String _formatDuration(Duration value) {
       : minutes > 0
       ? '$minutes分$seconds秒'
       : '$seconds秒';
+}
+
+class _AppBarInfo extends StatelessWidget {
+  const _AppBarInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> segments = <Widget>[CurrentUser()];
+    return AppBarInfo(children: segments);
+  }
 }

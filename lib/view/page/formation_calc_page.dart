@@ -8,6 +8,7 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dar
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
+import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_listtile.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_summary_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
@@ -21,7 +22,8 @@ class FormationCalcPage extends StatefulWidget {
   State<FormationCalcPage> createState() => _FormationCalcPageState();
 }
 
-class _FormationCalcPageState extends State<FormationCalcPage> {
+class _FormationCalcPageState extends State<FormationCalcPage>
+    with CurrentUserReload {
   /// 本次会话中已自动查询过的用户名。
   static final Set<String> _autoQueriedUsers = {};
 
@@ -73,6 +75,14 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
 
   @override
   void dispose() {
+    _discardCardCaches();
+    _formationDataVersion.dispose();
+    super.dispose();
+  }
+
+  /// 丢弃按卡片 id 缓存的控制器与焦点。它们装着某个用户的文本，切换用户后
+  /// 必须整体重建，否则旧文本会在下一次输入时为旧值触发写入、污染新用户
+  void _discardCardCaches() {
     for (final node in _numberFocusNodes.values) {
       node.dispose();
     }
@@ -85,8 +95,10 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     for (final c in _textControllers.values) {
       c.dispose();
     }
-    _formationDataVersion.dispose();
-    super.dispose();
+    _numberFocusNodes.clear();
+    _textFocusNodes.clear();
+    _numberControllers.clear();
+    _textControllers.clear();
   }
 
   void _removeCard(int id) {
@@ -111,6 +123,27 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   @override
   void initState() {
     super.initState();
+    _loadCurrentUser();
+  }
+
+  /// 切换用户：先丢弃上一个用户的缓存，再按新用户重新初始化本页
+  @override
+  void reloadForCurrentUser() {
+    _discardCardCaches();
+    setState(() {
+      // 排名与波数都属于上一个用户，先清空再由 _loadCurrentUser 重新查
+      _playerRank = null;
+      _playerGapPrev = null;
+      _playerGapNext = null;
+      _hellRank = null;
+      _guildRank = null;
+      _lastQueryAt = null;
+    });
+    _loadCurrentUser();
+  }
+
+  /// 按当前用户初始化页面状态（挂载时、以及切换用户后调用）
+  void _loadCurrentUser() {
     if (Stores.infoStore.getCurrentUserId() != 0) {
       final cache = _rankCache;
       final username = Stores.infoStore.getCurrentUsername();

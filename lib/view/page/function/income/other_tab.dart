@@ -1,6 +1,8 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_switch_tile.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 收入来源「其他」tab：金币大树/赛季殖民地开关。
 ///
@@ -10,20 +12,22 @@ class OtherTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final bool isWide = context.isWideScreen;
     final store = Stores.infoStore;
-    return ListView(
-      children: [
-        IncomeSwitchTile(
-          label: '赛季殖民地',
-          readValue: store.getCurrentUserSeasonColony,
-          onChanged: store.setCurrentUserSeasonColony,
-        ),
-        IncomeSwitchTile(
-          label: '金币大树',
-          readValue: store.getCurrentUserGoldenTree,
-          onChanged: store.setCurrentUserGoldenTree,
-        ),
-      ],
-    );
+    var otherIncomeWidgets = [
+      IncomeSwitchTile(
+        label: '赛季殖民地',
+        readValue: store.getCurrentUserSeasonColony,
+        onChanged: store.setCurrentUserSeasonColony,
+      ),
+      IncomeSwitchTile(
+        label: '金币大树',
+        readValue: store.getCurrentUserGoldenTree,
+        onChanged: store.setCurrentUserGoldenTree,
+      ),
+    ];
+    return isMobile
+        ? ListView(children: otherIncomeWidgets)
+        : Column(children: otherIncomeWidgets);
   }
 }

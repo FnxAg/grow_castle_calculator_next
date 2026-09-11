@@ -7,9 +7,12 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
+import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
-import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 /// 公会页：展示指定公会（[guildName] 为 null 时取当前用户所在公会）的成员信息，
 /// 进入时读取缓存（无缓存则立即抓取），按赛季波数（score）从大到小排列；
@@ -45,7 +48,7 @@ class GuildDetailPage extends StatelessWidget {
   }
 }
 
-class _GuildPageState extends State<GuildPage> {
+class _GuildPageState extends State<GuildPage> with CurrentUserReload {
   /// 首屏加载中（仅当界面尚无任何内容时显示全屏转圈）
   bool _firstLoading = true;
   bool _loading = true;
@@ -110,6 +113,17 @@ class _GuildPageState extends State<GuildPage> {
   @override
   void initState() {
     super.initState();
+    _load();
+  }
+
+  /// 切换用户：先清空上一个用户的公会成员（否则新数据到达前会一直展示
+  /// 别人的公会），再按新用户所属公会重新加载
+  @override
+  void reloadForCurrentUser() {
+    setState(() {
+      _members = const [];
+      _selectedMember = null;
+    });
     _load();
   }
 
@@ -337,14 +351,27 @@ class _GuildPageState extends State<GuildPage> {
     if (!widget.userHeader) {
       return body;
     }
-    return UserPageScaffold(
-      title: '公会',
-      isLoading: _loading,
-      // 成员行是"名字 + 排名胶囊 + 分数"的多列布局，宽度给足才排得开
-      maxWidth: Breakpoints.listMaxWidth,
-      // AppBar action 区：公会赛季进度（点击查看详情）
-      appBarActions: [SeasonIndicator(notifier: RankingCache.guildSeasonNotifier)],
-      body: body,
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        Stores.infoStore.currentUserNotifier,
+        Stores.infoStore.dataVersionNotifier,
+      ]),
+      builder: (context, _) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: .start,
+              children: [const Text('公会'), _AppBarInfo()],
+            ),
+            bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
+            // AppBar action 区：公会赛季进度（点击查看详情）
+            actions: [
+              SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
+            ],
+          ),
+          body: body,
+        );
+      },
     );
   }
 
@@ -633,5 +660,15 @@ class _GuildPageState extends State<GuildPage> {
         ),
       ],
     );
+  }
+}
+
+class _AppBarInfo extends StatelessWidget {
+  const _AppBarInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> segments = <Widget>[CurrentUser()];
+    return AppBarInfo(children: segments);
   }
 }

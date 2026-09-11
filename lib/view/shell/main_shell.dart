@@ -3,10 +3,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
 
-/// app 根外壳：PageView（阵容/功能/公会/工具/设置）+ 导航。
-/// 窄屏沿用底部 NavigationBar，宽屏（>= [Breakpoints.expanded]）改用左侧
-/// NavigationRail —— 移动端外观与滑动手势保持不变。
-/// 各页面自带独立 Scaffold（用户相关页面内部自包 UserPageScaffold）。
+/// app 根外壳
+/// 
+/// 窄屏沿用底部 NavigationBar，宽屏（>= [Breakpoints.expanded]）改用左侧。
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -106,13 +105,6 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  /// 单个 tab：宽屏包内层 Navigator（页面内所有 push/showDialog 就近解析到
-  /// 它 → 只盖内容区、rail 常驻）；窄屏直接挂页，树上没有内层 Navigator，
-  /// 一切照旧解析到根 —— 移动端行为与改造前逐像素一致。
-  /// 宽屏已推的子页在缩窄过 840 时随 Navigator 拆除而收起（预期行为）。
-  /// 注意：页面 push 的都是自带 builder 的 MaterialPageRoute，不经过
-  /// onGenerateRoute（它只构建初始路由），因此 Esc 返回走全局按键处理
-  /// （见 _handleKey），而不是挂在某个路由的包装 widget 上。
   Widget _buildTab(int index, MainPageEntry page, bool isWide) {
     final content = KeyedSubtree(
       key: _tabKeys[index],

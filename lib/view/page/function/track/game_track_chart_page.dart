@@ -5,7 +5,9 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 
 class GameTrackChartPage extends StatefulWidget {
   const GameTrackChartPage({super.key});
@@ -14,7 +16,8 @@ class GameTrackChartPage extends StatefulWidget {
   State<GameTrackChartPage> createState() => _GameTrackChartPageState();
 }
 
-class _GameTrackChartPageState extends State<GameTrackChartPage> {
+class _GameTrackChartPageState extends State<GameTrackChartPage>
+    with CurrentUserReload {
   static const int _maxChartPoints = 300;
 
   late List<GameTrackRecord> _records;
@@ -26,6 +29,12 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
   void initState() {
     super.initState();
     _loadRecords();
+  }
+
+  /// 轨迹记录按 userId 读取，切换用户后重新取一份并重采样
+  @override
+  void reloadForCurrentUser() {
+    setState(_loadRecords);
   }
 
   void _loadRecords() {
@@ -68,46 +77,57 @@ class _GameTrackChartPageState extends State<GameTrackChartPage> {
 
   @override
   Widget build(BuildContext context) {
-    return UserPageScaffold(
-      title: '轨迹图表',
-      // 图表在宽窗口下更易读，给到列表级宽度（下一轮在这里做 2×2 网格）
-      maxWidth: Breakpoints.listMaxWidth,
-      appBarActions: [
-        if (_records.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 12),
-            child: Center(
-              child: Text(
-                '起始 ${_formatAppBarDate(_records.first.recordedAt)}\n'
-                '截止 ${_formatAppBarDate(_records.last.recordedAt)}',
-                textAlign: TextAlign.right,
-                style: Theme.of(context).textTheme.labelSmall,
-              ),
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        Stores.infoStore.currentUserNotifier,
+        Stores.infoStore.dataVersionNotifier,
+      ]),
+      builder: (context, _) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: .start,
+              children: [const Text('轨迹图表'), _AppBarInfo()],
             ),
-          ),
-      ],
-      body: _chartRecords.length < 2
-          ? const Center(child: Text('至少需要两条轨迹记录'))
-          : ListView(
-              padding: const EdgeInsets.all(12),
-              children: [
-                if (_chartRecords.length != _records.length)
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 8),
+            actions: [
+              if (_records.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 12),
+                  child: Center(
                     child: Text(
-                      '已压缩显示：共 ${_records.length} 条，显示 ${_chartRecords.length} 条',
-                      style: Theme.of(context).textTheme.bodySmall,
+                      '起始 ${_formatAppBarDate(_records.first.recordedAt)}\n'
+                      '截止 ${_formatAppBarDate(_records.last.recordedAt)}',
+                      textAlign: TextAlign.right,
+                      style: Theme.of(context).textTheme.labelSmall,
                     ),
                   ),
-                _buildChartGrid(context),
-              ],
-            ),
+                ),
+            ],
+          ),
+          body: _chartRecords.length < 2
+              ? const Center(child: Text('至少需要两条轨迹记录'))
+              : ListView(
+                  padding: const EdgeInsets.all(12),
+                  children: [
+                    if (_chartRecords.length != _records.length)
+                      Padding(
+                        padding: const EdgeInsets.only(bottom: 8),
+                        child: Text(
+                          '已压缩显示：共 ${_records.length} 条，显示 ${_chartRecords.length} 条',
+                          style: Theme.of(context).textTheme.bodySmall,
+                        ),
+                      ),
+                    _buildChartGrid(context),
+                  ],
+                ),
+        );
+      },
     );
   }
 
   /// 4 张面板：局部宽度足够时 2×2 并排（每张 ≥310），否则纵排。
-  /// 断点用 LayoutBuilder 的局部 constraints —— 限宽框内的可用宽度，
-  /// 用 MediaQuery 会在 ContentFrame 外给出偏大的窗口宽度
+  /// 断点用 LayoutBuilder 的局部 constraints —— 即 body 的实际可用宽度；
+  /// 用 MediaQuery 会把导航栏占掉的宽度也算进来，判断偏宽
   Widget _buildChartGrid(BuildContext context) {
     final panels = [
       for (final chart in [
@@ -317,5 +337,15 @@ String _formatAppBarDate(DateTime value) {
   String two(int number) => number.toString().padLeft(2, '0');
   return '${value.year}/${two(value.month)}/${two(value.day)} '
       '${two(value.hour)}:${two(value.minute)}:${two(value.second)}';
+}
+
+class _AppBarInfo extends StatelessWidget {
+  const _AppBarInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> segments = <Widget>[CurrentUser()];
+    return AppBarInfo(children: segments);
+  }
 }
 

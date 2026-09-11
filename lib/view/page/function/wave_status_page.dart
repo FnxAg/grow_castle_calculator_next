@@ -1,9 +1,8 @@
 import 'package:flutter/gestures.dart';
+import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:material_ui/material_ui.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
 /// 跳波状态页
 class WaveStatusPage extends StatelessWidget {
@@ -38,83 +37,6 @@ class WaveStatusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // return UserPageScaffold(
-    //   title: '跳波状态',
-    //   body: ValueListenableBuilder<int>(
-    //     valueListenable: Stores.infoStore.waveStatusNotifier,
-    //     builder: (context, _, _) {
-    //       final store = Stores.infoStore;
-    //       final wph = store.getCurrentUserWph();
-    //       final rwph = store.getCurrentUserRwph();
-    //       return ListView(
-    //         children: [
-    //           Padding(
-    //             padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-    //             child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
-    //           ),
-    //           // 游戏速度：gameSpeed
-    //           _settingTile<int>(
-    //             context,
-    //             label: '游戏速度',
-    //             dropdownKey: _gameSpeedKey,
-    //             value: store.getCurrentUserGameSpeed(),
-    //             entries: _gameSpeedEntries,
-    //             onChanged: store.setCurrentUserGameSpeed,
-    //           ),
-    //           // 闹钟转职：chronoClass
-    //           _settingTile<int>(
-    //             context,
-    //             label: '闹钟类型',
-    //             dropdownKey: _chronoKey,
-    //             value: store.getCurrentUserChronoClass(),
-    //             entries: _chronoEntries,
-    //             onChanged: store.setCurrentUserChronoClass,
-    //           ),
-    //           // 10%角：horn
-    //           _settingTile<bool>(
-    //             context,
-    //             label: '10%角',
-    //             dropdownKey: _hornKey,
-    //             value: store.getCurrentUserHorn(),
-    //             entries: _equipEntries,
-    //             onChanged: store.setCurrentUserHorn,
-    //           ),
-    //           // 30%角：goldenHorn
-    //           _settingTile<bool>(
-    //             context,
-    //             label: '30%角',
-    //             dropdownKey: _goldenHornKey,
-    //             value: store.getCurrentUserGoldenHorn(),
-    //             entries: _equipEntries,
-    //             onChanged: store.setCurrentUserGoldenHorn,
-    //           ),
-    //           // 恶魔号角跳波数：devilHornSkip
-    //           _settingTile<int>(
-    //             context,
-    //             label: '恶魔号角跳波数',
-    //             dropdownKey: _devilHornKey,
-    //             value: store.getCurrentUserDevilHornSkip(),
-    //             entries: _devilHornEntries,
-    //             onChanged: store.setCurrentUserDevilHornSkip,
-    //           ),
-    //           // 挂机类型：isGoldAutoBattle
-    //           _settingTile<bool>(
-    //             context,
-    //             label: '挂机类型',
-    //             dropdownKey: _autoBattleKey,
-    //             value: store.getCurrentUserIsGoldAutoBattle(),
-    //             entries: _autoBattleEntries,
-    //             infoContent: const Text(
-    //               '时挂 (TAB) 选项默认启用释放乐队技能 (BAND SKILL) ，'
-    //               '且兽人号角和经验号角同时上场。',
-    //             ),
-    //             onChanged: store.setCurrentUserIsGoldAutoBattle,
-    //           ),
-    //         ],
-    //       );
-    //     },
-    //   ),
-    // );
     final store = Stores.infoStore;
     return ListenableBuilder(
       listenable: Listenable.merge([
@@ -397,7 +319,7 @@ class _TrailingDropdown<T> extends StatelessWidget {
 }
 
 class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo({super.key});
+  const _AppBarInfo();
 
   @override
   Widget build(BuildContext context) {

@@ -141,7 +141,7 @@ class _FunctionPageState extends State<FunctionPage> {
 }
 
 class _AppBarInfo extends StatelessWidget {
-  const new({super.key});
+  const _AppBarInfo();
 
   @override
   Widget build(BuildContext context) {

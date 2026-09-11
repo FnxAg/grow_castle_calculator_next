@@ -14,6 +14,16 @@ import 'app_bar/loading_indicator_app_bar.dart';
 /// 全局监听 store 的 currentUserNotifier：切换用户时所有用户页外壳一起重建
 /// （PageView 保活的其他页面同样收到通知），通过更换 [KeyedSubtree] 的 key
 /// （当前用户名）强制重建页面，使各页面重新读取新用户的数据并释放旧的控制器/焦点。
+///
+/// **已废弃**：各页面改为自带 `Scaffold` / `AppBar`——标题下方用 [AppBarInfo]
+/// 拼接当前用户信息，页面自己用 `ListenableBuilder` 监听
+/// `InfoStore.currentUserNotifier` 与 `InfoStore.dataVersionNotifier`。
+/// 注意新写法不再提供 [ContentFrame] 限宽、[ShortWindowFallback] 矮窗兜底，
+/// 也不再用 [KeyedSubtree] 重建页面 State：切换用户时页面自身 State 会被保留，
+/// 需由 `CurrentUserReload` mixin 重新加载（子组件缓存了控制器的，用
+/// `KeyedSubtree(ValueKey(用户名))` 包住了事）。
+/// 参考 lib/view/page/formation_calc_page.dart。
+@Deprecated('改用各页自带的 Scaffold + AppBar，参考 formation_calc_page.dart')
 class UserPageScaffold extends StatefulWidget {
   const UserPageScaffold({
     super.key,

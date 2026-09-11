@@ -1,15 +1,13 @@
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
-import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 单条收入相对金挂成本的收益率（%）：成本非正（当前波数过低）时记 0，
 /// 避免负成本导致的除零/噪音百分比
@@ -24,27 +22,31 @@ class BonusGoldCalcPage extends StatefulWidget {
   State<BonusGoldCalcPage> createState() => _BonusGoldCalcPageState();
 }
 
-class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
-  /// 各用户的每波金币收入样本，会话级按用户 id 缓存。
-  ///
-  /// 切换用户（UserPageScaffold 换 key 重建本页）时各自的样本互不干扰。
+class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
+    with CurrentUserReload {
+  /// 会话缓存
   static final Map<int, List<int>> _incomesByUser = {};
 
-  /// 当前用户的样本列表：initState 按当前用户名从 [_incomesByUser] 取出
+  /// 当前用户的样本列表
   late List<int> _incomes;
 
   @override
   void initState() {
     super.initState();
+    _loadIncomes();
+  }
+
+  /// 样本按 userId 分桶，切换用户时换回该用户自己的一份
+  @override
+  void reloadForCurrentUser() {
+    setState(_loadIncomes);
+  }
+
+  void _loadIncomes() {
     _incomes = _incomesByUser.putIfAbsent(
       Stores.infoStore.getCurrentUserId(),
       () => [],
     );
-  }
-
-  @override
-  void dispose() {
-    super.dispose();
   }
 
   double _gabCost(int wave) => 456.0 * wave - 29264;
@@ -247,7 +249,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
   }
 }
 
-/// 单条收入样本行：序号徽标 + 金额 + 相对金挂成本的收益率 + 删除按钮
+/// 单条收入样本行
 class _IncomeTile extends StatelessWidget {
   const _IncomeTile({
     required this.index,
@@ -256,11 +258,8 @@ class _IncomeTile extends StatelessWidget {
     required this.onRemove,
   });
 
-  /// 样本序号（展示从 1 开始）
   final int index;
   final int income;
-
-  /// 该样本相对金挂成本的收益率（%）
   final double rate;
   final VoidCallback onRemove;
 
@@ -304,11 +303,10 @@ class _IncomeTile extends StatelessWidget {
   }
 }
 
-/// 每波金币收入输入对话框：输入控制器由 State 持有，随对话框销毁自动释放
+/// 每波金币收入输入对话框
 class _AddIncomeDialog extends StatefulWidget {
   const _AddIncomeDialog({required this.onAdd});
 
-  /// 输入可解析为整数时回调；输入为空/非法时仅关闭对话框、不回调
   final ValueChanged<int> onAdd;
 
   @override
