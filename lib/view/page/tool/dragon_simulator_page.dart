@@ -1,3 +1,4 @@
+import 'dart:isolate';
 import 'dart:math';
 
 import 'package:material_ui/material_ui.dart';
@@ -8,6 +9,76 @@ import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_rule_edit_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
+
+const _rollBatchSize = 500;
+
+Future<Map<String, dynamic>> _rollBatch(Map<String, dynamic> args) async {
+  final generator = ItemGenerator(random: Random());
+  final source = ItemSource.values[args['source'] as int];
+  final rules = [
+    for (final rule in args['rules'] as List)
+      UserHighlightRule.fromJson(Map<String, dynamic>.from(rule as Map)),
+  ];
+
+  for (var i = 0; i < _rollBatchSize; i++) {
+    final item = generator.generate(source: source);
+    if (matchRule(item, rules) != null) {
+      return {
+        'count': i + 1,
+        'item': {
+          'level': item.level.index,
+          'type': item.type.index,
+          'lines': [
+            for (final line in item.lines)
+              {
+                'line': line.line.index,
+                'value': line.value,
+                'rawValue': line.rawValue,
+              },
+          ],
+        },
+      };
+    }
+  }
+  return {'count': _rollBatchSize};
+}
+
+Future<void> _rollBatchInIsolateEntry(List<dynamic> message) async {
+  final sendPort = message[0] as SendPort;
+  final args = Map<String, dynamic>.from(message[1] as Map);
+  sendPort.send(await _rollBatch(args));
+}
+
+Future<Map<String, dynamic>> _rollBatchInIsolate(
+  Map<String, dynamic> args,
+) async {
+  final resultPort = ReceivePort();
+  final isolate = await Isolate.spawn(
+    _rollBatchInIsolateEntry,
+    [resultPort.sendPort, args],
+  );
+  try {
+    return Map<String, dynamic>.from(await resultPort.first as Map);
+  } finally {
+    resultPort.close();
+    isolate.kill(priority: Isolate.immediate);
+  }
+}
+
+GeneratedItem _generatedItemFromMap(Map<String, dynamic> data) {
+  return GeneratedItem(
+    level: ItemLevel.values[data['level'] as int],
+    type: ItemType.values[data['type'] as int],
+    lines: [
+      for (final rawLine in data['lines'] as List)
+        GeneratedLine(
+          ItemLine.values[(rawLine as Map)['line'] as int],
+          (rawLine['value'] as num).toDouble(),
+          rawValue: (rawLine['rawValue'] as num?)?.toDouble(),
+        ),
+    ],
+  );
+}
 
 class DragonSimulatorPage extends StatefulWidget {
   const DragonSimulatorPage({super.key});
@@ -25,6 +96,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
 
   /// roll到死 状态
   bool _rolling = false;
+  int _rollRunId = 0;
   int _rollCount = 0;
   String? _rollResult;
 
@@ -34,6 +106,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   }
 
   void _generate() {
+    _rollRunId++;
     setState(() {
       _rolling = false;
       _rollResult = null;
@@ -59,13 +132,24 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
       _rollResult = null;
       _items = [];
     });
+    final runId = ++_rollRunId;
+    final rules = [
+      for (final rule in Stores.itemRuleStore.rules) rule.toJson(),
+    ];
+    final batchArgs = <String, dynamic>{
+      'source': _source.index,
+      'rules': rules,
+    };
     var count = 0;
-    while (_rolling && mounted) {
-      final item = _generator.generate(source: _source);
-      count++;
-      // 每次重新读取规则：roll 期间修改规则立即生效
-      if (matchRule(item, Stores.itemRuleStore.rules) != null) {
-        if (!mounted) return;
+    while (_rolling && mounted && runId == _rollRunId) {
+      // 批量计算放到后台 isolate，避免 Windows UI isolate 被长时间占满。
+      final result = await _rollBatchInIsolate(batchArgs);
+      count += result['count'] as int;
+      if (!mounted || runId != _rollRunId) return;
+      if (!_rolling) break;
+      final rawItem = result['item'];
+      if (rawItem != null) {
+        final item = _generatedItemFromMap(Map<String, dynamic>.from(rawItem as Map));
         setState(() {
           _rolling = false;
           _rollCount = count;
@@ -74,14 +158,10 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
         });
         return;
       }
-      // 每 500 件刷新一次界面（计数器与停止按钮），并让出事件循环
-      if (count % 500 == 0 && mounted) {
-        setState(() => _rollCount = count);
-        await Future<void>.delayed(Duration.zero);
-      }
+      setState(() => _rollCount = count);
     }
     // 手动停止
-    if (!mounted) return;
+    if (!mounted || runId != _rollRunId) return;
     setState(() {
       _rolling = false;
       _rollCount = count;

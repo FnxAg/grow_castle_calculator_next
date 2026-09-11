@@ -1,6 +1,5 @@
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -54,7 +53,6 @@ class _WaveTabState extends State<WaveTab> {
 
   @override
   Widget build(BuildContext context) {
-    final bool isWide = context.isWideScreen;
     final store = Stores.infoStore;
     final gabTime = _hoursOf('gabTime', store.getCurrentUserGabTime());
     final tabTime = _hoursOf('tabTime', store.getCurrentUserTabTime());

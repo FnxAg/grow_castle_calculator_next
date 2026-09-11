@@ -1,6 +1,5 @@
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_switch_tile.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -12,7 +11,6 @@ class OtherTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool isWide = context.isWideScreen;
     final store = Stores.infoStore;
     var otherIncomeWidgets = [
       IncomeSwitchTile(
