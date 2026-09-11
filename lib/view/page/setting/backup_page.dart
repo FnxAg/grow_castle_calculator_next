@@ -9,7 +9,6 @@ import 'package:grow_castle_calculator_next/core/service/data_archive.dart';
 import 'package:grow_castle_calculator_next/core/service/webdav_backup_client.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
-import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/setting_edit_dialog.dart';
 
@@ -49,7 +48,7 @@ class _BackupPageState extends State<BackupPage> {
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(title: const Text('数据备份')),
-      body: ContentFrame(child: ListView(
+      body: ListView(
         children: [
           SectionHeader('WebDAV 备份'),
           // 服务器配置行（手动备份与云端恢复共用）
@@ -106,7 +105,7 @@ class _BackupPageState extends State<BackupPage> {
             ),
           ),
         ],
-      )),
+      ),
     );
   }
 

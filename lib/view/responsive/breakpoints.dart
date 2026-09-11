@@ -29,7 +29,7 @@ enum ScreenSize {
   bool atLeast(ScreenSize other) => index >= other.index;
 }
 
-/// 断点与限宽的唯一真源：页面里不要再出现宽度魔法数
+/// 断点与宽度的唯一真源：页面里不要再出现宽度魔法数
 abstract final class Breakpoints {
   // ── 窗口分级 ──
   static const double medium = 600.0;
@@ -42,19 +42,12 @@ abstract final class Breakpoints {
 
   static const double large = 1200.0;
 
-  // ── 内容限宽 ──
-  /// 菜单/设置/表单类单栏内容的最大宽度
-  static const double contentMaxWidth = 840.0;
-
-  /// 列表/详情/图表类内容的最大宽度（榜单/公会主从两栏也在此宽度内分栏）
-  static const double listMaxWidth = 1200.0;
-
   // ── 主从两栏 ──
-  /// 主从两栏的最小**局部**宽度：限宽框内可用宽度低于此值时退回单栏 + push。
+  /// 主从两栏的最小**局部**宽度：body 可用宽度低于此值时退回单栏 + push。
   /// 布局内判断必须用 LayoutBuilder 的局部 constraints（而非窗口宽度）
   static const double masterDetailMinWidth = 900.0;
 
-  /// 主从两栏右侧详情面板宽度（余下给列表：1200 - 460 - 12 = 728）
+  /// 主从两栏右侧详情面板宽度（余下给左侧列表）
   static const double detailPaneWidth = 460.0;
 
   // ── 图表网格 ──
@@ -77,9 +70,9 @@ bool isDesktopPlatform([TargetPlatform? platform]) {
 /// 窗口尺寸读取扩展。
 ///
 /// 断点用**窗口宽度**而非局部约束宽度：它回答的是"这是不是一块宽屏幕"，
-/// 不该随嵌套深度（rail 旁 / AppBar 内 / 对话框里）变化。需要"限宽框内还剩
-/// 多宽"的局部自适应（如下一轮的图表网格）请用 LayoutBuilder —— 那里
-/// MediaQuery 会给出偏大的错答案。
+/// 不该随嵌套深度（rail 旁 / AppBar 内 / 对话框里）变化。需要知道"body 里
+/// 还剩多宽"的局部自适应（如主从两栏、图表网格）请用 LayoutBuilder ——
+/// 那里 MediaQuery 会把导航栏占掉的宽度也算进来，给出偏大的错答案。
 extension ResponsiveContext on BuildContext {
   double get windowWidth => MediaQuery.sizeOf(this).width;
 

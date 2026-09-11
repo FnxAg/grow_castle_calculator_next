@@ -4,7 +4,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
-import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
@@ -40,7 +39,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
           ),
         ],
       ),
-      body: ContentFrame(child: ListView.builder(
+      body: ListView.builder(
         itemCount: userList.length,
         itemBuilder: (ctx, index) {
           final String username = userList[index];
@@ -161,7 +160,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
           ),
           );
         },
-      )),
+      ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addUserDialog,
         icon: const Icon(Icons.add),

@@ -4,8 +4,6 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:measure_size/render_object.dart';
@@ -197,11 +195,9 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    // 波速网格 + 汇总吸顶，宽一点每行格子数更稳定
-    final body = ContentFrame(
-      maxWidth: Breakpoints.listMaxWidth,
-      child: _buildBody(),
-    );
+    // 波速网格 + 汇总吸顶：宽屏直接铺满；每行格子数由 _wphGrid 内部的
+    // LayoutBuilder 按局部宽度自适应
+    final body = _buildBody();
     if (!widget.embedded) {
       return Scaffold(
         appBar: AppBar(

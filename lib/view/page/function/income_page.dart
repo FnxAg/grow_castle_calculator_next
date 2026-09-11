@@ -43,54 +43,6 @@ class _IncomePageState extends State<IncomePage> {
               ],
             ),
     );
-    // return DefaultTabController(
-    //   length: 3,
-    //   child: UserPageScaffold(
-    //     title: '收入',
-    //     appBarActions: [
-    //       IconButton(
-    //         icon: const Icon(Icons.info_outline),
-    //         tooltip: '提示',
-    //         onPressed: () {
-    //           showDialog<void>(
-    //             context: context,
-    //             builder: (context) {
-    //               return AlertDialog(
-    //                 title: const Text('提示'),
-    //                 content: const Text(
-    //                   '填写“跳波状态”后再填写此处，否则计算结果不准确。\n\n此处计算结果为每日收入。',
-    //                 ),
-    //                 actions: [
-    //                   TextButton(
-    //                     onPressed: () => Navigator.of(context).pop(),
-    //                     child: const Text('关闭'),
-    //                   ),
-    //                 ],
-    //               );
-    //             },
-    //           );
-    //         },
-    //       ),
-    //     ],
-    //     appBarBottom: isMobile
-    //         ? const TabBar(
-    //             tabs: [
-    //               Tab(text: '殖民地'),
-    //               Tab(text: '推波'),
-    //               Tab(text: '其他'),
-    //             ],
-    //           )
-    //         : null,
-    //     body: !isWide
-    //         ? Column(children: [expandedIncomeView, IncomeSummaryBar()])
-    //         : Row(
-    //             children: [
-    //               expandedIncomeView,
-    //               Expanded(flex: 4, child: IncomeSummaryBar()),
-    //             ],
-    //           ),
-    //   ),
-    // );
     return ListenableBuilder(
       listenable: Listenable.merge([
         Stores.infoStore.currentUserNotifier,

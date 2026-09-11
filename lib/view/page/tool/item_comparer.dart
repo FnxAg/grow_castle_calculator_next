@@ -8,7 +8,7 @@ import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
-import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
@@ -300,6 +300,44 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
     final item1Result = _computeItemResult(_item1Lines);
     final item2Result = _computeItemResult(_item2Lines);
+    final bool isWide = context.isWideScreen;
+
+    // 窄屏：结果卡片固定在底部；宽屏：移到右侧——与收入/阵容/推波收益
+    // 三页的汇总条同一策略（flex 6:4、Row 不指定 crossAxisAlignment）
+    final Widget listExpanded = Expanded(
+      flex: isWide ? 6 : 1,
+      child: ListView(
+        // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
+        key: const PageStorageKey('item_comparer_list'),
+        padding: EdgeInsets.all(16.0),
+        children: [
+          Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
+          const SizedBox(height: 16),
+          Card(
+            margin: EdgeInsets.zero,
+            child: _buildItemCard(_item1Lines, '装备 1 词条', 'item1'),
+          ),
+          const SizedBox(height: 16),
+          Card(
+            margin: EdgeInsets.zero,
+            child: _buildItemCard(_item2Lines, '装备 2 词条', 'item2'),
+          ),
+        ],
+      ),
+    );
+    final Widget summaryView = Padding(
+      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
+      child: SummaryCard(
+        children: <Widget>[
+          _ResultView(
+            baseResult: baseResult,
+            item1Result: item1Result,
+            item2Result: item2Result,
+            ready: _valueOf(_baseAttackCtrl) > 0,
+          ),
+        ],
+      ),
+    );
 
     return Scaffold(
       appBar: AppBar(
@@ -385,47 +423,18 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ],
       ),
-      body: ContentFrame(
-        child: ShortWindowFallback(
-          minHeight: 340,
-          child: Column(
-            children: [
-              Expanded(
-                child: ListView(
-                  // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
-                  key: const PageStorageKey('item_comparer_list'),
-                  padding: EdgeInsets.all(16.0),
-                  children: [
-                    Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
-                    const SizedBox(height: 16),
-                    Card(
-                      margin: EdgeInsets.zero,
-                      child: _buildItemCard(_item1Lines, '装备 1 词条', 'item1'),
-                    ),
-                    const SizedBox(height: 16),
-                    Card(
-                      margin: EdgeInsets.zero,
-                      child: _buildItemCard(_item2Lines, '装备 2 词条', 'item2'),
-                    ),
-                  ],
-                ),
-              ),
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-                child: SummaryCard(
-                  children: <Widget>[
-                    _ResultView(
-                      baseResult: baseResult,
-                      item1Result: item1Result,
-                      item2Result: item2Result,
-                      ready: _valueOf(_baseAttackCtrl) > 0,
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-        ),
+      // 矮窗兜底包在最外层：minHeight 是「列表 + 结果卡片」整页的最小高度，
+      // 放进分支里只能量到单侧，窄屏下汇总卡片会照样溢出
+      body: ShortWindowFallback(
+        minHeight: 340,
+        child: isWide
+            ? Row(
+                children: [
+                  listExpanded,
+                  Expanded(flex: 4, child: summaryView),
+                ],
+              )
+            : Column(children: [listExpanded, summaryView]),
       ),
     );
   }

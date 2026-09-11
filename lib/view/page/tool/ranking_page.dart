@@ -6,7 +6,6 @@ import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 
@@ -94,11 +93,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(title: Text('${widget.kind.title}趋势')),
-      // 榜单行/图表都给到列表级宽度
-      body: ContentFrame(
-        maxWidth: Breakpoints.listMaxWidth,
-        child: _buildBody(),
-      ),
+      body: _buildBody(),
     );
   }
 
@@ -468,11 +463,7 @@ class _RankingPageState extends State<RankingPage> {
           ),
         ],
       ),
-      // 榜单行/图表都给到列表级宽度
-      body: ContentFrame(
-        maxWidth: Breakpoints.listMaxWidth,
-        child: _buildBody(),
-      ),
+      body: _buildBody(),
     );
   }
 
@@ -486,12 +477,15 @@ class _RankingPageState extends State<RankingPage> {
     if (_rows.isEmpty) {
       return const Center(child: Text('暂无数据'));
     }
-    // 主从两栏：限宽框内局部宽度足够时右侧常驻详情面板（未选中显示占位），
-    // 否则单列表 + push。可用宽度回填给点击回调共用
+    // 主从两栏：body 局部宽度足够时右侧常驻详情面板（未选中显示占位），
+    // 否则单列表 + push。可用宽度回填给点击回调共用。
+    // 公会榜不参与：它的「详情」是独立的成员列表页（见 [_openRow]），选中项
+    // 永远填不进右侧面板，留着只会是个点了没反应的占位
     return LayoutBuilder(
       builder: (context, constraints) {
         _lastBodyWidth = constraints.maxWidth;
-        final wide = _lastBodyWidth >= Breakpoints.masterDetailMinWidth;
+        final wide = widget.kind != RankingKind.guild &&
+            _lastBodyWidth >= Breakpoints.masterDetailMinWidth;
         final list = _buildList(wide: wide);
         if (!wide) return list;
         return Row(

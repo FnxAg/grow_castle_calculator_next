@@ -3,7 +3,6 @@ import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
-import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 词条数量搭配：(Damage, Critical Chance, Critical Damage, Attack Speed) 各几条。
@@ -243,7 +242,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
           child: _buildPresetStrip(context),
         ),
       ),
-      body: ContentFrame(child: ListView.builder(
+      body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: ranked.length + 2,
         itemBuilder: (context, index) {
@@ -271,7 +270,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
             ),
           );
         },
-      )),
+      ),
     );
   }
 

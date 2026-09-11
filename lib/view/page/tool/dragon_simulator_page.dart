@@ -7,7 +7,6 @@ import 'package:grow_castle_calculator_next/core/src/item_generator.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_rule_edit_page.dart';
-import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 
 class DragonSimulatorPage extends StatefulWidget {
@@ -32,7 +31,6 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   @override
   void initState() {
     super.initState();
-    // _generate();
   }
 
   void _generate() {
@@ -120,7 +118,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
         ],
       ),
       // 本页固定设置区最高（约 440），矮窗口下必须能滚
-      body: ContentFrame(child: ShortWindowFallback(minHeight: 460, child: Column(
+      body: ShortWindowFallback(minHeight: 460, child: Column(
         children: [
           // ── 设置区 ──
           Padding(
@@ -197,7 +195,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
               ],
             ),
           ),
-
+      
           // ── 本次等级分布 ──
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16),
@@ -215,7 +213,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
             ),
           ),
           const Divider(height: 16),
-
+      
           // ── 结果区（规则变更时自动刷新排序与高亮）──
           Expanded(
             child: ValueListenableBuilder<List<UserHighlightRule>>(
@@ -241,7 +239,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
             ),
           ),
         ],
-      ))),
+      )),
     );
   }
 }
