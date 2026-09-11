@@ -1,3 +1,8 @@
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -94,56 +99,63 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
 
   @override
   Widget build(BuildContext context) {
-    return UserPageScaffold(
-      title: '推波收益计算',
-      appBarActions: [
-        IconButton(
-          icon: const Icon(Icons.restore_page),
-          tooltip: '重置',
-          onPressed: () {
-            showDialog<void>(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: const Text('重置'),
-                content: const Text('确认清空当前用户的所有收入样本？'),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('取消'),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop();
-                      setState(() => _incomes.clear());
-                    },
-                    child: const Text('确认'),
-                  ),
-                ],
+    final store = Stores.infoStore;
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        store.currentUserNotifier,
+        store.dataVersionNotifier,
+      ]),
+      builder: (context, _) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: .start,
+              children: [const Text('推波收益计算'), _AppBarInfo()],
+            ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.restore_page),
+                tooltip: '重置',
+                onPressed: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (dialogContext) => AlertDialog(
+                      title: const Text('重置'),
+                      content: const Text('确认清空当前用户的所有收入样本？'),
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(dialogContext).pop(),
+                          child: const Text('取消'),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            Navigator.of(dialogContext).pop();
+                            setState(() => _incomes.clear());
+                          },
+                          child: const Text('确认'),
+                        ),
+                      ],
+                    ),
+                  );
+                },
               ),
-            );
-          },
-        ),
-      ],
-      body: ListenableBuilder(
-        listenable: Stores.infoStore.waveNotifier,
-        builder: (context, _) {
-          final wave = Stores.infoStore.waveNotifier.value;
-          final gabCost = _gabCost(wave);
-          final safeCost = gabCost > 0 ? gabCost : 0.0;
-          final avgIncome = _incomes.isEmpty
-              ? 0.0
-              : _incomes.reduce((a, b) => a + b) / _incomes.length;
-          final percent = _incomes.isEmpty
-              ? 0.0
-              : _sampleRate(avgIncome, safeCost);
-          final summary = _buildSummaryCard(
-            gabCost: gabCost,
-            avgIncome: avgIncome,
-            percent: percent,
-          );
-          return Column(
-            children: [
-              Expanded(
+            ],
+          ),
+          body: ListenableBuilder(
+            listenable: store.waveNotifier,
+            builder: (context, _) {
+              final isWide = context.isWideScreen;
+              final wave = store.waveNotifier.value;
+              final gabCost = _gabCost(wave);
+              final safeCost = gabCost > 0 ? gabCost : 0.0;
+              final avgIncome = _incomes.isEmpty
+                  ? 0.0
+                  : _incomes.reduce((a, b) => a + b) / _incomes.length;
+              final percent = _incomes.isEmpty
+                  ? 0.0
+                  : _sampleRate(avgIncome, safeCost);
+              final Widget bodyView = Expanded(
+                flex: isWide ? 6 : 1,
                 child: _incomes.isEmpty
                     ? const Center(
                         child: Text(
@@ -163,12 +175,24 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
                           );
                         },
                       ),
-              ),
-              summary,
-            ],
-          );
-        },
-      ),
+              );
+              final Widget summary = _buildSummaryCard(
+                gabCost: gabCost,
+                avgIncome: avgIncome,
+                percent: percent,
+              );
+              return isWide
+                  ? Row(
+                      children: [
+                        bodyView,
+                        Expanded(flex: 4, child: summary),
+                      ],
+                    )
+                  : Column(children: [bodyView, summary]);
+            },
+          ),
+        );
+      },
     );
   }
 
@@ -194,7 +218,9 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
           SummaryRow(
             leadingIcon: Icons.percent,
             title: Text('百分比'),
-            trailing: SummaryRowValueText(text: '${percent.format(fractionDigits: 2)}%'),
+            trailing: SummaryRowValueText(
+              text: '${percent.format(fractionDigits: 2)}%',
+            ),
           ),
           const SizedBox(height: 12.0),
           Row(
@@ -205,13 +231,13 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage> {
                     ? null
                     : () => _applyPercent(percent),
                 icon: const Icon(Icons.draw),
-                label: const Text('填入收益'),
+                label: const Text('填入'),
               ),
               const SizedBox(width: 12.0),
               FilledButton.tonalIcon(
                 onPressed: () => _addIncomeDialog(),
                 icon: const Icon(Icons.add),
-                label: const Text('添加收入'),
+                label: const Text('添加'),
               ),
             ],
           ),
@@ -328,5 +354,15 @@ class _AddIncomeDialogState extends State<_AddIncomeDialog> {
         TextButton(onPressed: _submit, child: const Text('添加')),
       ],
     );
+  }
+}
+
+class _AppBarInfo extends StatelessWidget {
+  const _AppBarInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> segments = <Widget>[CurrentUser()];
+    return AppBarInfo(children: segments);
   }
 }

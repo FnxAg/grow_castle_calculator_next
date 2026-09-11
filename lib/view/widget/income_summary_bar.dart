@@ -3,10 +3,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 
-/// 收入页底部汇总条：每日殖民地 / 挂机 / 其他收入与总收入。
-///
-/// 数值由 store 的 incomeNotifier 驱动实时更新（收入参数、跳波参数、
-/// 波数变更或切换用户时触发），分项见 core/calc/gold_income.dart。
+/// 收入页底部汇总条
 class IncomeSummaryBar extends StatelessWidget {
   const IncomeSummaryBar({super.key});
 

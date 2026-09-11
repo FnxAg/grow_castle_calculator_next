@@ -280,98 +280,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     };
   }
 
-  // @override
-  // Widget build(BuildContext context) {
-  //   return UserPageScaffold(
-  //     title: '阵容',
-  //     isLoading: _querying || _loadingRanks,
-  //     appBarActions: [
-  //       IconButton(
-  //         icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
-  //         tooltip: _viewMode ? '输入模式' : '查看模式',
-  //         onPressed: () {
-  //           FocusManager.instance.primaryFocus?.unfocus();
-  //           setState(() => _viewMode = !_viewMode);
-  //         },
-  //       ),
-  //       IconButton(
-  //         icon: const Icon(Icons.add),
-  //         tooltip: '新增条目',
-  //         onPressed: () => Stores.infoStore.addNewCard(),
-  //       ),
-  //     ],
-  //     body: Column(
-  //       children: [
-  //         Expanded(
-  //           child: ValueListenableBuilder<int>(
-  //             valueListenable: Stores.infoStore.cardIdsNotifier,
-  //             builder: (context, _, _) {
-  //               final cardIds = Stores.infoStore.getCardIds();
-  //               if (cardIds.isEmpty) {
-  //                 return const Center(
-  //                   child: Text(
-  //                     '暂无条目，点击右上角 + 添加',
-  //                     style: TextStyle(color: Colors.grey),
-  //                   ),
-  //                 );
-  //               }
-  //               return ReorderableListView.builder(
-  //                 // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
-  //                 key: const PageStorageKey('formation_card_list'),
-  //                 itemCount: cardIds.length,
-  //                 proxyDecorator: (child, index, animation) {
-  //                   return AnimatedBuilder(
-  //                     animation: animation,
-  //                     builder: (context, child) {
-  //                       final double elevation = 4.0 * animation.value;
-  //                       return Material(
-  //                         elevation: elevation,
-  //                         shadowColor: Colors.black26,
-  //                         borderRadius: BorderRadius.circular(8.0),
-  //                         child: IgnorePointer(child: child),
-  //                       );
-  //                     },
-  //                     child: child,
-  //                   );
-  //                 },
-  //                 onReorderItem: (oldIndex, newIndex) {
-  //                   FocusManager.instance.primaryFocus?.unfocus();
-  //                   Stores.infoStore.reorderCard(oldIndex, newIndex);
-  //                 },
-  //                 itemBuilder: (context, index) {
-  //                   final id = cardIds[index];
-  //                   return FormationCardTile(
-  //                     key: ValueKey(id),
-  //                     id: id,
-  //                     index: index,
-  //                     textController: _textControllerFor(id),
-  //                     numberController: _numberControllerFor(id),
-  //                     textFocusNode: _focusNodeFor(id, _textFocusNodes),
-  //                     numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-  //                     viewMode: _viewMode,
-  //                     dataVersion: _formationDataVersion,
-  //                     onRemove: _removeCard,
-  //                   );
-  //                 },
-  //                 buildDefaultDragHandles: false,
-  //                 scrollDirection: .vertical,
-  //               );
-  //             },
-  //           ),
-  //         ),
-  //         FormationSummaryBar(
-  //           querying: _querying,
-  //           playerRank: _playerRank,
-  //           playerGapPrev: _playerGapPrev,
-  //           playerGapNext: _playerGapNext,
-  //           hellRank: _hellRank,
-  //           guildRank: _guildRank,
-  //           onQuery: _queryOnline,
-  //         ),
-  //       ],
-  //     ),
-  //   );
-  // }
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -381,7 +289,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       ]),
       builder: (context, _) {
         final isWide = context.isWideScreen;
-        List<Widget> actions = <Widget>[
+        final List<Widget> actions = <Widget>[
           if (isDesktop && Stores.infoStore.getCurrentUserId() != 0)
             IconButton(
               icon: _querying
@@ -408,7 +316,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
             onPressed: () => Stores.infoStore.addNewCard(),
           ),
         ];
-        Widget formationExpanded = Expanded(
+        final Widget formationExpanded = Expanded(
           flex: isWide ? 6 : 1,
           child: ValueListenableBuilder<int>(
             valueListenable: Stores.infoStore.cardIdsNotifier,
@@ -423,7 +331,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
                 );
               }
               return ReorderableListView.builder(
-                // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
                 key: const PageStorageKey('formation_card_list'),
                 itemCount: cardIds.length,
                 proxyDecorator: (child, index, animation) {
@@ -466,7 +373,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
             },
           ),
         );
-        Widget formationSummaryBar = FormationSummaryBar(
+        final Widget formationSummaryBar = FormationSummaryBar(
           querying: _querying,
           playerRank: _playerRank,
           playerGapPrev: _playerGapPrev,

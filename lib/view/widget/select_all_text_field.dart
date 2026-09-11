@@ -1,6 +1,6 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 首次聚焦即全选内容的输入框（仅移动端）。
 ///
@@ -69,7 +69,7 @@ class _SelectAllTextFieldState extends State<SelectAllTextField> {
   /// 之后聚焦不再处理，由 TextField 默认行为放置光标。
   /// 桌面端直接跳过：保留鼠标点击定位光标与拖选的自然体验
   void _onFocusChanged() {
-    if (_focusNode.hasFocus && !_selectedOnce && !isDesktopPlatform()) {
+    if (_focusNode.hasFocus && !_selectedOnce && isMobile) {
       _selectedOnce = true;
       widget.controller.selection = TextSelection(
         baseOffset: 0,

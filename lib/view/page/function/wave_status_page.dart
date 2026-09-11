@@ -1,16 +1,13 @@
 import 'package:flutter/gestures.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
 
-/// 跳波状态页：WPH/RWPH/WPS 实时计算 + 游戏速度等参数设置。
-///
-/// 参数由 InfoStore 持久化（data 字段，按用户隔离）；理论 WPH 由参数派生，
-/// 仅存内存不落盘；计算逻辑见 core/calc/wave_speed.dart。
+/// 跳波状态页
 class WaveStatusPage extends StatelessWidget {
   const WaveStatusPage({super.key});
-
-  // ── 选择框选项 ──────────────────────────────────────────────────────────
 
   static const _gameSpeedEntries = [(0, '2速'), (1, '2速 + 10广'), (2, '3速')];
   static const _chronoEntries = [
@@ -27,9 +24,11 @@ class WaveStatusPage extends StatelessWidget {
     (5, '+4'),
     (6, '+5'),
   ];
-  static const _autoBattleEntries = [(true, '金挂(GAB) / 破挂(FAB)'), (false, '时挂(TAB)')];
+  static const _autoBattleEntries = [
+    (true, '金挂(GAB) / 破挂(FAB)'),
+    (false, '时挂(TAB)'),
+  ];
 
-  // 各选择框的 key：点击 ListTile 时定位按钮合成点击以打开下拉框
   static final _gameSpeedKey = GlobalKey();
   static final _chronoKey = GlobalKey();
   static final _hornKey = GlobalKey();
@@ -39,88 +38,176 @@ class WaveStatusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return UserPageScaffold(
-      title: '跳波状态',
-      // 监听 store：参数变更与切换用户都驱动列表重建，数据始终来自当前用户
-      body: ValueListenableBuilder<int>(
-        valueListenable: Stores.infoStore.waveStatusNotifier,
-        builder: (context, _, _) {
-          final store = Stores.infoStore;
-          final wph = store.getCurrentUserWph();
-          final rwph = store.getCurrentUserRwph();
-          return ListView(
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
-                child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
-              ),
-              // 游戏速度：gameSpeed
-              _settingTile<int>(
-                context,
-                label: '游戏速度',
-                dropdownKey: _gameSpeedKey,
-                value: store.getCurrentUserGameSpeed(),
-                entries: _gameSpeedEntries,
-                onChanged: store.setCurrentUserGameSpeed,
-              ),
-              // 闹钟转职：chronoClass
-              _settingTile<int>(
-                context,
-                label: '闹钟类型',
-                dropdownKey: _chronoKey,
-                value: store.getCurrentUserChronoClass(),
-                entries: _chronoEntries,
-                onChanged: store.setCurrentUserChronoClass,
-              ),
-              // 10%角：horn
-              _settingTile<bool>(
-                context,
-                label: '10%角',
-                dropdownKey: _hornKey,
-                value: store.getCurrentUserHorn(),
-                entries: _equipEntries,
-                onChanged: store.setCurrentUserHorn,
-              ),
-              // 30%角：goldenHorn
-              _settingTile<bool>(
-                context,
-                label: '30%角',
-                dropdownKey: _goldenHornKey,
-                value: store.getCurrentUserGoldenHorn(),
-                entries: _equipEntries,
-                onChanged: store.setCurrentUserGoldenHorn,
-              ),
-              // 恶魔号角跳波数：devilHornSkip
-              _settingTile<int>(
-                context,
-                label: '恶魔号角跳波数',
-                dropdownKey: _devilHornKey,
-                value: store.getCurrentUserDevilHornSkip(),
-                entries: _devilHornEntries,
-                onChanged: store.setCurrentUserDevilHornSkip,
-              ),
-              // 挂机类型：isGoldAutoBattle
-              _settingTile<bool>(
-                context,
-                label: '挂机类型',
-                dropdownKey: _autoBattleKey,
-                value: store.getCurrentUserIsGoldAutoBattle(),
-                entries: _autoBattleEntries,
-                infoContent: const Text(
-                  '时挂 (TAB) 选项默认启用释放乐队技能 (BAND SKILL) ，'
-                  '且兽人号角和经验号角同时上场。',
-                ),
-                onChanged: store.setCurrentUserIsGoldAutoBattle,
-              ),
-            ],
-          );
-        },
-      ),
+    // return UserPageScaffold(
+    //   title: '跳波状态',
+    //   body: ValueListenableBuilder<int>(
+    //     valueListenable: Stores.infoStore.waveStatusNotifier,
+    //     builder: (context, _, _) {
+    //       final store = Stores.infoStore;
+    //       final wph = store.getCurrentUserWph();
+    //       final rwph = store.getCurrentUserRwph();
+    //       return ListView(
+    //         children: [
+    //           Padding(
+    //             padding: const EdgeInsets.fromLTRB(12, 12, 12, 0),
+    //             child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
+    //           ),
+    //           // 游戏速度：gameSpeed
+    //           _settingTile<int>(
+    //             context,
+    //             label: '游戏速度',
+    //             dropdownKey: _gameSpeedKey,
+    //             value: store.getCurrentUserGameSpeed(),
+    //             entries: _gameSpeedEntries,
+    //             onChanged: store.setCurrentUserGameSpeed,
+    //           ),
+    //           // 闹钟转职：chronoClass
+    //           _settingTile<int>(
+    //             context,
+    //             label: '闹钟类型',
+    //             dropdownKey: _chronoKey,
+    //             value: store.getCurrentUserChronoClass(),
+    //             entries: _chronoEntries,
+    //             onChanged: store.setCurrentUserChronoClass,
+    //           ),
+    //           // 10%角：horn
+    //           _settingTile<bool>(
+    //             context,
+    //             label: '10%角',
+    //             dropdownKey: _hornKey,
+    //             value: store.getCurrentUserHorn(),
+    //             entries: _equipEntries,
+    //             onChanged: store.setCurrentUserHorn,
+    //           ),
+    //           // 30%角：goldenHorn
+    //           _settingTile<bool>(
+    //             context,
+    //             label: '30%角',
+    //             dropdownKey: _goldenHornKey,
+    //             value: store.getCurrentUserGoldenHorn(),
+    //             entries: _equipEntries,
+    //             onChanged: store.setCurrentUserGoldenHorn,
+    //           ),
+    //           // 恶魔号角跳波数：devilHornSkip
+    //           _settingTile<int>(
+    //             context,
+    //             label: '恶魔号角跳波数',
+    //             dropdownKey: _devilHornKey,
+    //             value: store.getCurrentUserDevilHornSkip(),
+    //             entries: _devilHornEntries,
+    //             onChanged: store.setCurrentUserDevilHornSkip,
+    //           ),
+    //           // 挂机类型：isGoldAutoBattle
+    //           _settingTile<bool>(
+    //             context,
+    //             label: '挂机类型',
+    //             dropdownKey: _autoBattleKey,
+    //             value: store.getCurrentUserIsGoldAutoBattle(),
+    //             entries: _autoBattleEntries,
+    //             infoContent: const Text(
+    //               '时挂 (TAB) 选项默认启用释放乐队技能 (BAND SKILL) ，'
+    //               '且兽人号角和经验号角同时上场。',
+    //             ),
+    //             onChanged: store.setCurrentUserIsGoldAutoBattle,
+    //           ),
+    //         ],
+    //       );
+    //     },
+    //   ),
+    // );
+    final store = Stores.infoStore;
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        store.currentUserNotifier,
+        store.dataVersionNotifier,
+      ]),
+      builder: (context, _) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: .start,
+              children: [const Text('跳波状态'), _AppBarInfo()],
+            ),
+          ),
+          body: ValueListenableBuilder<int>(
+            valueListenable: Stores.infoStore.waveStatusNotifier,
+            builder: (context, _, _) {
+              final store = Stores.infoStore;
+              final wph = store.getCurrentUserWph();
+              final rwph = store.getCurrentUserRwph();
+              return ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
+                  ),
+                  // 游戏速度：gameSpeed
+                  _settingTile<int>(
+                    context,
+                    label: '游戏速度',
+                    dropdownKey: _gameSpeedKey,
+                    value: store.getCurrentUserGameSpeed(),
+                    entries: _gameSpeedEntries,
+                    onChanged: store.setCurrentUserGameSpeed,
+                  ),
+                  // 闹钟转职：chronoClass
+                  _settingTile<int>(
+                    context,
+                    label: '闹钟类型',
+                    dropdownKey: _chronoKey,
+                    value: store.getCurrentUserChronoClass(),
+                    entries: _chronoEntries,
+                    onChanged: store.setCurrentUserChronoClass,
+                  ),
+                  // 10%角：horn
+                  _settingTile<bool>(
+                    context,
+                    label: '10%角',
+                    dropdownKey: _hornKey,
+                    value: store.getCurrentUserHorn(),
+                    entries: _equipEntries,
+                    onChanged: store.setCurrentUserHorn,
+                  ),
+                  // 30%角：goldenHorn
+                  _settingTile<bool>(
+                    context,
+                    label: '30%角',
+                    dropdownKey: _goldenHornKey,
+                    value: store.getCurrentUserGoldenHorn(),
+                    entries: _equipEntries,
+                    onChanged: store.setCurrentUserGoldenHorn,
+                  ),
+                  // 恶魔号角跳波数：devilHornSkip
+                  _settingTile<int>(
+                    context,
+                    label: '恶魔号角跳波数',
+                    dropdownKey: _devilHornKey,
+                    value: store.getCurrentUserDevilHornSkip(),
+                    entries: _devilHornEntries,
+                    onChanged: store.setCurrentUserDevilHornSkip,
+                  ),
+                  // 挂机类型：isGoldAutoBattle
+                  _settingTile<bool>(
+                    context,
+                    label: '挂机类型',
+                    dropdownKey: _autoBattleKey,
+                    value: store.getCurrentUserIsGoldAutoBattle(),
+                    entries: _autoBattleEntries,
+                    infoContent: const Text(
+                      '时挂 (TAB) 选项默认启用释放乐队技能 (BAND SKILL) ，'
+                      '且兽人号角和经验号角同时上场。',
+                    ),
+                    onChanged: store.setCurrentUserIsGoldAutoBattle,
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-  /// 参数设置行：左侧标签（可选 info 说明）+ 右侧选择框；
-  /// 点击整行（[dropdownKey] 对应按钮的 key）也能打开下拉框
   Widget _settingTile<T>(
     BuildContext context, {
     required String label,
@@ -142,7 +229,7 @@ class WaveStatusPage extends StatelessWidget {
               onTap: () {
                 showDialog<void>(
                   context: context,
-                  builder: (_) => AlertDialog(
+                  builder: (BuildContext context) => AlertDialog(
                     title: Text(label),
                     content: infoContent,
                     actions: [
@@ -172,9 +259,6 @@ class WaveStatusPage extends StatelessWidget {
     );
   }
 
-  /// 程序化打开 [key] 对应的 DropdownButton：向按钮中心合成一次点击事件，
-  /// 走正常的命中测试与手势竞技场，等价于用户点按按钮。
-  /// DropdownButton 没有公开的打开 API，只能用这种方式触发。
   static void _openDropdown(GlobalKey key) {
     final context = key.currentContext;
     if (context == null) return;
@@ -193,8 +277,10 @@ class _ResultCard extends StatelessWidget {
 
   /// 理论 WPH
   final int wph;
+
   /// 理论 RWPH
   final int rwph;
+
   /// 理论 WPS（wph * 120）
   final int wps;
 
@@ -203,26 +289,29 @@ class _ResultCard extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
     return Card(
       margin: EdgeInsets.zero,
-      // elevation: 0,
-      // color: colorScheme.primaryContainer,
-      // shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
         child: Row(
           children: [
-            Expanded(child: _HeroMetric(label: 'RWPH', value: '$rwph')),
+            Expanded(
+              child: _HeroMetric(label: 'RWPH', value: '$rwph'),
+            ),
             Container(
               width: 1,
               height: 36,
               color: colorScheme.onPrimaryContainer.withAlpha(40),
             ),
-            Expanded(child: _HeroMetric(label: 'WPH', value: '$wph')),
+            Expanded(
+              child: _HeroMetric(label: 'WPH', value: '$wph'),
+            ),
             Container(
               width: 1,
               height: 36,
               color: colorScheme.onPrimaryContainer.withAlpha(40),
             ),
-            Expanded(child: _HeroMetric(label: 'WPS', value: '$wps')),
+            Expanded(
+              child: _HeroMetric(label: 'WPS', value: '$wps'),
+            ),
           ],
         ),
       ),
@@ -264,7 +353,6 @@ class _HeroMetric extends StatelessWidget {
   }
 }
 
-/// ListTile trailing 的紧凑选择框（M3 主题色，无下划线）
 class _TrailingDropdown<T> extends StatelessWidget {
   const _TrailingDropdown({
     required this.buttonKey,
@@ -273,7 +361,6 @@ class _TrailingDropdown<T> extends StatelessWidget {
     required this.onChanged,
   });
 
-  /// 挂在 DropdownButton 上，供页面点击 ListTile 时定位按钮
   final GlobalKey buttonKey;
   final T value;
   final List<(T, String)> entries;
@@ -287,7 +374,6 @@ class _TrailingDropdown<T> extends StatelessWidget {
         key: buttonKey,
         value: value,
         isDense: true,
-        // 选中文本右对齐：贴着右侧的下拉箭头
         alignment: AlignmentDirectional.centerEnd,
         borderRadius: BorderRadius.circular(8),
         style: theme.textTheme.bodyMedium?.copyWith(
@@ -307,5 +393,15 @@ class _TrailingDropdown<T> extends StatelessWidget {
         },
       ),
     );
+  }
+}
+
+class _AppBarInfo extends StatelessWidget {
+  const _AppBarInfo({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> segments = [CurrentUser()];
+    return AppBarInfo(children: segments);
   }
 }
