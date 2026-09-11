@@ -11,7 +11,7 @@ class SummaryCard extends StatelessWidget {
       elevation: 3.0,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
-        child: Column(children: children),
+        child: Column(mainAxisSize: MainAxisSize.min, children: children),
       ),
     );
   }

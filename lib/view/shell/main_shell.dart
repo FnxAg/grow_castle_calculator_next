@@ -137,8 +137,6 @@ class _MainShellState extends State<MainShell> {
         onDestinationSelected: _selectPage,
         // M3 下默认不显示标签（只剩图标），宽屏有横向余量，常显更易辨认
         labelType: NavigationRailLabelType.all,
-        // 矮窗口下 rail 自身可滚动：5 个带标签目的地约 440 逻辑像素，
-        // 不给滚动会在 rail 内部溢出
         scrollable: true,
         destinations: [
           for (final page in mainPages)
@@ -151,7 +149,7 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  /// 窄屏底部导航（与改造前一致）
+  /// 长屏底部导航栏
   Widget _buildBottomBar() {
     return ListenableBuilder(
       listenable: _selectIndex,

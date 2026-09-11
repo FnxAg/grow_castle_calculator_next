@@ -1,16 +1,19 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_listtile.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_summary_bar.dart';
-import 'package:grow_castle_calculator_next/view/widget/user_page_scaffold.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
+import 'package:material_ui/material_ui.dart';
 
-/// 阵容经济计算页：卡片列表（名称/等级输入）与底部汇总条。
-///
-/// 作为首页 tab 自带 UserPageScaffold 外壳；输入框控制器与焦点按卡片 id 缓存在
-/// State 中，切换用户时 UserPageScaffold 通过更换 key 重建本页，控制器随之释放。
+/// 阵容经济计算页
 class FormationCalcPage extends StatefulWidget {
   const FormationCalcPage({super.key});
 
@@ -20,21 +23,18 @@ class FormationCalcPage extends StatefulWidget {
 
 class _FormationCalcPageState extends State<FormationCalcPage> {
   /// 本次会话中已自动查询过的用户名。
-  ///
-  /// 页面会被销毁重建（底部 tab 切换），initState 随之重跑；
-  /// 用会话级标记保证同一用户每次会话只自动查询一次，避免往返导航
-  /// 反复请求。切换用户（KeyedSubtree 换 key 重建）时新用户名不在集合中，
-  /// 仍会为新用户触发自动查询。
   static final Set<String> _autoQueriedUsers = {};
 
-  /// 最近一次查询到的排名快照（会话级，按用户 id 缓存——用户名可重命名，
-  /// 不能作为身份标识）。
-  ///
-  /// 页面销毁重建（底部 tab 切换）后 initState 同步恢复，保证重建后首帧
-  /// 即有排名——否则先空白、排名异步到达后再出现，会重新触发排名行的
-  /// 入场动画（AnimatedSize 高度展开 + 淡入上移）。
-  static (int userId, int? playerRank, int? playerGapPrev,
-      int? playerGapNext, int? hellRank, int? guildRank)? _rankCache;
+  /// 最近一次查询到的排名快照
+  static (
+    int userId,
+    int? playerRank,
+    int? playerGapPrev,
+    int? playerGapNext,
+    int? hellRank,
+    int? guildRank,
+  )?
+  _rankCache;
 
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
@@ -94,11 +94,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     _textFocusNodes.remove(id)?.dispose();
     _numberControllers.remove(id)?.dispose();
     _textControllers.remove(id)?.dispose();
-    // 列表重建由 store 的 cardIdsNotifier 驱动
     Stores.infoStore.removeCard(id);
   }
 
-  /// 5 秒冷却，避免用户连续点击联网查询按钮导致多次请求
   static const Duration _queryCooldown = Duration(seconds: 5);
   DateTime? _lastQueryAt;
   bool _querying = false;
@@ -113,11 +111,7 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   @override
   void initState() {
     super.initState();
-    // 未配置用户（userId == 0）不加载，与底部联网查询按钮的显示条件一致
     if (Stores.infoStore.getCurrentUserId() != 0) {
-      // 页面销毁重建（底部 tab / 抽屉切换）后同步恢复上次排名：首帧即展示，
-      // 避免"先空白后出现"再次触发排名行入场动画；随后 _loadRanks 从
-      // TTL 缓存重新推导（缓存命中零请求，过期则按缓存语义后台静默刷新）。
       final cache = _rankCache;
       final username = Stores.infoStore.getCurrentUsername();
       if (cache != null && cache.$1 == Stores.infoStore.getCurrentUserId()) {
@@ -127,13 +121,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
         _hellRank = cache.$5;
         _guildRank = cache.$6;
       }
-      // 从榜单 TTL 缓存重新推导排名胶囊：页面被销毁重建（底部 tab /
-      // 抽屉切换）后胶囊状态丢失，这里恢复——缓存命中零请求，
-      // 过期则按缓存语义后台静默刷新，不会随页面重建反复请求。
+      // 从榜单 TTL 缓存重新推导排名
       _loadRanks();
-      // 启动时静默查询当前用户波数：打开应用最先想看到的就是自己的最新数据，
-      // 查询成功后的预取逻辑顺带刷新榜单与排名展示，无需单独 prewarm。
-      // 会话级去重：页面因 tab/抽屉切换被销毁重建时不再重复自动查询。
+      // 应用启动时静默查询当前用户波数
       if (_autoQueriedUsers.add(username)) {
         _performQuery(silent: true);
       }
@@ -145,8 +135,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
   /// [force] 为 true（手动同步）时忽略缓存强制重新抓取，失败保留旧缓存。
   /// 挂载时调用用于恢复页面重建后丢失的胶囊；查询成功后调用刷新为最新数据。
   Future<void> _loadRanks({bool force = false}) async {
-    // 查询起始时记录用户 id：快照按数据归属的 id 缓存，
-    // 即使 await 期间切换用户也不会错配
     final userId = Stores.infoStore.getCurrentUserId();
     final currentUser = Stores.infoStore.getCurrentUsername();
     final lower = currentUser.toLowerCase();
@@ -196,8 +184,6 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
           }
         }
       }
-      // 快照本次查询结果：页面销毁重建后由 initState 同步恢复，
-      // 保证重建首帧即有排名、不重放入场动画
       _rankCache = (
         userId,
         _playerRank,
@@ -220,9 +206,9 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
       if (p.name.toLowerCase() == lowerName) {
         return (
           rank: p.rank,
-          // 上一名（排名靠前、分数更高）：还需多少分追上
+          // 上一名差值
           gapPrev: i > 0 ? items[i - 1].score - p.score : null,
-          // 下一名（排名靠后、分数更低）：领先多少分；末名无下一名
+          // 下一名差值
           gapNext: i < items.length - 1 ? p.score - items[i + 1].score : null,
         );
       }
@@ -236,9 +222,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     final now = DateTime.now();
     final last = _lastQueryAt;
     if (last != null && now.difference(last) < _queryCooldown) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(const SnackBar(content: Text('查询过于频繁，请稍后后再试')));
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('查询过于频繁，请稍后后再试')));
       return;
     }
     // 先记录时间再发起请求：查询进行中也同样受冷却保护
@@ -261,9 +246,8 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     if (result is PlayerQueryResult) {
       if (result.wave == 0 && result.queryDate.isEmpty) {
         if (!silent) {
-          ScaffoldMessenger.of(
-            context,
-          ).showSnackBar(SnackBar(content: Text('用户「$name」已被封禁')));
+          ScaffoldMessenger.of(context)
+              .showSnackBar(SnackBar(content: Text('用户「$name」已被封禁')));
         }
         return;
       }
@@ -296,96 +280,246 @@ class _FormationCalcPageState extends State<FormationCalcPage> {
     };
   }
 
+  // @override
+  // Widget build(BuildContext context) {
+  //   return UserPageScaffold(
+  //     title: '阵容',
+  //     isLoading: _querying || _loadingRanks,
+  //     appBarActions: [
+  //       IconButton(
+  //         icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
+  //         tooltip: _viewMode ? '输入模式' : '查看模式',
+  //         onPressed: () {
+  //           FocusManager.instance.primaryFocus?.unfocus();
+  //           setState(() => _viewMode = !_viewMode);
+  //         },
+  //       ),
+  //       IconButton(
+  //         icon: const Icon(Icons.add),
+  //         tooltip: '新增条目',
+  //         onPressed: () => Stores.infoStore.addNewCard(),
+  //       ),
+  //     ],
+  //     body: Column(
+  //       children: [
+  //         Expanded(
+  //           child: ValueListenableBuilder<int>(
+  //             valueListenable: Stores.infoStore.cardIdsNotifier,
+  //             builder: (context, _, _) {
+  //               final cardIds = Stores.infoStore.getCardIds();
+  //               if (cardIds.isEmpty) {
+  //                 return const Center(
+  //                   child: Text(
+  //                     '暂无条目，点击右上角 + 添加',
+  //                     style: TextStyle(color: Colors.grey),
+  //                   ),
+  //                 );
+  //               }
+  //               return ReorderableListView.builder(
+  //                 // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
+  //                 key: const PageStorageKey('formation_card_list'),
+  //                 itemCount: cardIds.length,
+  //                 proxyDecorator: (child, index, animation) {
+  //                   return AnimatedBuilder(
+  //                     animation: animation,
+  //                     builder: (context, child) {
+  //                       final double elevation = 4.0 * animation.value;
+  //                       return Material(
+  //                         elevation: elevation,
+  //                         shadowColor: Colors.black26,
+  //                         borderRadius: BorderRadius.circular(8.0),
+  //                         child: IgnorePointer(child: child),
+  //                       );
+  //                     },
+  //                     child: child,
+  //                   );
+  //                 },
+  //                 onReorderItem: (oldIndex, newIndex) {
+  //                   FocusManager.instance.primaryFocus?.unfocus();
+  //                   Stores.infoStore.reorderCard(oldIndex, newIndex);
+  //                 },
+  //                 itemBuilder: (context, index) {
+  //                   final id = cardIds[index];
+  //                   return FormationCardTile(
+  //                     key: ValueKey(id),
+  //                     id: id,
+  //                     index: index,
+  //                     textController: _textControllerFor(id),
+  //                     numberController: _numberControllerFor(id),
+  //                     textFocusNode: _focusNodeFor(id, _textFocusNodes),
+  //                     numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+  //                     viewMode: _viewMode,
+  //                     dataVersion: _formationDataVersion,
+  //                     onRemove: _removeCard,
+  //                   );
+  //                 },
+  //                 buildDefaultDragHandles: false,
+  //                 scrollDirection: .vertical,
+  //               );
+  //             },
+  //           ),
+  //         ),
+  //         FormationSummaryBar(
+  //           querying: _querying,
+  //           playerRank: _playerRank,
+  //           playerGapPrev: _playerGapPrev,
+  //           playerGapNext: _playerGapNext,
+  //           hellRank: _hellRank,
+  //           guildRank: _guildRank,
+  //           onQuery: _queryOnline,
+  //         ),
+  //       ],
+  //     ),
+  //   );
+  // }
   @override
   Widget build(BuildContext context) {
-    return UserPageScaffold(
-      title: '阵容',
-      isLoading: _querying || _loadingRanks,
-      appBarActions: [
-        IconButton(
-          icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
-          tooltip: _viewMode ? '输入模式' : '查看模式',
-          onPressed: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            setState(() => _viewMode = !_viewMode);
-          },
-        ),
-        IconButton(
-          icon: const Icon(Icons.add),
-          tooltip: '新增条目',
-          onPressed: () => Stores.infoStore.addNewCard(),
-        ),
-      ],
-      body: Column(
-        children: [
-          Expanded(
-            child: ValueListenableBuilder<int>(
-              valueListenable: Stores.infoStore.cardIdsNotifier,
-              builder: (context, _, _) {
-                final cardIds = Stores.infoStore.getCardIds();
-                if (cardIds.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      '暂无条目，点击右上角 + 添加',
-                      style: TextStyle(color: Colors.grey),
-                    ),
-                  );
-                }
-                return ReorderableListView.builder(
-                  // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
-                  key: const PageStorageKey('formation_card_list'),
-                  itemCount: cardIds.length,
-                  proxyDecorator: (child, index, animation) {
-                    return AnimatedBuilder(
-                      animation: animation,
-                      builder: (context, child) {
-                        final double elevation = 4.0 * animation.value;
-                        return Material(
-                          elevation: elevation,
-                          shadowColor: Colors.black26,
-                          borderRadius: BorderRadius.circular(8.0),
-                          child: IgnorePointer(child: child),
-                        );
-                      },
-                      child: child,
-                    );
-                  },
-                  onReorderItem: (oldIndex, newIndex) {
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    Stores.infoStore.reorderCard(oldIndex, newIndex);
-                  },
-                  itemBuilder: (context, index) {
-                    final id = cardIds[index];
-                    return FormationCardTile(
-                      key: ValueKey(id),
-                      id: id,
-                      index: index,
-                      textController: _textControllerFor(id),
-                      numberController: _numberControllerFor(id),
-                      textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                      numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                      viewMode: _viewMode,
-                      dataVersion: _formationDataVersion,
-                      onRemove: _removeCard,
-                    );
-                  },
-                  buildDefaultDragHandles: false,
-                  scrollDirection: .vertical,
-                );
-              },
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        Stores.infoStore.currentUserNotifier,
+        Stores.infoStore.dataVersionNotifier,
+      ]),
+      builder: (context, _) {
+        final isWide = context.isWideScreen;
+        List<Widget> actions = <Widget>[
+          if (isDesktop && Stores.infoStore.getCurrentUserId() != 0)
+            IconButton(
+              icon: _querying
+                  ? const SizedBox(
+                      width: 20.0,
+                      height: 20.0,
+                      child: CircularProgressIndicator(strokeWidth: 2.0),
+                    )
+                  : const Icon(Icons.cloud_sync),
+              tooltip: '拉取数据',
+              onPressed: _queryOnline,
             ),
+          IconButton(
+            icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
+            tooltip: _viewMode ? '输入模式' : '查看模式',
+            onPressed: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              setState(() => _viewMode = !_viewMode);
+            },
           ),
-          FormationSummaryBar(
-            querying: _querying,
-            playerRank: _playerRank,
-            playerGapPrev: _playerGapPrev,
-            playerGapNext: _playerGapNext,
-            hellRank: _hellRank,
-            guildRank: _guildRank,
-            onQuery: _queryOnline,
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: '新增条目',
+            onPressed: () => Stores.infoStore.addNewCard(),
           ),
-        ],
-      ),
+        ];
+        Widget formationExpanded = Expanded(
+          flex: isWide ? 6 : 1,
+          child: ValueListenableBuilder<int>(
+            valueListenable: Stores.infoStore.cardIdsNotifier,
+            builder: (context, _, _) {
+              final cardIds = Stores.infoStore.getCardIds();
+              if (cardIds.isEmpty) {
+                return const Center(
+                  child: Text(
+                    '暂无条目，点击右上角 + 添加',
+                    style: TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+              return ReorderableListView.builder(
+                // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
+                key: const PageStorageKey('formation_card_list'),
+                itemCount: cardIds.length,
+                proxyDecorator: (child, index, animation) {
+                  return AnimatedBuilder(
+                    animation: animation,
+                    builder: (context, child) {
+                      final double elevation = 4.0 * animation.value;
+                      return Material(
+                        elevation: elevation,
+                        shadowColor: Colors.black26,
+                        borderRadius: BorderRadius.circular(8.0),
+                        child: IgnorePointer(child: child),
+                      );
+                    },
+                    child: child,
+                  );
+                },
+                onReorderItem: (oldIndex, newIndex) {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Stores.infoStore.reorderCard(oldIndex, newIndex);
+                },
+                itemBuilder: (context, index) {
+                  final id = cardIds[index];
+                  return FormationCardTile(
+                    key: ValueKey(id),
+                    id: id,
+                    index: index,
+                    textController: _textControllerFor(id),
+                    numberController: _numberControllerFor(id),
+                    textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                    numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                    viewMode: _viewMode,
+                    dataVersion: _formationDataVersion,
+                    onRemove: _removeCard,
+                  );
+                },
+                buildDefaultDragHandles: false,
+                scrollDirection: .vertical,
+              );
+            },
+          ),
+        );
+        Widget formationSummaryBar = FormationSummaryBar(
+          querying: _querying,
+          playerRank: _playerRank,
+          playerGapPrev: _playerGapPrev,
+          playerGapNext: _playerGapNext,
+          hellRank: _hellRank,
+          guildRank: _guildRank,
+          onQuery: _queryOnline,
+        );
+        
+        return Scaffold(
+          appBar: AppBar(
+            title: Column(
+              crossAxisAlignment: .start,
+              children: [Text('阵容'), _AppBarInfo()],
+            ),
+            bottom: LoadingIndicatorAppBar(
+              bottom: null,
+              isLoading: _querying || _loadingRanks,
+            ),
+            actions: actions,
+          ),
+          body: isWide
+              ? Row(
+                  children: [
+                    formationExpanded,
+                    Expanded(flex: 4, child: formationSummaryBar),
+                  ],
+                )
+              : Column(children: [formationExpanded, formationSummaryBar]),
+        );
+      },
+    );
+  }
+}
+
+class _AppBarInfo extends StatelessWidget {
+  const _AppBarInfo();
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        Stores.infoStore.lastOnlineNotifier,
+        Stores.infoStore.guildNotifier,
+      ]),
+      builder: (context, _) {
+        final List<Widget> segments = <Widget>[
+          CurrentUser(),
+          LastOnline(),
+          CurrentUserGuild(),
+        ];
+        return AppBarInfo(children: segments);
+      },
     );
   }
 }

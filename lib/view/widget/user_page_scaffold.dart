@@ -5,6 +5,8 @@ import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/responsive/content_frame.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 
+import 'app_bar/loading_indicator_app_bar.dart';
+
 /// 与当前用户数据相关页面的公共框架（首页三个 tab：阵容/收入/公会）：
 /// AppBar = 页面标题 + 用户名/上次在线/所属公会 + 页面声明的操作按钮，
 /// 可选 [appBarBottom]（如 TabBar）挂在 AppBar 底部。
@@ -50,9 +52,6 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
-      // 除切换用户（currentUserNotifier）外，数据整体替换（恢复/导入）后
-      // 也需整树重建：reload 会 bump dataVersionNotifier（用户名未变时
-      // KeyedSubtree 不随 currentUserNotifier 重建，残留的控制器会覆盖新数据）
       listenable: Listenable.merge([
         Stores.infoStore.currentUserNotifier,
         Stores.infoStore.dataVersionNotifier,
@@ -61,7 +60,7 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
         final currentUser = Stores.infoStore.getCurrentUsername();
         return Scaffold(
           appBar: AppBar(
-            bottom: _LoadingAppBarBottom(
+            bottom: LoadingIndicatorAppBar(
               bottom: widget.appBarBottom,
               isLoading: widget.isLoading,
             ),
@@ -134,8 +133,6 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
             ),
             actions: [...widget.appBarActions],
           ),
-          // 限宽只包 body：AppBar 保持满宽，否则顶部两侧会出现空白带；
-          // 矮窗口下降级为可滚动，避免固定头尾把列表挤到溢出
           body: ContentFrame(
             maxWidth: widget.maxWidth,
             child: ShortWindowFallback(
@@ -179,37 +176,6 @@ class _UserPageScaffoldState extends State<UserPageScaffold> {
           ),
         ],
       ),
-    );
-  }
-}
-
-class _LoadingAppBarBottom extends StatelessWidget
-    implements PreferredSizeWidget {
-  const _LoadingAppBarBottom({
-    required this.bottom,
-    required this.isLoading,
-  });
-
-  final PreferredSizeWidget? bottom;
-  final bool isLoading;
-
-  @override
-  Size get preferredSize => Size.fromHeight(
-    (bottom?.preferredSize.height ?? 0) + (isLoading ? 3.0 : 0),
-  );
-
-  @override
-  Widget build(BuildContext context) {
-    if (!isLoading) return bottom ?? const SizedBox.shrink();
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        const SizedBox(
-          height: 3.0,
-          child: LinearProgressIndicator(minHeight: 3.0),
-        ),
-        ?bottom,
-      ],
     );
   }
 }

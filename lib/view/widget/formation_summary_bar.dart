@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
@@ -64,7 +65,7 @@ class FormationSummaryBar extends StatelessWidget {
                     );
                   },
                 ),
-              if (Stores.infoStore.getCurrentUserId() != 0)
+              if (isMobile && Stores.infoStore.getCurrentUserId() != 0)
                 _SmallIconButton(
                   icon: querying
                       ? const SizedBox(
@@ -75,7 +76,7 @@ class FormationSummaryBar extends StatelessWidget {
                           ),
                         )
                       : const Icon(Icons.cloud_sync),
-                  tooltip: '联网查询波数',
+                  tooltip: '拉取数据',
                   onPressed: querying ? null : onQuery,
                 ),
             ],
@@ -391,7 +392,6 @@ class _RankRow extends StatelessWidget {
   }
 }
 
-/// 20x20 的行内小图标按钮（汇总行编辑/查询入口）
 class _SmallIconButton extends StatelessWidget {
   const _SmallIconButton({
     required this.icon,
