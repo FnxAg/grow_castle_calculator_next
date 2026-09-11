@@ -1,3 +1,6 @@
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
@@ -366,6 +369,21 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
             bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
             // AppBar action 区：公会赛季进度（点击查看详情）
             actions: [
+              isDesktop
+                  ? IconButton(
+                      onPressed: _refresh,
+                      tooltip: '拉取数据',
+                      icon: !_loading
+                          ? Icon(Icons.cloud_sync)
+                          : SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2.0,
+                              ),
+                            ),
+                    )
+                  : SizedBox.shrink(),
               SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
             ],
           ),
@@ -668,7 +686,11 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> segments = <Widget>[CurrentUser()];
+    final List<Widget> segments = <Widget>[
+      CurrentUser(),
+      LastOnline(),
+      CurrentUserGuild(),
+    ];
     return AppBarInfo(children: segments);
   }
 }

@@ -78,6 +78,7 @@ class InfoStore {
   final ValueNotifier<bool> onlineQueryNotifier = ValueNotifier<bool>(false);
   /// 跳波状态变化通知（参数变更/切换用户时触发），供跳波状态页重建
   final ValueNotifier<int> waveStatusNotifier = ValueNotifier<int>(0);
+  final ValueNotifier<double> gabBonusNotifier = ValueNotifier<double>(0);
   /// 收入变化通知（收入参数/跳波参数/波数变更或切换用户时触发），供收入页汇总条重建
   final ValueNotifier<int> incomeNotifier = ValueNotifier<int>(0);
   /// 各用户最近一次联网查询的"上次在线"展示字符串（仅内存，不持久化）
@@ -298,6 +299,7 @@ class InfoStore {
     lastOnlineNotifier.value = _lastOnline[userId] ?? '';
     guildNotifier.value = _guild;
     waveStatusNotifier.value++;
+    gabBonusNotifier.value = _gabBonus;
     incomeNotifier.value++;
     currentUserNotifier.value = _currentUser;
     _persistMeta();
@@ -704,6 +706,7 @@ class InfoStore {
   void setCurrentUserGabBonus(double value) {
     if (_gabBonus == value) return;
     _gabBonus = value;
+    gabBonusNotifier.value = _gabBonus;
     _updateIncome();
   }
 

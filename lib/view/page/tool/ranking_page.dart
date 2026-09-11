@@ -1,4 +1,3 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
@@ -8,6 +7,7 @@ import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 工具 tab 下的三类排行榜
 enum RankingKind {
