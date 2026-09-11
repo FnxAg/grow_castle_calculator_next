@@ -1,12 +1,13 @@
 import 'dart:async';
 
-import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
+import 'package:material_ui/material_ui.dart';
 
 class SelectUserPage extends StatefulWidget {
   const SelectUserPage({super.key});
@@ -144,11 +145,11 @@ class _SelectUserPageState extends State<SelectUserPage> {
                     },
                   ),
                 ],
-                IconButton(
+                isDesktop ? IconButton(
                   icon: const Icon(Icons.info_outline, size: 20),
-                  tooltip: '单位汇总',
+                  tooltip: '详细信息',
                   onPressed: () => _showUnitSummary(username),
-                ),
+                ) : const SizedBox.shrink(),
               ],
             ),
             onTap: () {

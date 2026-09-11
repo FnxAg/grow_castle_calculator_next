@@ -1,6 +1,6 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/store/user_data.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 弹出单位汇总表单
 ///
@@ -14,15 +14,16 @@ void showUnitSummarySheet(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
-    builder: (context) => Center(
-      // 桌面端底部弹窗不再横跨全窗；窄屏宽度不足时 ConstrainedBox 结构性不生效
+    backgroundColor: Colors.transparent,
+    builder: (context) => Align(
+      alignment: Alignment.bottomCenter,
       child: ConstrainedBox(
         constraints: const BoxConstraints(maxWidth: 560),
         child: DraggableScrollableSheet(
           expand: false,
-          initialChildSize: 0.62,
-          minChildSize: 0.4,
-          maxChildSize: 0.95,
+          initialChildSize: 0.9,
+          minChildSize: 0.5,
+          maxChildSize: 1.0,
           builder: (context, scrollController) => _UnitSummarySheet(
             username: username,
             data: data,
@@ -50,39 +51,218 @@ class _UnitSummarySheet extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final cardIds = data.cardIds;
-    return Column(
-      children: [
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 10.0, 16.0, 8.0),
-          child: Row(
+    final enabledCount = cardIds
+        .where((id) => data.applyFlags[id] ?? true)
+        .length;
+
+    return Material(
+      color: theme.colorScheme.surface,
+      clipBehavior: Clip.antiAlias,
+      borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
+      child: Column(
+        children: [
+          const SizedBox(height: 10.0),
+          Container(
+            width: 36.0,
+            height: 4.0,
+            decoration: BoxDecoration(
+              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
+              borderRadius: BorderRadius.circular(4.0),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 12.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('详细信息', style: theme.textTheme.titleLarge),
+                      const SizedBox(height: 3.0),
+                      Text(
+                        username,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                _StatusPill(
+                  label: '$enabledCount/${cardIds.length} 启用',
+                  icon: Icons.check_circle_outline,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20.0),
+            child: _OverviewPanel(data: data),
+          ),
+          const SizedBox(height: 8.0),
+          const Divider(height: 1.0),
+          // 快照数据不随输入变化，无需监听 notifier
+          Expanded(
+            child: ListView.separated(
+              controller: scrollController,
+              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 20.0),
+              itemCount: cardIds.length,
+              separatorBuilder: (_, _) => const SizedBox(height: 8.0),
+              itemBuilder: (context, index) =>
+                  _UnitSummaryRow(id: cardIds[index], index: index, data: data),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatusPill extends StatelessWidget {
+  const _StatusPill({required this.label, required this.icon});
+
+  final String label;
+  final IconData icon;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: colors.secondaryContainer,
+        borderRadius: BorderRadius.circular(999.0),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 6.0),
+        child: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: 15.0, color: colors.onSecondaryContainer),
+            const SizedBox(width: 5.0),
+            Text(
+              label,
+              style: TextStyle(
+                color: colors.onSecondaryContainer,
+                fontSize: 12.0,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _OverviewPanel extends StatelessWidget {
+  const _OverviewPanel({required this.data});
+
+  final UserData data;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Container(
+      padding: const EdgeInsets.fromLTRB(16.0, 14.0, 16.0, 12.0),
+      decoration: BoxDecoration(
+        color: colors.primaryContainer,
+        borderRadius: BorderRadius.circular(16.0),
+      ),
+      child: Column(
+        children: [
+          Row(
             children: [
-              Text('账号信息', style: theme.textTheme.titleMedium),
-              const Spacer(),
-              Text(
-                username,
-                style: theme.textTheme.bodySmall?.copyWith(
-                  color: theme.colorScheme.onSurfaceVariant,
+              Expanded(
+                child: _OverviewValue(
+                  label: 'GP',
+                  value: data.gp.format(fractionDigits: 3),
+                  prominent: true,
+                ),
+              ),
+              Container(
+                width: 1.0,
+                height: 42.0,
+                color: colors.onPrimaryContainer.withValues(alpha: 0.16),
+              ),
+              Expanded(
+                child: _OverviewValue(
+                  label: '指数',
+                  value: data.gpCN.format(fractionDigits: 3),
+                  prominent: true,
                 ),
               ),
             ],
           ),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10.0),
+            child: Divider(
+              height: 1.0,
+              color: colors.onPrimaryContainer.withValues(alpha: 0.14),
+            ),
+          ),
+          Row(
+            children: [
+              Expanded(
+                child: _OverviewValue(label: '总波数', value: data.wave.format()),
+              ),
+              Expanded(
+                child: _OverviewValue(
+                  label: '赛季波数',
+                  value: data.seasonWave.format(),
+                ),
+              ),
+              Expanded(
+                child: _OverviewValue(
+                  label: '总金币',
+                  value: data.totalGold.formatCompact(english: false),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _OverviewValue extends StatelessWidget {
+  const _OverviewValue({
+    required this.label,
+    required this.value,
+    this.prominent = false,
+  });
+
+  final String label;
+  final String value;
+  final bool prominent;
+
+  @override
+  Widget build(BuildContext context) {
+    final colors = Theme.of(context).colorScheme;
+    return Column(
+      children: [
+        Text(
+          label,
+          style: TextStyle(
+            color: colors.onPrimaryContainer.withValues(alpha: 0.72),
+            fontSize: 11.0,
+          ),
         ),
-        const Divider(height: 1.0),
-        // 快照数据不随输入变化，无需监听 notifier
-        Expanded(
-          child: ListView.builder(
-            controller: scrollController,
-            padding: const EdgeInsets.symmetric(vertical: 4.0),
-            itemCount: cardIds.length,
-            itemBuilder: (context, index) => _UnitSummaryRow(
-              id: cardIds[index],
-              index: index,
-              data: data,
+        const SizedBox(height: 3.0),
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: TextStyle(
+              color: colors.onPrimaryContainer,
+              fontSize: prominent ? 22.0 : 14.0,
+              fontWeight: FontWeight.bold,
             ),
           ),
         ),
-        const Divider(height: 1.0),
-        _UnitSummaryBar(data: data),
       ],
     );
   }
@@ -116,63 +296,69 @@ class _UnitSummaryRow extends StatelessWidget {
     final oneOverRatio = applied && wave > 0 && level > 0 ? level / wave : 0.0;
     final ratio = oneOverRatio > 0 ? 1 / oneOverRatio : 0.0;
 
-    final nameStyle = TextStyle(
-      fontWeight: FontWeight.w600,
-      decoration: applied ? null : TextDecoration.lineThrough,
-      color: applied ? null : theme.disabledColor,
-    );
+    final colors = theme.colorScheme;
+    final title = name.isNotEmpty
+        ? name
+        : id == 1
+        ? '城堡'
+        : id == 2
+        ? '城弓'
+        : '单位 $id';
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 6.0),
-      child: Row(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _IndexBadge(index: index, applied: applied),
-          const SizedBox(width: 10.0),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+    return Opacity(
+      opacity: applied ? 1.0 : 0.55,
+      child: Container(
+        padding: const EdgeInsets.fromLTRB(12.0, 12.0, 12.0, 10.0),
+        decoration: BoxDecoration(
+          color: colors.surfaceContainerLow,
+          borderRadius: BorderRadius.circular(14.0),
+          border: Border.all(
+            color: colors.outlineVariant.withValues(alpha: 0.55),
+          ),
+        ),
+        child: Column(
+          children: [
+            Row(
               children: [
-                Row(
-                  children: [
-                    Text(
-                      name.isNotEmpty ? name : id == 1 ? '城堡' : id == 2 ? '城弓' : '单位 $id',
-                      overflow: TextOverflow.ellipsis,
-                      style: nameStyle,
+                _IndexBadge(index: index, applied: applied),
+                const SizedBox(width: 10.0),
+                Expanded(
+                  child: Text(
+                    title,
+                    overflow: TextOverflow.ellipsis,
+                    style: theme.textTheme.titleSmall?.copyWith(
+                      fontWeight: FontWeight.w700,
                     ),
-                    const SizedBox(width: 8.0),
-                    Text(
-                      'Lv. ${level.format()}',
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: theme.colorScheme.onSurfaceVariant,
-                      ),
-                    ),
-                    const Spacer(),
-                    Text(
-                      gold.formatCompact(english: false),
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        color: applied
-                            ? theme.colorScheme.primary
-                            : theme.disabledColor,
-                      ),
-                    ),
-                  ],
+                  ),
                 ),
-                const SizedBox(height: 2.0),
-                Row(
-                  children: [
-                    _metric(theme, '占比', '${_fmt(share)}%', applied),
-                    const SizedBox(width: 12.0),
-                    _metric(theme, '1/比例', _fmt(oneOverRatio), applied),
-                    const SizedBox(width: 12.0),
-                    _metric(theme, '比例', _fmt(ratio), applied),
-                  ],
+                Text(
+                  'Lv. ${level.format()}',
+                  style: theme.textTheme.labelMedium?.copyWith(
+                    color: colors.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(width: 12.0),
+                Text(
+                  gold.formatCompact(english: false),
+                  style: theme.textTheme.titleSmall?.copyWith(
+                    color: colors.primary,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ],
             ),
-          ),
-        ],
+            const SizedBox(height: 10.0),
+            Row(
+              children: [
+                _metric(theme, '金币占比', '${_fmt(share)}%', applied),
+                _metricDivider(colors),
+                _metric(theme, '单位 / 波数', _fmt(oneOverRatio), applied),
+                _metricDivider(colors),
+                _metric(theme, '波数 / 单位', _fmt(ratio), applied),
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
@@ -180,7 +366,11 @@ class _UnitSummaryRow extends StatelessWidget {
   /// 占比/比例数值：数值过小时自动增加小数位，避免显示成 0.00
   static String _fmt(double v) {
     if (v == 0) return '0';
-    final digits = v.abs() < 0.0001 ? 6 : v.abs() < 0.01 ? 4 : 2;
+    final digits = v.abs() < 0.0001
+        ? 6
+        : v.abs() < 0.01
+        ? 4
+        : 2;
     return v.format(fractionDigits: digits);
   }
 }
@@ -230,110 +420,20 @@ Widget _metric(ThemeData theme, String label, String value, bool applied) {
     color: applied ? theme.colorScheme.primary : theme.disabledColor,
   );
   return Expanded(
-    child: Row(
-      mainAxisAlignment: MainAxisAlignment.center,
+    child: Column(
       children: [
         Text(label, style: labelStyle),
-        const SizedBox(width: 4.0),
+        const SizedBox(height: 3.0),
         Text(value, style: valueStyle),
       ],
     ),
   );
 }
 
-/// 底部汇总条：与 build_gp 汇总一致的 总波数/赛季波数/总金币/GP/指数
-class _UnitSummaryBar extends StatelessWidget {
-  const _UnitSummaryBar({required this.data});
-
-  final UserData data;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final labelStyle = TextStyle(
-      fontSize: 11.0,
-      color: theme.colorScheme.onSurfaceVariant,
-    );
-    final valueStyle = TextStyle(
-      fontSize: 13.0,
-      fontWeight: FontWeight.bold,
-      color: theme.colorScheme.primary,
-    );
-    return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(12.0, 10.0, 12.0, 12.0),
-      decoration: BoxDecoration(color: theme.colorScheme.surfaceContainer),
-      child: Row(
-        children: [
-          _SummaryStat(
-            label: '总波数',
-            value: data.wave.format(),
-            labelStyle: labelStyle,
-            valueStyle: valueStyle,
-          ),
-          _SummaryStat(
-            label: '赛季波数',
-            value: data.seasonWave.format(),
-            labelStyle: labelStyle,
-            valueStyle: valueStyle,
-          ),
-          _SummaryStat(
-            label: '总金币',
-            value: data.totalGold.formatCompact(
-              english: false,
-            ),
-            labelStyle: labelStyle,
-            valueStyle: valueStyle,
-          ),
-          _SummaryStat(
-            label: 'GP',
-            value: data.gp.format(fractionDigits: 3),
-            labelStyle: labelStyle,
-            valueStyle: valueStyle,
-          ),
-          _SummaryStat(
-            label: '指数',
-            value: data.gpCN.format(fractionDigits: 3),
-            labelStyle: labelStyle,
-            valueStyle: valueStyle,
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _SummaryStat extends StatelessWidget {
-  const _SummaryStat({
-    required this.label,
-    required this.value,
-    required this.labelStyle,
-    required this.valueStyle,
-  });
-
-  final String label;
-  final String value;
-  final TextStyle labelStyle;
-  final TextStyle valueStyle;
-
-  @override
-  Widget build(BuildContext context) {
-    return Expanded(
-      child: Column(
-        children: [
-          Text(
-            label,
-            style: labelStyle,
-            maxLines: 1,
-            overflow: TextOverflow.ellipsis,
-          ),
-          const SizedBox(height: 2.0),
-          FittedBox(
-            fit: BoxFit.scaleDown,
-            child: Text(value, style: valueStyle, maxLines: 1),
-          ),
-        ],
-      ),
-    );
-  }
-}
+Widget _metricDivider(ColorScheme colors) => SizedBox(
+  height: 24.0,
+  child: VerticalDivider(
+    width: 1.0,
+    color: colors.outlineVariant.withValues(alpha: 0.6),
+  ),
+);
