@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -100,7 +101,7 @@ class _AboutPageState extends State<AboutPage> {
             context: context,
             applicationName: _packageInfo?.appName ?? 'GCC Next',
             applicationIcon: Image.asset(
-              'assets/images/app_icon.png',
+              'assets/images/app_icon_2.png',
               width: 72,
               height: 72,
               fit: BoxFit.cover,
@@ -146,7 +147,7 @@ class _AboutPageState extends State<AboutPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: Image.asset(
-              'assets/images/app_icon.png',
+              'assets/images/app_icon_2.png',
               width: 88,
               height: 88,
               fit: BoxFit.cover,
@@ -159,7 +160,7 @@ class _AboutPageState extends State<AboutPage> {
           if (info != null) ...[
             const SizedBox(height: 4),
             Text(
-              'v${info.version} (${info.buildNumber})',
+              'v${info.version}${isMobile ? ' (${info.buildNumber})' : ''}',
               style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
             ),
           ],
