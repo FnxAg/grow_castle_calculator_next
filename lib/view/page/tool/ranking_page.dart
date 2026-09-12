@@ -389,7 +389,7 @@ class _RankingPageState extends State<RankingPage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Text('${widget.kind.title}重点排名'),
+          title: Text('${widget.kind.title}特殊名次'),
           content: SizedBox(
             width: 420,
             child: ListView.separated(
@@ -458,7 +458,7 @@ class _RankingPageState extends State<RankingPage> {
           ),
           IconButton(
             icon: const Icon(Icons.format_list_numbered),
-            tooltip: '查看重点排名',
+            tooltip: '查看特殊名次',
             onPressed: _rows.isEmpty ? null : _showMilestoneRanks,
           ),
         ],
