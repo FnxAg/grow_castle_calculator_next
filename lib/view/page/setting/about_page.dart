@@ -101,7 +101,7 @@ class _AboutPageState extends State<AboutPage> {
             context: context,
             applicationName: _packageInfo?.appName ?? 'GCC Next',
             applicationIcon: Image.asset(
-              'assets/images/app_icon_2.png',
+              'assets/images/app_icon.png',
               width: 72,
               height: 72,
               fit: BoxFit.cover,
@@ -147,7 +147,7 @@ class _AboutPageState extends State<AboutPage> {
           ClipRRect(
             borderRadius: BorderRadius.circular(24),
             child: Image.asset(
-              'assets/images/app_icon_2.png',
+              'assets/images/app_icon.png',
               width: 88,
               height: 88,
               fit: BoxFit.cover,
