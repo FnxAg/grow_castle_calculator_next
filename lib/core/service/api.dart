@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
 
-import 'package:http/http.dart' as http;
+import 'package:dio/dio.dart';
+
+import 'api_client.dart';
 
 /// 赛季起止时间（来自接口 result.date，可能缺失或格式异常）。
 class SeasonRange {
@@ -185,14 +187,13 @@ class PlayerApiService {
     final uri = Uri.parse(url);
 
     try {
-      final response = await http.get(uri).timeout(_timeout);
+      final response = await ApiClient.get(uri).timeout(_timeout);
       if (response.statusCode != 200) {
         return const NameNotFound();
       }
 
-      // Explicit UTF-8 decoding.
-      final rawBody = utf8.decode(response.bodyBytes);
-      final decoded = json.decode(rawBody);
+      // 响应体已由 ApiClient 按 UTF-8 解码为文本。
+      final decoded = json.decode(response.data ?? '');
       if (decoded is! Map<String, dynamic>) {
         return const NameNotFound();
       }
@@ -232,10 +233,8 @@ class PlayerApiService {
       );
     } on TimeoutException {
       return const TimeoutError();
-    } on http.ClientException {
-      return const NetworkError('Network connection failed');
     } catch (e) {
-      return NetworkError(e.toString());
+      return _mapNetworkError(e);
     }
   }
 
@@ -247,13 +246,12 @@ class PlayerApiService {
     final uri = Uri.parse(_buildPlayerRankingUrl());
 
     try {
-      final response = await http.get(uri).timeout(_timeout);
+      final response = await ApiClient.get(uri).timeout(_timeout);
       if (response.statusCode != 200) {
         return NetworkError('HTTP ${response.statusCode}');
       }
 
-      final rawBody = utf8.decode(response.bodyBytes);
-      final decoded = json.decode(rawBody);
+      final decoded = json.decode(response.data ?? '');
       if (decoded is! Map<String, dynamic>) {
         return const NetworkError('Invalid response format');
       }
@@ -290,10 +288,8 @@ class PlayerApiService {
       );
     } on TimeoutException {
       return const TimeoutError();
-    } on http.ClientException {
-      return const NetworkError('Network connection failed');
     } catch (e) {
-      return NetworkError(e.toString());
+      return _mapNetworkError(e);
     }
   }
 
@@ -305,13 +301,12 @@ class PlayerApiService {
     final uri = Uri.parse(_buildHellRankingUrl());
 
     try {
-      final response = await http.get(uri).timeout(_timeout);
+      final response = await ApiClient.get(uri).timeout(_timeout);
       if (response.statusCode != 200) {
         return NetworkError('HTTP ${response.statusCode}');
       }
 
-      final rawBody = utf8.decode(response.bodyBytes);
-      final decoded = json.decode(rawBody);
+      final decoded = json.decode(response.data ?? '');
       if (decoded is! Map<String, dynamic>) {
         return const NetworkError('Invalid response format');
       }
@@ -348,10 +343,8 @@ class PlayerApiService {
       );
     } on TimeoutException {
       return const TimeoutError();
-    } on http.ClientException {
-      return const NetworkError('Network connection failed');
     } catch (e) {
-      return NetworkError(e.toString());
+      return _mapNetworkError(e);
     }
   }
 
@@ -363,13 +356,12 @@ class PlayerApiService {
     final uri = Uri.parse(_buildGuildsUrl());
 
     try {
-      final response = await http.get(uri).timeout(_timeout);
+      final response = await ApiClient.get(uri).timeout(_timeout);
       if (response.statusCode != 200) {
         return NetworkError('HTTP ${response.statusCode}');
       }
 
-      final rawBody = utf8.decode(response.bodyBytes);
-      final decoded = json.decode(rawBody);
+      final decoded = json.decode(response.data ?? '');
       if (decoded is! Map<String, dynamic>) {
         return const NetworkError('Invalid response format');
       }
@@ -406,10 +398,8 @@ class PlayerApiService {
       );
     } on TimeoutException {
       return const TimeoutError();
-    } on http.ClientException {
-      return const NetworkError('Network connection failed');
     } catch (e) {
-      return NetworkError(e.toString());
+      return _mapNetworkError(e);
     }
   }
 
@@ -422,13 +412,12 @@ class PlayerApiService {
     final uri = Uri.parse(_buildGuildDetailUrl(guildName.trim()));
 
     try {
-      final response = await http.get(uri).timeout(_timeout);
+      final response = await ApiClient.get(uri).timeout(_timeout);
       if (response.statusCode != 200) {
         return NetworkError('HTTP ${response.statusCode}');
       }
 
-      final rawBody = utf8.decode(response.bodyBytes);
-      final decoded = json.decode(rawBody);
+      final decoded = json.decode(response.data ?? '');
       if (decoded is! Map<String, dynamic>) {
         return const NetworkError('Invalid response format');
       }
@@ -469,10 +458,8 @@ class PlayerApiService {
       );
     } on TimeoutException {
       return const TimeoutError();
-    } on http.ClientException {
-      return const NetworkError('Network connection failed');
     } catch (e) {
-      return NetworkError(e.toString());
+      return _mapNetworkError(e);
     }
   }
 
@@ -493,14 +480,17 @@ class PlayerApiService {
         '$base/season/all/players/${Uri.encodeComponent(playerName.trim())}');
 
     try {
-      final response = await http.get(uri).timeout(_timeout);
+      final response = await ApiClient.get(
+        uri,
+        // 默认第三方 API 附带 `User`（当前用户）与 UA；自建地址不带
+        options: await ApiClient.thirdPartyOptions(baseUrl),
+      ).timeout(_timeout);
       if (response.statusCode == 404) return const <SeasonWphGroup>[];
       if (response.statusCode != 200) {
         return NetworkError('HTTP ${response.statusCode}');
       }
 
-      final rawBody = utf8.decode(response.bodyBytes);
-      final decoded = json.decode(rawBody);
+      final decoded = json.decode(response.data ?? '');
       if (decoded is! List<dynamic>) {
         return const NetworkError('Invalid response format');
       }
@@ -524,10 +514,8 @@ class PlayerApiService {
       return result;
     } on TimeoutException {
       return const TimeoutError();
-    } on http.ClientException {
-      return const NetworkError('Network connection failed');
     } catch (e) {
-      return NetworkError(e.toString());
+      return _mapNetworkError(e);
     }
   }
 
@@ -555,6 +543,22 @@ class PlayerApiService {
     final diff = end.difference(now);
     if (diff.isNegative) return '已结束';
     return '${diff.inDays}d ${diff.inHours % 24}h ${diff.inMinutes % 60}m';
+  }
+
+  /// 把请求阶段的异常映射为 [QueryError]：dio 的各种超时 → [TimeoutError]，
+  /// 其余网络类异常（连接失败、证书错误等）→ [NetworkError]。
+  /// [TimeoutException]（调用方的 `.timeout()` 兜底）由各方法自行捕获。
+  static QueryError _mapNetworkError(Object e) {
+    if (e is DioException) {
+      final type = e.type;
+      if (type == DioExceptionType.connectionTimeout ||
+          type == DioExceptionType.sendTimeout ||
+          type == DioExceptionType.receiveTimeout) {
+        return const TimeoutError();
+      }
+      return const NetworkError('Network connection failed');
+    }
+    return NetworkError(e.toString());
   }
 
   /// Parses [value] to int, handling both `int` and `String` representations.
