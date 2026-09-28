@@ -8,9 +8,7 @@ import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:measure_size/render_object.dart';
 
-/// 玩家详情页：并行调用官方 API（[PlayerApiService.query]）与第三方 API
-/// （每小时波速历史）获取该玩家数据并展示。
-/// 与当前用户无关——任意榜单/公会成员中的玩家都可点击进入查看。
+/// 玩家详情页
 class PlayerDetailPage extends StatefulWidget {
   const PlayerDetailPage({
     super.key,
@@ -122,9 +120,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
       ..forward();
   }
 
-  /// 官方 API 与第三方 API 并行查询（均不缓存，每次进入重新抓取）；
-  /// 第三方历史失败或为空时静默忽略，不阻塞官方数据展示。
-  /// 第三方 API 开关关闭时跳过波速历史查询。
+  /// 并行查询
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -323,7 +319,8 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                       return ListView(
                         padding: EdgeInsets.only(
                           left: 16.0,
-                          top: isDesktop ? value : (value - offset).clamp(0.0, value),
+                          // top: isDesktop ? value : (value - offset).clamp(0.0, value),
+                          top: value,
                           right: 16.0,
                           bottom: 8.0,
                         ),
@@ -473,9 +470,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
     );
   }
 
-  /// 波速网格：按可用宽度均分为每行 N 格（格子不小于 48 宽），
-  /// 格子 [Expanded] 拉伸铺满整行、右侧无空白；高度固定 28；
-  /// 末行格子数量不足时自动补满剩余宽度；缺失值显示「—」
   Widget _wphGrid(List<int?> wphs) {
     final scheme = Theme.of(context).colorScheme;
     return LayoutBuilder(

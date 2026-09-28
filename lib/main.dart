@@ -31,10 +31,6 @@ Future<void> _init() async {
 }
 
 Future<void> _initializeHive() async {
-  // 数据统一存放于应用私有目录（Android = filesDir，Windows = %APPDATA%\fnxag\GCC Next），
-  // 与原生小组件读取 widget_state.json 的目录一致。
-  // 不用 Hive.initFlutter()：它落在 getApplicationDocumentsDirectory()，
-  // Windows 上即用户「文档」根目录，会把 .hive 文件散落到用户文件区。
   final dir = await getApplicationSupportDirectory();
   await dir.create(recursive: true);
   Hive.init(dir.path);
