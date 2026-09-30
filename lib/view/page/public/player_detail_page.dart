@@ -325,7 +325,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                           bottom: 8.0,
                         ),
                         children: <Widget>[
-                          // 第三方 API：赛季标题 + 每小时波速胶囊流（无数据/失败时整个区块不展示）
                           if (_wphHistory != null &&
                               _wphHistory!.isNotEmpty) ...[
                             Padding(

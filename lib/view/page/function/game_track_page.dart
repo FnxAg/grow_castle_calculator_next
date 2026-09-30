@@ -1,6 +1,3 @@
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
-import 'package:material_ui/material_ui.dart';
-
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
@@ -8,6 +5,8 @@ import 'package:grow_castle_calculator_next/view/page/function/track/game_track_
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:material_ui/material_ui.dart';
 
 class GameTrackPage extends StatefulWidget {
   const GameTrackPage({super.key});
@@ -72,19 +71,6 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
 
   @override
   Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final summary = Padding(
-      padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-      child: Align(
-        alignment: Alignment.centerLeft,
-        child: Text(
-          '共 ${_records.length} 条记录',
-          style: Theme.of(context).textTheme.bodySmall
-              ?.copyWith(color: scheme.primary),
-        ),
-      ),
-    );
-
     return ListenableBuilder(
       listenable: Listenable.merge([
         Stores.infoStore.currentUserNotifier,
@@ -95,7 +81,10 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: .start,
-              children: [const Text('游戏轨迹'), _AppBarInfo()],
+              children: [
+                const Text('游戏轨迹'),
+                _AppBarInfo(trackLength: _records.length),
+              ],
             ),
             actions: [
               if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
@@ -141,15 +130,11 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
           ),
           body: Column(
             children: [
-              summary,
-              const Divider(height: 1),
               _userId == 0
-                  ? const Center(child: Text('当前为默认用户，无法记录轨迹'))
+                  ? Expanded(child: const Center(child: Text('当前为默认用户，无法记录轨迹')))
                   : _records.isEmpty && !_gameTrackEnabled
                   ? const Expanded(
-                      child: Center(
-                        child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」'),
-                      ),
+                      child: Center(child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」')),
                     )
                   : _records.isEmpty
                   ? const Expanded(child: Center(child: Text('暂无轨迹记录')))
@@ -189,6 +174,19 @@ class _TrackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final trackInfo = [
+      PillChip(icon: Icons.emoji_events, text: Text('${record.wave}')),
+      PillChip(
+        icon: Icons.monetization_on,
+        text: Text(record.totalGold.formatCompact(english: false)),
+      ),
+      PillChip(
+        icon: Icons.star,
+        text: Text(
+          '${record.gp.format(fractionDigits: 3)} · ${record.gpCN.format(fractionDigits: 3)}',
+        ),
+      ),
+    ];
     return Card(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
@@ -210,11 +208,13 @@ class _TrackCard extends StatelessWidget {
                 ),
               ],
             ),
-            Text(
-              '总波数 ${record.wave.format()}  ·  总经济 ${record.totalGold.formatCompact(english: false)}',
-            ),
-            Text(
-              'GP ${record.gp.format(fractionDigits: 3)}  ·  指数 ${record.gpCN.format(fractionDigits: 3)}',
+            Row(
+              children: [
+                for (final chip in trackInfo) ...[
+                  chip,
+                  const SizedBox(width: 4),
+                ],
+              ],
             ),
             if (record.units.isNotEmpty) ...[
               const SizedBox(height: 8),
@@ -263,7 +263,7 @@ class _TrackDelta extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Center(
         child: Text(
-          '${_formatDuration(duration)}  ·  波数 +${waveDelta.format()}  ·  平均 WPH ${waveSpeed.format(fractionDigits: 2)}',
+          '${_formatDuration(duration)}  ·  +${waveDelta.format()}  ·  ${waveSpeed.format(fractionDigits: 2)}',
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ),
@@ -281,19 +281,21 @@ String _formatDuration(Duration value) {
   final hours = value.inHours;
   final minutes = value.inMinutes.remainder(60);
   final seconds = value.inSeconds.remainder(60);
-  return hours > 0
-      ? '$hours小时$minutes分$seconds秒'
-      : minutes > 0
-      ? '$minutes分$seconds秒'
-      : '$seconds秒';
+  return '${hours.toString()}:'
+      '${minutes.toString().padLeft(2, '0')}:'
+      '${seconds.toString().padLeft(2, '0')}';
 }
 
 class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo();
+  final int trackLength;
+
+  const _AppBarInfo({required this.trackLength});
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> segments = <Widget>[CurrentUser()];
+    final TextStyle textStyle = const TextStyle(fontSize: 12.0);
+    final Widget trackInfo = Text('共 $trackLength 条记录', style: textStyle);
+    final List<Widget> segments = <Widget>[CurrentUser(), trackInfo];
     return AppBarInfo(children: segments);
   }
 }
