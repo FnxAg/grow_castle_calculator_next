@@ -20,11 +20,10 @@ enum RankingKind {
   final String title;
   final IconData icon;
 
-  /// 行内显示的另一榜排名胶囊图标（个人榜↔无尽榜互显；公会榜无交叉数据）
   final IconData? crossIcon;
 }
 
-/// 排行榜分数趋势图：展示指定榜单前 50/100/300 名的分数走势。
+/// 排行榜分数趋势图
 class RankingChartPage extends StatefulWidget {
   const RankingChartPage({super.key, required this.kind});
 
@@ -120,38 +119,53 @@ class _RankingChartPageState extends State<RankingChartPage> {
       (min, row) => row.score < min ? row.score : min,
     );
 
-    return ListView(
-      padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
-      children: [
-        SegmentedButton<int>(
-          showSelectedIcon: false,
-          segments: const [
-            ButtonSegment(value: 50, label: Text('前 50')),
-            ButtonSegment(value: 100, label: Text('前 100')),
-            ButtonSegment(value: 300, label: Text('前 300')),
-          ],
-          selected: {_selectedRange},
-          onSelectionChanged: (selection) => setState(() {
-            _selectedRange = selection.first;
-          }),
-        ),
-        const SizedBox(height: 20.0),
-        // 宽屏下图表加高：趋势曲线更易读
-        LayoutBuilder(
-          builder: (context, constraints) => SizedBox(
-            height: constraints.maxWidth >= Breakpoints.large ? 440.0 : 320.0,
-            child: LineChart(_chartData(visibleRows, minScore, maxScore)),
-          ),
-        ),
-        const SizedBox(height: 16.0),
-        Text(
-          '显示前 ${visibleRows.length} 名 · 最高 ${maxScore.format()} · 最低 ${minScore.format()}',
-          textAlign: TextAlign.center,
-          style: TextStyle(
-            color: Theme.of(context).colorScheme.onSurfaceVariant,
-          ),
-        ),
+    final rangeSelector = SegmentedButton<int>(
+      showSelectedIcon: false,
+      segments: const [
+        ButtonSegment(value: 50, label: Text('前 50')),
+        ButtonSegment(value: 100, label: Text('前 100')),
+        ButtonSegment(value: 300, label: Text('前 300')),
       ],
+      selected: {_selectedRange},
+      onSelectionChanged: (selection) => setState(() {
+        _selectedRange = selection.first;
+      }),
+    );
+    final summary = Text(
+      '前 ${visibleRows.length} 名 · 最高 ${maxScore.format()} · 最低 ${minScore.format()}',
+      textAlign: TextAlign.center,
+      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
+    );
+    final chart = LineChart(_chartData(visibleRows, minScore, maxScore));
+
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        if (constraints.maxWidth < Breakpoints.expanded) {
+          return ListView(
+            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
+            children: [
+              rangeSelector,
+              const SizedBox(height: 20.0),
+              SizedBox(height: 320.0, child: chart),
+              const SizedBox(height: 16.0),
+              summary,
+            ],
+          );
+        }
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              rangeSelector,
+              const SizedBox(height: 20.0),
+              Expanded(child: chart),
+              const SizedBox(height: 16.0),
+              summary,
+            ],
+          ),
+        );
+      },
     );
   }
 
@@ -228,7 +242,14 @@ class _RankingChartPageState extends State<RankingChartPage> {
           dotData: FlDotData(show: rows.length <= 50),
           belowBarData: BarAreaData(
             show: true,
-            color: scheme.primary.withValues(alpha: 0.12),
+            gradient: LinearGradient(
+              colors: [
+                scheme.primary.withValues(alpha: 0.5),
+                scheme.primary.withValues(alpha: 0.0),
+              ],
+              begin: Alignment.topCenter,
+              end: Alignment.bottomCenter,
+            ),
           ),
         ),
       ],
@@ -251,12 +272,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
   }
 }
 
-/// 通用榜单页（个人/公会/无尽）：与当前用户无关。
-///
-/// 进入时读取 [RankingCache]（命中缓存直接展示，未命中则抓取并缓存）；
-/// 刷新仅由用户下拉触发（force 强制重新请求）；刷新失败保留旧数据，
-/// 仅 SnackBar 提示。行首展示该榜自身的排名，行内叠加另一榜的排名胶囊
-/// （个人榜显示无尽排名，无尽榜显示赛季排名），与公会页成员行的胶囊同构。
+/// 榜单页
 class RankingPage extends StatefulWidget {
   const RankingPage({super.key, required this.kind});
 
@@ -266,7 +282,7 @@ class RankingPage extends StatefulWidget {
   State<RankingPage> createState() => _RankingPageState();
 }
 
-/// 归一化后的榜单行（三个榜单模型字段一致：rank/name/score）
+/// 归一化后的榜单行
 class _RankRow {
   const _RankRow({required this.rank, required this.name, required this.score});
 
@@ -278,18 +294,14 @@ class _RankRow {
 class _RankingPageState extends State<RankingPage> {
   static const List<int> _milestoneRanks = [1, 3, 5, 10, 50, 100, 200, 300];
 
-  /// 首屏加载中（仅当界面尚无任何内容时显示全屏转圈）
   bool _firstLoading = true;
   String? _error;
   List<_RankRow> _rows = const [];
 
-  /// 交叉榜单索引：名称(小写) → 另一榜排名，行内胶囊查询用
   Map<String, int> _crossRanks = {};
 
-  /// 主从两栏下选中的玩家名；null 表示未选中
   String? _selectedName;
 
-  /// 最近一次布局的 body 可用宽度（LayoutBuilder 回填，供点击回调判断两栏）
   double _lastBodyWidth = 0;
 
   @override
@@ -298,8 +310,6 @@ class _RankingPageState extends State<RankingPage> {
     _load();
   }
 
-  /// 加载榜单：进入时读取缓存；[force]（下拉刷新/重试）忽略缓存重新抓取。
-  /// 已有内容时刷新不清空界面，失败仅 SnackBar 提示并保留旧数据。
   Future<void> _load({bool force = false}) async {
     final hasContent = _rows.isNotEmpty;
     setState(() {
@@ -307,7 +317,6 @@ class _RankingPageState extends State<RankingPage> {
       _error = null;
     });
 
-    // 并行：主榜单 + 交叉榜单（个人榜↔无尽榜互查排名，公会榜无交叉数据）
     final (result, cross) = await (
       switch (widget.kind) {
         RankingKind.player => RankingCache.playerRanking(force: force),
@@ -317,7 +326,6 @@ class _RankingPageState extends State<RankingPage> {
       switch (widget.kind) {
         RankingKind.player => RankingCache.hellRanking(force: force),
         RankingKind.hell => RankingCache.playerRanking(force: force),
-        // 公会榜没有交叉数据
         RankingKind.guild => Future<Object?>.value(null),
       },
     ).wait;
@@ -346,16 +354,16 @@ class _RankingPageState extends State<RankingPage> {
       };
 
       if (result is! QueryError) {
-        // 成功（含空榜单）：覆盖展示
+        // 成功获取
         _rows = rows;
       } else if (hasContent) {
-        // 已有内容：保留旧数据，仅提示刷新失败
+        // 已有内容
         refreshFailure = _errorMessage(result);
       } else {
         _error = _errorMessage(result);
       }
 
-      // 交叉榜单索引（另一榜排名，行内胶囊）：成功才覆盖，失败保留旧索引
+      // 交叉榜单索引
       final crossRanks = switch (widget.kind) {
         RankingKind.player when cross is SeasonQueryResult<HellRankInfo> => {
           for (final e in cross.items) e.name.toLowerCase(): e.rank,
@@ -389,7 +397,7 @@ class _RankingPageState extends State<RankingPage> {
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Text('${widget.kind.title}特殊名次'),
+          title: Text('${widget.kind.title}名次'),
           content: SizedBox(
             width: 420,
             child: ListView.separated(
@@ -436,7 +444,6 @@ class _RankingPageState extends State<RankingPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(widget.kind.title),
-        // action 区：赛季进度胶囊
         actions: [
           SeasonIndicator(
             notifier: switch (widget.kind) {
@@ -477,19 +484,15 @@ class _RankingPageState extends State<RankingPage> {
     if (_rows.isEmpty) {
       return const Center(child: Text('暂无数据'));
     }
-    // 主从两栏：body 局部宽度足够时右侧常驻详情面板（未选中显示占位），
-    // 否则单列表 + push。可用宽度回填给点击回调共用。
-    // 公会榜不参与：它的「详情」是独立的成员列表页（见 [_openRow]），选中项
-    // 永远填不进右侧面板，留着只会是个点了没反应的占位
     return LayoutBuilder(
       builder: (context, constraints) {
         _lastBodyWidth = constraints.maxWidth;
-        final wide = widget.kind != RankingKind.guild &&
+        final wide =
+            widget.kind != RankingKind.guild &&
             _lastBodyWidth >= Breakpoints.masterDetailMinWidth;
         final list = _buildList(wide: wide);
         if (!wide) return list;
         return Row(
-          // stretch 给两栏紧的高度约束：面板内部的 Column+Expanded 需要
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Expanded(child: list),
@@ -504,8 +507,6 @@ class _RankingPageState extends State<RankingPage> {
     );
   }
 
-  /// 打开一行的详情：宽屏且非公会榜 → 选中并在右侧面板展示；
-  /// 其余（窄屏 / 公会榜）→ push（公会榜打开的是成员列表页，不嵌面板）
   void _openRow(_RankRow row) {
     FocusManager.instance.primaryFocus?.unfocus();
     if (widget.kind != RankingKind.guild &&
@@ -517,14 +518,14 @@ class _RankingPageState extends State<RankingPage> {
       MaterialPageRoute(
         builder: (context) => switch (widget.kind) {
           RankingKind.guild => GuildDetailPage(guildName: row.name),
-          RankingKind.player || RankingKind.hell =>
-            PlayerDetailPage(playerName: row.name),
+          RankingKind.player ||
+          RankingKind.hell => PlayerDetailPage(playerName: row.name),
         },
       ),
     );
   }
 
-  /// 右侧详情面板：未选中时占位提示，选中后嵌入玩家详情
+  /// 右侧详情面板
   Widget _buildDetailPane() {
     final name = _selectedName;
     if (name == null) {
@@ -586,8 +587,7 @@ class _RankingPageState extends State<RankingPage> {
     );
   }
 
-  /// 榜单列表：排名/名称/分数，下拉刷新强制重新请求；
-  /// [wide] 为主从两栏模式：选中行高亮，点击改为面板展示
+  /// 榜单列表
   Widget _buildList({required bool wide}) {
     final scheme = Theme.of(context).colorScheme;
     return RefreshIndicator(
@@ -597,13 +597,12 @@ class _RankingPageState extends State<RankingPage> {
         itemCount: _rows.length,
         itemBuilder: (context, index) {
           final row = _rows[index];
-          // 另一榜排名胶囊（个人榜→无尽，无尽榜→赛季；公会榜无交叉）
           final crossRank = widget.kind.crossIcon == null
               ? null
               : _crossRanks[row.name.toLowerCase()];
           return ListTile(
             selected: wide && row.name == _selectedName,
-            // 点击行：公会榜进入公会成员详情，玩家榜进入玩家详情
+            // 点击进入详情页或右侧面板
             onTap: () => _openRow(row),
             leading: CircleAvatar(
               radius: 14.0,

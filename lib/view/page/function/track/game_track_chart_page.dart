@@ -47,7 +47,8 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
       return records;
     }
 
-    final bucketSize = (records.length + _maxChartPoints - 1) ~/ _maxChartPoints;
+    final bucketSize =
+        (records.length + _maxChartPoints - 1) ~/ _maxChartPoints;
     final downsampled = <GameTrackRecord>[];
 
     void addIfNew(GameTrackRecord record) {
@@ -106,29 +107,45 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
           ),
           body: _chartRecords.length < 2
               ? const Center(child: Text('至少需要两条轨迹记录'))
-              : ListView(
+              : Padding(
                   padding: const EdgeInsets.all(12),
-                  children: [
-                    if (_chartRecords.length != _records.length)
-                      Padding(
-                        padding: const EdgeInsets.only(bottom: 8),
-                        child: Text(
-                          '已压缩显示：共 ${_records.length} 条，显示 ${_chartRecords.length} 条',
-                          style: Theme.of(context).textTheme.bodySmall,
-                        ),
-                      ),
-                    _buildChartGrid(context),
-                  ],
+                  child: LayoutBuilder(
+                    builder: (context, constraints) =>
+                        _buildChartBody(context, constraints),
+                  ),
                 ),
         );
       },
     );
   }
 
-  /// 4 张面板：局部宽度足够时 2×2 并排（每张 ≥310），否则纵排。
-  /// 断点用 LayoutBuilder 的局部 constraints —— 即 body 的实际可用宽度；
-  /// 用 MediaQuery 会把导航栏占掉的宽度也算进来，判断偏宽
-  Widget _buildChartGrid(BuildContext context) {
+  /// 图表区
+  Widget _buildChartBody(BuildContext context, BoxConstraints constraints) {
+    final notice = _chartRecords.length == _records.length
+        ? null
+        : Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              '已压缩显示：共 ${_records.length} 条，显示 ${_chartRecords.length} 条',
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          );
+
+    if (constraints.maxWidth < Breakpoints.chartGridMinWidth) {
+      return ListView(
+        children: [?notice, _buildChartGrid(context, fillHeight: false)],
+      );
+    }
+    return Column(
+      children: [
+        ?notice,
+        Expanded(child: _buildChartGrid(context, fillHeight: true)),
+      ],
+    );
+  }
+
+  /// 4 张图表
+  Widget _buildChartGrid(BuildContext context, {required bool fillHeight}) {
     final panels = [
       for (final chart in [
         (
@@ -157,27 +174,25 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
           records: _chartRecords,
           valueOf: chart.$2,
           formatValue: chart.$3,
+          fillHeight: fillHeight,
         ),
     ];
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < Breakpoints.chartGridMinWidth) {
-          return Column(children: panels);
-        }
-        return Column(
-          children: [
-            for (var row = 0; row < panels.length; row += 2)
-              Row(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Expanded(child: panels[row]),
-                  const SizedBox(width: 12),
-                  Expanded(child: panels[row + 1]),
-                ],
-              ),
-          ],
-        );
-      },
+    if (!fillHeight) return Column(children: panels);
+
+    return Column(
+      children: [
+        for (var row = 0; row < panels.length; row += 2)
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Expanded(child: panels[row]),
+                const SizedBox(width: 12),
+                Expanded(child: panels[row + 1]),
+              ],
+            ),
+          ),
+      ],
     );
   }
 }
@@ -188,12 +203,16 @@ class _ChartPanel extends StatelessWidget {
     required this.records,
     required this.valueOf,
     required this.formatValue,
+    required this.fillHeight,
   });
 
   final String title;
   final List<GameTrackRecord> records;
   final double Function(GameTrackRecord) valueOf;
   final String Function(double) formatValue;
+
+  /// 图表是否吃掉卡片剩余高度
+  final bool fillHeight;
 
   @override
   Widget build(BuildContext context) {
@@ -238,9 +257,9 @@ class _ChartPanel extends StatelessWidget {
               ],
             ),
             const SizedBox(height: 12),
-            SizedBox(
-              height: 240,
-              child: LineChart(
+            _chartSlot(
+              fillHeight,
+              LineChart(
                 LineChartData(
                   minX: minimumX,
                   maxX: maximumX <= minimumX ? minimumX + 1 : maximumX,
@@ -253,7 +272,8 @@ class _ChartPanel extends StatelessWidget {
                     touchTooltipData: LineTouchTooltipData(
                       fitInsideHorizontally: true,
                       fitInsideVertically: true,
-                      getTooltipColor: (touchedSpot) => scheme.surfaceContainerHighest,
+                      getTooltipColor: (touchedSpot) =>
+                          scheme.surfaceContainerHighest,
                       getTooltipItems: (touchedSpots) => touchedSpots
                           .map(
                             (spot) => LineTooltipItem(
@@ -288,14 +308,10 @@ class _ChartPanel extends StatelessWidget {
                   titlesData: FlTitlesData(
                     show: true,
                     topTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: false,
-                      ),
+                      sideTitles: SideTitles(showTitles: false),
                     ),
                     bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: false,
-                      ),
+                      sideTitles: SideTitles(showTitles: false),
                     ),
                     leftTitles: AxisTitles(
                       sideTitles: SideTitles(
@@ -309,9 +325,7 @@ class _ChartPanel extends StatelessWidget {
                       ),
                     ),
                     rightTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: false,
-                      ),
+                      sideTitles: SideTitles(showTitles: false),
                     ),
                   ),
                 ),
@@ -326,6 +340,10 @@ class _ChartPanel extends StatelessWidget {
 
 double _min(double a, double b) => a < b ? a : b;
 double _max(double a, double b) => a > b ? a : b;
+
+/// 图表槽位
+Widget _chartSlot(bool fillHeight, Widget chart) =>
+    fillHeight ? Expanded(child: chart) : SizedBox(height: 240, child: chart);
 
 String _formatDate(DateTime value) {
   String two(int number) => number.toString().padLeft(2, '0');
@@ -348,4 +366,3 @@ class _AppBarInfo extends StatelessWidget {
     return AppBarInfo(children: segments);
   }
 }
-
