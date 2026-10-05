@@ -50,7 +50,7 @@ class GeneratedItem {
     }
     final q = quality;
     if (q != null) {
-      buffer.writeln('  (itemQuality ${q.toStringAsFixed(2)}% → 前3条 ×${(1 + q / 100).toStringAsFixed(4)})');
+      buffer.writeln('  (itemQuality ${q.toStringAsFixed(2)}% → top 3 lines ×${(1 + q / 100).toStringAsFixed(4)})');
     }
     return buffer.toString();
   }
@@ -109,10 +109,10 @@ class ItemGenerator {
   }) {
     final resolvedLevel = source?.rollLevel(_random) ?? level;
     if (resolvedLevel == null) {
-      throw ArgumentError('source 与 level 必须传入一个');
+      throw ArgumentError('provide either source or level');
     }
     if (resolvedLevel == ItemLevel.U) {
-      throw UnsupportedError('ItemLevel.U 暂无词条数值数据');
+      throw UnsupportedError('no stat values for ItemLevel.U yet');
     }
     final resolvedType = type ?? rollType();
     final lines = <ItemLine>[];
@@ -202,7 +202,8 @@ class ItemGenerator {
       if (!_typeAllowed(line, type)) continue;
       if (accept(line)) return line;
     }
-    throw StateError('$_maxTries 次内未抽到合法词条，请检查过滤条件');
+    throw StateError('no valid stat line rolled within $_maxTries tries; '
+        'check the filter conditions');
   }
 
   /// 步骤 4：词条是否允许出现在该装备类型上（multiShot 仅弓与饰品）

@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
@@ -42,24 +44,25 @@ class FormationSummaryBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
       child: SummaryCard(
         children: <Widget>[
           SummaryRow(
             leadingIcon: Icons.emoji_events,
-            title: Text('总波数'),
+            title: Text(l10n.totalWave),
             actions: [
               if (Stores.infoStore.getCurrentUserId() == 0)
                 _SmallIconButton(
                   icon: const Icon(Icons.edit),
-                  tooltip: '修改总波数',
+                  tooltip: l10n.tooltipEditTotalWave,
                   onPressed: () {
                     FocusManager.instance.primaryFocus?.unfocus();
                     showWaveEditDialog(
                       context,
-                      title: '设置总波数',
-                      labelText: '总波数',
+                      title: l10n.dialogSetTotalWave,
+                      labelText: l10n.totalWave,
                       fallback: 1,
                       onSave: Stores.infoStore.setUserWave,
                     );
@@ -71,12 +74,10 @@ class FormationSummaryBar extends StatelessWidget {
                       ? const SizedBox(
                           width: 14.0,
                           height: 14.0,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2.0,
-                          ),
+                          child: CircularProgressIndicator(strokeWidth: 2.0),
                         )
                       : const Icon(Icons.cloud_sync),
-                  tooltip: '拉取数据',
+                  tooltip: l10n.tooltipFetchData,
                   onPressed: querying ? null : onQuery,
                 ),
             ],
@@ -88,18 +89,18 @@ class FormationSummaryBar extends StatelessWidget {
           ),
           SummaryRow(
             leadingIcon: Icons.eco,
-            title: Text('赛季波数'),
+            title: Text(l10n.seasonWave),
             actions: [
               if (Stores.infoStore.getCurrentUserId() == 0)
                 _SmallIconButton(
                   icon: const Icon(Icons.edit),
-                  tooltip: '修改赛季波数',
+                  tooltip: l10n.tooltipEditSeasonWave,
                   onPressed: () {
                     FocusManager.instance.primaryFocus?.unfocus();
                     showWaveEditDialog(
                       context,
-                      title: '设置赛季波数',
-                      labelText: '赛季波数',
+                      title: l10n.dialogSetSeasonWave,
+                      labelText: l10n.seasonWave,
                       fallback: 0,
                       onSave: Stores.infoStore.setCurrentUserSeasonWave,
                     );
@@ -118,10 +119,7 @@ class FormationSummaryBar extends StatelessWidget {
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutCubic,
             alignment: Alignment.topCenter,
-            child:
-                (playerRank != null ||
-                    hellRank != null ||
-                    guildRank != null)
+            child: (playerRank != null || hellRank != null || guildRank != null)
                 ? _RankIntro(
                     playerRank: playerRank,
                     playerGapPrev: playerGapPrev,
@@ -133,11 +131,14 @@ class FormationSummaryBar extends StatelessWidget {
           ),
           SummaryRow(
             leadingIcon: Icons.monetization_on,
-            title: Text('总金币'),
+            title: Text(l10n.totalGold),
             trailing: ValueListenableBuilder<double>(
               valueListenable: Stores.infoStore.totalGoldNotifier,
               builder: (context, gold, _) => SummaryRowValueText(
-                text: gold.formatCompact(fractionDigits: 2, english: false),
+                text: gold.formatCompact(
+                  fractionDigits: 2,
+                  english: !context.isChineseLocale,
+                ),
               ),
             ),
           ),
@@ -145,7 +146,7 @@ class FormationSummaryBar extends StatelessWidget {
             leadingIcon: Icons.star,
             title: Row(
               mainAxisSize: MainAxisSize.min,
-              children: [const Text('GP · 指数')],
+              children: [Text(l10n.goldPower)],
             ),
             trailing: ListenableBuilder(
               listenable: Listenable.merge([
@@ -228,7 +229,7 @@ class _WaveEditDialogState extends State<_WaveEditDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(AppLocalizations.of(context).actionCancel),
         ),
         TextButton(
           onPressed: () {
@@ -236,7 +237,7 @@ class _WaveEditDialogState extends State<_WaveEditDialog> {
             widget.onSave(value);
             Navigator.of(context).pop();
           },
-          child: const Text('保存'),
+          child: Text(AppLocalizations.of(context).actionSave),
         ),
       ],
     );
@@ -349,7 +350,6 @@ class _RankRow extends StatelessWidget {
         (
           PillChip(
             text: Text('#$hellRank', style: chipTextStyle),
-            // 无尽模式：∞ 无限符号
             icon: Icons.all_inclusive,
           ),
           8.0,
@@ -367,7 +367,7 @@ class _RankRow extends StatelessWidget {
       children: [
         Icon(Icons.leaderboard, size: 20.0, color: colorScheme.primary),
         const SizedBox(width: 8.0),
-        const Text('排名'),
+        Text(AppLocalizations.of(context).ranking),
         // 胶囊靠右，与其他行的数值展示样式统一
         Expanded(
           child: Align(

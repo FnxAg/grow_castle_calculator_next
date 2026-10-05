@@ -538,16 +538,16 @@ class PlayerApiService {
   }
 
   /// Formats the time remaining until [end] (season end) as "Xd Xh Xm",
-  /// e.g. "2d 3h 45m". Returns '已结束' once the season has ended.
-  static String formatSeasonRemaining(DateTime end, DateTime now) {
+  /// e.g. "2d 3h 45m". Returns null once the season has ended — the "ended"
+  /// wording is the UI's business (l10n `seasonEnded`), this layer stays
+  /// language-neutral.
+  static String? formatSeasonRemaining(DateTime end, DateTime now) {
     final diff = end.difference(now);
-    if (diff.isNegative) return '已结束';
+    if (diff.isNegative) return null;
     return '${diff.inDays}d ${diff.inHours % 24}h ${diff.inMinutes % 60}m';
   }
 
-  /// 把请求阶段的异常映射为 [QueryError]：dio 的各种超时 → [TimeoutError]，
-  /// 其余网络类异常（连接失败、证书错误等）→ [NetworkError]。
-  /// [TimeoutException]（调用方的 `.timeout()` 兜底）由各方法自行捕获。
+  /// 请求阶段的异常映射为 [QueryError]
   static QueryError _mapNetworkError(Object e) {
     if (e is DioException) {
       final type = e.type;
@@ -569,7 +569,7 @@ class PlayerApiService {
     return 0;
   }
 
-  /// 解析 result.date（赛季起止时间，已换算为本地时区）；缺失或格式异常时返回空区间。
+  /// 解析 result.date
   static SeasonRange _parseSeason(Object? date) {
     if (date is! Map) return const SeasonRange();
     return SeasonRange(
@@ -578,8 +578,7 @@ class PlayerApiService {
     );
   }
 
-  /// 解析赛季时间字符串并换算为本地时区：
-  /// 带时区后缀（Z 或 ±hh:mm）直接解析；无后缀视为 UTC（服务器时间）。
+  /// 解析赛季时间字符串并换算为本地时区
   static DateTime? _parseSeasonTime(Object? value) {
     if (value is! String || value.isEmpty) return null;
     final hasTimezone =

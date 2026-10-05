@@ -3,6 +3,7 @@ import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 词条数量搭配：(Damage, Critical Chance, Critical Damage, Attack Speed) 各几条。
@@ -118,8 +119,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
         _baseCtrls[i].text = baseValues[i];
       }
     }
-    _speedEnabled =
-        _BestLineCalcSessionCache.speedEnabled ?? _speedEnabled;
+    _speedEnabled = _BestLineCalcSessionCache.speedEnabled ?? _speedEnabled;
   }
 
   void _saveToSessionCache() {
@@ -192,7 +192,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
     return items;
   }
 
-  String _comboText(_LineCombo combo) {
+  String _comboText(AppLocalizations l10n, _LineCombo combo) {
     final (damage, chance, critDmg, atkSpeed) = combo;
     final tokens = <String>[
       if (damage > 0) '${presetLines[0].$1} ×$damage',
@@ -200,11 +200,12 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
       if (critDmg > 0) '${presetLines[2].$1} ×$critDmg',
       if (atkSpeed > 0) '${presetLines[3].$1} ×$atkSpeed',
     ];
-    return tokens.isEmpty ? '（无输出词条）' : tokens.join(' · ');
+    return tokens.isEmpty ? l10n.labelNoDamageLines : tokens.join(' · ');
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final combos = switch (_lineSlots) {
       6 => sixLineNum,
       5 => fiveLineNum,
@@ -216,21 +217,21 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('最优装备词条组合'),
+        title: Text(l10n.toolBestLineCalc),
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline),
-            tooltip: '使用说明',
+            tooltip: l10n.aboutGuide,
             onPressed: () => showDialog<void>(
               context: context,
               builder: (dialogContext) => AlertDialog(
                 scrollable: true,
-                title: const Text('使用说明'),
-                content: const Text('Avg. Dmg 和下方列表中的 Damage 都是 Damage 与 Elemental Damage 的均值。'),
+                title: Text(l10n.aboutGuide),
+                content: Text(l10n.dialogBestLineHelpAvgDmg),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('关闭'),
+                    child: Text(l10n.actionClose),
                   ),
                 ],
               ),
@@ -258,7 +259,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
             dense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
             selected: best,
-            title: Text(_comboText(combo)),
+            title: Text(_comboText(l10n, combo)),
             trailing: Text(
               _gainText(gain),
               style: best
@@ -328,7 +329,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '面板无装备数值',
+              AppLocalizations.of(context).labelPanelWithoutItem,
               style: theme.textTheme.titleMedium?.copyWith(
                 color: theme.colorScheme.primary,
                 fontWeight: FontWeight.w600,
@@ -399,6 +400,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
 
   Widget _buildListHeader(BuildContext context, int count) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.only(top: 16, bottom: 8),
       child: Row(
@@ -406,10 +408,10 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
           SegmentedButton<int>(
             showSelectedIcon: false,
             style: const ButtonStyle(visualDensity: VisualDensity.compact),
-            segments: const [
-              ButtonSegment(value: 6, label: Text('6 词条')),
-              ButtonSegment(value: 5, label: Text('5 词条')),
-              ButtonSegment(value: 4, label: Text('4 词条')),
+            segments: [
+              ButtonSegment(value: 6, label: Text(l10n.labelLineSlot(6))),
+              ButtonSegment(value: 5, label: Text(l10n.labelLineSlot(5))),
+              ButtonSegment(value: 4, label: Text(l10n.labelLineSlot(4))),
             ],
             selected: {_lineSlots},
             onSelectionChanged: (selection) => setState(() {
@@ -418,7 +420,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
           ),
           const Spacer(),
           Text(
-            '共 $count 种',
+            l10n.labelComboCount(count),
             style: theme.textTheme.labelSmall?.copyWith(
               color: theme.colorScheme.onSurfaceVariant,
             ),

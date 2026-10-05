@@ -1,4 +1,5 @@
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income/colony_tab.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income/other_tab.dart';
@@ -29,6 +30,7 @@ class _IncomePageState extends State<IncomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final bool isWide = context.isWideScreen;
     final Widget expandedIncomeView = Expanded(
       flex: isWide ? 6 : 1,
@@ -56,25 +58,23 @@ class _IncomePageState extends State<IncomePage> {
             appBar: AppBar(
               title: Column(
                 crossAxisAlignment: .start,
-                children: [Text('收入'), _AppBarInfo()],
+                children: [Text(l10n.tabIncome), _AppBarInfo()],
               ),
               actions: [
                 IconButton(
                   icon: const Icon(Icons.info_outline),
-                  tooltip: '提示',
+                  tooltip: l10n.tooltipInfo,
                   onPressed: () {
                     showDialog<void>(
                       context: context,
                       builder: (context) {
                         return AlertDialog(
-                          title: const Text('提示'),
-                          content: const Text(
-                            '填写“跳波状态”后再填写此处，否则计算结果不准确。\n\n此处计算结果为每日收入。',
-                          ),
+                          title: Text(l10n.tooltipInfo),
+                          content: Text(l10n.dialogIncomeNotice),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.of(context).pop(),
-                              child: const Text('关闭'),
+                              child: Text(l10n.actionClose),
                             ),
                           ],
                         );
@@ -84,11 +84,11 @@ class _IncomePageState extends State<IncomePage> {
                 ),
               ],
               bottom: isMobile
-                  ? const TabBar(
+                  ? TabBar(
                       tabs: [
-                        Tab(text: '殖民地'),
-                        Tab(text: '推波'),
-                        Tab(text: '其他'),
+                        Tab(text: l10n.tabIncomeColony),
+                        Tab(text: l10n.tabIncomeWave),
+                        Tab(text: l10n.tabIncomeOther),
                       ],
                     )
                   : null,

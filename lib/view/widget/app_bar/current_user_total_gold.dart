@@ -1,5 +1,6 @@
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 class CurrentUserTotalGold extends StatelessWidget {
@@ -15,7 +16,10 @@ class CurrentUserTotalGold extends StatelessWidget {
       valueListenable: Stores.infoStore.totalGoldNotifier,
       builder: (context, totalGold, _) {
         return Text(
-          totalGold.formatCompact(fractionDigits: 2, english: false),
+          totalGold.formatCompact(
+            fractionDigits: 2,
+            english: !context.isChineseLocale,
+          ),
           style: textStyle,
         );
       },

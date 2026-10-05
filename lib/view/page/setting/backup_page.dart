@@ -9,6 +9,8 @@ import 'package:grow_castle_calculator_next/core/service/data_archive.dart';
 import 'package:grow_castle_calculator_next/core/service/webdav_backup_client.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/service_error_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/setting_edit_dialog.dart';
 
@@ -46,11 +48,12 @@ class _BackupPageState extends State<BackupPage> {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('数据备份')),
+      appBar: AppBar(title: Text(l10n.settingsDataBackup)),
       body: ListView(
         children: [
-          SectionHeader('WebDAV 备份'),
+          SectionHeader(l10n.sectionWebdavBackup),
           // 服务器配置行（手动备份与云端恢复共用）
           _buildConfigRows(scheme),
           // 手动操作与状态
@@ -60,9 +63,11 @@ class _BackupPageState extends State<BackupPage> {
               children: [
                 ListTile(
                   leading: const Icon(Icons.cloud_upload_outlined),
-                  title: const Text('立即备份'),
+                  title: Text(l10n.actionBackupNow),
                   subtitle: Text(
-                    _config.isConfigured ? '检查云端新旧后上传覆盖' : '未配置服务器',
+                    _config.isConfigured
+                        ? l10n.backupNowSubtitleReady
+                        : l10n.backupServerNotConfigured,
                   ),
                   trailing: busy || _remoteBusy ? _spinner() : null,
                   enabled: !busy && !_remoteBusy,
@@ -70,8 +75,8 @@ class _BackupPageState extends State<BackupPage> {
                 ),
                 ListTile(
                   leading: const Icon(Icons.cloud_download_outlined),
-                  title: const Text('从云端恢复'),
-                  subtitle: const Text('下载云端备份并覆盖本机数据'),
+                  title: Text(l10n.actionRestoreFromCloud),
+                  subtitle: Text(l10n.backupRestoreSubtitle),
                   trailing: _remoteBusy ? _spinner() : null,
                   enabled: !busy && !_remoteBusy,
                   onTap: _onRestoreFromCloud,
@@ -80,24 +85,24 @@ class _BackupPageState extends State<BackupPage> {
             ),
           ),
           _buildStatusArea(),
-          SectionHeader('本地文件'),
+          SectionHeader(l10n.sectionLocalFiles),
           ListTile(
             leading: const Icon(Icons.file_upload_outlined),
-            title: const Text('导出到文件'),
-            subtitle: const Text('把全部数据保存为本地文件'),
+            title: Text(l10n.actionExportToFile),
+            subtitle: Text(l10n.backupExportSubtitle),
             onTap: _onExportFile,
           ),
           ListTile(
             leading: const Icon(Icons.file_download_outlined),
-            title: const Text('导入文件'),
-            subtitle: const Text('从本地文件恢复数据'),
+            title: Text(l10n.actionImportFile),
+            subtitle: Text(l10n.backupImportSubtitle),
             onTap: _onImportFile,
           ),
-          SectionHeader('说明'),
+          SectionHeader(l10n.sectionInfo),
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
             child: Text(
-              '导入或恢复会覆盖本机全部数据，建议先导出备份。',
+              l10n.backupOverwriteHint,
               style: Theme.of(context)
                   .textTheme
                   .bodySmall
@@ -117,6 +122,7 @@ class _BackupPageState extends State<BackupPage> {
 
   /// 服务器地址/账号/密码配置行
   Widget _buildConfigRows(ColorScheme scheme) {
+    final l10n = AppLocalizations.of(context);
     return Column(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -124,8 +130,8 @@ class _BackupPageState extends State<BackupPage> {
           valueListenable: _config.urlNotifier,
           builder: (context, url, _) => ListTile(
             leading: const Icon(Icons.link),
-            title: const Text('服务器地址'),
-            subtitle: Text(url.isEmpty ? '未设置' : url),
+            title: Text(l10n.labelServerAddress),
+            subtitle: Text(url.isEmpty ? l10n.labelNotSet : url),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _showUrlDialog(),
           ),
@@ -134,8 +140,8 @@ class _BackupPageState extends State<BackupPage> {
           valueListenable: _config.usernameNotifier,
           builder: (context, username, _) => ListTile(
             leading: const Icon(Icons.person_outline),
-            title: const Text('账号'),
-            subtitle: Text(username.isEmpty ? '未设置' : username),
+            title: Text(l10n.labelAccount),
+            subtitle: Text(username.isEmpty ? l10n.labelNotSet : username),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _showUsernameDialog(),
           ),
@@ -144,8 +150,8 @@ class _BackupPageState extends State<BackupPage> {
           valueListenable: _config.passwordNotifier,
           builder: (context, password, _) => ListTile(
             leading: const Icon(Icons.key_outlined),
-            title: const Text('密码'),
-            subtitle: Text(password.isEmpty ? '未设置' : '••••••'),
+            title: Text(l10n.labelPassword),
+            subtitle: Text(password.isEmpty ? l10n.labelNotSet : '••••••'),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => _showPasswordDialog(),
           ),
@@ -157,6 +163,7 @@ class _BackupPageState extends State<BackupPage> {
   /// 备份状态区：上次成功/失败时间（手动备份的留痕；探测失败不写入）
   Widget _buildStatusArea() {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     return ListenableBuilder(
       listenable: Listenable.merge([
         _config.lastSuccessAtNotifier,
@@ -174,15 +181,18 @@ class _BackupPageState extends State<BackupPage> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
-                successMs == null
-                    ? '上次成功备份：从未'
-                    : '上次成功备份：${_formatClock(successMs)}',
+                l10n.backupLastSuccess(
+                  successMs == null ? l10n.labelNever : _formatClock(successMs),
+                ),
                 style: style?.copyWith(color: scheme.onSurfaceVariant),
               ),
               if (error != null)
                 Text(
-                  '上次备份失败：$error'
-                  '${errorAt == null ? '' : '（${_formatClock(errorAt)}）'}',
+                  l10n.backupLastFailed(
+                    errorAt == null ? 'no' : 'yes',
+                    storedBackupFailureText(l10n, error),
+                    errorAt == null ? '' : _formatClock(errorAt),
+                  ),
                   style: style?.copyWith(color: scheme.error),
                 ),
             ],
@@ -195,41 +205,42 @@ class _BackupPageState extends State<BackupPage> {
   // ── 配置输入弹窗 ──────────────────────────────────────────────
 
   void _showUrlDialog() {
+    final l10n = AppLocalizations.of(context);
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
       builder: (_) => SettingEditDialog(
-        title: '服务器地址',
+        title: l10n.labelServerAddress,
         initialValue: _config.urlNotifier.value,
-        decoration: const InputDecoration(
-          labelText: 'https://dav.example.com/dav/目录',
-        ),
+        decoration: InputDecoration(labelText: l10n.labelServerUrlExample),
         onSubmit: _config.setUrl,
       ),
     );
   }
 
   void _showUsernameDialog() {
+    final l10n = AppLocalizations.of(context);
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
       builder: (_) => SettingEditDialog(
-        title: '账号',
+        title: l10n.labelAccount,
         initialValue: _config.usernameNotifier.value,
-        decoration: const InputDecoration(labelText: 'WebDAV 账号'),
+        decoration: InputDecoration(labelText: l10n.labelWebdavAccount),
         onSubmit: _config.setUsername,
       ),
     );
   }
 
   void _showPasswordDialog() {
+    final l10n = AppLocalizations.of(context);
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
       builder: (_) => SettingEditDialog(
-        title: '密码',
+        title: l10n.labelPassword,
         initialValue: _config.passwordNotifier.value,
-        decoration: const InputDecoration(labelText: 'WebDAV 密码'),
+        decoration: InputDecoration(labelText: l10n.labelWebdavPassword),
         obscureText: true,
         showVisibilityToggle: true,
         onSubmit: _config.setPassword,
@@ -240,9 +251,10 @@ class _BackupPageState extends State<BackupPage> {
   // ── 手动备份：探测 → 确认 → 上传 ───────────────────────────────
 
   Future<void> _onManualBackup() async {
+    final l10n = AppLocalizations.of(context);
     // 未配置守卫必须在探测之前：否则会发出真实网络请求
     if (!_config.isConfigured) {
-      _snack('请先配置 WebDAV 服务器地址、账号与密码');
+      _snack(l10n.backupNotConfigured);
       return;
     }
     if (_remoteBusy || _service.busyNotifier.value) return; // 防同帧双击
@@ -261,20 +273,27 @@ class _BackupPageState extends State<BackupPage> {
     }
     final error = await _service.manualBackup();
     if (!mounted) return;
-    _snack(error == null ? '已备份到云端' : '备份失败：$error');
+    _snack(
+      error == null
+          ? l10n.snackBackupSuccess
+          : l10n.snackBackupFailed(backupFailureText(l10n, error)),
+    );
   }
 
   /// 探测云端备份元信息；失败只提示并返回 null（不写失败留痕：
   /// 备份根本没发起，记进状态区会谎报"上次备份失败"）
   Future<WebDavFileInfo?> _probeRemoteBackup() async {
+    final l10n = AppLocalizations.of(context);
     setState(() => _remoteBusy = true);
     try {
       return await _service.fetchRemoteInfo();
     } on WebDavException catch (e) {
-      if (mounted) _snack('检测云端备份失败：${e.message}');
+      if (mounted) {
+        _snack(l10n.snackRemoteProbeFailed(webdavExceptionText(l10n, e)));
+      }
       return null;
     } catch (_) {
-      if (mounted) _snack('检测云端备份失败，请稍后重试');
+      if (mounted) _snack(l10n.snackRemoteProbeFailedRetry);
       return null;
     } finally {
       if (mounted) setState(() => _remoteBusy = false);
@@ -289,20 +308,28 @@ class _BackupPageState extends State<BackupPage> {
     RemoteBackupRelation relation,
   ) {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final lastSuccessMs = _config.lastSuccessAtNotifier.value;
     final warn = relation == RemoteBackupRelation.remoteNewer ||
         relation == RemoteBackupRelation.remoteUnknown;
-    final remoteLine = info.exists
-        ? '云端备份：${_clockOrUnknown(info.lastModified)}'
-            '${info.contentLength == null ? '' : '，${info.contentLength! ~/ 1024} KB'}'
-        : '云端备份：还没有备份文件（将新建一份）';
-    final localLine = lastSuccessMs == null
-        ? '本机上次成功备份：从未'
-        : '本机上次成功备份：${_formatClock(lastSuccessMs)}';
+    final int? contentLength = info.contentLength;
+    final String remoteLine;
+    if (!info.exists) {
+      remoteLine = l10n.dialogCloudBackupNoFile;
+    } else {
+      remoteLine = l10n.dialogCloudBackupLine(
+        contentLength == null ? 'no' : 'yes',
+        _clockOrUnknown(l10n, info.lastModified),
+        contentLength == null ? '' : '${contentLength ~/ 1024}',
+      );
+    }
+    final localLine = l10n.dialogLastLocalBackupLine(
+      lastSuccessMs == null ? l10n.labelNever : _formatClock(lastSuccessMs),
+    );
     return showDialog<_OverwriteDecision>(
       context: context,
       builder: (dialogContext) => AlertDialog(
-        title: const Text('上传备份到云端'),
+        title: Text(l10n.dialogUploadBackupTitle),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -312,7 +339,7 @@ class _BackupPageState extends State<BackupPage> {
             if (warn) ...[
               const SizedBox(height: 12),
               Text(
-                _overwriteWarning(info, relation, lastSuccessMs),
+                _overwriteWarning(l10n, info, relation, lastSuccessMs),
                 style: TextStyle(color: scheme.error),
               ),
             ],
@@ -321,13 +348,13 @@ class _BackupPageState extends State<BackupPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(),
-            child: const Text('取消'),
+            child: Text(l10n.actionCancel),
           ),
           if (relation == RemoteBackupRelation.remoteNewer)
             TextButton(
               onPressed: () => Navigator.of(dialogContext)
                   .pop(_OverwriteDecision.restoreFromCloud),
-              child: const Text('恢复云端'),
+              child: Text(l10n.actionRestoreRemote),
             ),
           FilledButton(
             onPressed: () =>
@@ -339,10 +366,10 @@ class _BackupPageState extends State<BackupPage> {
                   )
                 : null,
             child: Text(!info.exists
-                ? '上传'
+                ? l10n.actionUpload
                 : warn
-                    ? '仍要覆盖'
-                    : '覆盖上传'),
+                    ? l10n.actionOverwriteAnyway
+                    : l10n.actionOverwriteUpload),
           ),
         ],
       ),
@@ -352,19 +379,19 @@ class _BackupPageState extends State<BackupPage> {
   /// 警告文案：remoteNewer 一种成因；remoteUnknown 分"取不到时间"与
   /// "本机无成功记录"两种，措辞分开便于用户判断该不该继续
   static String _overwriteWarning(
+    AppLocalizations l10n,
     WebDavFileInfo info,
     RemoteBackupRelation relation,
     int? lastSuccessMs,
   ) {
     if (relation == RemoteBackupRelation.remoteNewer) {
-      return '云端备份比本机上次成功备份更新，可能来自其他设备；'
-          '覆盖后云端那份将无法找回。';
+      return l10n.dialogWarningRemoteNewer;
     }
     if (info.lastModified == null) {
-      return '无法获取云端备份时间；覆盖后云端那份将无法找回。';
+      return l10n.dialogWarningRemoteTimeUnknown;
     }
     if (lastSuccessMs == null) {
-      return '本机没有成功备份记录，无法确认云端那份的来源；覆盖后无法找回。';
+      return l10n.dialogWarningLocalNoRecord;
     }
     return '';
   }
@@ -372,8 +399,9 @@ class _BackupPageState extends State<BackupPage> {
   // ── 云端恢复 ───────────────────────────────────────────────────
 
   Future<void> _onRestoreFromCloud() async {
+    final l10n = AppLocalizations.of(context);
     if (!_config.isConfigured) {
-      _snack('请先配置 WebDAV 服务器地址、账号与密码');
+      _snack(l10n.backupNotConfigured);
       return;
     }
     if (_remoteBusy || _service.busyNotifier.value) return;
@@ -382,26 +410,31 @@ class _BackupPageState extends State<BackupPage> {
     try {
       preview = await _service.fetchRemotePreview();
     } on WebDavException catch (e) {
-      if (mounted) _snack('获取云端备份失败：${e.message}');
+      if (mounted) _snack(l10n.snackFetchRemoteFailed(webdavExceptionText(l10n, e)));
     } on DataArchiveException catch (e) {
-      if (mounted) _snack('云端文件无效：${e.message}');
+      if (mounted) {
+        _snack(l10n.snackInvalidCloudFile(archiveExceptionText(l10n, e)));
+      }
     } finally {
       if (mounted) setState(() => _remoteBusy = false);
     }
     if (preview == null || !mounted) {
       if (preview == null && mounted) {
-        _snack('云端还没有备份文件');
+        _snack(l10n.webdavNoBackupFile);
       }
       return;
     }
     final fileInfo = preview.fileInfo;
     final modified = fileInfo.lastModified;
-    final source = [
-      modified == null ? '云端备份' : '云端备份（${_formatClock(modified.millisecondsSinceEpoch)}）',
-      if (fileInfo.contentLength != null) '${fileInfo.contentLength! ~/ 1024} KB',
-    ].join('，');
+    final int? contentLength = fileInfo.contentLength;
+    final source = l10n.dialogRestoreCloudSource(
+      modified == null ? 'no' : 'yes',
+      modified == null ? '' : _formatClock(modified.millisecondsSinceEpoch),
+      contentLength == null ? 'no' : 'yes',
+      contentLength == null ? '' : '${contentLength ~/ 1024}',
+    );
     await _confirmAndApply(
-      title: '从云端恢复',
+      title: l10n.actionRestoreFromCloud,
       source: source,
       contents: preview.contents,
       warning: _restoreWarning(fileInfo),
@@ -411,6 +444,7 @@ class _BackupPageState extends State<BackupPage> {
   /// 恢复方向的提示：危险方与上传相反——云端较旧意味着会退回旧数据。
   /// 复用预览已带回的 fileInfo，不再多发请求
   _ConfirmWarning? _restoreWarning(WebDavFileInfo info) {
+    final l10n = AppLocalizations.of(context);
     final relation = BackupService.compareRemoteBackup(
       info: info,
       lastSuccessAtMs: _config.lastSuccessAtNotifier.value,
@@ -419,19 +453,20 @@ class _BackupPageState extends State<BackupPage> {
     switch (relation) {
       case RemoteBackupRelation.remoteOlder:
         return (
-          text: '云端备份早于本机上次成功备份'
-              '${localMs == null ? '' : '（${_formatClock(localMs)}）'}，'
-              '恢复会退回较旧的数据。',
+          text: l10n.dialogWarningRestoreOlder(
+            localMs == null ? 'no' : 'yes',
+            localMs == null ? '' : _formatClock(localMs),
+          ),
           isError: true,
         );
       case RemoteBackupRelation.remoteNewer:
         return (
-          text: '云端备份比本机上次成功备份更新，可能来自其他设备。',
+          text: l10n.dialogWarningRestoreNewer,
           isError: false,
         );
       case RemoteBackupRelation.remoteUnknown:
         return (
-          text: '无法判断云端备份与本机记录的新旧，恢复前请确认来源。',
+          text: l10n.dialogWarningRestoreUnknown,
           isError: false,
         );
       case RemoteBackupRelation.noRemote:
@@ -443,13 +478,14 @@ class _BackupPageState extends State<BackupPage> {
   // ── 本地导出/导入 ──────────────────────────────────────────────
 
   Future<void> _onExportFile() async {
+    final l10n = AppLocalizations.of(context);
     final Uint8List bytes;
     try {
       bytes = Uint8List.fromList(
         utf8.encode(await _service.buildArchiveText()),
       );
     } catch (e) {
-      if (mounted) _snack('导出失败，请稍后重试');
+      if (mounted) _snack(l10n.snackExportFailed);
       return;
     }
     final now = DateTime.now();
@@ -464,18 +500,19 @@ class _BackupPageState extends State<BackupPage> {
       mimeType: 'application/json',
       type: FileType.custom,
       allowedExtensions: ['json'],
-      dialogTitle: '导出数据备份',
+      dialogTitle: l10n.dialogTitleExportBackup,
     );
     if (!mounted) return;
     // null = 用户取消
     if (uri != null) {
-      _snack('已导出到文件');
+      _snack(l10n.snackExportSuccess);
     }
   }
 
   Future<void> _onImportFile() async {
+    final l10n = AppLocalizations.of(context);
     final file = await FilePicker.pickFile(
-      dialogTitle: '选择备份文件',
+      dialogTitle: l10n.dialogTitlePickBackupFile,
       type: FileType.custom,
       allowedExtensions: ['json'],
     );
@@ -486,16 +523,16 @@ class _BackupPageState extends State<BackupPage> {
       final text = utf8.decode(await file.readAsBytes());
       contents = DataArchive.decode(text);
     } on DataArchiveException catch (e) {
-      if (mounted) _snack('文件无效：${e.message}');
+      if (mounted) _snack(l10n.snackInvalidFile(archiveExceptionText(l10n, e)));
       return;
     } catch (e) {
-      if (mounted) _snack('读取文件失败，请确认是导出的备份文件');
+      if (mounted) _snack(l10n.snackReadFileFailed);
       return;
     }
     if (!mounted) return;
     await _confirmAndApply(
-      title: '导入文件',
-      source: '本机文件：${file.name}',
+      title: l10n.actionImportFile,
+      source: l10n.dialogPickLocalFileSource(file.name),
       contents: contents,
     );
   }
@@ -508,6 +545,7 @@ class _BackupPageState extends State<BackupPage> {
     _ConfirmWarning? warning,
   }) async {
     final scheme = Theme.of(context).colorScheme;
+    final l10n = AppLocalizations.of(context);
     final confirmed = await showDialog<bool>(
       context: context,
       builder: (dialogContext) => AlertDialog(
@@ -517,9 +555,9 @@ class _BackupPageState extends State<BackupPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              '来源：$source\n\n'
-              '${_describeArchive(contents)}\n\n'
-              '导入或恢复会覆盖本机全部数据，建议先导出备份。',
+              '${l10n.dialogRestoreSource(source)}\n\n'
+              '${_describeArchive(l10n, contents)}\n\n'
+              '${l10n.backupOverwriteHint}',
             ),
             if (warning != null) ...[
               const SizedBox(height: 12),
@@ -537,11 +575,11 @@ class _BackupPageState extends State<BackupPage> {
         actions: [
           TextButton(
             onPressed: () => Navigator.of(dialogContext).pop(false),
-            child: const Text('取消'),
+            child: Text(l10n.actionCancel),
           ),
           FilledButton(
             onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: const Text('覆盖恢复'),
+            child: Text(l10n.actionOverwriteRestore),
           ),
         ],
       ),
@@ -549,25 +587,31 @@ class _BackupPageState extends State<BackupPage> {
     if (confirmed != true || !mounted) return;
     final error = await _service.applyArchive(contents);
     if (!mounted) return;
-    _snack(error == null ? '已恢复本地数据' : '恢复失败：$error');
+    _snack(
+      error == null
+          ? l10n.snackRestoreSuccess
+          : l10n.snackRestoreFailed(backupFailureText(l10n, error)),
+    );
   }
 
   /// 预览文案：归档导出时间与内容摘要
-  String _describeArchive(ArchiveContents contents) {
+  String _describeArchive(AppLocalizations l10n, ArchiveContents contents) {
     final lines = <String>[];
     final exported = contents.exportedAt;
     lines.add(
-      exported == null
-          ? '备份时间：未知'
-          : '备份时间：${_formatClock(exported.millisecondsSinceEpoch)}',
+      l10n.labelBackupTime(
+        exported == null
+            ? l10n.labelUnknown
+            : _formatClock(exported.millisecondsSinceEpoch),
+      ),
     );
-    lines.add('用户数：${contents.userCount}');
-    lines.add('游戏轨迹记录：${contents.trackRecordCount} 条');
+    lines.add(l10n.labelUserCount(contents.userCount));
+    lines.add(l10n.labelTrackRecordCount(contents.trackRecordCount));
     if (contents.itemRules?.isNotEmpty ?? false) {
-      lines.add('包含：词条高亮规则');
+      lines.add(l10n.labelIncludesItemRules);
     }
     if (contents.appMeta?.isNotEmpty ?? false) {
-      lines.add('包含：应用设置');
+      lines.add(l10n.labelIncludesAppSettings);
     }
     return lines.join('\n');
   }
@@ -578,8 +622,9 @@ class _BackupPageState extends State<BackupPage> {
       ..showSnackBar(SnackBar(content: Text(message)));
   }
 
-  static String _clockOrUnknown(DateTime? time) => time == null
-      ? '时间未知'
+  static String _clockOrUnknown(AppLocalizations l10n, DateTime? time) =>
+      time == null
+      ? l10n.labelTimeUnknown
       : _formatClock(time.millisecondsSinceEpoch);
 
   static String _formatClock(int epochMs) {

@@ -1,4 +1,5 @@
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:material_ui/material_ui.dart';
@@ -53,6 +54,7 @@ class _WaveTabState extends State<WaveTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final store = Stores.infoStore;
     final gabTime = _hoursOf('gabTime', store.getCurrentUserGabTime());
     final tabTime = _hoursOf('tabTime', store.getCurrentUserTabTime());
@@ -61,7 +63,7 @@ class _WaveTabState extends State<WaveTab> {
 
     var waveIncomeWidgets = [
       ListTile(
-        title: const Text('金挂平均收益'),
+        title: Text(l10n.labelGabAverageBonus),
         trailing: SizedBox(
           width: 80,
           child: SelectAllTextField(
@@ -76,7 +78,7 @@ class _WaveTabState extends State<WaveTab> {
         ),
       ),
       ListTile(
-        title: const Text('每日金挂时间'),
+        title: Text(l10n.labelDailyGabTime),
         trailing: SizedBox(
           width: 80,
           child: SelectAllTextField(
@@ -95,7 +97,7 @@ class _WaveTabState extends State<WaveTab> {
         ),
       ),
       ListTile(
-        title: const Text('每日时挂时间'),
+        title: Text(l10n.labelDailyTabTime),
         trailing: SizedBox(
           width: 80,
           child: SelectAllTextField(

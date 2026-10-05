@@ -1,4 +1,5 @@
 import 'package:flutter/gestures.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
@@ -24,110 +25,117 @@ class _AboutPageState extends State<AboutPage> {
   }
 
   /// 说明区条目
-  List<_AboutEntry> get _infoEntries => [
-        const _AboutEntry(
-          icon: Icons.info_outline,
-          title: '适配版本',
-          subtitle: 'v1.50.14',
-          tappable: false,
-        ),
-        _linkEntry(
-          Icons.menu_book_outlined,
-          '使用说明',
-          'https://ariyara.cc/posts/gcc-next-guide/',
-        ),
-        _AboutEntry(
-          icon: Icons.api,
-          title: '第三方 API 说明',
-          subtitle: '当查询内容为空时，请查看这里',
-          onTap: () => showDialog<void>(
-            context: context,
-            builder: (context) => AlertDialog(
-              title: const Text('第三方API'),
-              content: const Text(
-                '默认第三方API (https://fnxag.eu.org/gcapi) '
-                '由开发者维护。如果查询内容为空，可能是未进入记录范围，可通过联系开发者手动添加。'
+  List<_AboutEntry> get _infoEntries {
+    final l10n = AppLocalizations.of(context);
+    return [
+      _AboutEntry(
+        icon: Icons.info_outline,
+        title: l10n.aboutAdaptedVersion,
+        subtitle: 'v1.50.14',
+        tappable: false,
+      ),
+      _linkEntry(
+        Icons.menu_book_outlined,
+        l10n.aboutGuide,
+        'https://ariyara.cc/posts/gcc-next-guide/',
+      ),
+      _AboutEntry(
+        icon: Icons.api,
+        title: l10n.aboutThirdPartyApiInfo,
+        subtitle: l10n.aboutThirdPartyApiInfoSubtitle,
+        onTap: () => showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.settingsThirdPartyApi),
+            content: Text(l10n.dialogThirdPartyApiBody),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.actionGotIt),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.of(context).pop(),
-                  child: const Text('知道了'),
-                ),
-              ],
-            ),
+            ],
           ),
         ),
-        // _AboutEntry(
-        //   icon: Icons.api,
-        //   title: '第三方API',
-        //   subtitle: '查看当前第三方 API 状态与地址',
-        //   onTap: _showThirdPartyApiDialog,
-        // ),
-      ];
+      ),
+      // _AboutEntry(
+      //   icon: Icons.api,
+      //   title: '第三方API',
+      //   subtitle: '查看当前第三方 API 状态与地址',
+      //   onTap: _showThirdPartyApiDialog,
+      // ),
+    ];
+  }
 
-  List<_AboutEntry> get _linkEntries => [
-        _linkEntry(
-          Icons.code,
-          'GitHub 仓库',
-          'https://github.com/FnxAg/grow_castle_calculator_next',
-          display: 'FnxAg/grow_castle_calculator_next',
-        ),
-        _linkEntry(
-          Icons.code,
-          '原项目 GitHub 仓库',
-          'https://github.com/FnxAg/GrowCastleCalculator',
-          display: 'FnxAg/GrowCastleCalculator',
-        ),
-        _linkEntry(
-          Icons.link,
-          'QQ 群',
-          'https://qm.qq.com/q/FMLqiMRbai',
-          display: '913331981',
-        ),
-        _AboutEntry(
-          icon: Icons.email,
-          title: '开发者邮箱',
-          subtitle: 'fnxag@qq.com',
-          tappable: false,
-        ),
-      ];
+  List<_AboutEntry> get _linkEntries {
+    final l10n = AppLocalizations.of(context);
+    return [
+      _linkEntry(
+        Icons.code,
+        l10n.aboutGithubRepo,
+        'https://github.com/FnxAg/grow_castle_calculator_next',
+        display: 'FnxAg/grow_castle_calculator_next',
+      ),
+      _linkEntry(
+        Icons.code,
+        l10n.aboutOriginalGithubRepo,
+        'https://github.com/FnxAg/GrowCastleCalculator',
+        display: 'FnxAg/GrowCastleCalculator',
+      ),
+      _linkEntry(
+        Icons.link,
+        l10n.aboutQqGroup,
+        'https://qm.qq.com/q/FMLqiMRbai',
+        display: '913331981',
+      ),
+      _AboutEntry(
+        icon: Icons.email,
+        title: l10n.aboutDeveloperEmail,
+        subtitle: 'fnxag@qq.com',
+        tappable: false,
+      ),
+    ];
+  }
 
-  /// 法律与授权区条目
-  List<_AboutEntry> get _legalEntries => [
-        _AboutEntry(
-          icon: Icons.description_outlined,
-          title: '开源许可',
-          onTap: () => showLicensePage(
-            context: context,
-            applicationName: _packageInfo?.appName ?? 'GCC Next',
-            applicationIcon: Image.asset(
-              'assets/images/app_icon.png',
-              width: 72,
-              height: 72,
-              fit: BoxFit.cover,
-            ),
+  /// 授权区条目
+  List<_AboutEntry> get _legalEntries {
+    final l10n = AppLocalizations.of(context);
+    return [
+      _AboutEntry(
+        icon: Icons.description_outlined,
+        title: l10n.aboutOpenSourceLicenses,
+        onTap: () => showLicensePage(
+          context: context,
+          applicationName: _packageInfo?.appName ?? 'GCC Next',
+          applicationIcon: Image.asset(
+            'assets/images/app_icon.png',
+            width: 72,
+            height: 72,
+            fit: BoxFit.cover,
           ),
         ),
-        _AboutEntry(
-          icon: Icons.verified_outlined,
-          title: 'LICENSE',
-          subtitle: '本应用遵循 GPL-3.0 开源协议',
-          tappable: false,
-        ),
-      ];
+      ),
+      _AboutEntry(
+        icon: Icons.verified_outlined,
+        title: 'LICENSE',
+        subtitle: l10n.aboutLicenseNotice,
+        tappable: false,
+      ),
+    ];
+  }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('关于')),
+      appBar: AppBar(title: Text(l10n.settingsAbout)),
       body: ListView(
         children: [
           _buildHeader(context),
-          const SectionHeader('说明'),
+          SectionHeader(l10n.sectionInfo),
           for (final entry in _infoEntries) entry,
-          const SectionHeader('链接'),
+          SectionHeader(l10n.sectionLinks),
           for (final entry in _linkEntries) entry,
-          const SectionHeader('授权'),
+          SectionHeader(l10n.sectionLicenses),
           for (final entry in _legalEntries) entry,
           _buildFooter(context),
         ],
@@ -161,13 +169,17 @@ class _AboutPageState extends State<AboutPage> {
             const SizedBox(height: 4),
             Text(
               'v${info.version}${isMobile ? ' (${info.buildNumber})' : ''}',
-              style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+              style: textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ],
           const SizedBox(height: 12),
           Text(
-            'Grow Castle 辅助工具',
-            style: textTheme.bodyMedium?.copyWith(color: scheme.onSurfaceVariant),
+            AppLocalizations.of(context).aboutTagline,
+            style: textTheme.bodyMedium?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
         ],
       ),
@@ -187,10 +199,8 @@ class _AboutPageState extends State<AboutPage> {
               children: [
                 const TextSpan(text: 'GCC Next · by '),
                 TextSpan(
-                  text: 'FnxAg', 
-                  style: const TextStyle(
-                    color: Colors.blueAccent,
-                  ),
+                  text: 'FnxAg',
+                  style: const TextStyle(color: Colors.blueAccent),
                   recognizer: TapGestureRecognizer()
                     ..onTap = () {
                       _launchUrl('https://github.com/FnxAg');
@@ -198,7 +208,9 @@ class _AboutPageState extends State<AboutPage> {
                 ),
               ],
             ),
-            style: textTheme.bodySmall?.copyWith(color: scheme.onSurfaceVariant),
+            style: textTheme.bodySmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
           ),
           // const SizedBox(height: 4),
           // Text(
@@ -237,14 +249,17 @@ class _AboutPageState extends State<AboutPage> {
   //   );
   // }
 
-  _AboutEntry _linkEntry(IconData icon, String title, String url,
-          {String? display}) =>
-      _AboutEntry(
-        icon: icon,
-        title: title,
-        subtitle: display ?? url,
-        onTap: () => _launchUrl(url),
-      );
+  _AboutEntry _linkEntry(
+    IconData icon,
+    String title,
+    String url, {
+    String? display,
+  }) => _AboutEntry(
+    icon: icon,
+    title: title,
+    subtitle: display ?? url,
+    onTap: () => _launchUrl(url),
+  );
 
   /// 用系统浏览器打开外部链接；失败时 SnackBar 提示
   Future<void> _launchUrl(String url) async {
@@ -252,12 +267,13 @@ class _AboutPageState extends State<AboutPage> {
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('无法打开链接：$url')),
+        SnackBar(
+          content: Text(AppLocalizations.of(context).snackCannotOpenLink(url)),
+        ),
       );
     }
   }
 }
-
 
 /// 关于页条目行。
 ///

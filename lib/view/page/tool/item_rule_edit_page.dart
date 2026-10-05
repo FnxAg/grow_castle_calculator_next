@@ -4,24 +4,26 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/src/item_display_rules.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 
 /// 词条颜色标识
 Color lineColorOf(LineColor color) => switch (color) {
-      LineColor.white => Colors.white,
-      LineColor.red => Colors.redAccent,
-      LineColor.yellow => Colors.amber,
-    };
+  LineColor.white => Colors.white,
+  LineColor.red => Colors.redAccent,
+  LineColor.yellow => Colors.amber,
+};
 
-/// 装备类型显示名
-const _typeLabels = <ItemType, String>{
-  ItemType.bow: '弓',
-  ItemType.sword: '剑',
-  ItemType.staff: '杖',
-  ItemType.hammer: '锤',
-  ItemType.ring: '戒指',
-  ItemType.necklace: '项链',
-  ItemType.bracelet: '手镯',
-  ItemType.earrings: '耳环',
+/// 装备类型显示名：数据层 [ItemType] 没有显示名，也没有可取的 l10n，
+/// 故由调用点传入 l10n 后按类型解析。
+String _typeLabel(AppLocalizations l10n, ItemType type) => switch (type) {
+  ItemType.bow => l10n.itemTypeBow,
+  ItemType.sword => l10n.itemTypeSword,
+  ItemType.staff => l10n.itemTypeStaff,
+  ItemType.hammer => l10n.itemTypeHammer,
+  ItemType.ring => l10n.itemTypeRing,
+  ItemType.necklace => l10n.itemTypeNecklace,
+  ItemType.bracelet => l10n.itemTypeBracelet,
+  ItemType.earrings => l10n.itemTypeEarrings,
 };
 
 /// 词条要求显示文本：如 "Cooldown % ×2 > 3.5 < 4.5"
@@ -48,20 +50,21 @@ class ItemRuleEditPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('高亮规则')),
+      appBar: AppBar(title: Text(l10n.highlightRules)),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(context).push(
-          MaterialPageRoute(builder: (context) => const _RuleFormPage()),
-        ),
+        onPressed: () => Navigator.of(
+          context,
+        ).push(MaterialPageRoute(builder: (context) => const _RuleFormPage())),
         icon: const Icon(Icons.add),
-        label: const Text('新增规则'),
+        label: Text(l10n.actionAddRule),
       ),
       body: ValueListenableBuilder<List<UserHighlightRule>>(
         valueListenable: Stores.itemRuleStore.rulesNotifier,
         builder: (context, rules, _) {
           if (rules.isEmpty) {
-            return const Center(child: Text('暂无规则，点击右下角新增'));
+            return Center(child: Text(l10n.emptyItemRuleHint));
           }
           return ListView.builder(
             padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
@@ -83,6 +86,7 @@ class _RuleCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     return Card(
       margin: const EdgeInsets.only(bottom: 8),
       // 未启用的规则置灰显示
@@ -98,18 +102,19 @@ class _RuleCard extends StatelessWidget {
                   // 启用勾选：可直接勾选/取消，决定该规则是否参与匹配
                   Checkbox(
                     value: rule.enabled,
-                    onChanged: (v) => Stores.itemRuleStore
-                        .updateRule(rule.copyWith(enabled: v ?? false)),
+                    onChanged: (v) => Stores.itemRuleStore.updateRule(
+                      rule.copyWith(enabled: v ?? false),
+                    ),
                   ),
                   Expanded(
                     child: Text(
-                      rule.hint.isEmpty ? '未命名规则' : rule.hint,
+                      rule.hint.isEmpty ? l10n.unnamedRule : rule.hint,
                       style: theme.textTheme.titleSmall,
                     ),
                   ),
                   if (rule.pinToTop)
                     Tooltip(
-                      message: '命中后置顶',
+                      message: l10n.tooltipPinToTop,
                       child: Icon(
                         Icons.vertical_align_top,
                         size: 18,
@@ -118,7 +123,7 @@ class _RuleCard extends StatelessWidget {
                     ),
                   IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 20),
-                    tooltip: '编辑',
+                    tooltip: l10n.actionEdit,
                     onPressed: () => Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (context) => _RuleFormPage(initial: rule),
@@ -127,7 +132,7 @@ class _RuleCard extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),
-                    tooltip: '删除',
+                    tooltip: l10n.actionDelete,
                     onPressed: () => Stores.itemRuleStore.removeRule(rule.id),
                   ),
                 ],
@@ -145,8 +150,8 @@ class _RuleCard extends StatelessWidget {
                           style: const TextStyle(fontSize: 11),
                         ),
                         visualDensity: VisualDensity.compact,
-                        backgroundColor:
-                            lineColorOf(entry.key.color).withValues(alpha: 0.15),
+                        backgroundColor: lineColorOf(entry.key.color)
+                            .withValues(alpha: 0.15),
                         side: BorderSide.none,
                       ),
                   ],
@@ -157,7 +162,11 @@ class _RuleCard extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.only(left: 8, top: 6),
                   child: Text(
-                    '装备类型：${rule.types!.map((t) => _typeLabels[t]).join('、')}',
+                    l10n.labelItemTypes(
+                      rule.types!
+                          .map((t) => _typeLabel(l10n, t))
+                          .join(l10n.listSeparator),
+                    ),
                     style: theme.textTheme.bodySmall,
                   ),
                 ),
@@ -244,6 +253,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
 
   /// 勾选/取消一个词条（含防呆：红/金同色最多 1 条，白 3 条与红互斥）
   void _toggleLine(ItemLine line, bool checked) {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       if (!checked) {
         _counts.remove(line);
@@ -251,23 +261,24 @@ class _RuleFormPageState extends State<_RuleFormPage> {
       }
       // 红/金词条同色最多一条：选择新词条时自动取消同色已选项
       if (line.color == LineColor.red || line.color == LineColor.yellow) {
-        final sameColor =
-            _counts.keys.where((l) => l.color == line.color).toList();
+        final sameColor = _counts.keys
+            .where((l) => l.color == line.color)
+            .toList();
         for (final existing in sameColor) {
           _counts.remove(existing);
         }
       }
       // 防呆：已有红词条时白色合计最多 2 条
       if (line.color == LineColor.white && _hasRed && _whiteSum + 1 > 2) {
-        _showHint('已有红色词条，白色词条最多 2 条');
+        _showHint(l10n.errorWhiteLinesWithRed);
         return;
       }
       if (line.color == LineColor.white && _whiteSum + 1 > 3) {
-        _showHint('白色词条最多 3 条');
+        _showHint(l10n.errorWhiteLinesMax);
         return;
       }
       if (line.color == LineColor.red && _whiteSum >= 3) {
-        _showHint('白色词条已达 3 条，不能选择红色词条');
+        _showHint(l10n.errorRedWithThreeWhite);
         return;
       }
       _counts[line] = 1;
@@ -280,17 +291,18 @@ class _RuleFormPageState extends State<_RuleFormPage> {
 
   /// 调整白色词条数量（1 ↔ 2），带合计上限检查
   void _setWhiteCount(ItemLine line, int count) {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       final current = _counts[line] ?? 1;
       if (count > current) {
         // 1 → 2：白色合计 +1
         final newSum = _whiteSum + 1;
         if (_hasRed && newSum > 2) {
-          _showHint('已有红色词条，白色词条最多 2 条');
+          _showHint(l10n.errorWhiteLinesWithRed);
           return;
         }
         if (newSum > 3) {
-          _showHint('白色词条最多 3 条');
+          _showHint(l10n.errorWhiteLinesMax);
           return;
         }
       }
@@ -299,12 +311,14 @@ class _RuleFormPageState extends State<_RuleFormPage> {
   }
 
   void _showHint(String message) {
-    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+    ScaffoldMessenger.of(context)
+        .showSnackBar(SnackBar(content: Text(message)));
   }
 
   void _save() {
+    final l10n = AppLocalizations.of(context);
     if (_counts.isEmpty) {
-      _showHint('请至少选择一个词条');
+      _showHint(l10n.errorNoLineSelected);
       return;
     }
     // 解析数值范围（留空 = 不限）
@@ -316,12 +330,12 @@ class _RuleFormPageState extends State<_RuleFormPage> {
       final maxValue = maxText.isEmpty ? null : double.tryParse(maxText);
       if ((minText.isNotEmpty && minValue == null) ||
           (maxText.isNotEmpty && maxValue == null)) {
-        _showHint('数值需为数字或留空');
+        _showHint(l10n.errorValueNotNumber);
         return;
       }
       // 防呆：下限必须小于上限
       if (minValue != null && maxValue != null && minValue >= maxValue) {
-        _showHint('下限（大于）必须小于上限（小于）');
+        _showHint(l10n.errorMinGreaterThanMax);
         return;
       }
       // 防呆：数值不能超出该词条的 roll 值范围（跨等级并集）
@@ -331,16 +345,22 @@ class _RuleFormPageState extends State<_RuleFormPage> {
         if (minValue != null &&
             (minValue < overallMin || minValue >= overallMax)) {
           _showHint(
-            '"${entry.key.label}" 的下限超出 roll 值范围'
-            '（${overallMin.format()} ~ ${overallMax.format()}）',
+            l10n.errorMinOutOfRange(
+              entry.key.label,
+              overallMin.format(),
+              overallMax.format(),
+            ),
           );
           return;
         }
         if (maxValue != null &&
             (maxValue <= overallMin || maxValue > overallMax)) {
           _showHint(
-            '"${entry.key.label}" 的上限超出 roll 值范围'
-            '（${overallMin.format()} ~ ${overallMax.format()}）',
+            l10n.errorMaxOutOfRange(
+              entry.key.label,
+              overallMin.format(),
+              overallMax.format(),
+            ),
           );
           return;
         }
@@ -373,12 +393,13 @@ class _RuleFormPageState extends State<_RuleFormPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.initial == null ? '新增规则' : '编辑规则'),
-        actions: [
-          TextButton(onPressed: _save, child: const Text('保存')),
-        ],
+        title: Text(
+          widget.initial == null ? l10n.actionAddRule : l10n.titleEditRule,
+        ),
+        actions: [TextButton(onPressed: _save, child: Text(l10n.actionSave))],
       ),
       body: Column(
         children: [
@@ -388,22 +409,22 @@ class _RuleFormPageState extends State<_RuleFormPage> {
               children: [
                 TextField(
                   controller: _hintController,
-                  decoration: const InputDecoration(
-                    labelText: '提示文本',
-                    hintText: '如：红白加强（可留空）',
-                    border: OutlineInputBorder(),
+                  decoration: InputDecoration(
+                    labelText: l10n.labelHintText,
+                    hintText: l10n.hintRuleHintExample,
+                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 8),
                 SwitchListTile(
                   contentPadding: EdgeInsets.zero,
-                  title: const Text('命中后置顶显示'),
+                  title: Text(l10n.labelPinToTop),
                   value: _pinToTop,
                   onChanged: (v) => setState(() => _pinToTop = v),
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  '指定装备类型（不选则不限）',
+                  l10n.labelSelectItemTypes,
                   style: Theme.of(context).textTheme.labelLarge,
                 ),
                 const SizedBox(height: 8),
@@ -413,7 +434,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                   children: [
                     for (final type in ItemType.values)
                       FilterChip(
-                        label: Text(_typeLabels[type]!),
+                        label: Text(_typeLabel(l10n, type)),
                         visualDensity: VisualDensity.compact,
                         selected: _selectedTypes.contains(type),
                         onSelected: (selected) => setState(() {
@@ -437,16 +458,15 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                 Padding(
                   padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
                   child: Text(
-                    '提示：红/金词条各最多选 1 条；白色词条合计 3 条时不能选红色词条；\n'
-                    '输入数值范围时，判断的是词条原始值（加强前的值），留空表示不限。\n\n'
-                    '大于下限必须小于上限；输入值还需在词条的允许范围内。',
+                    l10n.helpRuleForm,
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
                 for (final color in LineColor.values) ...[
-                  _sectionHeader(color),
-                  for (final line
-                      in ItemLine.values.where((l) => l.color == color))
+                  _sectionHeader(l10n, color),
+                  for (final line in ItemLine.values.where(
+                    (l) => l.color == color,
+                  ))
                     Padding(
                       padding: const EdgeInsets.only(left: 8, right: 16),
                       child: Column(
@@ -459,10 +479,10 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                 // 白色词条合计 3 条时禁止勾选红色词条
                                 onChanged:
                                     line.color == LineColor.red &&
-                                            _whiteSum >= 3
-                                        ? null
-                                        : (checked) =>
-                                            _toggleLine(line, checked ?? false),
+                                        _whiteSum >= 3
+                                    ? null
+                                    : (checked) =>
+                                          _toggleLine(line, checked ?? false),
                               ),
                               Expanded(
                                 child: Text(
@@ -474,9 +494,15 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                               if (_counts.containsKey(line) &&
                                   line.color == LineColor.white)
                                 SegmentedButton<int>(
-                                  segments: const [
-                                    ButtonSegment(value: 1, label: Text('1条')),
-                                    ButtonSegment(value: 2, label: Text('2条')),
+                                  segments: [
+                                    ButtonSegment(
+                                      value: 1,
+                                      label: Text(l10n.labelLineCount(1)),
+                                    ),
+                                    ButtonSegment(
+                                      value: 2,
+                                      label: Text(l10n.labelLineCount(2)),
+                                    ),
                                   ],
                                   selected: {_counts[line] ?? 1},
                                   showSelectedIcon: false,
@@ -490,8 +516,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                           ),
                           // 数值范围（留空不限）：判断的是词条原始值（加强前的值）。
                           // 没有数值范围的词条（金词条、固定值红词条）不显示
-                          if (_counts.containsKey(line) &&
-                              _hasValueRange(line))
+                          if (_counts.containsKey(line) && _hasValueRange(line))
                             Padding(
                               padding: const EdgeInsets.only(
                                 left: 48,
@@ -506,7 +531,8 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                       textAlign: TextAlign.center,
                                       keyboardType:
                                           const TextInputType.numberWithOptions(
-                                              decimal: true),
+                                            decimal: true,
+                                          ),
                                       // 只允许数字与一个小数点
                                       inputFormatters: [
                                         FilteringTextInputFormatter.allow(
@@ -519,15 +545,18 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                           line,
                                           isMin: true,
                                         ),
-                                        suffixText: line.numType == LineNumType.percent ? '%' : null,
+                                        suffixText:
+                                            line.numType == LineNumType.percent
+                                            ? '%'
+                                            : null,
                                         // isDense: true,
                                       ),
                                     ),
                                   ),
                                   const SizedBox(width: 8),
                                   const Text(
-                                    ' ≤ target ≤ ', 
-                                    style: TextStyle(fontSize: 16)
+                                    ' ≤ target ≤ ',
+                                    style: TextStyle(fontSize: 16),
                                   ),
                                   const SizedBox(width: 8),
                                   Expanded(
@@ -536,7 +565,8 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                       textAlign: TextAlign.center,
                                       keyboardType:
                                           const TextInputType.numberWithOptions(
-                                              decimal: true),
+                                            decimal: true,
+                                          ),
                                       inputFormatters: [
                                         FilteringTextInputFormatter.allow(
                                           RegExp(r'^\d*\.?\d*$'),
@@ -547,7 +577,10 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                           line,
                                           isMin: false,
                                         ),
-                                        suffixText: line.numType == LineNumType.percent ? '%' : null,
+                                        suffixText:
+                                            line.numType == LineNumType.percent
+                                            ? '%'
+                                            : null,
                                         // isDense: true,
                                       ),
                                     ),
@@ -567,7 +600,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
     );
   }
 
-  Widget _sectionHeader(LineColor color) {
+  Widget _sectionHeader(AppLocalizations l10n, LineColor color) {
     // 背景色：白词条用灰色底（白色底在浅色模式下看不见），红/黄用词条本色；
     // 文字颜色按背景深浅取黑白，保证两种主题模式都可读
     final (background, foreground) = switch (color) {
@@ -585,14 +618,12 @@ class _RuleFormPageState extends State<_RuleFormPage> {
         ),
         child: Text(
           switch (color) {
-            LineColor.white => '白词条',
-            LineColor.red => '红词条',
-            LineColor.yellow => '金词条',
+            LineColor.white => l10n.lineColorWhite,
+            LineColor.red => l10n.lineColorRed,
+            LineColor.yellow => l10n.lineColorGold,
           },
-          style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                color: foreground,
-                fontWeight: FontWeight.bold,
-              ),
+          style: Theme.of(context).textTheme.labelLarge
+              ?.copyWith(color: foreground, fontWeight: FontWeight.bold),
         ),
       ),
     );

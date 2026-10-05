@@ -14,8 +14,7 @@ extension DoubleNumFormat on double {
     return _thousands(text);
   }
 
-  /// 数量级缩写：中文语境用 万/亿/万亿/亿亿，英文语境用 K/M/B/T/P/E，
-  /// 用于汇总表等紧凑场景，避免大额金币占用过多横向空间
+  /// 数量级缩写
   String formatCompact({int fractionDigits = 2, bool english = false}) {
     if (isNaN || isInfinite) return toString();
     final units = english
@@ -46,7 +45,7 @@ extension DoubleNumFormat on double {
   }
 }
 
-/// 千位加分隔符（仅作用于整数部分，避免小数位被错误插入逗号）
+/// 千位加分隔符
 String _thousands(String text) {
   final dot = text.indexOf('.');
   final intPart = dot < 0 ? text : text.substring(0, dot);

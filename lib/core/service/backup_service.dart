@@ -40,6 +40,79 @@ class RemoteBackupPreview {
   final ArchiveContents contents;
 }
 
+/// 恢复失败时的数据分段（用于「以下数据恢复失败：…」）
+enum DataSection { userData, userMeta, appSettings, itemRules, gameTrack }
+
+/// 备份/恢复失败原因。
+///
+/// **不携带任何文案**：服务层只回答"失败在哪一步"，文案由 UI 层按当前语言
+/// 翻译（lib/view/extension/service_error_l10n.dart）。这样错误原因被写进
+/// WebDAV 配置持久化时也是语言中立的（[id]），换语言不会显示成旧语言。
+sealed class BackupFailure {
+  const BackupFailure();
+
+  /// 持久化用的稳定 id（存进「上次失败原因」）
+  String get id;
+}
+
+/// 已有任务在跑
+class BackupBusyFailure extends BackupFailure {
+  const BackupBusyFailure();
+  @override
+  String get id => 'busy';
+}
+
+/// 未配置 WebDAV 服务器地址/账号/密码
+class BackupNotConfiguredFailure extends BackupFailure {
+  const BackupNotConfiguredFailure();
+  @override
+  String get id => 'notConfigured';
+}
+
+/// 其它未分类失败（写盘异常、未知异常等）
+class BackupGenericFailure extends BackupFailure {
+  const BackupGenericFailure();
+  @override
+  String get id => 'failed';
+}
+
+/// 归档里没有任何可恢复的数据
+class BackupNoDataFailure extends BackupFailure {
+  const BackupNoDataFailure();
+  @override
+  String get id => 'noData';
+}
+
+/// 网络/服务器侧失败，[statusCode] 为 HTTP 状态码（-1 = 连不上）
+class BackupWebDavFailure extends BackupFailure {
+  const BackupWebDavFailure(this.statusCode);
+
+  final int statusCode;
+
+  @override
+  String get id => 'webdav:$statusCode';
+}
+
+/// 归档文件不合法
+class BackupArchiveFailure extends BackupFailure {
+  const BackupArchiveFailure(this.error);
+
+  final ArchiveError error;
+
+  @override
+  String get id => 'archive:${error.name}';
+}
+
+/// 部分数据分段恢复失败
+class BackupPartialRestoreFailure extends BackupFailure {
+  const BackupPartialRestoreFailure(this.sections);
+
+  final List<DataSection> sections;
+
+  @override
+  String get id => 'partial:${sections.map((s) => s.name).join(',')}';
+}
+
 /// 备份/恢复编排：全部手动触发，无任何自动上传路径。
 ///
 /// 云端只有一份文件，覆盖即不可找回，因此上传前必须由备份页先
@@ -115,21 +188,21 @@ class BackupService {
 
   // ── 上传（仅手动） ──────────────────────────────────────────────
 
-  /// 手动备份：立即上传；返回 null 表示成功，否则为错误文案。
+  /// 手动备份：立即上传；返回 null 表示成功，否则为失败原因。
   ///
   /// **调用方必须先 [fetchRemoteInfo] 探测并经用户确认覆盖**。
   /// 确认到 PUT 之间存在窗口：期间其他设备若上传，本机的覆盖仍会生效
   /// （本轮不处理；用条件 PUT 封堵是后续可选加固）。
-  Future<String?> manualBackup() async {
+  Future<BackupFailure?> manualBackup() async {
     if (busyNotifier.value) {
-      return '已有备份任务进行中，请稍后再试';
+      return const BackupBusyFailure();
     }
     busyNotifier.value = true;
-    String? error;
+    BackupFailure? error;
     try {
       error = await _runUpload();
     } catch (_) {
-      error = '备份失败，请稍后重试';
+      error = const BackupGenericFailure();
     } finally {
       busyNotifier.value = false;
     }
@@ -137,24 +210,24 @@ class BackupService {
     if (error == null) {
       _config.recordSuccess(now);
     } else {
-      _config.recordFailure(now, error);
+      _config.recordFailure(now, error.id);
     }
     return error;
   }
 
   /// 生成归档文本（先 flush 当前用户防抖中的数据）并上传
-  Future<String?> _runUpload() async {
+  Future<BackupFailure?> _runUpload() async {
     if (!_config.isConfigured) {
-      return '请先配置 WebDAV 服务器地址、账号与密码';
+      return const BackupNotConfiguredFailure();
     }
     final content = await buildArchiveText();
     try {
       await _createClient().upload(fileName: kBackupFileName, content: content);
       return null;
     } on WebDavException catch (e) {
-      return e.message;
+      return BackupWebDavFailure(e.statusCode);
     } catch (_) {
-      return '备份失败，请稍后重试';
+      return const BackupGenericFailure();
     }
   }
 
@@ -197,11 +270,11 @@ class BackupService {
   }
 
   /// 覆盖式恢复：把归档内容写入 5 个 box 并触发全量 reload。
-  /// 手动导入与云端恢复共用此路径。返回 null 表示成功，否则为错误文案。
+  /// 手动导入与云端恢复共用此路径。返回 null 表示成功，否则为失败原因。
   /// 成功后 UI 通过 store 的 ValueNotifier / dataVersion 立即刷新，无需重启。
-  Future<String?> applyArchive(ArchiveContents contents) async {
+  Future<BackupFailure?> applyArchive(ArchiveContents contents) async {
     if (busyNotifier.value) {
-      return '已有备份任务进行中，请稍后再试';
+      return const BackupBusyFailure();
     }
     // 没有任何可恢复的节
     if (contents.userData == null &&
@@ -209,11 +282,11 @@ class BackupService {
         contents.appMeta == null &&
         contents.itemRules == null &&
         contents.gameTrack == null) {
-      return '文件中不包含可恢复的数据';
+      return const BackupNoDataFailure();
     }
 
     busyNotifier.value = true;
-    final failed = <String>[];
+    final failed = <DataSection>[];
     try {
       // 防抖中的内存态先落盘，避免随后的 box 覆盖丢失最近输入
       Stores.infoStore.flush();
@@ -224,7 +297,7 @@ class BackupService {
           await box.clear();
           await box.putAll(contents.userData!);
         } catch (e) {
-          failed.add('用户数据');
+          failed.add(DataSection.userData);
         }
       }
       if (contents.userMeta != null) {
@@ -233,7 +306,7 @@ class BackupService {
           await box.clear();
           await box.putAll(contents.userMeta!);
         } catch (e) {
-          failed.add('用户元数据');
+          failed.add(DataSection.userMeta);
         }
       } else if (contents.userData != null) {
         // 归档缺元数据节（裁剪/手写文件）：清掉本机陈旧的 currentUserId/
@@ -244,7 +317,7 @@ class BackupService {
           await box.delete('currentUserId');
           await box.delete('nextUserId');
         } catch (e) {
-          failed.add('用户元数据');
+          failed.add(DataSection.userMeta);
         }
       }
       if (contents.appMeta != null) {
@@ -260,7 +333,7 @@ class BackupService {
           }
           await box.putAll(contents.appMeta!);
         } catch (e) {
-          failed.add('应用设置');
+          failed.add(DataSection.appSettings);
         }
       }
       if (contents.itemRules != null) {
@@ -269,7 +342,7 @@ class BackupService {
           await box.clear();
           await box.putAll(contents.itemRules!);
         } catch (e) {
-          failed.add('高亮规则');
+          failed.add(DataSection.itemRules);
         }
       }
       if (contents.gameTrack != null) {
@@ -278,7 +351,7 @@ class BackupService {
           await box.clear();
           await box.putAll(contents.gameTrack!);
         } catch (e) {
-          failed.add('游戏轨迹');
+          failed.add(DataSection.gameTrack);
         }
       }
       _reloadStores();
@@ -287,7 +360,7 @@ class BackupService {
     }
 
     if (failed.isNotEmpty) {
-      return '以下数据恢复失败：${failed.join('、')}';
+      return BackupPartialRestoreFailure(failed);
     }
     dataRestoredNotifier.value++;
     return null;

@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/page/formation_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function_page.dart';
@@ -15,7 +16,9 @@ class MainPageEntry {
     required this.builder,
   });
 
-  final String title;
+  /// tab 名。注册表是顶层 final，拿不到 context，所以存成取词条的函数，
+  /// 由消费端（MainShell）传入当前语言的 AppLocalizations
+  final String Function(AppLocalizations l10n) title;
   final IconData icon;
   final WidgetBuilder builder;
 }
@@ -24,31 +27,31 @@ class MainPageEntry {
 final List<MainPageEntry> mainPages = [
   // 阵容经济计算
   MainPageEntry(
-    title: '阵容',
+    title: (l10n) => l10n.tabFormation,
     icon: Icons.castle,
     builder: (_) => const FormationCalcPage(),
   ),
   // 用户功能
   MainPageEntry(
-    title: '功能',
+    title: (l10n) => l10n.tabFunction,
     icon: Icons.history_edu,
     builder: (_) => const FunctionPage(),
   ),
   // 公会
   MainPageEntry(
-    title: '公会',
+    title: (l10n) => l10n.tabGuild,
     icon: Icons.flag_circle,
     builder: (_) => const GuildPage(),
   ),
   // 工具
   MainPageEntry(
-    title: '工具',
+    title: (l10n) => l10n.tabTools,
     icon: Icons.handyman,
     builder: (_) => const ToolsPage(),
   ),
   // 设置
   MainPageEntry(
-    title: '设置',
+    title: (l10n) => l10n.tabSettings,
     icon: Icons.settings,
     builder: (_) => const SettingPage(),
   ),

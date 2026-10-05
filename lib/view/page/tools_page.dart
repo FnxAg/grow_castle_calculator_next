@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/best_line_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
@@ -10,16 +11,15 @@ class ToolsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('工具'),
-      ),
+      appBar: AppBar(title: Text(l10n.tabTools)),
       body: ListView(
         children: [
           for (final kind in RankingKind.values)
             ListTile(
               leading: Icon(kind.icon),
-              title: Text(kind.title),
+              title: Text(rankingKindLabel(l10n, kind)),
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 FocusManager.instance.primaryFocus?.unfocus();
@@ -32,7 +32,7 @@ class ToolsPage extends StatelessWidget {
             ),
           ListTile(
             leading: const Icon(Icons.casino_outlined),
-            title: const Text('刷龙模拟器'),
+            title: Text(l10n.toolDragonSimulator),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
@@ -45,7 +45,7 @@ class ToolsPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.compare_arrows),
-            title: const Text('装备对比'),
+            title: Text(l10n.toolItemComparer),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
@@ -58,7 +58,7 @@ class ToolsPage extends StatelessWidget {
           ),
           ListTile(
             leading: const Icon(Icons.thumb_up),
-            title: const Text('最优装备词条组合'),
+            title: Text(l10n.toolBestLineCalc),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
@@ -68,7 +68,7 @@ class ToolsPage extends StatelessWidget {
                 ),
               );
             },
-          )
+          ),
         ],
       ),
     );

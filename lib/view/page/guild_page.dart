@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/last_online_cache.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
@@ -17,18 +18,13 @@ import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 
-/// 公会页：展示指定公会（[guildName] 为 null 时取当前用户所在公会）的成员信息，
-/// 进入时读取缓存（无缓存则立即抓取），按赛季波数（score）从大到小排列；
-/// 头部信息条显示公会排名（前 300 内）。成员行可点击进入玩家详情页。
-/// 手动刷新（下拉/重试）不会顶掉已有内容，失败仅提示并保留旧数据。
+/// 公会页
 class GuildPage extends StatefulWidget {
   const GuildPage({super.key, this.guildName, this.userHeader = true});
 
-  /// 要展示的公会名；为 null 时使用当前用户设置的公会（首页公会 tab 场景）
+  /// 要展示的公会名
   final String? guildName;
 
-  /// 是否自带用户页外壳（AppBar 用户名头部 + 赛季进度）。
-  /// 作为公会榜详情页嵌入其他 Scaffold 时传 false，由外层提供 AppBar。
   final bool userHeader;
 
   @override
@@ -52,43 +48,39 @@ class GuildDetailPage extends StatelessWidget {
 }
 
 class _GuildPageState extends State<GuildPage> with CurrentUserReload {
-  /// 首屏加载中（仅当界面尚无任何内容时显示全屏转圈）
   bool _firstLoading = true;
   bool _loading = true;
   String? _error;
 
-  /// 公会未配置的引导错误：按钮跳转「用户管理」而非重试
+  /// 公会未配置的引导错误
   bool _emptyGuild = false;
 
-  /// 公会榜单排名；不在前 300 内为 null（不显示）
+  bool _emptyGuildIsDefaultUser = false;
+
+  /// 公会榜单排名
   int? _guildRank;
 
-  /// 公会榜中与上一名/下一名的分数差距；首名/末名时对应侧为 null
+  /// 公会榜中与上一名/下一名的分数差距
   int? _guildGapPrev;
   int? _guildGapNext;
   List<GuildMember> _members = const [];
 
-  /// 玩家赛季榜索引：玩家名(小写) → 排名
+  /// 玩家赛季榜索引
   Map<String, int> _playerRankByName = {};
 
-  /// 无尽榜索引：玩家名(小写) → 排名
+  /// 无尽榜索引
   Map<String, int> _hellRankByName = {};
 
-  /// 成员「上次在线」展示串索引：玩家名(小写) →
-  /// null = 未知/加载中；'' = 封禁/无数据（显示空白）；其余为相对时间文本。
-  /// 每次成员加载成功后整体重建（清理已退出公会的成员）
+  /// 成员「上次在线」展示串索引
   Map<String, String> _lastOnlineByLower = {};
 
-  /// 已尝试查询过「上次在线」的玩家。
-  /// 查询失败返回 null 时也记录，避免后续页面重建重复请求；强制刷新会重试。
+  /// 已尝试查询过「上次在线」的玩家
   final Set<String> _lastOnlineAttempted = {};
 
-  /// 分数列宽（像素）：取全部成员 score 展示串的最大宽度固定列宽，
-  /// 使各行 score 与"上次在线"分别纵向对齐
+  /// 分数列宽（像素）
   double _scoreColumnWidth = 0;
 
-  /// "上次在线"时间列宽（像素）：固定宽度使各行时间右对齐紧贴分数列，
-  /// 联网返回时布局不漂移；开关关闭时为 0（不占位）
+  /// "上次在线"时间列宽
   double _timeColumnWidth = 0;
 
   /// 分数列测量/展示样式
@@ -100,8 +92,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
   /// "上次在线"时间列测量/展示样式
   static const TextStyle _timeStyle = TextStyle(fontSize: 12.0);
 
-  /// 测量单行文本宽度（TextPainter，逻辑像素）。
-  /// 合并当前默认样式和文字缩放，确保与实际 Text 渲染一致。
+  /// 测量单行文本宽度
   double _textWidth(String text, TextStyle style) {
     return (TextPainter(
       text: TextSpan(
@@ -119,8 +110,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
     _load();
   }
 
-  /// 切换用户：先清空上一个用户的公会成员（否则新数据到达前会一直展示
-  /// 别人的公会），再按新用户所属公会重新加载
+  /// 切换用户
   @override
   void reloadForCurrentUser() {
     setState(() {
@@ -130,8 +120,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
     _load();
   }
 
-  /// 加载公会数据：缓存命中直接展示；[force]（下拉全量同步）时忽略缓存
-  /// 强制重新抓取。已有内容时刷新不清空界面，失败仅 SnackBar 提示并保留旧数据。
+  /// 加载公会数据
   Future<void> _load({bool force = false}) async {
     final guild = (widget.guildName ?? Stores.infoStore.getCurrentUserGuild())
         .trim();
@@ -147,14 +136,13 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
         _loading = false;
         _firstLoading = false;
         if (!hasContent) {
-          _error = _emptyGuildMessage();
           _emptyGuild = true;
+          _emptyGuildIsDefaultUser = Stores.infoStore.getCurrentUserId() == 0;
         }
       });
       return;
     }
 
-    // 并行：公会成员详情 + 公会榜（头部排名）+ 玩家赛季榜/无尽榜（成员排名）
     final (detail, guilds, players, hell) = await (
       RankingCache.guildDetail(guild, force: hasContent || force),
       RankingCache.guildRanking(force: force),
@@ -163,9 +151,9 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
     ).wait;
 
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
 
     String? refreshFailure;
-    // 成员详情是否加载成功：成功才发起各成员"上次在线"查询
     var membersLoaded = false;
     setState(() {
       if (!Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value) {
@@ -173,7 +161,6 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
       }
       _firstLoading = false;
 
-      // 玩家赛季榜 / 无尽榜索引，供成员行查询各自排名
       _playerRankByName = {};
       if (players is SeasonQueryResult<PlayerRankInfo>) {
         for (final p in players.items) {
@@ -189,27 +176,20 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
 
       if (detail is SeasonQueryResult<GuildMember>) {
         final members = List<GuildMember>.from(detail.items);
-        // 按赛季波数（score）从大到小排列
         members.sort((a, b) => b.score.compareTo(a.score));
         _members = members;
         _error = null;
-        // 固定列宽：score 列取全部成员展示串的最大文本宽度；"上次在线"列
-        // 固定宽度（时间右对齐紧贴分数列），联网返回时布局不漂移。
-        // 开关关闭时不查询不展示，时间列收拢为 0
         final lastOnlineEnabled =
             Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
         _scoreColumnWidth = members.fold<double>(0, (max, m) {
           final w = _textWidth('9,999,999', _scoreStyle);
           return w > max ? w : max;
         });
-        // 覆盖 formatLastOnline 的单位格式，避免 min 比 Nd 更宽而被截断。
         _timeColumnWidth = lastOnlineEnabled
             ? ['999min', '1000d']
                   .map((text) => _textWidth(text, _timeStyle))
                   .reduce((max, width) => width > max ? width : max)
             : 0;
-        // 同步回填各成员"上次在线"（缓存命中首帧即展示，不重放入场动画）；
-        // 重建映射顺带清理已退出公会成员的旧条目；未缓存成员留空待异步拉取
         _lastOnlineByLower = {};
         if (lastOnlineEnabled) {
           for (final m in members) {
@@ -220,14 +200,12 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
         membersLoaded = true;
       } else if (detail is QueryError) {
         if (hasContent) {
-          // 已有内容：保留旧数据，仅提示刷新失败
-          refreshFailure = _errorMessage(guild, detail);
+          refreshFailure = _errorMessage(l10n, guild, detail);
         } else {
-          _error = _errorMessage(guild, detail);
+          _error = _errorMessage(l10n, guild, detail);
         }
       }
 
-      // 在公会榜单中查找当前公会排名（前 300 内才显示），并记录与前后的差距
       _guildRank = null;
       _guildGapPrev = null;
       _guildGapNext = null;
@@ -237,9 +215,9 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
           final g = items[i];
           if (g.name.toLowerCase() == guild.toLowerCase()) {
             _guildRank = g.rank;
-            // 上一名（排名靠前、分数更高）：还需多少分追上
+            // 上一名
             if (i > 0) _guildGapPrev = items[i - 1].score - g.score;
-            // 下一名（排名靠后、分数更低）：领先多少分；末名无下一名
+            // 下一名
             if (i < items.length - 1) {
               _guildGapNext = g.score - items[i + 1].score;
             }
@@ -249,13 +227,14 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
       }
     });
 
-    if (refreshFailure != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('刷新失败：$refreshFailure')));
+    // 本地副本
+    final failure = refreshFailure;
+    if (failure != null) {
+      final text = l10n.snackRefreshFailed(failure);
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
     }
 
-    // 成员列表加载成功且开关开启才发起各成员"上次在线"查询：
-    // 失败返回 null 保留现有展示
+    // 成员列表加载成功且开关开启才发起各成员"上次在线"查询
     final loadLastOnline =
         membersLoaded &&
         Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
@@ -283,52 +262,46 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
     }
   }
 
-  /// 下拉刷新：与「阵容」页同步按钮一致的全量同步——
-  /// 拉取个人赛季数据写入 store，再强制刷新公会成员与三类榜单（胶囊）。
-  /// 个人查询失败仅提示不中断；榜单/成员失败保留旧缓存与旧数据。
+  /// 下拉刷新
   Future<void> _refresh() async {
     final guild = (widget.guildName ?? Stores.infoStore.getCurrentUserGuild())
         .trim();
     final result = await Stores.infoStore.syncCurrentUser();
     if (!mounted) return;
+    final l10n = AppLocalizations.of(context);
     if (result is QueryError) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('同步失败：${_errorMessage(guild, result)}')),
+        SnackBar(
+          content: Text(
+            l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
+          ),
+        ),
       );
     }
-    // 个人查询成败与否都强制刷新公会成员与三榜单（失败保留旧缓存与胶囊）
+    // 强制刷新公会成员与三榜单
     await _load(force: true);
   }
 
-  String _errorMessage(String guild, QueryError error) {
+  String _errorMessage(AppLocalizations l10n, String guild, QueryError error) {
     return switch (error) {
-      NameNotFound() => '未找到公会「$guild」的信息',
-      TimeoutError() => '查询超时，请稍后重试',
+      NameNotFound() => l10n.errorGuildNotFound(guild),
+      TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };
   }
 
-  /// 公会为空时的提示：默认用户引导创建账号，普通用户引导填写公会
-  String _emptyGuildMessage() {
-    if (Stores.infoStore.getCurrentUserId() == 0) {
-      return '当前为默认用户，仅用于体验基础功能。\n'
-          '请到「设置」页的「用户管理」创建自己的账号，并填写公会名。';
-    }
-    return '当前用户未设置公会，请先到「用户管理」中填写公会名';
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final Widget body;
     if (_firstLoading) {
       body = const Center(child: CircularProgressIndicator());
-    } else if (_error != null) {
+      // 公会未配置
+    } else if (_error != null || _emptyGuild) {
       body = _buildError();
     } else if (_members.isEmpty) {
-      body = const Center(child: Text('该公会暂无成员'));
+      body = Center(child: Text(l10n.emptyGuildMembers));
     } else {
-      // 主从两栏：局部宽度足够时右侧常驻玩家详情面板（未选中显示占位），
-      // 否则单列表 + push。可用宽度回填给点击回调共用
       body = LayoutBuilder(
         builder: (context, constraints) {
           _lastBodyWidth = constraints.maxWidth;
@@ -336,7 +309,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
           final list = _buildMemberList(wide: wide);
           if (!wide) return list;
           return Row(
-            // stretch 给两栏紧的高度约束：面板内部的 Column+Expanded 需要
+            // stretch 给两栏紧的高度约束
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(child: list),
@@ -364,15 +337,14 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: .start,
-              children: [const Text('公会'), _AppBarInfo()],
+              children: [Text(l10n.tabGuild), _AppBarInfo()],
             ),
             bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
-            // AppBar action 区：公会赛季进度（点击查看详情）
             actions: [
               isDesktop
                   ? IconButton(
                       onPressed: _refresh,
-                      tooltip: '拉取数据',
+                      tooltip: l10n.tooltipFetchData,
                       icon: !_loading
                           ? Icon(Icons.cloud_sync)
                           : SizedBox(
@@ -395,7 +367,13 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
 
   /// 查询失败提示 + 操作按钮（公会未配置时跳转用户管理，网络类错误重试）
   Widget _buildError() {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final message = _emptyGuild
+        ? (_emptyGuildIsDefaultUser
+              ? l10n.emptyGuildDefaultUserHint
+              : l10n.emptyGuildHint)
+        : _error!;
     return Center(
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -405,12 +383,12 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
             Icon(Icons.error_outline, size: 36.0, color: scheme.error),
             const SizedBox(height: 12.0),
             Text(
-              _error!,
+              message,
               textAlign: TextAlign.center,
               style: TextStyle(color: scheme.onSurfaceVariant),
             ),
             const SizedBox(height: 16.0),
-            // 公会未配置：跳转「用户管理」填写；网络类错误：重试
+            // 公会未配置
             if (_emptyGuild)
               FilledButton.icon(
                 onPressed: () {
@@ -422,13 +400,13 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
                   );
                 },
                 icon: const Icon(Icons.group),
-                label: const Text('前往用户管理'),
+                label: Text(l10n.actionGoToUserManagement),
               )
             else
               FilledButton.icon(
                 onPressed: _load,
                 icon: const Icon(Icons.refresh),
-                label: const Text('重试'),
+                label: Text(l10n.actionRetry),
               ),
           ],
         ),
@@ -436,7 +414,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
     );
   }
 
-  /// 主从两栏下选中的成员名；null 表示未选中
+  /// 主从两栏下选中的成员名
   String? _selectedMember;
 
   /// 最近一次布局的 body 可用宽度（LayoutBuilder 回填，供点击回调判断两栏）
@@ -474,7 +452,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
               ),
               const SizedBox(height: 12),
               Text(
-                '点击左侧成员查看玩家详情',
+                AppLocalizations.of(context).emptySelectMemberHint,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurfaceVariant),
               ),
@@ -493,6 +471,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
   /// 成员列表：按赛季波数从大到小展示，当前用户高亮；
   /// [wide] 为主从两栏模式：选中行高亮，点击改为面板展示
   Widget _buildMemberList({required bool wide}) {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final currentUser = Stores.infoStore.getCurrentUsername();
     // 公会成员赛季波数总和（成员行右侧展示的就是各自 score）
@@ -547,7 +526,10 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
               ],
               const Spacer(),
               Text(
-                '${_members.length} 人 · ${totalScore.format()}',
+                l10n.guildMemberCountAndScore(
+                  _members.length,
+                  totalScore.format(),
+                ),
                 style: Theme.of(context).textTheme.bodySmall
                     ?.copyWith(color: scheme.primary),
               ),

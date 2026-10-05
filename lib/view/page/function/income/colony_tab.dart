@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_switch_tile.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
@@ -43,12 +44,13 @@ class _ColonyTabState extends State<ColonyTab> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final store = Stores.infoStore;
     final List<Widget> colonyIncomeWidgets = [
       ListTile(
         title: Row(
           children: [
-            const Text('殖民地等级'),
+            Text(l10n.labelColonyLevel),
             const Spacer(),
             ValueListenableBuilder<int>(
               valueListenable: Stores.infoStore.incomeNotifier,
@@ -82,7 +84,7 @@ class _ColonyTabState extends State<ColonyTab> {
         ),
       ),
       ListTile(
-        title: const Text('额外殖民地C'),
+        title: Text(l10n.labelExtraColonyC),
         trailing: SizedBox(
           width: 80,
           child: SelectAllTextField(
@@ -98,7 +100,7 @@ class _ColonyTabState extends State<ColonyTab> {
         ),
       ),
       ListTile(
-        title: const Text('额外殖民地G'),
+        title: Text(l10n.labelExtraColonyG),
         trailing: SizedBox(
           width: 80,
           child: SelectAllTextField(
@@ -114,12 +116,12 @@ class _ColonyTabState extends State<ColonyTab> {
         ),
       ),
       IncomeSwitchTile(
-        label: '车轮',
+        label: l10n.labelWheel,
         readValue: store.getCurrentUserEquipWheel,
         onChanged: store.setCurrentUserEquipWheel,
       ),
       IncomeSwitchTile(
-        label: '鞭子',
+        label: l10n.labelWhip,
         readValue: store.getCurrentUserEquipWhip,
         onChanged: store.setCurrentUserEquipWhip,
       ),

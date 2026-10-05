@@ -2,6 +2,8 @@ import 'dart:async';
 
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
 import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income_page.dart';
@@ -23,6 +25,7 @@ class FunctionPage extends StatefulWidget {
 class _FunctionPageState extends State<FunctionPage> {
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final store = Stores.infoStore;
     final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
       color: Theme.of(context).colorScheme.primary,
@@ -38,17 +41,14 @@ class _FunctionPageState extends State<FunctionPage> {
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: .start,
-              children: [
-                const Text('功能'),
-                _AppBarInfo(),
-              ],
+              children: [Text(l10n.tabFunction), _AppBarInfo()],
             ),
           ),
           body: ListView(
             children: [
               ListTile(
                 leading: const Icon(Icons.bolt),
-                title: const Text('跳波状态'),
+                title: Text(l10n.waveStatus),
                 trailing: const Icon(Icons.chevron_right),
                 onTap: () {
                   Navigator.of(context).push(
@@ -62,8 +62,13 @@ class _FunctionPageState extends State<FunctionPage> {
                 leading: const Icon(Icons.percent),
                 title: Row(
                   children: [
-                    const Text('推波收益计算'),
-                    const Spacer(),
+                    Expanded(
+                      child: Text(
+                        l10n.wavePushIncomeCalc,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8.0),
                     ValueListenableBuilder(
                       valueListenable: store.incomeNotifier,
                       builder: (context, value, child) {
@@ -88,8 +93,13 @@ class _FunctionPageState extends State<FunctionPage> {
                 leading: const Icon(Icons.monetization_on),
                 title: Row(
                   children: [
-                    const Text('收入'),
-                    const Spacer(),
+                    Expanded(
+                      child: Text(
+                        l10n.tabIncome,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8.0),
                     ValueListenableBuilder(
                       valueListenable: store.incomeNotifier,
                       builder: (context, _, child) {
@@ -99,7 +109,7 @@ class _FunctionPageState extends State<FunctionPage> {
                         return Text(
                           totalIncome.formatCompact(
                             fractionDigits: 2,
-                            english: false,
+                            english: !context.isChineseLocale,
                           ),
                           style: style,
                         );
@@ -118,8 +128,13 @@ class _FunctionPageState extends State<FunctionPage> {
                 leading: const Icon(Icons.timeline),
                 title: Row(
                   children: [
-                    const Text('游戏轨迹'),
-                    const Spacer(),
+                    Expanded(
+                      child: Text(
+                        l10n.gameTrack,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                    const SizedBox(width: 8.0),
                     _RelativeTimeText(style: style),
                   ],
                 ),
@@ -189,34 +204,35 @@ class _RelativeTimeTextState extends State<_RelativeTimeText> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final lastTime = Stores.gameTrackStore.getLastRecordTime(
       Stores.infoStore.getCurrentUserId(),
     );
     final text = lastTime == null
-        ? '无记录'
-        : _formatRelativeTime(lastTime.toLocal(), DateTime.now());
+        ? l10n.noRecord
+        : _formatRelativeTime(l10n, lastTime.toLocal(), DateTime.now());
     return Text(text, style: widget.style);
   }
 }
 
-String _formatRelativeTime(DateTime time, DateTime now) {
+String _formatRelativeTime(AppLocalizations l10n, DateTime time, DateTime now) {
   final duration = now.difference(time);
   if (duration.inSeconds < 60) {
-    return '${duration.inSeconds} 秒前';
+    return l10n.timeSecondsAgo(duration.inSeconds);
   }
   if (duration.inMinutes < 60) {
-    return '${duration.inMinutes} 分钟前';
+    return l10n.timeMinutesAgo(duration.inMinutes);
   }
   if (duration.inHours < 24) {
-    return '${duration.inHours} 小时前';
+    return l10n.timeHoursAgo(duration.inHours);
   }
   if (duration.inDays < 30) {
-    return '${duration.inDays} 天前';
+    return l10n.timeDaysAgo(duration.inDays);
   }
   final months = duration.inDays ~/ 30;
   if (months < 12) {
-    return '$months 月前';
+    return l10n.timeMonthsAgo(months);
   }
   final years = months ~/ 12;
-  return '$years 年前';
+  return l10n.timeYearsAgo(years);
 }

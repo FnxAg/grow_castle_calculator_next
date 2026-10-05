@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 设置项通用编辑弹窗：聚焦自动全选的输入框 + 取消/保存。
@@ -60,14 +61,19 @@ class _SettingEditDialogState extends State<SettingEditDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     var decoration = widget.decoration;
     if (widget.showVisibilityToggle) {
       decoration = decoration.copyWith(
         suffixIcon: IconButton(
           icon: Icon(
-            _obscured ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+            _obscured
+                ? Icons.visibility_off_outlined
+                : Icons.visibility_outlined,
           ),
-          tooltip: _obscured ? '显示' : '隐藏',
+          tooltip: _obscured
+              ? l10n.tooltipShowPassword
+              : l10n.tooltipHidePassword,
           onPressed: () => setState(() => _obscured = !_obscured),
         ),
       );
@@ -85,14 +91,14 @@ class _SettingEditDialogState extends State<SettingEditDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(l10n.actionCancel),
         ),
         TextButton(
           onPressed: () {
             widget.onSubmit(_controller.text);
             Navigator.of(context).pop();
           },
-          child: const Text('保存'),
+          child: Text(l10n.actionSave),
         ),
       ],
     );

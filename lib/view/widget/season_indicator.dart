@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 
 /// 赛季进度指示按钮（AppBar action 区用）。
 ///
@@ -39,6 +40,7 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ValueListenableBuilder<SeasonRange?>(
       valueListenable: widget.notifier,
       builder: (context, season, _) {
@@ -46,13 +48,13 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
         final end = season.end;
         if (end == null) return const SizedBox.shrink();
         return IconButton(
-          tooltip: '赛季进度',
+          tooltip: l10n.seasonProgress,
           icon: Row(
             children: [
               Icon(Icons.timer),
               // const SizedBox(width: 2.0),
               Text(
-                _label(season, end),
+                _label(l10n, season, end),
                 style: TextStyle(
                   // fontSize: 12.0,
                   fontWeight: FontWeight.w600,
@@ -68,13 +70,14 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
   }
 
   /// 只显示百分比；start 缺失（无法计算进度）时回退显示剩余时长
-  String _label(SeasonRange season, DateTime end) {
+  String _label(AppLocalizations l10n, SeasonRange season, DateTime end) {
     final start = season.start;
     if (start == null) {
-      return PlayerApiService.formatSeasonRemaining(end, DateTime.now());
+      return PlayerApiService.formatSeasonRemaining(end, DateTime.now()) ??
+          l10n.seasonEnded;
     }
     final total = end.difference(start).inMilliseconds;
-    if (total <= 0) return '已结束';
+    if (total <= 0) return l10n.seasonEnded;
     final elapsed = DateTime.now().difference(start).inMilliseconds;
     final percent = (elapsed / total * 100).clamp(0, 100).round();
     return '$percent%';
@@ -99,12 +102,13 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
   void _showDetail(SeasonRange season, DateTime end) {
     final now = DateTime.now();
     final start = season.start;
+    final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (context) {
         final scheme = Theme.of(context).colorScheme;
         return AlertDialog(
-          title: const Text('赛季进度'),
+          title: Text(l10n.seasonProgress),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -117,12 +121,14 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
                     minHeight: 8.0,
                   ),
                 ),
-                _detailRow('开始', _fmt(start), scheme),
+                _detailRow(l10n.labelStart, _fmt(start), scheme),
               ],
-              _detailRow('结束', _fmt(end), scheme),
+              _detailRow(l10n.labelEnd, _fmt(end), scheme),
+              // 赛季已结束时服务层返回 null，由这里补本地化文案
               _detailRow(
-                '剩余',
-                PlayerApiService.formatSeasonRemaining(end, now),
+                l10n.labelRemaining,
+                PlayerApiService.formatSeasonRemaining(end, now) ??
+                    l10n.seasonEnded,
                 scheme,
               ),
             ],
@@ -130,7 +136,7 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('知道了'),
+              child: Text(l10n.actionGotIt),
             ),
           ],
         );

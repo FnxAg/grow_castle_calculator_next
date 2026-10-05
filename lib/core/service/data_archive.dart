@@ -1,13 +1,34 @@
 import 'dart:convert';
 
-/// 数据归档异常：message 为面向用户的中文提示
-class DataArchiveException implements Exception {
-  DataArchiveException(this.message);
+/// 归档文件不合法的具体原因。语言中立，文案由 UI 层翻译
+/// （见 lib/view/extension/service_error_l10n.dart）
+enum ArchiveError {
+  /// JSON 解析失败
+  invalidJson,
 
-  final String message;
+  /// 结构不对（不是本应用的备份）
+  invalid,
+
+  /// 缺少版本信息
+  missingVersion,
+
+  /// 由更新版本的应用创建
+  newerVersion,
+
+  /// 版本号不认识
+  unsupportedVersion,
+
+  /// 缺少数据内容
+  missingData,
+}
+
+class DataArchiveException implements Exception {
+  const DataArchiveException(this.error);
+
+  final ArchiveError error;
 
   @override
-  String toString() => message;
+  String toString() => 'DataArchiveException(${error.name})';
 }
 
 /// 归档解析产物：各 section 均为「可直接写入 Hive box」的形态。
@@ -137,29 +158,27 @@ abstract final class DataArchive {
     try {
       decoded = jsonDecode(text);
     } on FormatException {
-      throw DataArchiveException('不是有效的备份文件（JSON 解析失败）');
+      throw const DataArchiveException(ArchiveError.invalidJson);
     }
     if (decoded is! Map) {
-      throw DataArchiveException('不是有效的备份文件');
+      throw const DataArchiveException(ArchiveError.invalid);
     }
     final root = Map<String, dynamic>.from(decoded);
 
     final version = root['formatVersion'];
     if (version is! int) {
-      throw DataArchiveException('不是有效的备份文件（缺少版本信息）');
+      throw const DataArchiveException(ArchiveError.missingVersion);
     }
     if (version > formatVersion) {
-      throw DataArchiveException(
-        '该备份由更新版本的应用创建，请先升级应用后再导入',
-      );
+      throw const DataArchiveException(ArchiveError.newerVersion);
     }
     if (version < 1) {
-      throw DataArchiveException('不支持该备份文件版本');
+      throw const DataArchiveException(ArchiveError.unsupportedVersion);
     }
 
     final rawData = root['data'];
     if (rawData is! Map) {
-      throw DataArchiveException('不是有效的备份文件（缺少数据内容）');
+      throw const DataArchiveException(ArchiveError.missingData);
     }
     final data = Map<String, dynamic>.from(rawData);
 

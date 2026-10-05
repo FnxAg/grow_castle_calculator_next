@@ -1,5 +1,7 @@
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/store/user_data.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 弹出单位汇总表单
@@ -49,6 +51,7 @@ class _UnitSummarySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final cardIds = data.cardIds;
     final enabledCount = cardIds
@@ -78,7 +81,10 @@ class _UnitSummarySheet extends StatelessWidget {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('详细信息', style: theme.textTheme.titleLarge),
+                      Text(
+                        l10n.tooltipDetails,
+                        style: theme.textTheme.titleLarge,
+                      ),
                       const SizedBox(height: 3.0),
                       Text(
                         username,
@@ -91,7 +97,7 @@ class _UnitSummarySheet extends StatelessWidget {
                   ),
                 ),
                 _StatusPill(
-                  label: '$enabledCount/${cardIds.length} 启用',
+                  label: l10n.unitEnabledCount(enabledCount, cardIds.length),
                   icon: Icons.check_circle_outline,
                 ),
               ],
@@ -163,6 +169,7 @@ class _OverviewPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colors = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.fromLTRB(16.0, 14.0, 16.0, 12.0),
@@ -188,7 +195,7 @@ class _OverviewPanel extends StatelessWidget {
               ),
               Expanded(
                 child: _OverviewValue(
-                  label: '指数',
+                  label: l10n.metricIndex,
                   value: data.gpCN.format(fractionDigits: 3),
                   prominent: true,
                 ),
@@ -205,18 +212,23 @@ class _OverviewPanel extends StatelessWidget {
           Row(
             children: [
               Expanded(
-                child: _OverviewValue(label: '总波数', value: data.wave.format()),
+                child: _OverviewValue(
+                  label: l10n.totalWave,
+                  value: data.wave.format(),
+                ),
               ),
               Expanded(
                 child: _OverviewValue(
-                  label: '赛季波数',
+                  label: l10n.seasonWave,
                   value: data.seasonWave.format(),
                 ),
               ),
               Expanded(
                 child: _OverviewValue(
-                  label: '总金币',
-                  value: data.totalGold.formatCompact(english: false),
+                  label: l10n.totalGold,
+                  value: data.totalGold.formatCompact(
+                    english: !context.isChineseLocale,
+                  ),
                 ),
               ),
             ],
@@ -281,6 +293,7 @@ class _UnitSummaryRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
     final applied = data.applyFlags[id] ?? true;
     final name = data.textValues[id] ?? '';
@@ -300,10 +313,10 @@ class _UnitSummaryRow extends StatelessWidget {
     final title = name.isNotEmpty
         ? name
         : id == 1
-        ? '城堡'
+        ? l10n.unitNameCastle
         : id == 2
-        ? '城弓'
-        : '单位 $id';
+        ? l10n.unitNameCastleBow
+        : l10n.unitNameGeneric(id);
 
     return Opacity(
       opacity: applied ? 1.0 : 0.55,
@@ -339,7 +352,7 @@ class _UnitSummaryRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 12.0),
                 Text(
-                  gold.formatCompact(english: false),
+                  gold.formatCompact(english: !context.isChineseLocale),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.primary,
                     fontWeight: FontWeight.bold,
@@ -350,11 +363,21 @@ class _UnitSummaryRow extends StatelessWidget {
             const SizedBox(height: 10.0),
             Row(
               children: [
-                _metric(theme, '金币占比', '${_fmt(share)}%', applied),
+                _metric(
+                  theme,
+                  l10n.metricGoldShare,
+                  '${_fmt(share)}%',
+                  applied,
+                ),
                 _metricDivider(colors),
-                _metric(theme, '单位 / 波数', _fmt(oneOverRatio), applied),
+                _metric(
+                  theme,
+                  l10n.metricUnitPerWave,
+                  _fmt(oneOverRatio),
+                  applied,
+                ),
                 _metricDivider(colors),
-                _metric(theme, '波数 / 单位', _fmt(ratio), applied),
+                _metric(theme, l10n.metricWavePerUnit, _fmt(ratio), applied),
               ],
             ),
           ],

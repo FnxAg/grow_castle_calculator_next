@@ -8,6 +8,8 @@ import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
@@ -289,6 +291,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final baseResult = computeItemDps(
       baseAttack: _valueOf(_baseAttackCtrl),
       increasedDmg: _valueOf(_increasedDmgCtrl),
@@ -315,12 +318,12 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           const SizedBox(height: 16),
           Card(
             margin: EdgeInsets.zero,
-            child: _buildItemCard(_item1Lines, '装备 1 词条', 'item1'),
+            child: _buildItemCard(_item1Lines, l10n.labelItemLines(1), 'item1'),
           ),
           const SizedBox(height: 16),
           Card(
             margin: EdgeInsets.zero,
-            child: _buildItemCard(_item2Lines, '装备 2 词条', 'item2'),
+            child: _buildItemCard(_item2Lines, l10n.labelItemLines(2), 'item2'),
           ),
         ],
       ),
@@ -341,81 +344,77 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Row(children: [const Text('装备对比')]),
+        title: Row(children: [Text(l10n.toolItemComparer)]),
         actions: [
           IconButton(
             icon: const Icon(Icons.help_outline),
-            tooltip: '使用说明',
+            tooltip: l10n.aboutGuide,
             onPressed: () => showDialog<void>(
               context: context,
               builder: (dialogContext) => AlertDialog(
-                title: const Text('使用说明'),
-                content: const Text.rich(
+                title: Text(l10n.aboutGuide),
+                content: Text.rich(
                   TextSpan(
-                    style: TextStyle(fontSize: 14),
+                    style: const TextStyle(fontSize: 14),
                     children: [
-                      TextSpan(text: '该工具用于对比两件装备的期望。\n\n'),
+                      TextSpan(text: l10n.dialogItemCompareHelpIntro),
                       TextSpan(
-                        text: '使用步骤：\n',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        text: l10n.dialogItemCompareHelpStepsTitle,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
+                      TextSpan(text: l10n.dialogItemCompareHelpStep1),
+                      TextSpan(text: l10n.dialogItemCompareHelpStep2),
                       TextSpan(
-                        text: '1. 确认需要对比的装备 / 宝珠 / 宝物槽位，然后将对应的物品卸下，根据此时的面板填写“无装备面板”数据；\n',
+                        text: l10n.dialogItemCompareHelpStep2Note,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      TextSpan(text: '2. 将两件装备的白词条填写到“装备 1 / 装备 2”中，'),
+                      TextSpan(text: l10n.dialogItemCompareHelpStep3),
                       TextSpan(
-                        text: '请注意词条类型，元素伤害统一并入 "Element Damage"，请自行根据单位属性填入对应元素伤害词条；\n',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        text: l10n.dialogItemCompareHelpNormalUnit,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      TextSpan(text: '3. 对比结果：实时显示三组 DPS 结果，并给出结论。\n\n\n'),
+                      TextSpan(text: l10n.dialogItemCompareHelpNormalUnitDesc),
                       TextSpan(
-                        text: '普攻型单位：',
-                        style: TextStyle(fontWeight: FontWeight.bold),
+                        text: l10n.dialogItemCompareHelpSkillUnit,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
+                      TextSpan(text: l10n.dialogItemCompareHelpSkillUnitDesc),
                       TextSpan(
-                        text: '需要填写 Attacks Per Second 和 Increased Speed，Attack Speed % 词条参与计算。\n',
+                        text: l10n.dialogItemCompareHelpNoteLabel,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
                       ),
-                      TextSpan(
-                        text: '技能型单位：',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: '不填写上述两项，Attack Speed % 词条不参与计算。'),
-                      TextSpan(
-                        text: '\n\n注：',
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: '宝珠、宝物等词条也可用于计算，但需要注意词条类型。'),
+                      TextSpan(text: l10n.dialogItemCompareHelpNoteDesc),
                     ],
                   ),
                 ),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('关闭'),
+                    child: Text(l10n.actionClose),
                   ),
                 ],
               ),
             ),
           ),
           IconButton(
-            tooltip: '重置',
+            tooltip: l10n.actionReset,
             icon: const Icon(Icons.restore_page),
             onPressed: () => showDialog<void>(
               context: context,
               builder: (dialogContext) => AlertDialog(
-                title: const Text('重置'),
-                content: const Text('是否清空所有输入？'),
+                title: Text(l10n.actionReset),
+                content: Text(l10n.dialogResetConfirm),
                 actions: [
                   TextButton(
                     onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: const Text('取消'),
+                    child: Text(l10n.actionCancel),
                   ),
                   TextButton(
                     onPressed: () {
                       Navigator.of(dialogContext).pop();
                       _reset();
                     },
-                    child: const Text('确认'),
+                    child: Text(l10n.actionConfirm),
                   ),
                 ],
               ),
@@ -446,7 +445,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
         crossAxisAlignment: .start,
         children: [
           Text(
-            '无装备面板',
+            AppLocalizations.of(context).labelNoItemPanel,
             style: Theme.of(context).textTheme.titleMedium?.copyWith(
               color: Theme.of(context).colorScheme.primary,
               fontWeight: FontWeight.w600,
@@ -656,7 +655,7 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
             child: TextButton.icon(
               onPressed: _addLine,
               icon: const Icon(Icons.add),
-              label: const Text('添加词条'),
+              label: Text(AppLocalizations.of(context).actionAddLine),
             ),
           ),
       ],
@@ -760,6 +759,7 @@ class _ItemLineRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final line = input.line;
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -767,7 +767,7 @@ class _ItemLineRow extends StatelessWidget {
         Expanded(
           child: DropdownButtonFormField<_LineOption>(
             initialValue: line,
-            hint: const Text('选择词条类型'),
+            hint: Text(l10n.hintSelectLineType),
             items: [
               for (final option in _lineOptions)
                 DropdownMenuItem(value: option, child: Text(option.label)),
@@ -796,13 +796,13 @@ class _ItemLineRow extends StatelessWidget {
               FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
             ],
             decoration: InputDecoration(
-              hintText: '数值',
+              hintText: l10n.hintValue,
               suffixText: line?.isPercent == true ? '%' : null,
             ),
           ),
         ),
         IconButton(
-          tooltip: '删除词条',
+          tooltip: l10n.tooltipDeleteLine,
           icon: const Icon(Icons.close),
           onPressed: onRemove,
         ),
@@ -829,12 +829,13 @@ class _ResultView extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
     final baseDps = baseResult.dps;
     final item1Dps = item1Result.dps;
     final item2Dps = item2Result.dps;
 
     // 结论：0 = 装备 1 更优，1 = 装备 2 更优，-1 = 相同/未就绪
-    final (String text, int winner) = _verdict(item1Dps, item2Dps);
+    final (String text, int winner) = _verdict(l10n, item1Dps, item2Dps);
     final gain1 = baseDps > 0 ? _pct(item1Dps / baseDps - 1) : null;
     final gain2 = baseDps > 0 ? _pct(item2Dps / baseDps - 1) : null;
 
@@ -865,7 +866,12 @@ class _ResultView extends StatelessWidget {
         Row(
           children: [
             const SizedBox(width: 68),
-            for (final title in const ['无暴击', '有暴击', 'APS', 'DPS'])
+            for (final title in [
+              l10n.labelNoCrit,
+              l10n.labelWithCrit,
+              'APS',
+              'DPS',
+            ])
               Expanded(
                 child: Text(
                   title,
@@ -877,12 +883,22 @@ class _ResultView extends StatelessWidget {
               ),
           ],
         ),
-        _tableRow(context, '无装备', baseResult),
-        _tableRow(context, '装备 1', item1Result, highlight: winner == 0),
-        _tableRow(context, '装备 2', item2Result, highlight: winner == 1),
+        _tableRow(context, l10n.labelNoItem, baseResult),
+        _tableRow(
+          context,
+          l10n.labelItemNumber(1),
+          item1Result,
+          highlight: winner == 0,
+        ),
+        _tableRow(
+          context,
+          l10n.labelItemNumber(2),
+          item2Result,
+          highlight: winner == 1,
+        ),
         const SizedBox(height: 12),
         Text(
-          '装备 1 较无装备 ${gain1 ?? '—'} · 装备 2 较无装备 ${gain2 ?? '—'}',
+          l10n.labelCompareGainSummary(gain1 ?? '—', gain2 ?? '—'),
           textAlign: TextAlign.center,
           style: theme.textTheme.bodySmall?.copyWith(
             color: scheme.onSurfaceVariant,
@@ -892,21 +908,25 @@ class _ResultView extends StatelessWidget {
     );
   }
 
-  (String, int) _verdict(double item1Dps, double item2Dps) {
-    if (!ready) return ('填写数据后自动对比', -1);
+  (String, int) _verdict(
+    AppLocalizations l10n,
+    double item1Dps,
+    double item2Dps,
+  ) {
+    if (!ready) return (l10n.compareVerdictPending, -1);
     if (item1Dps > item2Dps) {
       final gap = item2Dps > 0
-          ? '，DPS 比装备 2 高 ${_pct(item1Dps / item2Dps - 1)}'
+          ? l10n.compareGapItem2(_pct(item1Dps / item2Dps - 1))
           : '';
-      return ('装备 1 更优$gap', 0);
+      return (l10n.compareVerdictItem1(gap), 0);
     }
     if (item2Dps > item1Dps) {
       final gap = item1Dps > 0
-          ? '，DPS 比装备 1 高 ${_pct(item2Dps / item1Dps - 1)}'
+          ? l10n.compareGapItem1(_pct(item2Dps / item1Dps - 1))
           : '';
-      return ('装备 2 更优$gap', 1);
+      return (l10n.compareVerdictItem2(gap), 1);
     }
-    return ('两件装备 DPS 相同', -1);
+    return (l10n.compareVerdictTie, -1);
   }
 
   Widget _tableRow(
@@ -916,6 +936,8 @@ class _ResultView extends StatelessWidget {
     bool highlight = false,
   }) {
     final theme = Theme.of(context);
+    // 数量级缩写随界面语言切换（中文 万/亿，英文 K/M/B）
+    final english = !context.isChineseLocale;
     final style = theme.textTheme.bodyMedium?.copyWith(
       color: highlight ? theme.colorScheme.primary : null,
       fontWeight: highlight ? FontWeight.w700 : null,
@@ -927,14 +949,14 @@ class _ResultView extends StatelessWidget {
           SizedBox(width: 68, child: Text(label, style: style)),
           Expanded(
             child: Text(
-              result.normalHit.formatCompact(),
+              result.normalHit.formatCompact(english: english),
               textAlign: TextAlign.right,
               style: style,
             ),
           ),
           Expanded(
             child: Text(
-              result.critHit.formatCompact(),
+              result.critHit.formatCompact(english: english),
               textAlign: TextAlign.right,
               style: style,
             ),
@@ -949,7 +971,7 @@ class _ResultView extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              result.dps.formatCompact(),
+              result.dps.formatCompact(english: english),
               textAlign: TextAlign.right,
               style: style,
             ),

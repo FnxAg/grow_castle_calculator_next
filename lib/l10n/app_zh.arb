@@ -1,0 +1,1874 @@
+{
+  "@@locale": "zh",
+  "tabFormation": "阵容",
+  "@tabFormation": {
+    "description": "第 0 个 tab 名（底部导航 / 侧边栏），同时用作阵容页 AppBar 标题"
+  },
+  "emptyFormationHint": "暂无条目，点击右上角 + 添加",
+  "tooltipAddEntry": "新增条目",
+  "tooltipInputMode": "输入模式",
+  "tooltipViewMode": "查看模式",
+  "tooltipFetchData": "拉取数据",
+  "@tooltipFetchData": {
+    "description": "手动查询当前用户赛季数据的按钮，阵容页 AppBar 与汇总条各一处"
+  },
+  "snackQueryTooFrequent": "查询过于频繁，请稍后后再试",
+  "snackUserBanned": "用户「{name}」已被封禁",
+  "@snackUserBanned": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "snackQuerySuccess": "数据获取成功：用户「{name}」, 波数 {wave}, 赛季波数 {seasonWave}",
+  "@snackQuerySuccess": {
+    "description": "波数由调用方格式化好后传入（千分位在不同语言下一致）",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "wave": {
+        "type": "String"
+      },
+      "seasonWave": {
+        "type": "String"
+      }
+    }
+  },
+  "snackQueryFailed": "查询失败：{reason}",
+  "@snackQueryFailed": {
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "errorSeasonDataNotFound": "未找到「{name}」的赛季数据",
+  "@errorSeasonDataNotFound": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "errorQueryTimeout": "查询超时，请稍后重试",
+  "totalWave": "总波数",
+  "seasonWave": "赛季波数",
+  "totalGold": "总金币",
+  "goldPower": "GP · 指数",
+  "ranking": "排名",
+  "tooltipEditTotalWave": "修改总波数",
+  "tooltipEditSeasonWave": "修改赛季波数",
+  "dialogSetTotalWave": "设置总波数",
+  "dialogSetSeasonWave": "设置赛季波数",
+  "metricShare": "占比",
+  "metricOneOverRatio": "1/比例",
+  "metricRatio": "比例",
+  "unitNameCastle": "城堡",
+  "unitNameCastleBow": "城弓",
+  "@unitNameCastleBow": {
+    "description": "内置卡片 id=2 的默认名；英文取 Town Archer 的简写"
+  },
+  "unitNameGeneric": "单位 {id}",
+  "@unitNameGeneric": {
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "nameLabelCastle": "城堡名称",
+  "nameLabelCastleBow": "城弓名称",
+  "nameLabelGeneric": "名称",
+  "labelLevel": "等级",
+  "tooltipActions": "操作",
+  "actionApplied": "已应用",
+  "actionNotApplied": "未应用",
+  "actionClear": "清空",
+  "actionDelete": "删除",
+  "actionCancel": "取消",
+  "actionSave": "保存",
+  "settingsLanguage": "语言",
+  "languageSystem": "系统",
+  "languageChinese": "简体中文",
+  "languageEnglish": "English",
+  "@languageChinese": {
+    "description": "语言选项一律用该语言自身的写法，两个 arb 里保持一致"
+  },
+  "itemSourceDragon1": "一龙",
+  "@itemSourceDragon1": {
+    "description": "装备掉落来源名（ItemSource.label），显示在龙模拟器的来源下拉里。英文社区叫法我拿不准，先用 Dragon N　位置：lib/core/src/item_lines.dart:42"
+  },
+  "itemSourceDragon2": "二龙",
+  "@itemSourceDragon2": {
+    "description": "位置：lib/core/src/item_lines.dart:43"
+  },
+  "itemSourceDragon3": "三龙",
+  "@itemSourceDragon3": {
+    "description": "位置：lib/core/src/item_lines.dart:44"
+  },
+  "itemSourceDragon4": "四龙",
+  "@itemSourceDragon4": {
+    "description": "位置：lib/core/src/item_lines.dart:45"
+  },
+  "itemSourceDragon5": "五龙",
+  "@itemSourceDragon5": {
+    "description": "位置：lib/core/src/item_lines.dart:46"
+  },
+  "itemSourceDragon6": "六龙",
+  "@itemSourceDragon6": {
+    "description": "位置：lib/core/src/item_lines.dart:47"
+  },
+  "itemSourceDragon7": "七龙",
+  "webdavAuthFailed": "账号或密码错误（HTTP 401）",
+  "@webdavAuthFailed": {
+    "description": "位置：lib/core/service/webdav_backup_client.dart:177"
+  },
+  "webdavForbidden": "没有访问权限（HTTP 403）",
+  "@webdavForbidden": {
+    "description": "位置：lib/core/service/webdav_backup_client.dart:179"
+  },
+  "webdavNoBackupFile": "云端还没有备份文件",
+  "@webdavNoBackupFile": {
+    "description": "位置：lib/core/service/webdav_backup_client.dart:181"
+  },
+  "webdavMethodNotAllowed": "服务器不支持该操作（HTTP 405）",
+  "@webdavMethodNotAllowed": {
+    "description": "位置：lib/core/service/webdav_backup_client.dart:183"
+  },
+  "webdavServerError": "服务器返回错误（HTTP {status}）",
+  "@webdavServerError": {
+    "description": "位置：lib/core/service/webdav_backup_client.dart:185",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "webdavUnreachable": "无法连接服务器，请检查网络与 WebDAV 地址",
+  "@webdavUnreachable": {
+    "description": "位置：lib/core/service/webdav_backup_client.dart:197"
+  },
+  "archiveInvalidJson": "不是有效的备份文件（JSON 解析失败）",
+  "@archiveInvalidJson": {
+    "description": "位置：lib/core/service/data_archive.dart:140"
+  },
+  "archiveInvalid": "不是有效的备份文件",
+  "@archiveInvalid": {
+    "description": "位置：lib/core/service/data_archive.dart:143"
+  },
+  "archiveMissingVersion": "不是有效的备份文件（缺少版本信息）",
+  "@archiveMissingVersion": {
+    "description": "位置：lib/core/service/data_archive.dart:149"
+  },
+  "archiveNewerVersion": "该备份由更新版本的应用创建，请先升级应用后再导入",
+  "@archiveNewerVersion": {
+    "description": "位置：lib/core/service/data_archive.dart:153"
+  },
+  "archiveUnsupportedVersion": "不支持该备份文件版本",
+  "@archiveUnsupportedVersion": {
+    "description": "位置：lib/core/service/data_archive.dart:157"
+  },
+  "archiveMissingData": "不是有效的备份文件（缺少数据内容）",
+  "@archiveMissingData": {
+    "description": "位置：lib/core/service/data_archive.dart:162"
+  },
+  "backupBusy": "已有备份任务进行中，请稍后再试",
+  "@backupBusy": {
+    "description": "位置：lib/core/service/backup_service.dart:125, lib/core/service/backup_service.dart:204"
+  },
+  "backupFailed": "备份失败，请稍后重试",
+  "@backupFailed": {
+    "description": "位置：lib/core/service/backup_service.dart:132, lib/core/service/backup_service.dart:157"
+  },
+  "backupNotConfigured": "请先配置 WebDAV 服务器地址、账号与密码",
+  "@backupNotConfigured": {
+    "description": "位置：lib/core/service/backup_service.dart:148"
+  },
+  "backupNoRestorableData": "文件中不包含可恢复的数据",
+  "@backupNoRestorableData": {
+    "description": "位置：lib/core/service/backup_service.dart:212"
+  },
+  "dataSectionUserData": "用户数据",
+  "@dataSectionUserData": {
+    "description": "位置：lib/core/service/backup_service.dart:227"
+  },
+  "dataSectionUserMeta": "用户元数据",
+  "@dataSectionUserMeta": {
+    "description": "位置：lib/core/service/backup_service.dart:236, lib/core/service/backup_service.dart:247"
+  },
+  "dataSectionAppSettings": "应用设置",
+  "@dataSectionAppSettings": {
+    "description": "位置：lib/core/service/backup_service.dart:263"
+  },
+  "highlightRules": "高亮规则",
+  "@highlightRules": {
+    "description": "高亮规则管理页标题 / tooltip，以及备份恢复失败列表里的分段名"
+  },
+  "backupRestorePartialFailure": "以下数据恢复失败：{sections}",
+  "@backupRestorePartialFailure": {
+    "description": "sections 由调用方按语言用分隔符拼好（中文「、」，英文「, 」）　位置：lib/core/service/backup_service.dart:290",
+    "placeholders": {
+      "sections": {
+        "type": "String"
+      }
+    }
+  },
+  "listSeparator": "、",
+  "@listSeparator": {
+    "description": "中文顿号 / 英文逗号+空格，用于拼接并列的数据段名　位置：lib/core/service/backup_service.dart:290"
+  },
+  "seasonEnded": "已结束",
+  "@seasonEnded": {
+    "description": "赛季剩余时间格式化函数在赛季结束后的返回值，显示在赛季指示器上　位置：lib/core/service/api.dart:544"
+  },
+  "tabFunction": "功能",
+  "@tabFunction": {
+    "description": "底部导航第 2 项 + 功能页 AppBar 标题；main_pages.dart:37 的 TODO(l10n) 已预留此 key 名（title: (l10n) => l10n.tabFunction）。备选 Function / Data：Function 在英文里偏编程味，Data 太泛，倾向 Features。　位置：lib/view/page/function_page.dart:42"
+  },
+  "tabGuild": "公会",
+  "@tabGuild": {
+    "description": "底部导航第 3 项，代码 TODO 已指名该 key。　位置：lib/view/shell/main_pages.dart:44"
+  },
+  "tabTools": "工具",
+  "@tabTools": {
+    "description": "与 tabFormation 同策略：既是底部导航/侧边栏 tab 名，也是工具页 AppBar 标题　位置：lib/view/page/tools_page.dart:15"
+  },
+  "tabSettings": "设置",
+  "@tabSettings": {
+    "description": "同时用作底部导航项与设置页 AppBar 标题（与 tabFormation 的既有用法一致）。　位置：lib/view/shell/main_pages.dart:58, lib/view/page/setting_page.dart:181"
+  },
+  "snackUpdateCheckFailed": "检查更新失败，请检查网络后重试",
+  "@snackUpdateCheckFailed": {
+    "description": "位置：lib/view/page/setting_page.dart:46"
+  },
+  "snackAlreadyLatest": "已是最新版本 v{version}",
+  "@snackAlreadyLatest": {
+    "description": "原文 '已是最新版本 v$current' 为拼接，版本号含 v 前缀；en 里 v 保留在括号内。　位置：lib/view/page/setting_page.dart:53",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogUpdateAvailable": "发现新版本",
+  "@dialogUpdateAvailable": {
+    "description": "位置：lib/view/page/setting_page.dart:63"
+  },
+  "dialogUpdateAvailableBody": "{hasCurrent, select, yes{最新版本 {latest}（当前 v{current}）} other{最新版本 {latest}}}",
+  "@dialogUpdateAvailableBody": {
+    "description": "原文是两个字面量拼接（current 为 null 时省略整个括号），故合并为一条 select 词条，调用时 hasCurrent 传 'yes'/'no'。若不想用 select，可拆成「含当前版本」与「不含」两条 key。　位置：lib/view/page/setting_page.dart:70, lib/view/page/setting_page.dart:71",
+    "placeholders": {
+      "hasCurrent": {
+        "type": "String"
+      },
+      "latest": {
+        "type": "String"
+      },
+      "current": {
+        "type": "String"
+      }
+    }
+  },
+  "labelChangelog": "更新日志：",
+  "@labelChangelog": {
+    "description": "冒号在 zh 为全角、en 为半角，已一并写进词条。　位置：lib/view/page/setting_page.dart:79"
+  },
+  "actionOpenReleasePage": "打开发布页",
+  "@actionOpenReleasePage": {
+    "description": "位置：lib/view/page/setting_page.dart:100"
+  },
+  "snackCannotOpenLink": "无法打开链接：{url}",
+  "@snackCannotOpenLink": {
+    "description": "设置页与关于页各一处，同一个 key。　位置：lib/view/page/setting_page.dart:113, lib/view/page/setting/about_page.dart:257",
+    "placeholders": {
+      "url": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsThirdPartyApi": "第三方 API",
+  "@settingsThirdPartyApi": {
+    "description": "设置页开关标题 + 编辑弹窗标题 + 关于页说明弹窗标题，三处同一概念，务必复用同一 key。　位置：lib/view/page/setting_page.dart:122, lib/view/page/setting_page.dart:277, lib/view/page/setting/about_page.dart:46"
+  },
+  "labelApiUrl": "API 地址",
+  "@labelApiUrl": {
+    "description": "设置页条目标题与编辑弹窗 label 同一串。备选译法 API address。　位置：lib/view/page/setting_page.dart:124, lib/view/page/setting_page.dart:303"
+  },
+  "settingsQueryConcurrency": "查询并发数",
+  "@settingsQueryConcurrency": {
+    "description": "弹窗标题与设置条目标题同一串。备选 Concurrent queries。　位置：lib/view/page/setting_page.dart:135, lib/view/page/setting_page.dart:352"
+  },
+  "labelConcurrency": "并发数",
+  "@labelConcurrency": {
+    "description": "输入框 label；helperText '1-10' 为纯数字符号，未收（见报告）。　位置：lib/view/page/setting_page.dart:140"
+  },
+  "settingsTrackInterval": "记录间隔",
+  "@settingsTrackInterval": {
+    "description": "helperText '1-43200' 为纯数字，未收。　位置：lib/view/page/setting_page.dart:160"
+  },
+  "labelMinutes": "分钟",
+  "@labelMinutes": {
+    "description": "输入框 label（单位）。　位置：lib/view/page/setting_page.dart:165"
+  },
+  "settingsUserManagement": "用户管理",
+  "@settingsUserManagement": {
+    "description": "设置条目标题 + 选用户页 AppBar 标题，同一 key。　位置：lib/view/page/setting_page.dart:186, lib/view/page/public/select_user_page.dart:29"
+  },
+  "settingsThemeMode": "主题模式",
+  "@settingsThemeMode": {
+    "description": "术语表给的对应词是 theme；若想保留 mode 语义可用 Theme mode。　位置：lib/view/page/setting_page.dart:201"
+  },
+  "themeSystem": "系统",
+  "@themeSystem": {
+    "description": "主题分段按钮。与已有的 languageSystem（zh 为「跟随系统」）不是同一串，不能复用。　位置：lib/view/page/setting_page.dart:212"
+  },
+  "themeLight": "亮色",
+  "@themeLight": {
+    "description": "位置：lib/view/page/setting_page.dart:217"
+  },
+  "themeDark": "暗色",
+  "@themeDark": {
+    "description": "位置：lib/view/page/setting_page.dart:222"
+  },
+  "settingsThirdPartyApiSubtitle": "玩家详情页获取波速信息",
+  "@settingsThirdPartyApiSubtitle": {
+    "description": "「波速」不在术语表内，暂译 wave speed（波=wave），请拍板。　位置：lib/view/page/setting_page.dart:278"
+  },
+  "settingsAutoLastOnline": "自动查询上次在线",
+  "@settingsAutoLastOnline": {
+    "description": "术语表：上次在线 last online。　位置：lib/view/page/setting_page.dart:329"
+  },
+  "settingsAutoLastOnlineSubtitle": "公会详情页查询成员\"上次在线\"",
+  "@settingsAutoLastOnlineSubtitle": {
+    "description": "原文用的是半角直引号 \"（不是「」），zh 原样保留；en 保持同款直引号。　位置：lib/view/page/setting_page.dart:330"
+  },
+  "settingsGameTrack": "游戏轨迹记录",
+  "@settingsGameTrack": {
+    "description": "游戏轨迹页 game_track_page.dart:137 也复述了这串文案（见报告线索），建议一并复用该 key。　位置：lib/view/page/setting_page.dart:374"
+  },
+  "settingsGameTrackSubtitle": "记录个人数据变化",
+  "@settingsGameTrackSubtitle": {
+    "description": "位置：lib/view/page/setting_page.dart:375"
+  },
+  "settingsGameTrackMinInterval": "轨迹记录最小间隔",
+  "@settingsGameTrackMinInterval": {
+    "description": "位置：lib/view/page/setting_page.dart:399"
+  },
+  "settingsGameTrackIntervalValue": "{minutes} 分钟",
+  "@settingsGameTrackIntervalValue": {
+    "description": "原文 '$minutes 分钟' 为拼接。en 用 min 避免单复数问题；若想写全 minutes 需用 ICU plural（1 minute / N minutes）。　位置：lib/view/page/setting_page.dart:400",
+    "placeholders": {
+      "minutes": {
+        "type": "int"
+      }
+    }
+  },
+  "settingsDataBackup": "数据备份",
+  "@settingsDataBackup": {
+    "description": "设置条目标题 + 备份页 AppBar 标题。　位置：lib/view/page/setting_page.dart:416, lib/view/page/setting/backup_page.dart:50"
+  },
+  "settingsDataBackupSubtitle": "WebDAV 云备份 · 本地导入导出",
+  "@settingsDataBackupSubtitle": {
+    "description": "分隔符是 ' · '（空格点空格），不是中文顿号。　位置：lib/view/page/setting_page.dart:417"
+  },
+  "settingsCheckUpdate": "检查更新",
+  "@settingsCheckUpdate": {
+    "description": "术语表；设置条目标题。　位置：lib/view/page/setting_page.dart:429"
+  },
+  "settingsCurrentVersion": "当前版本 v{version}",
+  "@settingsCurrentVersion": {
+    "description": "原文 '当前版本 v$_currentVersion' 为拼接。　位置：lib/view/page/setting_page.dart:432",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
+  "settingsAbout": "关于",
+  "@settingsAbout": {
+    "description": "设置条目标题 + 关于页 AppBar 标题。　位置：lib/view/page/setting_page.dart:444, lib/view/page/setting/about_page.dart:124"
+  },
+  "aboutAdaptedVersion": "适配版本",
+  "@aboutAdaptedVersion": {
+    "description": "指本应用适配的游戏版本（副标题 v1.50.14 是硬编码字面量，未收）。备选 Compatible with / Game version。　位置：lib/view/page/setting/about_page.dart:30"
+  },
+  "aboutGuide": "使用说明",
+  "@aboutGuide": {
+    "description": "链接类条目标题；备选 Documentation / How to use。　位置：lib/view/page/setting/about_page.dart:36"
+  },
+  "aboutThirdPartyApiInfo": "第三方 API 说明",
+  "@aboutThirdPartyApiInfo": {
+    "description": "位置：lib/view/page/setting/about_page.dart:41"
+  },
+  "aboutThirdPartyApiInfoSubtitle": "当查询内容为空时，请查看这里",
+  "@aboutThirdPartyApiInfoSubtitle": {
+    "description": "位置：lib/view/page/setting/about_page.dart:42"
+  },
+  "dialogThirdPartyApiBody": "默认第三方 API (https://fnxag.eu.org/gcapi) 由开发者维护。\n只有部分玩家在记录范围中，如果有需要，可联系开发者添加。\n需要使用其他 API 时，可以自行创建。\n\n注意：该 API 与本应用无任何直接联系，请自行判断是否使用。",
+  "@dialogThirdPartyApiBody": {
+    "description": "四段换行文案，URL 与空行原样保留；en 行数较多，弹窗宽度有限，必要时可略作压缩。　位置：lib/view/page/setting/about_page.dart:48"
+  },
+  "actionGotIt": "知道了",
+  "@actionGotIt": {
+    "description": "同一中文还出现在 lib/view/widget/season_indicator.dart:133（别的分组），建议共用本 key；备选 OK。　位置：lib/view/page/function/game_track_page.dart:106"
+  },
+  "aboutGithubRepo": "GitHub 仓库",
+  "@aboutGithubRepo": {
+    "description": "位置：lib/view/page/setting/about_page.dart:73"
+  },
+  "aboutOriginalGithubRepo": "原项目 GitHub 仓库",
+  "@aboutOriginalGithubRepo": {
+    "description": "en 较长，条目 subtitle 位置可能换行。　位置：lib/view/page/setting/about_page.dart:79"
+  },
+  "aboutQqGroup": "QQ 群",
+  "@aboutQqGroup": {
+    "description": "位置：lib/view/page/setting/about_page.dart:85"
+  },
+  "aboutDeveloperEmail": "开发者邮箱",
+  "@aboutDeveloperEmail": {
+    "description": "位置：lib/view/page/setting/about_page.dart:91"
+  },
+  "aboutOpenSourceLicenses": "开源许可",
+  "@aboutOpenSourceLicenses": {
+    "description": "位置：lib/view/page/setting/about_page.dart:101"
+  },
+  "aboutLicenseNotice": "本应用遵循 GNU GPL-3.0 开源协议",
+  "@aboutLicenseNotice": {
+    "description": "同一行的标题 'LICENSE' 已是英文，未收。　位置：lib/view/page/setting/about_page.dart:116"
+  },
+  "sectionInfo": "说明",
+  "@sectionInfo": {
+    "description": "SectionHeader 分区标题，关于页与备份页共用；备选 Notes。　位置：lib/view/page/setting/about_page.dart:128, lib/view/page/setting/backup_page.dart:96"
+  },
+  "sectionLinks": "链接",
+  "@sectionLinks": {
+    "description": "位置：lib/view/page/setting/about_page.dart:130"
+  },
+  "sectionLicenses": "授权",
+  "@sectionLicenses": {
+    "description": "备选 Legal。　位置：lib/view/page/setting/about_page.dart:132"
+  },
+  "aboutTagline": "Grow Castle 辅助工具",
+  "@aboutTagline": {
+    "description": "游戏名 Grow Castle 不译；备选 Grow Castle helper。　位置：lib/view/page/setting/about_page.dart:171"
+  },
+  "sectionWebdavBackup": "WebDAV 备份",
+  "@sectionWebdavBackup": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:53"
+  },
+  "actionBackupNow": "立即备份",
+  "@actionBackupNow": {
+    "description": "术语表；条目可点，实为动作入口。　位置：lib/view/page/setting/backup_page.dart:63"
+  },
+  "backupNowSubtitleReady": "检查云端新旧后上传覆盖",
+  "@backupNowSubtitleReady": {
+    "description": "en 较长，subtitle 单行可能省略号截断。　位置：lib/view/page/setting/backup_page.dart:65"
+  },
+  "backupServerNotConfigured": "未配置服务器",
+  "@backupServerNotConfigured": {
+    "description": "与 labelNotSet（未设置）是不同串，不要合并。　位置：lib/view/page/setting/backup_page.dart:65"
+  },
+  "actionRestoreFromCloud": "从云端恢复",
+  "@actionRestoreFromCloud": {
+    "description": "术语表；条目标题兼覆盖确认弹窗外层标题（同一串）。　位置：lib/view/page/setting/backup_page.dart:73, lib/view/page/setting/backup_page.dart:404"
+  },
+  "backupRestoreSubtitle": "下载云端备份并覆盖本机数据",
+  "@backupRestoreSubtitle": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:74"
+  },
+  "sectionLocalFiles": "本地文件",
+  "@sectionLocalFiles": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:83"
+  },
+  "actionExportToFile": "导出到文件",
+  "@actionExportToFile": {
+    "description": "术语表。　位置：lib/view/page/setting/backup_page.dart:86"
+  },
+  "backupExportSubtitle": "把全部数据保存为本地文件",
+  "@backupExportSubtitle": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:87"
+  },
+  "actionImportFile": "导入文件",
+  "@actionImportFile": {
+    "description": "术语表；条目标题与导入确认弹窗标题同一串。　位置：lib/view/page/setting/backup_page.dart:92, lib/view/page/setting/backup_page.dart:497"
+  },
+  "backupImportSubtitle": "从本地文件恢复数据",
+  "@backupImportSubtitle": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:93"
+  },
+  "backupOverwriteHint": "导入或恢复会覆盖本机全部数据，建议先导出备份。",
+  "@backupOverwriteHint": {
+    "description": "页面说明区与确认弹窗正文里是同一串，务必复用同一个 key。　位置：lib/view/page/setting/backup_page.dart:100, lib/view/page/setting/backup_page.dart:522"
+  },
+  "labelServerAddress": "服务器地址",
+  "@labelServerAddress": {
+    "description": "条目标题与编辑弹窗标题同一串。　位置：lib/view/page/setting/backup_page.dart:127, lib/view/page/setting/backup_page.dart:202"
+  },
+  "labelNotSet": "未设置",
+  "@labelNotSet": {
+    "description": "服务器地址/账号/密码三行副标题的占位值；密码为空时显示的 '••••••' 为纯符号，未收。　位置：lib/view/page/setting/backup_page.dart:128, lib/view/page/setting/backup_page.dart:138, lib/view/page/setting/backup_page.dart:148"
+  },
+  "labelAccount": "账号",
+  "@labelAccount": {
+    "description": "条目标题与编辑弹窗标题同一串；与 labelUsername（用户名）区分。　位置：lib/view/page/setting/backup_page.dart:137, lib/view/page/setting/backup_page.dart:217"
+  },
+  "labelPassword": "密码",
+  "@labelPassword": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:147, lib/view/page/setting/backup_page.dart:230"
+  },
+  "labelWebdavAccount": "WebDAV 账号",
+  "@labelWebdavAccount": {
+    "description": "输入框 label，比条目标题多 WebDAV 前缀，不能与 labelAccount 合并。　位置：lib/view/page/setting/backup_page.dart:219"
+  },
+  "labelWebdavPassword": "WebDAV 密码",
+  "@labelWebdavPassword": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:232"
+  },
+  "labelServerUrlExample": "https://dav.example.com/dav/目录",
+  "@labelServerUrlExample": {
+    "description": "输入框 label 兼示例，只有「目录」是中文；en 用 folder（若想保持 URL 风味可用 directory）。　位置：lib/view/page/setting/backup_page.dart:205"
+  },
+  "backupLastSuccess": "上次成功备份：{time}",
+  "@backupLastSuccess": {
+    "description": "原文为 time==null ? '上次成功备份：从未' : '…：{时间}'。建议把「从未」也做成词条 labelNever，调用方在无记录时把它当 {time} 传入（译文即为 Last successful backup: Never）。　位置：lib/view/page/setting/backup_page.dart:178, lib/view/page/setting/backup_page.dart:179",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "labelNever": "从未",
+  "@labelNever": {
+    "description": "作为备份时间占位值使用（两处：上次成功备份、本机上次成功备份）。若不用占位值方案，则需要把这两处各写成 select 词条。　位置：lib/view/page/setting/backup_page.dart:178, lib/view/page/setting/backup_page.dart:300"
+  },
+  "labelUnknown": "未知",
+  "@labelUnknown": {
+    "description": "「备份时间：未知」里的取值，同样建议做占位值。　位置：lib/view/page/setting/backup_page.dart:561"
+  },
+  "labelTimeUnknown": "时间未知",
+  "@labelTimeUnknown": {
+    "description": "云端备份行的 {time} 位在取不到时间时用它；与 labelUnknown（未知）是不同串。　位置：lib/view/page/setting/backup_page.dart:582"
+  },
+  "backupLastFailed": "{hasTime, select, yes{上次备份失败：{error}（{time}）} other{上次备份失败：{error}}}",
+  "@backupLastFailed": {
+    "description": "原文为拼接：'上次备份失败：$error' + 可选的 '（时间）'。用 select 合并成一条；error 来自服务层（可能含中文，见报告线索）。　位置：lib/view/page/setting/backup_page.dart:184, lib/view/page/setting/backup_page.dart:185",
+    "placeholders": {
+      "hasTime": {
+        "type": "String"
+      },
+      "error": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "snackBackupSuccess": "已备份到云端",
+  "@snackBackupSuccess": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:264"
+  },
+  "snackBackupFailed": "备份失败：{error}",
+  "@snackBackupFailed": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:264",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "snackRemoteProbeFailed": "检测云端备份失败：{reason}",
+  "@snackRemoteProbeFailed": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:274",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "snackRemoteProbeFailedRetry": "检测云端备份失败，请稍后重试",
+  "@snackRemoteProbeFailedRetry": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:277"
+  },
+  "dialogUploadBackupTitle": "上传备份到云端",
+  "@dialogUploadBackupTitle": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:305"
+  },
+  "dialogCloudBackupLine": "{hasSize, select, yes{云端备份：{time}，{size} KB} other{云端备份：{time}}}",
+  "@dialogCloudBackupLine": {
+    "description": "原文为拼接：'云端备份：时间' + 可选 '，N KB'（size 在 zh 里其实由整数除法算好后拼入）。用 select 合并；size 传算好的整数（原代码 ~/1024）。　位置：lib/view/page/setting/backup_page.dart:296, lib/view/page/setting/backup_page.dart:297",
+    "placeholders": {
+      "hasSize": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogCloudBackupNoFile": "云端备份：还没有备份文件（将新建一份）",
+  "@dialogCloudBackupNoFile": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:298"
+  },
+  "dialogLastLocalBackupLine": "本机上次成功备份：{time}",
+  "@dialogLastLocalBackupLine": {
+    "description": "与 backupLastSuccess 文案相近但不同串（多「本机」），不能合并；无记录时同样传 labelNever。　位置：lib/view/page/setting/backup_page.dart:300, lib/view/page/setting/backup_page.dart:301",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "actionRestoreRemote": "恢复云端",
+  "@actionRestoreRemote": {
+    "description": "与 actionRestoreFromCloud（从云端恢复）语义相同、zh 不同串。建议要么统一 zh 后合并成一个 key，要么保留本 key 并把 en 改成 Use cloud copy 以免与上一条完全重复。请拍板。　位置：lib/view/page/setting/backup_page.dart:330"
+  },
+  "actionUpload": "上传",
+  "@actionUpload": {
+    "description": "术语表；确认弹窗主按钮。　位置：lib/view/page/setting/backup_page.dart:342"
+  },
+  "actionOverwriteAnyway": "仍要覆盖",
+  "@actionOverwriteAnyway": {
+    "description": "按钮为错误色，en 略长，窄屏(手机)可能与「取消」挤压。　位置：lib/view/page/setting/backup_page.dart:344"
+  },
+  "actionOverwriteUpload": "覆盖上传",
+  "@actionOverwriteUpload": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:345"
+  },
+  "dialogWarningRemoteNewer": "云端备份比本机上次成功备份更新，可能来自其他设备；覆盖后云端那份将无法找回。",
+  "@dialogWarningRemoteNewer": {
+    "description": "原文分两行拼接，注意「；」在 en 里换成 '; '；en 明显更长，弹窗会变高。　位置：lib/view/page/setting/backup_page.dart:360, lib/view/page/setting/backup_page.dart:361"
+  },
+  "dialogWarningRemoteTimeUnknown": "无法获取云端备份时间；覆盖后云端那份将无法找回。",
+  "@dialogWarningRemoteTimeUnknown": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:364"
+  },
+  "dialogWarningLocalNoRecord": "本机没有成功备份记录，无法确认云端那份的来源；覆盖后无法找回。",
+  "@dialogWarningLocalNoRecord": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:367"
+  },
+  "dialogRestoreCloudSource": "{hasTime, select, yes{云端备份（{time}）} other{云端备份}}{hasSize, select, yes{，{size} KB} other{}}",
+  "@dialogRestoreCloudSource": {
+    "description": "原文是 List.join('，') 拼出来的「云端备份（时间），N KB」，且时间与大小都可缺。两个 select 拼一条；若团队不接受这种写法，可拆成 labelCloudBackup / labelSizeKb 两半由调用方拼（不推荐，分隔符是中文全角逗号）。　位置：lib/view/page/setting/backup_page.dart:400, lib/view/page/setting/backup_page.dart:401, lib/view/page/setting/backup_page.dart:402",
+    "placeholders": {
+      "hasTime": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      },
+      "hasSize": {
+        "type": "String"
+      },
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "snackFetchRemoteFailed": "获取云端备份失败：{reason}",
+  "@snackFetchRemoteFailed": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:385",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "snackInvalidCloudFile": "云端文件无效：{reason}",
+  "@snackInvalidCloudFile": {
+    "description": "reason 来自 DataArchiveException，本身是中文（见报告线索）。　位置：lib/view/page/setting/backup_page.dart:387",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogWarningRestoreOlder": "{hasTime, select, yes{云端备份早于本机上次成功备份（{time}），恢复会退回较旧的数据。} other{云端备份早于本机上次成功备份，恢复会退回较旧的数据。}}",
+  "@dialogWarningRestoreOlder": {
+    "description": "原文用字符串拼接把「（时间）」夹进句中。若不想用 select，也可把 labelNever 当 {time} 传（会多出括号）。　位置：lib/view/page/setting/backup_page.dart:422, lib/view/page/setting/backup_page.dart:423, lib/view/page/setting/backup_page.dart:424",
+    "placeholders": {
+      "hasTime": {
+        "type": "String"
+      },
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogWarningRestoreNewer": "云端备份比本机上次成功备份更新，可能来自其他设备。",
+  "@dialogWarningRestoreNewer": {
+    "description": "与 dialogWarningRemoteNewer 前段相同、结尾不同（无「覆盖后…」），保持两条 key。　位置：lib/view/page/setting/backup_page.dart:429"
+  },
+  "dialogWarningRestoreUnknown": "无法判断云端备份与本机记录的新旧，恢复前请确认来源。",
+  "@dialogWarningRestoreUnknown": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:434"
+  },
+  "snackExportFailed": "导出失败，请稍后重试",
+  "@snackExportFailed": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:452"
+  },
+  "dialogTitleExportBackup": "导出数据备份",
+  "@dialogTitleExportBackup": {
+    "description": "系统文件保存对话框标题（dialogTitle），各平台是否显示取决于平台。　位置：lib/view/page/setting/backup_page.dart:467"
+  },
+  "snackExportSuccess": "已导出到文件",
+  "@snackExportSuccess": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:472"
+  },
+  "dialogTitlePickBackupFile": "选择备份文件",
+  "@dialogTitlePickBackupFile": {
+    "description": "系统文件选择对话框标题。　位置：lib/view/page/setting/backup_page.dart:478"
+  },
+  "snackInvalidFile": "文件无效：{reason}",
+  "@snackInvalidFile": {
+    "description": "reason 来自 DataArchiveException（中文，见线索）。　位置：lib/view/page/setting/backup_page.dart:489",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "snackReadFileFailed": "读取文件失败，请确认是导出的备份文件",
+  "@snackReadFileFailed": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:492"
+  },
+  "dialogPickLocalFileSource": "本机文件：{name}",
+  "@dialogPickLocalFileSource": {
+    "description": "文件名可能很长，配合 dialogRestoreSource 显示，注意换行。　位置：lib/view/page/setting/backup_page.dart:498",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogRestoreSource": "来源：{source}",
+  "@dialogRestoreSource": {
+    "description": "确认弹窗正文首行，后面用 '\\n\\n' 拼档案摘要与 backupOverwriteHint（调用方拼接，不改动）。　位置：lib/view/page/setting/backup_page.dart:520",
+    "placeholders": {
+      "source": {
+        "type": "String"
+      }
+    }
+  },
+  "actionOverwriteRestore": "覆盖恢复",
+  "@actionOverwriteRestore": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:544"
+  },
+  "snackRestoreSuccess": "已恢复本地数据",
+  "@snackRestoreSuccess": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:552"
+  },
+  "snackRestoreFailed": "恢复失败：{error}",
+  "@snackRestoreFailed": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:552",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "labelBackupTime": "备份时间：{time}",
+  "@labelBackupTime": {
+    "description": "原文 time==null 时显示 '备份时间：未知'；无归档时间时把 labelUnknown 当 {time} 传入即可得到原文。　位置：lib/view/page/setting/backup_page.dart:561, lib/view/page/setting/backup_page.dart:562",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "labelUserCount": "用户数：{count}",
+  "@labelUserCount": {
+    "description": "归档摘要行，多行 join('\\n') 展示。　位置：lib/view/page/setting/backup_page.dart:564",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelTrackRecordCount": "游戏轨迹记录：{count} 条",
+  "@labelTrackRecordCount": {
+    "description": "中文量词「条」在 en 无处安放，用复数即可；若要严谨可用 ICU plural：=1{1 record} other{{count} records}。　位置：lib/view/page/setting/backup_page.dart:565",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelIncludesItemRules": "包含：词条高亮规则",
+  "@labelIncludesItemRules": {
+    "description": "术语表：词条=stat。　位置：lib/view/page/setting/backup_page.dart:567"
+  },
+  "labelIncludesAppSettings": "包含：应用设置",
+  "@labelIncludesAppSettings": {
+    "description": "位置：lib/view/page/setting/backup_page.dart:570"
+  },
+  "snackDefaultUserNoRename": "默认用户不可重命名",
+  "@snackDefaultUserNoRename": {
+    "description": "位置：lib/view/page/public/select_user_page.dart:121"
+  },
+  "snackDefaultUserNoDelete": "默认用户不可删除",
+  "@snackDefaultUserNoDelete": {
+    "description": "位置：lib/view/page/public/select_user_page.dart:132"
+  },
+  "tooltipDetails": "详细信息",
+  "@tooltipDetails": {
+    "description": "桌面端信息按钮 tooltip。单位汇总弹窗 unit_summary_sheet.dart:81 的标题也是这串（见报告线索），建议复用同一 key。　位置：lib/view/page/public/select_user_page.dart:150"
+  },
+  "actionAddUser": "添加用户",
+  "@actionAddUser": {
+    "description": "FAB 按钮文案兼新增弹窗标题，同一 key（按 FAB 属动作类取 action 前缀）。　位置：lib/view/page/public/select_user_page.dart:168, lib/view/page/public/select_user_page.dart:327"
+  },
+  "errorUserDataNotFound": "未找到用户「{name}」的数据",
+  "@errorUserDataNotFound": {
+    "description": "「」按约定译成 \"…\"；与已有 errorSeasonDataNotFound 结构相近但不是同一串，不合并。　位置：lib/view/page/public/select_user_page.dart:178",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogDeleteUser": "删除用户",
+  "@dialogDeleteUser": {
+    "description": "位置：lib/view/page/public/select_user_page.dart:252"
+  },
+  "dialogDeleteUserConfirm": "确定要删除用户 \"{name}\" 吗？",
+  "@dialogDeleteUserConfirm": {
+    "description": "原文用的是半角直引号 \"（不是「」），zh 原样保留；句尾是全角问号。　位置：lib/view/page/public/select_user_page.dart:253",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "labelUsername": "用户名",
+  "@labelUsername": {
+    "description": "术语表；新增/编辑用户弹窗 label + NameTextField 的默认 labelText，同一 key。　位置：lib/view/page/public/select_user_page.dart:333, lib/view/page/public/select_user_page.dart:430, lib/view/widget/username_textfield.dart:13"
+  },
+  "labelGuildOptional": "公会（选填）",
+  "@labelGuildOptional": {
+    "description": "只有新增弹窗带「（选填）」，编辑弹窗用 labelGuild，不能合并。　位置：lib/view/page/public/select_user_page.dart:339"
+  },
+  "actionAdd": "添加",
+  "@actionAdd": {
+    "description": "术语表 添加=add。已有 tooltipAddEntry（新增条目）是另一场景。样例条数多时按钮会显示在汇总卡里，短词更稳。　位置：lib/view/page/function/bonus_gold_calc.dart:243, lib/view/page/function/bonus_gold_calc.dart:353"
+  },
+  "dialogEditUser": "编辑用户",
+  "@dialogEditUser": {
+    "description": "位置：lib/view/page/public/select_user_page.dart:424"
+  },
+  "tooltipShowPassword": "显示",
+  "@tooltipShowPassword": {
+    "description": "密码框尾部显隐按钮 tooltip；为免歧义可译 Show password（与下一条成对）。　位置：lib/view/widget/setting_edit_dialog.dart:70"
+  },
+  "tooltipHidePassword": "隐藏",
+  "@tooltipHidePassword": {
+    "description": "同上，可译 Hide password。　位置：lib/view/widget/setting_edit_dialog.dart:70"
+  },
+  "labelUsernameHint": "0-9, a-z, A-Z, -, _, space",
+  "@labelUsernameHint": {
+    "description": "边界条目：串本身基本是符号，只有末尾 'space' 是英文单词。zh 与 en 可完全相同；若不想为它建词条，直接在代码里保留硬编码也说得过去。若要本地化可把 space 改成「空格」/空格。　位置：lib/view/widget/username_textfield.dart:14"
+  },
+  "waveStatus": "跳波状态",
+  "@waveStatus": {
+    "description": "功能页入口与该页 AppBar 标题，同一词条两处。术语表 跳波=wave skip。　位置：lib/view/page/function_page.dart:51, lib/view/page/function/wave_status_page.dart:51"
+  },
+  "wavePushIncomeCalc": "推波收益计算",
+  "@wavePushIncomeCalc": {
+    "description": "功能页入口与页面标题。英文明显更长：功能页该行右侧还有百分比徽标，400px 窄屏有挤破风险（可选更短的 Push Income）；页面标题另受 AppBar 宽度限制。　位置：lib/view/page/function_page.dart:65, lib/view/page/function/bonus_gold_calc.dart:116"
+  },
+  "tabIncome": "收入",
+  "@tabIncome": {
+    "description": "功能页入口 + 收入页标题。与 income_summary_bar 里的「总收入」是两条不同词条（后者建议 totalIncome）。　位置：lib/view/page/function_page.dart:91, lib/view/page/function/income_page.dart:59"
+  },
+  "noRecord": "无记录",
+  "@noRecord": {
+    "description": "功能页「游戏轨迹」行右侧相对时间位：该用户没有任何轨迹记录时显示。与 emptyGameTrack（暂无轨迹记录，空列表页）是两个场景。　位置：lib/view/page/function_page.dart:196"
+  },
+  "timeSecondsAgo": "{count} 秒前",
+  "@timeSecondsAgo": {
+    "description": "相对时间（每秒刷新一次）。英文要复数：1 秒应写 1 second ago，建议后续统一上 ICU plural 或让调用方按 count 选词条；分钟/小时/天/月/年五条同理。　位置：lib/view/page/function_page.dart:205",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeMinutesAgo": "{count} 分钟前",
+  "@timeMinutesAgo": {
+    "description": "位置：lib/view/page/function_page.dart:208",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeHoursAgo": "{count} 小时前",
+  "@timeHoursAgo": {
+    "description": "位置：lib/view/page/function_page.dart:211",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeDaysAgo": "{count} 天前",
+  "@timeDaysAgo": {
+    "description": "位置：lib/view/page/function_page.dart:214",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeMonthsAgo": "{count} 月前",
+  "@timeMonthsAgo": {
+    "description": "按 30 天折月（代码里 months = days ~/ 30），英文 months 同义。　位置：lib/view/page/function_page.dart:218",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "timeYearsAgo": "{count} 年前",
+  "@timeYearsAgo": {
+    "description": "位置：lib/view/page/function_page.dart:221",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelGameSpeed": "游戏速度",
+  "@labelGameSpeed": {
+    "description": "位置：lib/view/page/function/wave_status_page.dart:87"
+  },
+  "optionSpeed2x": "2速",
+  "@optionSpeed2x": {
+    "description": "下拉选项。速度是游戏倍速（core/calc/gold_income.dart:14 里 2速=2.0 倍）。用 2x/3x 最省横向空间，若嫌太简可写 2x speed。　位置：lib/view/page/function/wave_status_page.dart:11"
+  },
+  "optionSpeed2xAds10": "2速 + 10广",
+  "@optionSpeed2xAds10": {
+    "description": "「10广」= 每天看 10 个广告（每个 20 分钟三倍速），见 core/calc/gold_income.dart:12 注释。故译 ads 而非直译。　位置：lib/view/page/function/wave_status_page.dart:11"
+  },
+  "optionSpeed3x": "3速",
+  "@optionSpeed3x": {
+    "description": "位置：lib/view/page/function/wave_status_page.dart:11"
+  },
+  "optionChronoWhite": "白闹钟(+10%)",
+  "@optionChronoWhite": {
+    "description": "闹钟=闹钟转职加成（chronoClass，白 +10% / 黄 +14% / 蓝 +20%）。备选 White alarm / White chrono，待拍板。　位置：lib/view/page/function/wave_status_page.dart:13"
+  },
+  "optionChronoYellow": "黄闹钟(+14%)",
+  "@optionChronoYellow": {
+    "description": "位置：lib/view/page/function/wave_status_page.dart:14"
+  },
+  "optionChronoBlue": "蓝闹钟(+20%)",
+  "@optionChronoBlue": {
+    "description": "位置：lib/view/page/function/wave_status_page.dart:15"
+  },
+  "optionEquipped": "已装备",
+  "@optionEquipped": {
+    "description": "10%角/30%角 的下拉选项。与已有 actionApplied/actionNotApplied（已应用/未应用）结构相同但中文不同，未复用；若想统一成一对通用词条需用户拍板。　位置：lib/view/page/function/wave_status_page.dart:17"
+  },
+  "optionNotEquipped": "未装备",
+  "@optionNotEquipped": {
+    "description": "位置：lib/view/page/function/wave_status_page.dart:17"
+  },
+  "optionNone": "无",
+  "@optionNone": {
+    "description": "恶魔号角跳波数下拉的「无」（实际是跳波 +0，下标 1）。同组其余选项 '+1'…'+5' 是纯符号数字，按规则不收。　位置：lib/view/page/function/wave_status_page.dart:19"
+  },
+  "optionAutoBattleGoldBreak": "金挂(GAB) / 破挂(FAB)",
+  "@optionAutoBattleGoldBreak": {
+    "description": "金挂=金币挂机(Gold Auto Battle)、破挂=破关挂机，缩写 GAB/FAB 是项目自己的写法（core/calc/wave_speed.dart:28）。英文社区叫法我没把握，待拍板：保留缩写 + 直译，或全用缩写。　位置：lib/view/page/function/wave_status_page.dart:27"
+  },
+  "optionAutoBattleTime": "时挂(TAB)",
+  "@optionAutoBattleTime": {
+    "description": "时挂=TAB（core/calc/wave_speed.dart:10）。与上一条同组，措辞要一致。　位置：lib/view/page/function/wave_status_page.dart:28"
+  },
+  "dialogWaveStatusDisclaimer": "数据仅供参考，实际游戏中可能会有较大偏差。",
+  "@dialogWaveStatusDisclaimer": {
+    "description": "整句弹窗内容，英文比中文长，注意窄屏换行。　位置：lib/view/page/function/wave_status_page.dart:60"
+  },
+  "actionClose": "关闭",
+  "@actionClose": {
+    "description": "跨组重复：income_page.dart:77、wave_status_page.dart:64 也是「关闭」，建议其他组统一用本 key　位置：lib/view/page/tool/ranking_page.dart:434, lib/view/page/tool/item_comparer.dart:394, lib/view/page/tool/best_line_calc_page.dart:233"
+  },
+  "labelChronoType": "闹钟类型",
+  "@labelChronoType": {
+    "description": "代码注释叫 chronoClass/闹钟转职；英文措辞需与 optionClock* 三条保持一致。　位置：lib/view/page/function/wave_status_page.dart:96"
+  },
+  "labelHorn10": "10%角",
+  "@labelHorn10": {
+    "description": "「角」= 号角装备（horn）。备选 Horn +10% / 10% horn，待拍板。　位置：lib/view/page/function/wave_status_page.dart:105"
+  },
+  "labelHorn30": "30%角",
+  "@labelHorn30": {
+    "description": "位置：lib/view/page/function/wave_status_page.dart:114"
+  },
+  "labelDevilHornSkip": "恶魔号角跳波数",
+  "@labelDevilHornSkip": {
+    "description": "术语表 跳波=wave skip；这里是「跳波数」即每跳一次多推的波数，故 wave skip（也可 wave skips）。　位置：lib/view/page/function/wave_status_page.dart:123"
+  },
+  "labelAutoBattleType": "挂机类型",
+  "@labelAutoBattleType": {
+    "description": "位置：lib/view/page/function/wave_status_page.dart:132"
+  },
+  "infoAutoBattleTab": "时挂 (TAB) 选项默认启用释放乐队技能 (BAND SKILL) ，且兽人号角和经验号角同时上场。",
+  "@infoAutoBattleTab": {
+    "description": "info 弹窗内容（代码里是两个相邻字面量拼成的整句）。兽人号角/经验号角英文待拍板：Orc Horn / EXP Horn。BAND SKILL 是游戏内技能名，保留大写。　位置：lib/view/page/function/wave_status_page.dart:137-138"
+  },
+  "snackTrackDeleted": "已删除轨迹记录",
+  "@snackTrackDeleted": {
+    "description": "删除轨迹记录后的 SnackBar（带撤销按钮），英文要短，否则 SnackBar 里按钮词条会被挤。　位置：lib/view/page/function/game_track_page.dart:60"
+  },
+  "actionUndo": "撤销",
+  "@actionUndo": {
+    "description": "位置：lib/view/page/function/game_track_page.dart:62"
+  },
+  "dialogWarning": "注意",
+  "@dialogWarning": {
+    "description": "同一概念两处：AppBar 警告图标 tooltip + 弹窗标题。备选 Note / Attention（Weak warning 太重时可换）。　位置：lib/view/page/function/game_track_page.dart:93, lib/view/page/function/game_track_page.dart:98"
+  },
+  "dialogGameTrackOff": "游戏轨迹记录功能已关闭，无法记录新的轨迹数据。",
+  "@dialogGameTrackOff": {
+    "description": "代码里由两个相邻字面量拼成，还原为一条。　位置：lib/view/page/function/game_track_page.dart:99-101"
+  },
+  "tooltipViewTrackChart": "查看轨迹图表",
+  "@tooltipViewTrackChart": {
+    "description": "位置：lib/view/page/function/game_track_page.dart:115"
+  },
+  "tooltipSortOldestFirst": "按时间由远到近",
+  "@tooltipSortOldestFirst": {
+    "description": "tooltip 写的是「点击后切到哪种顺序」（_newestFirst ? '按时间由远到近' : …），英文沿用动作语义；若想改成描述当前状态需同时改代码语义。　位置：lib/view/page/function/game_track_page.dart:126"
+  },
+  "tooltipSortNewestFirst": "按时间由近到远",
+  "@tooltipSortNewestFirst": {
+    "description": "位置：lib/view/page/function/game_track_page.dart:126"
+  },
+  "emptyTrackDefaultUser": "当前为默认用户，无法记录轨迹",
+  "@emptyTrackDefaultUser": {
+    "description": "整屏居中空状态，可长一点。　位置：lib/view/page/function/game_track_page.dart:134"
+  },
+  "emptyTrackDisabled": "轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」",
+  "@emptyTrackDisabled": {
+    "description": "「」按约定改英文双引号；引号里的设置项就是 setting_page.dart:374 的「游戏轨迹记录」，两处英文必须一致（那边不归本组，需对齐）。　位置：lib/view/page/function/game_track_page.dart:137"
+  },
+  "emptyGameTrack": "暂无轨迹记录",
+  "@emptyGameTrack": {
+    "description": "位置：lib/view/page/function/game_track_page.dart:140"
+  },
+  "tooltipDeleteRecord": "删除记录",
+  "@tooltipDeleteRecord": {
+    "description": "也可直接复用已有 actionDelete（删除/Delete）把 tooltip 缩短，但语义会变泛，倾向保留本 key。　位置：lib/view/page/function/game_track_page.dart:206"
+  },
+  "labelTrackCount": "共 {count} 条记录",
+  "@labelTrackCount": {
+    "description": "AppBar 副标题。英文要处理单复数（1 record / 2 records），建议 ICU plural 或另加一条单数词条。　位置：lib/view/page/function/game_track_page.dart:297",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameTrackChart": "轨迹图表",
+  "@gameTrackChart": {
+    "description": "位置：lib/view/page/function/track/game_track_chart_page.dart:91"
+  },
+  "labelChartRange": "起始 {start}\n截止 {end}",
+  "@labelChartRange": {
+    "description": "AppBar 右侧两行小字（代码里是两个字面量 + 换行拼的）。日期由调用方格式化后传入，译文可整体替换（如 From/To）。　位置：lib/view/page/function/track/game_track_chart_page.dart:99-100",
+    "placeholders": {
+      "start": {
+        "type": "String"
+      },
+      "end": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyChartNeedTwoRecords": "至少需要两条轨迹记录",
+  "@emptyChartNeedTwoRecords": {
+    "description": "术语表 至少需要=at least。整屏空状态。　位置：lib/view/page/function/track/game_track_chart_page.dart:109"
+  },
+  "labelChartDownsampled": "已压缩显示：共 {total} 条，显示 {shown} 条",
+  "@labelChartDownsampled": {
+    "description": "超过 300 个点时提示。英文偏长，窄屏会折行；也要处理单复数。　位置：lib/view/page/function/track/game_track_chart_page.dart:129",
+    "placeholders": {
+      "total": {
+        "type": "int"
+      },
+      "shown": {
+        "type": "int"
+      }
+    }
+  },
+  "totalEconomy": "总经济",
+  "@totalEconomy": {
+    "description": "图表面板标题。面板画的就是 record.totalGold，与已有 totalGold（总金币/Total Gold）同源不同中文——强烈建议改成复用 totalGold（代码里 '总经济' 改成 '总金币'），那本 key 就不要；若坚持「总经济」措辞则用本 key。　位置：lib/view/page/function/track/game_track_chart_page.dart:157"
+  },
+  "metricIndex": "指数",
+  "@metricIndex": {
+    "description": "图表面板标题（画 gpCN）。已有 gpIndex=「GP · 指数」/「GP · Index」是「GP 与指数」合写的场合，不能直接用在这里（相邻面板标题是 'GP'），故另起 metricIndex，与已有 metricShare/metricRatio 同前缀。　位置：lib/view/page/function/track/game_track_chart_page.dart:167"
+  },
+  "dialogConfirmApplyIncome": "确认填入收益",
+  "@dialogConfirmApplyIncome": {
+    "description": "把算出的平均收益率写回「金挂平均收益」前的确认弹窗标题；备选 Confirm income fill-in。　位置：lib/view/page/function/bonus_gold_calc.dart:68"
+  },
+  "dialogApplyGabBonusContent": "金挂收益：{from}% -> {to}%？",
+  "@dialogApplyGabBonusContent": {
+    "description": "两个数建议都由调用方格式化后按 String 传入（现在 from 是未格式化的 double，英文界面下会显示 12.0 这类），与 snackQuerySuccess 的做法一致。箭头沿用代码里的 '->'（也可统一改 '→'）。　位置：lib/view/page/function/bonus_gold_calc.dart:70",
+    "placeholders": {
+      "from": {
+        "type": "String"
+      },
+      "to": {
+        "type": "String"
+      }
+    }
+  },
+  "snackAppliedGabBonus": "已填入金挂平均收益 {value}%",
+  "@snackAppliedGabBonus": {
+    "description": "位置：lib/view/page/function/bonus_gold_calc.dart:84",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "actionConfirm": "确认",
+  "@actionConfirm": {
+    "description": "跨组重复：bonus_gold_calc.dart:89、:138 也是「确认」，建议统一　位置：lib/view/page/tool/item_comparer.dart:418"
+  },
+  "actionReset": "重置",
+  "@actionReset": {
+    "description": "同一中文既是 AppBar tooltip 又是弹窗标题，合用一条（与 actionClear/actionDelete/actionSave 同族）。　位置：lib/view/page/function/bonus_gold_calc.dart:121, lib/view/page/function/bonus_gold_calc.dart:126"
+  },
+  "dialogResetIncomeSamples": "确认清空当前用户的所有收入样本？",
+  "@dialogResetIncomeSamples": {
+    "description": "AppBar 已经显示当前用户名，英文也可写 ... for this user?（更短）。　位置：lib/view/page/function/bonus_gold_calc.dart:127"
+  },
+  "emptyIncomeSamples": "暂无收入样本",
+  "@emptyIncomeSamples": {
+    "description": "空列表占位（灰色居中文字）。　位置：lib/view/page/function/bonus_gold_calc.dart:165"
+  },
+  "labelGabCost": "金挂成本",
+  "@labelGabCost": {
+    "description": "汇总卡第一行：按当前波数推得的金挂成本。　位置：lib/view/page/function/bonus_gold_calc.dart:213"
+  },
+  "labelAverageIncome": "平均收入",
+  "@labelAverageIncome": {
+    "description": "位置：lib/view/page/function/bonus_gold_calc.dart:218"
+  },
+  "labelPercent": "百分比",
+  "@labelPercent": {
+    "description": "位置：lib/view/page/function/bonus_gold_calc.dart:223"
+  },
+  "actionFillIn": "填入",
+  "@actionFillIn": {
+    "description": "汇总卡左侧主按钮：把算出的百分比写回金挂平均收益。中文「填入」直译是 Fill in，但英文按钮 Apply 更自然，且与已有 actionApplied（已应用/Applied）呼应，待拍板。　位置：lib/view/page/function/bonus_gold_calc.dart:237"
+  },
+  "dialogInputWaveIncome": "输入每波金币收入",
+  "@dialogInputWaveIncome": {
+    "description": "位置：lib/view/page/function/bonus_gold_calc.dart:337"
+  },
+  "labelWaveGoldIncome": "每波金币收入",
+  "@labelWaveGoldIncome": {
+    "description": "输入框 labelText（同一弹窗的 helperText '0-9' 是纯符号，按规则不收）。英文占位较长，InputDecoration 里会浮动，注意 80px 宽度外的输入框布局。　位置：lib/view/page/function/bonus_gold_calc.dart:344"
+  },
+  "tooltipInfo": "提示",
+  "@tooltipInfo": {
+    "description": "同一中文既是 AppBar info tooltip 又是该弹窗标题，合用一条（前缀取 tooltip*，若更想按 dialog* 归类请统一改名）。备选 Help / Hint。　位置：lib/view/page/function/income_page.dart:64, lib/view/page/function/income_page.dart:70"
+  },
+  "dialogIncomeNotice": "填写“跳波状态”后再填写此处，否则计算结果不准确。\n\n此处计算结果为每日收入。",
+  "@dialogIncomeNotice": {
+    "description": "两段弹窗内容，代码里是一个字面量带 \\n\\n。中文用的是弯引号“”，英文按约定改直引号；引号里的「跳波状态」必须与 waveStatus 的 en 值一字不差。　位置：lib/view/page/function/income_page.dart:71-72"
+  },
+  "tabIncomeColony": "殖民地",
+  "@tabIncomeColony": {
+    "description": "收入页 tab（窄屏 TabBar）。同一中文还出现在 lib/view/widget/income_summary_bar.dart:23 的汇总行标题，建议那边复用本 key（该 widget 归别的分组）。　位置：lib/view/page/function/income_page.dart:89"
+  },
+  "tabIncomeWave": "推波",
+  "@tabIncomeWave": {
+    "description": "术语表 推波=wave push。income_summary_bar.dart:33 同词条，建议复用。英文比中文长，三个 tab 并排时注意 400px 下不挤。　位置：lib/view/page/function/income_page.dart:90"
+  },
+  "tabIncomeOther": "其他",
+  "@tabIncomeOther": {
+    "description": "income_summary_bar.dart:43 同词条，建议复用。　位置：lib/view/page/function/income_page.dart:91"
+  },
+  "labelColonyLevel": "殖民地等级",
+  "@labelColonyLevel": {
+    "description": "右侧显示 (额外殖民地/波数 ×1000)，输入框带 prefixText 'Lv.'（已是英文，不收）。　位置：lib/view/page/function/income/colony_tab.dart:51"
+  },
+  "labelExtraColonyC": "额外殖民地C",
+  "@labelExtraColonyC": {
+    "description": "C = 冷却（store 字段 icCooldown），G = 金币（icGold）。字母后缀是游戏内的叫法，英文保留同字母；若嫌含糊可写 Extra colony (cooldown)。　位置：lib/view/page/function/income/colony_tab.dart:85"
+  },
+  "labelExtraColonyG": "额外殖民地G",
+  "@labelExtraColonyG": {
+    "description": "位置：lib/view/page/function/income/colony_tab.dart:101"
+  },
+  "labelWheel": "车轮",
+  "@labelWheel": {
+    "description": "装备项（equipWheel），行右侧是开关。　位置：lib/view/page/function/income/colony_tab.dart:117"
+  },
+  "labelWhip": "鞭子",
+  "@labelWhip": {
+    "description": "装备项（equipWhip，启用等价于额外殖民地G +15）。　位置：lib/view/page/function/income/colony_tab.dart:122"
+  },
+  "labelGabAverageBonus": "金挂平均收益",
+  "@labelGabAverageBonus": {
+    "description": "输入框带 suffixText '%'（符号不收）。与 bonus_gold_calc 页的 snackAppliedGabBonus 是同一概念的不同句子，措辞要一致。　位置：lib/view/page/function/income/wave_tab.dart:64"
+  },
+  "labelDailyGabTime": "每日金挂时间",
+  "@labelDailyGabTime": {
+    "description": "单位 suffixText 'h' 已在代码里（英文）。两行输入框合计 >24h 时下方 errorText 写的是已有英文 'Sum > 24h'（未收），若日后要本地化可另立词条。　位置：lib/view/page/function/income/wave_tab.dart:79"
+  },
+  "labelDailyTabTime": "每日时挂时间",
+  "@labelDailyTabTime": {
+    "description": "位置：lib/view/page/function/income/wave_tab.dart:98"
+  },
+  "labelSeasonColony": "赛季殖民地",
+  "@labelSeasonColony": {
+    "description": "术语表 赛季=season。另一处同名词条是 g5 的 seasonEnded，不冲突。　位置：lib/view/page/function/income/other_tab.dart:17"
+  },
+  "labelGoldenTree": "金币大树",
+  "@labelGoldenTree": {
+    "description": "金币大树（goldenTree）。英文更短，右侧开关位置更宽松。　位置：lib/view/page/function/income/other_tab.dart:22"
+  },
+  "toolDragonSimulator": "刷龙模拟器",
+  "@toolDragonSimulator": {
+    "description": "术语表：龙 = Dragon。备选 \"Dragon Reroll Simulator\"；\"刷\"取 farm 更贴近挂机语境　位置：lib/view/page/tools_page.dart:35, lib/view/page/tool/dragon_simulator_page.dart:184"
+  },
+  "toolItemComparer": "装备对比",
+  "@toolItemComparer": {
+    "description": "工具列表入口与页面标题同一串　位置：lib/view/page/tools_page.dart:48, lib/view/page/tool/item_comparer.dart:344"
+  },
+  "toolBestLineCalc": "最优装备词条组合",
+  "@toolBestLineCalc": {
+    "description": "备选 \"Optimal Stat Combination\"（更长，工具列表 ListTile 与 AppBar 都可能截断）　位置：lib/view/page/tools_page.dart:61, lib/view/page/tool/best_line_calc_page.dart:219"
+  },
+  "rankingKindPlayer": "个人排行榜",
+  "@rankingKindPlayer": {
+    "description": "RankingKind 是 enum const 字段，无法在枚举里取 l10n，需按 kind 写解析函数（同页 4 处拼接都依赖它）　位置：lib/view/page/tool/ranking_page.dart:14"
+  },
+  "rankingKindGuild": "公会排行榜",
+  "@rankingKindGuild": {
+    "description": "位置：lib/view/page/tool/ranking_page.dart:15"
+  },
+  "rankingKindHell": "无尽排行榜",
+  "@rankingKindHell": {
+    "description": "术语表：无尽 = endless　位置：lib/view/page/tool/ranking_page.dart:16"
+  },
+  "emptyRankingData": "暂无榜单数据",
+  "@emptyRankingData": {
+    "description": "NameNotFound 的错误文案。注意与已有 errorSeasonDataNotFound「未找到「{name}」的赛季数据」不是同一句，未经合并　位置：lib/view/page/tool/ranking_page.dart:85, lib/view/page/tool/ranking_page.dart:389"
+  },
+  "emptyData": "暂无数据",
+  "@emptyData": {
+    "description": "另有 guild_page / player_detail_page 等页也可能用同一串，合并脚本按值去重　位置：lib/view/page/tool/ranking_page.dart:110, lib/view/page/tool/ranking_page.dart:418, lib/view/page/tool/ranking_page.dart:485"
+  },
+  "labelRankingTrend": "{kind}趋势",
+  "@labelRankingTrend": {
+    "description": "代码是 '${widget.kind.title}趋势'，已还原为占位符形式；{kind} 传 rankingKindXxx　位置：lib/view/page/tool/ranking_page.dart:94",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "labelTopCount": "前 {count}",
+  "@labelTopCount": {
+    "description": "代码里是三个 const 字面量 '前 50'/'前 100'/'前 300'，建议合并为一条带占位符的词条（segments 列表不能再是 const）　位置：lib/view/page/tool/ranking_page.dart:125, lib/view/page/tool/ranking_page.dart:126, lib/view/page/tool/ranking_page.dart:127",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelRankSummary": "前 {count} 名 · 最高 {max} · 最低 {min}",
+  "@labelRankSummary": {
+    "description": "max/min 已由 int.format() 预格式化（沿用 snackQuerySuccess 的 String 约定）。英文整句偏长，窄屏（<400px）可能折行，必要时缩成 \"Top {count} · {max} / {min}\"　位置：lib/view/page/tool/ranking_page.dart:135",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "max": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      }
+    }
+  },
+  "snackRefreshFailed": "刷新失败：{reason}",
+  "@snackRefreshFailed": {
+    "description": "reason 为已有错误文案（暂无榜单数据 / 查询超时，请稍后重试 / 网络错误原文）　位置：lib/view/page/tool/ranking_page.dart:383",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "dialogRankMilestones": "{kind}名次",
+  "@dialogRankMilestones": {
+    "description": "代码是 '${widget.kind.title}名次'。备选 \"{kind} Milestones\"（对应按钮 tooltip 的 milestone 说法）　位置：lib/view/page/tool/ranking_page.dart:400",
+    "placeholders": {
+      "kind": {
+        "type": "String"
+      }
+    }
+  },
+  "tooltipViewScoreTrend": "查看分数趋势",
+  "@tooltipViewScoreTrend": {
+    "description": "位置：lib/view/page/tool/ranking_page.dart:457"
+  },
+  "tooltipViewMilestoneRanks": "查看特殊名次",
+  "@tooltipViewMilestoneRanks": {
+    "description": "位置：lib/view/page/tool/ranking_page.dart:468"
+  },
+  "hintSelectPlayerDetail": "点击左侧条目查看玩家详情",
+  "@hintSelectPlayerDetail": {
+    "description": "只在宽屏主从布局（>= Breakpoints.masterDetailMinWidth）的右侧空面板出现；detailPaneWidth 固定，英文可能折两行　位置：lib/view/page/tool/ranking_page.dart:546"
+  },
+  "actionRetry": "重试",
+  "@actionRetry": {
+    "description": "跨组重复：guild_page.dart:431、player_detail_page.dart:272 也是「重试」，建议统一　位置：lib/view/page/tool/ranking_page.dart:582"
+  },
+  "snackNeedEnabledRule": "请先在“高亮规则”中启用至少一条规则",
+  "@snackNeedEnabledRule": {
+    "description": "中文用全角引号“”，英文用 \"...\"；句中的“高亮规则”应取页标题那条的英文（见 titleHighlightRules 的撞车说明）　位置：lib/view/page/tool/dragon_simulator_page.dart:125"
+  },
+  "rollToHitHit": "命中！共 roll 了 {count} 次",
+  "@rollToHitHit": {
+    "description": "count 由 int.format() 预格式化后传入（千分位），沿用 snackQuerySuccess 的 String 约定　位置：lib/view/page/tool/dragon_simulator_page.dart:156",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "rollToHitStopped": "已手动停止，共 roll 了 {count} 次",
+  "@rollToHitStopped": {
+    "description": "位置：lib/view/page/tool/dragon_simulator_page.dart:168",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "labelItemSource": "装备来源",
+  "@labelItemSource": {
+    "description": "下方的选项文本来自数据层 ItemSource.label（一龙~六龙），需另行处理　位置：lib/view/page/tool/dragon_simulator_page.dart:209"
+  },
+  "labelRollBatchSize": "roll 单次数量",
+  "@labelRollBatchSize": {
+    "description": "中文夹用英文 roll（游戏惯用语），英文保留 roll　位置：lib/view/page/tool/dragon_simulator_page.dart:228"
+  },
+  "actionRollOnce": "roll 单次",
+  "@actionRollOnce": {
+    "description": "位置：lib/view/page/tool/dragon_simulator_page.dart:249"
+  },
+  "actionStop": "停止",
+  "@actionStop": {
+    "description": "roll 到死进行中的复位按钮文案　位置：lib/view/page/tool/dragon_simulator_page.dart:257"
+  },
+  "actionRollToHit": "roll 到死",
+  "@actionRollToHit": {
+    "description": "口语化中文，取意译。备选 \"Auto-Roll to Hit\"；按钮较窄（Row 内两个 Expanded 各半），过长的英文会换行　位置：lib/view/page/tool/dragon_simulator_page.dart:257"
+  },
+  "rollToHitRunning": "roll 到死进行中：已 roll {count} 次…",
+  "@rollToHitRunning": {
+    "description": "count 已由 format() 预格式化；末尾省略号中文用 …，英文可保留 …　位置：lib/view/page/tool/dragon_simulator_page.dart:268",
+    "placeholders": {
+      "count": {
+        "type": "String"
+      }
+    }
+  },
+  "unnamedRule": "未命名规则",
+  "@unnamedRule": {
+    "description": "两处都是 rule.hint 为空时的回退文案；模拟器那处前面还硬编码 '✦ ' 前缀（纯符号，不入词条）　位置：lib/view/page/tool/dragon_simulator_page.dart:361, lib/view/page/tool/item_rule_edit_page.dart:106"
+  },
+  "itemTypeBow": "弓",
+  "@itemTypeBow": {
+    "description": "本页私有的 _typeLabels（数据层 ItemType 无显示名）；英文名请与游戏内装备类型名对齐后再定　位置：lib/view/page/tool/item_rule_edit_page.dart:17"
+  },
+  "itemTypeSword": "剑",
+  "@itemTypeSword": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:18"
+  },
+  "itemTypeStaff": "杖",
+  "@itemTypeStaff": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:19"
+  },
+  "itemTypeHammer": "锤",
+  "@itemTypeHammer": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:20"
+  },
+  "itemTypeRing": "戒指",
+  "@itemTypeRing": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:21"
+  },
+  "itemTypeNecklace": "项链",
+  "@itemTypeNecklace": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:22"
+  },
+  "itemTypeBracelet": "手镯",
+  "@itemTypeBracelet": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:23"
+  },
+  "itemTypeEarrings": "耳环",
+  "@itemTypeEarrings": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:24"
+  },
+  "actionAddRule": "新增规则",
+  "@actionAddRule": {
+    "description": "FAB 文案与新建表单的 AppBar 标题同一串。注意 '新增条目' 已有 tooltipAddEntry（阵容页），此处不复用　位置：lib/view/page/tool/item_rule_edit_page.dart:58, lib/view/page/tool/item_rule_edit_page.dart:378"
+  },
+  "emptyItemRuleHint": "暂无规则，点击右下角新增",
+  "@emptyItemRuleHint": {
+    "description": "句式对齐已有 emptyFormationHint（\"暂无条目，点击右上角 + 添加\" / \"No entries yet — tap + in the top right\"）　位置：lib/view/page/tool/item_rule_edit_page.dart:64"
+  },
+  "tooltipPinToTop": "命中后置顶",
+  "@tooltipPinToTop": {
+    "description": "与 labelPinToTop「命中后置顶显示」同一概念、两种中文写法；若同意统一，两条可只留一条（本处是图标 tooltip 的短式）　位置：lib/view/page/tool/item_rule_edit_page.dart:112"
+  },
+  "actionEdit": "编辑",
+  "@actionEdit": {
+    "description": "action* 家族已有 actionDelete/actionSave/actionCancel，但 arb 里缺 actionEdit，需新增　位置：lib/view/page/tool/item_rule_edit_page.dart:121"
+  },
+  "labelItemTypes": "装备类型：{types}",
+  "@labelItemTypes": {
+    "description": "代码用 '、' join 类型名；备份组已有 listSeparator（中文「、」/ 英文「, 」），调用点应改用它来 join，否则英文里会冒出中文顿号　位置：lib/view/page/tool/item_rule_edit_page.dart:160",
+    "placeholders": {
+      "types": {
+        "type": "String"
+      }
+    }
+  },
+  "errorWhiteLinesWithRed": "已有红色词条，白色词条最多 2 条",
+  "@errorWhiteLinesWithRed": {
+    "description": "SnackBar 提示（_showHint），两处同串　位置：lib/view/page/tool/item_rule_edit_page.dart:262, lib/view/page/tool/item_rule_edit_page.dart:289"
+  },
+  "errorWhiteLinesMax": "白色词条最多 3 条",
+  "@errorWhiteLinesMax": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:266, lib/view/page/tool/item_rule_edit_page.dart:293"
+  },
+  "errorRedWithThreeWhite": "白色词条已达 3 条，不能选择红色词条",
+  "@errorRedWithThreeWhite": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:270"
+  },
+  "errorNoLineSelected": "请至少选择一个词条",
+  "@errorNoLineSelected": {
+    "description": "保存时的校验提示　位置：lib/view/page/tool/item_rule_edit_page.dart:307"
+  },
+  "errorValueNotNumber": "数值需为数字或留空",
+  "@errorValueNotNumber": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:319"
+  },
+  "errorMinGreaterThanMax": "下限（大于）必须小于上限（小于）",
+  "@errorMinGreaterThanMax": {
+    "description": "中文全角括号，英文用半角；括号里的『大于/小于』对应输入框旁的 > / < 符号，勿丢　位置：lib/view/page/tool/item_rule_edit_page.dart:324"
+  },
+  "errorMinOutOfRange": "\"{line}\" 的下限超出 roll 值范围（{min} ~ {max}）",
+  "@errorMinOutOfRange": {
+    "description": "{line} 是词条名（数据层英文 label）；min/max 已由 format() 预格式化。代码里是两个相邻字面量拼接，已还原为一条　位置：lib/view/page/tool/item_rule_edit_page.dart:334",
+    "placeholders": {
+      "line": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "errorMaxOutOfRange": "\"{line}\" 的上限超出 roll 值范围（{min} ~ {max}）",
+  "@errorMaxOutOfRange": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:342",
+    "placeholders": {
+      "line": {
+        "type": "String"
+      },
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "titleEditRule": "编辑规则",
+  "@titleEditRule": {
+    "description": "与通用动作 actionEdit 区分：本串指『编辑这条规则』的表单标题　位置：lib/view/page/tool/item_rule_edit_page.dart:378"
+  },
+  "labelHintText": "提示文本",
+  "@labelHintText": {
+    "description": "规则 hint 输入框的 labelText　位置：lib/view/page/tool/item_rule_edit_page.dart:392"
+  },
+  "hintRuleHintExample": "如：红白加强（可留空）",
+  "@hintRuleHintExample": {
+    "description": "输入框 hintText；『红白加强』是玩家自造词，英文取直译即可，或用 \"e.g. red + white buff\"　位置：lib/view/page/tool/item_rule_edit_page.dart:393"
+  },
+  "labelPinToTop": "命中后置顶显示",
+  "@labelPinToTop": {
+    "description": "SwitchListTile 标题；与 tooltipPinToTop 同概念两写法，见该条　位置：lib/view/page/tool/item_rule_edit_page.dart:400"
+  },
+  "labelSelectItemTypes": "指定装备类型（不选则不限）",
+  "@labelSelectItemTypes": {
+    "description": "FilterChip 区的小标题　位置：lib/view/page/tool/item_rule_edit_page.dart:406"
+  },
+  "helpRuleForm": "提示：红/金词条各最多选 1 条；白色词条合计 3 条时不能选红色词条；\n输入数值范围时，判断的是词条原始值（加强前的值），留空表示不限。\n\n大于下限必须小于上限；输入值还需在词条的允许范围内。",
+  "@helpRuleForm": {
+    "description": "代码是三个相邻字面量拼接成一段，已还原为一条（保留 \\n 排版）；英文明显更长，页面顶部固定提示区会变高，注意矮窗 ShortWindowFallback(460) 余量　位置：lib/view/page/tool/item_rule_edit_page.dart:440"
+  },
+  "labelLineCount": "{count} 条",
+  "@labelLineCount": {
+    "description": "代码是 '1条'/'2条' 两个 const 字面量（白词条出现条数），建议合并。英文有复数问题（1 line / 2 lines），建议用 ICU plural；也可统一显示为 ×1 / ×2（与 _conditionLabel 的 '×{count}' 一致，省掉复数）　位置：lib/view/page/tool/item_rule_edit_page.dart:478, lib/view/page/tool/item_rule_edit_page.dart:479",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "lineColorWhite": "白词条",
+  "@lineColorWhite": {
+    "description": "分组表头（白/红/金按词条颜色分组）　位置：lib/view/page/tool/item_rule_edit_page.dart:588"
+  },
+  "lineColorRed": "红词条",
+  "@lineColorRed": {
+    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:589"
+  },
+  "lineColorGold": "金词条",
+  "@lineColorGold": {
+    "description": "代码里枚举叫 LineColor.yellow 但中文显示『金』；英文取 Gold 与中文对齐，避免同一分组两种叫法　位置：lib/view/page/tool/item_rule_edit_page.dart:590"
+  },
+  "labelItemLines": "装备 {index} 词条",
+  "@labelItemLines": {
+    "description": "代码是 '装备 1 词条'/'装备 2 词条' 两条字面量，建议合并为带占位符的一条　位置：lib/view/page/tool/item_comparer.dart:318, lib/view/page/tool/item_comparer.dart:323",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "dialogItemCompareHelpIntro": "该工具用于对比两件装备的期望。\n\n",
+  "@dialogItemCompareHelpIntro": {
+    "description": "帮助弹窗是 Text.rich 多 TextSpan，本组条目按 span 一一对应；末尾 \\n\\n 属排版，若想干净可留在代码里只译句子　位置：lib/view/page/tool/item_comparer.dart:357"
+  },
+  "dialogItemCompareHelpStepsTitle": "使用步骤：\n",
+  "@dialogItemCompareHelpStepsTitle": {
+    "description": "该 span 在代码里是加粗样式　位置：lib/view/page/tool/item_comparer.dart:359"
+  },
+  "dialogItemCompareHelpStep1": "1. 确认需要对比的装备 / 宝珠 / 宝物槽位，然后将对应的物品卸下，根据此时的面板填写“无装备面板”数据；\n",
+  "@dialogItemCompareHelpStep1": {
+    "description": "中文全角引号“无装备面板”引用的正是 labelNoItemPanel，英文须与其一致（或改用占位符）。宝珠/宝物暂无官方英文，暂用 orb / treasure　位置：lib/view/page/tool/item_comparer.dart:363"
+  },
+  "dialogItemCompareHelpStep2": "2. 将两件装备的白词条填写到“装备 1 / 装备 2”中，",
+  "@dialogItemCompareHelpStep2": {
+    "description": "全角引号→英文 \"...\"；与 labelItemNumber 的英文保持同字面　位置：lib/view/page/tool/item_comparer.dart:365"
+  },
+  "dialogItemCompareHelpStep2Note": "请注意词条类型，元素伤害统一并入 \"Element Damage\"，请自行根据单位属性填入对应元素伤害词条；\n",
+  "@dialogItemCompareHelpStep2Note": {
+    "description": "代码里这段是加粗 span；\"Element Damage\" 是下拉框选项原文，勿改　位置：lib/view/page/tool/item_comparer.dart:367"
+  },
+  "dialogItemCompareHelpStep3": "3. 对比结果：实时显示三组 DPS 结果，并给出结论。\n\n\n",
+  "@dialogItemCompareHelpStep3": {
+    "description": "末尾三个换行是排版　位置：lib/view/page/tool/item_comparer.dart:370"
+  },
+  "dialogItemCompareHelpNormalUnit": "普攻型单位：",
+  "@dialogItemCompareHelpNormalUnit": {
+    "description": "加粗 span，与下一句连成一段　位置：lib/view/page/tool/item_comparer.dart:372"
+  },
+  "dialogItemCompareHelpNormalUnitDesc": "需要填写 Attacks Per Second 和 Increased Speed，Attack Speed % 词条参与计算。\n",
+  "@dialogItemCompareHelpNormalUnitDesc": {
+    "description": "Attacks Per Second / Increased Speed / Attack Speed % 都是面板标签与词条原文，英文原样保留　位置：lib/view/page/tool/item_comparer.dart:376"
+  },
+  "dialogItemCompareHelpSkillUnit": "技能型单位：",
+  "@dialogItemCompareHelpSkillUnit": {
+    "description": "位置：lib/view/page/tool/item_comparer.dart:379"
+  },
+  "dialogItemCompareHelpSkillUnitDesc": "不填写上述两项，Attack Speed % 词条不参与计算。",
+  "@dialogItemCompareHelpSkillUnitDesc": {
+    "description": "位置：lib/view/page/tool/item_comparer.dart:382"
+  },
+  "dialogItemCompareHelpNoteLabel": "\n\n注：",
+  "@dialogItemCompareHelpNoteLabel": {
+    "description": "加粗 span；前导 \\n\\n 属排版，建议移出词条只保留 \"注：\"　位置：lib/view/page/tool/item_comparer.dart:384"
+  },
+  "dialogItemCompareHelpNoteDesc": "宝珠、宝物等词条也可用于计算，但需要注意词条类型。",
+  "@dialogItemCompareHelpNoteDesc": {
+    "description": "宝珠/宝物译名与 Step1 保持一致　位置：lib/view/page/tool/item_comparer.dart:387"
+  },
+  "dialogResetConfirm": "是否清空所有输入？",
+  "@dialogResetConfirm": {
+    "description": "确认按钮用的是 actionConfirm（确认），取消用已有 actionCancel　位置：lib/view/page/tool/item_comparer.dart:407"
+  },
+  "labelNoItemPanel": "无装备面板",
+  "@labelNoItemPanel": {
+    "description": "与 best_line_calc_page.dart:331「面板无装备数值」是同一概念两种中文写法（自造词），建议二选一统一；英文 All 大写连字符方案便于帮助文案里引用　位置：lib/view/page/tool/item_comparer.dart:449"
+  },
+  "actionAddLine": "添加词条",
+  "@actionAddLine": {
+    "description": "装备卡内的添加按钮（每条装备最多 3 条词条）　位置：lib/view/page/tool/item_comparer.dart:659"
+  },
+  "hintSelectLineType": "选择词条类型",
+  "@hintSelectLineType": {
+    "description": "DropdownButtonFormField 的 hint　位置：lib/view/page/tool/item_comparer.dart:770"
+  },
+  "hintValue": "数值",
+  "@hintValue": {
+    "description": "数值输入框 hintText　位置：lib/view/page/tool/item_comparer.dart:799"
+  },
+  "tooltipDeleteLine": "删除词条",
+  "@tooltipDeleteLine": {
+    "description": "行尾 × 图标；与 actionDelete「删除」区分，此处带宾语　位置：lib/view/page/tool/item_comparer.dart:805"
+  },
+  "labelNoCrit": "无暴击",
+  "@labelNoCrit": {
+    "description": "结果表头。同行的 APS / DPS 已是英文，不入词条　位置：lib/view/page/tool/item_comparer.dart:868"
+  },
+  "labelWithCrit": "有暴击",
+  "@labelWithCrit": {
+    "description": "表头列宽是 Expanded 四等分（右侧 68px 留给行标签），英文比中文长，注意挤压数值列　位置：lib/view/page/tool/item_comparer.dart:868"
+  },
+  "labelNoItem": "无装备",
+  "@labelNoItem": {
+    "description": "结果表第一行行标签（第二、三行用 labelItemNumber）　位置：lib/view/page/tool/item_comparer.dart:880"
+  },
+  "labelItemNumber": "装备 {index}",
+  "@labelItemNumber": {
+    "description": "代码是 '装备 1'/'装备 2'，建议合并为带占位符的一条　位置：lib/view/page/tool/item_comparer.dart:881, lib/view/page/tool/item_comparer.dart:882",
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "labelCompareGainSummary": "装备 1 较无装备 {gain1} · 装备 2 较无装备 {gain2}",
+  "@labelCompareGainSummary": {
+    "description": "gain 为 '—'（未就绪）或 '+12.3%'。英文整句明显更长且居中显示，窄屏可能折成两行　位置：lib/view/page/tool/item_comparer.dart:885",
+    "placeholders": {
+      "gain1": {
+        "type": "String"
+      },
+      "gain2": {
+        "type": "String"
+      }
+    }
+  },
+  "compareVerdictPending": "填写数据后自动对比",
+  "@compareVerdictPending": {
+    "description": "Base Attack 未填（ready=false）时的结论占位　位置：lib/view/page/tool/item_comparer.dart:896"
+  },
+  "compareVerdictItem1": "装备 1 更优{gap}",
+  "@compareVerdictItem1": {
+    "description": "代码是 '装备 1 更优' 拼接可选从句，已还原为带占位符的一条；{gap} 传 compareGapItem2 或空串。英文若不想留前导逗号，可改写成 \"Item 1 wins — DPS ...\" 并同步改 compareGapItem2 的英文　位置：lib/view/page/tool/item_comparer.dart:901",
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "compareGapItem2": "，DPS 比装备 2 高 {gain}",
+  "@compareGapItem2": {
+    "description": "拼接用从句，以中文逗号开头；英文前导 \", \" 要保留　位置：lib/view/page/tool/item_comparer.dart:899",
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      }
+    }
+  },
+  "compareVerdictItem2": "装备 2 更优{gap}",
+  "@compareVerdictItem2": {
+    "description": "同 compareVerdictItem1　位置：lib/view/page/tool/item_comparer.dart:907",
+    "placeholders": {
+      "gap": {
+        "type": "String"
+      }
+    }
+  },
+  "compareGapItem1": "，DPS 比装备 1 高 {gain}",
+  "@compareGapItem1": {
+    "description": "同 compareGapItem2　位置：lib/view/page/tool/item_comparer.dart:905",
+    "placeholders": {
+      "gain": {
+        "type": "String"
+      }
+    }
+  },
+  "compareVerdictTie": "两件装备 DPS 相同",
+  "@compareVerdictTie": {
+    "description": "位置：lib/view/page/tool/item_comparer.dart:909"
+  },
+  "labelNoDamageLines": "（无输出词条）",
+  "@labelNoDamageLines": {
+    "description": "全角括号→英文半角；出现在组合列表每行标题里　位置：lib/view/page/tool/best_line_calc_page.dart:203"
+  },
+  "dialogBestLineHelpAvgDmg": "Avg. Dmg 和下方列表中的 Damage 都是 Damage 与 Elemental Damage 的均值。",
+  "@dialogBestLineHelpAvgDmg": {
+    "description": "中文句里夹英文游戏术语，英文侧保持原词形；本页帮助弹窗只有这一句（标题用 dialogUsageHelp）　位置：lib/view/page/tool/best_line_calc_page.dart:229"
+  },
+  "labelPanelWithoutItem": "面板无装备数值",
+  "@labelPanelWithoutItem": {
+    "description": "与 labelNoItemPanel「无装备面板」同概念两种写法，建议统一（本页面板字段是 Increased Dmg / Critical Chance / Critical Dmg / Increased Speed）　位置：lib/view/page/tool/best_line_calc_page.dart:331"
+  },
+  "labelLineSlot": "{count} 词条",
+  "@labelLineSlot": {
+    "description": "代码是 '6 词条'/'5 词条'/'4 词条' 三个 const 字面量（词条位数量），建议合并；英文有复数问题，建议 ICU plural 或统一 \"{count} slots\"　位置：lib/view/page/tool/best_line_calc_page.dart:410, lib/view/page/tool/best_line_calc_page.dart:411, lib/view/page/tool/best_line_calc_page.dart:412",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "labelComboCount": "共 {count} 种",
+  "@labelComboCount": {
+    "description": "列举出的搭配总数（190 / 122 / 70），英文可加 \"combos\" 复数；此列是 labelSmall，英文长度无压力　位置：lib/view/page/tool/best_line_calc_page.dart:421",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "gameTrack": "游戏轨迹",
+  "@gameTrack": {
+    "description": "同一中文已被 g5 的 dataSectionGameTrack（数据备份分段名，en 小写 game track）占用：merge_arb 按中文查重，g2 排在 g5 前，会把 g5 那条判为重复并跳过。建议二者合一（分段名也用本 key）或让 g5 改成句子化的 key，见报告。　位置：lib/view/page/function_page.dart:121, lib/view/page/function/game_track_page.dart:85"
+  },
+  "snackSyncFailed": "同步失败：{reason}",
+  "@snackSyncFailed": {
+    "description": "下拉全量同步失败的提示。{reason} 内嵌的仍是 _errorMessage 的整句（含「查询超时，请稍后重试」等），英文下会形成 \"Sync failed: Query timed out. Please try again.\"，可接受。　位置：lib/view/page/guild_page.dart:296",
+    "placeholders": {
+      "reason": {
+        "type": "String"
+      }
+    }
+  },
+  "errorGuildNotFound": "未找到公会「{name}」的信息",
+  "@errorGuildNotFound": {
+    "description": "与已有 errorSeasonDataNotFound 句式同源但主语不同（公会 info vs 赛季数据），不复用。「」按约定译成双引号。备选：No guild found named \"{name}\"。　位置：lib/view/page/guild_page.dart:305",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "emptyGuildDefaultUserHint": "当前为默认用户，仅用于体验基础功能。\n请到「设置」页的「用户管理」创建自己的账号，并填写公会名。",
+  "@emptyGuildDefaultUserHint": {
+    "description": "源码 314-315 两行字符串拼接，中间是一个 \\n 强制换行（错误页居中文本，宽度受限）。英文比中文长约 1.8 倍，窄屏会折成 3~4 行；若排版吃紧，英文可改成单段不分行。　位置：lib/view/page/guild_page.dart:314"
+  },
+  "emptyGuildHint": "当前用户未设置公会，请先到「用户管理」中填写公会名",
+  "@emptyGuildHint": {
+    "description": "位置：lib/view/page/guild_page.dart:317"
+  },
+  "emptyGuildMembers": "该公会暂无成员",
+  "@emptyGuildMembers": {
+    "description": "位置：lib/view/page/guild_page.dart:328"
+  },
+  "actionGoToUserManagement": "前往用户管理",
+  "@actionGoToUserManagement": {
+    "description": "FilledButton 文案。另需一个「用户管理」的 key（select_user_page.dart:29 / setting_page.dart:186 的标题，属设置组），与本条不是同一个串，勿互相顶替。　位置：lib/view/page/guild_page.dart:425"
+  },
+  "emptySelectMemberHint": "点击左侧成员查看玩家详情",
+  "@emptySelectMemberHint": {
+    "description": "宽屏主从两栏右侧的占位提示。ranking_page.dart:546「点击左侧条目查看玩家详情」仅差一词，建议两组统一成一条 key（改动来源文案）或保持两条并在英文里都译作同一句。　位置：lib/view/page/guild_page.dart:477"
+  },
+  "guildMemberCountAndScore": "{count} 人 · {score}",
+  "@guildMemberCountAndScore": {
+    "description": "{count}=成员数，{score}=已千分位格式化的赛季波数总和（沿用 snackQuerySuccess 的做法，格式化交给调用方，故为 String）。英文复数：1 时应为 \"1 member · …\"，ARB 里可用 ICU plural（无 plural 支持时建议写成 \"{count} members · {score}\" 并在 note 里记一笔）。右对齐列，英文更长，窄屏有挤占公会名胶囊的空间风险。　位置：lib/view/page/guild_page.dart:550",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "score": {
+        "type": "String"
+      }
+    }
+  },
+  "tooltipCloseDetail": "关闭详情",
+  "@tooltipCloseDetail": {
+    "description": "嵌入两栏面板时头部的关闭按钮 tooltip；独立 AppBar 场景不显示。　位置：lib/view/page/public/player_detail_page.dart:228"
+  },
+  "errorPlayerBanned": "玩家「{name}」已被封禁",
+  "@errorPlayerBanned": {
+    "description": "整页空状态。与已有 snackUserBanned（用户「{name}」已被封禁）只差「玩家/用户」——若要统一产品用词，可只留 snackUserBanned 一条，但中文界面会从「玩家」变成「用户」（需拍板）。　位置：lib/view/page/public/player_detail_page.dart:290",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "labelWphHistory": "每小时波速（第三方 API）",
+  "@labelWphHistory": {
+    "description": "区块小标题（titleSmall）。中文用全角括号，英文用半角；备选缩写 \"Waves/h (third-party API)\"。　位置：lib/view/page/public/player_detail_page.dart:335"
+  },
+  "labelSeason": "赛季 {season}",
+  "@labelSeason": {
+    "description": "{season} 是接口返回的赛季标识原样（如 2025-09）；只译「赛季」二字。　位置：lib/view/page/public/player_detail_page.dart:344",
+    "placeholders": {
+      "season": {
+        "type": "String"
+      }
+    }
+  },
+  "endlessScore": "无尽分数",
+  "@endlessScore": {
+    "description": "汇总卡的 SummaryRow 标题。术语表：无尽 endless / 分数 score。仅当无尽榜有数据时显示。　位置：lib/view/page/public/player_detail_page.dart:429"
+  },
+  "lastOnline": "上次在线",
+  "@lastOnline": {
+    "description": "汇总卡行标题（术语表：上次在线 last online）。右侧值当前是英文硬编码拼接 \"… ago\"，详见报告「英文硬编码」一节——本期不改的话，英文界面会出现 \"Last online  12min ago\" 而中文界面是「上次在线  12min ago」。　位置：lib/view/page/public/player_detail_page.dart:451"
+  },
+  "unitEnabledCount": "{enabled}/{total} 启用",
+  "@unitEnabledCount": {
+    "description": "标题右侧的胶囊（_StatusPill，fontSize 12、内边距 10/6）。英文 \"3/8 enabled\" 比中文「3/8 启用」宽约一倍，与标题同排、标题有 Expanded+ellipsis 兜底，但仍偏紧；如需更短可用 \"3/8 on\"。　位置：lib/view/widget/unit_summary_sheet.dart:94",
+    "placeholders": {
+      "enabled": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "metricGoldShare": "金币占比",
+  "@metricGoldShare": {
+    "description": "【需拍板】与阵容页已有 metricShare（\"占比\" / \"Share\"）是同一指标、仅中文措辞不同。二选一：①保留本 key；②复用 metricShare 并把此处中文改成「占比」（此时本条删除）。同理见下面两条。三列等宽、字号 11，英文 \"Gold share\" 比「金币占比」宽，注意换行。　位置：lib/view/widget/unit_summary_sheet.dart:353"
+  },
+  "metricUnitPerWave": "单位 / 波数",
+  "@metricUnitPerWave": {
+    "description": "【需拍板】对应已有 metricOneOverRatio（\"1/比例\" / \"1 / Ratio\"）的同一数值（单位等级/总波数）。这里的中文更直白，建议保留本 key；若要与阵容页统一措辞则复用 metricOneOverRatio。三列等宽，最长的一条，英文按 11px 约 70px，窄屏有换行风险。　位置：lib/view/widget/unit_summary_sheet.dart:355"
+  },
+  "metricWavePerUnit": "波数 / 单位",
+  "@metricWavePerUnit": {
+    "description": "【需拍板】对应已有 metricRatio（\"比例\" / \"Ratio\"）的同一数值（其上一条的倒数）；同上二选一。斜杠两侧的空格与代码一致，保留。　位置：lib/view/widget/unit_summary_sheet.dart:357"
+  },
+  "seasonProgress": "赛季进度",
+  "@seasonProgress": {
+    "description": "同一串既是 AppBar 计时按钮的 tooltip（49），又是详情弹窗的标题（107），按「同一中文不复造 key」合并为一条，故 key 名不带 tooltip 前缀。若偏好 tooltip 前缀，可拆成 tooltipSeasonProgress + dialogSeasonProgress，但会重复同一中文。　位置：lib/view/widget/season_indicator.dart:49, lib/view/widget/season_indicator.dart:107"
+  },
+  "labelStart": "开始",
+  "@labelStart": {
+    "description": "赛季详情弹窗的行标签（开始时间）。仅当接口给了 start 时显示该行。　位置：lib/view/widget/season_indicator.dart:120"
+  },
+  "labelEnd": "结束",
+  "@labelEnd": {
+    "description": "同一弹窗的行标签（结束时间）。与 seasonEnded（已结束）区分：这里是时刻标签 End，不是状态 Ended。　位置：lib/view/widget/season_indicator.dart:122"
+  },
+  "labelRemaining": "剩余",
+  "@labelRemaining": {
+    "description": "行标签，右侧值是 formatSeasonRemaining 的 \"2d 3h 45m\"（英文单位，本期不改）。　位置：lib/view/widget/season_indicator.dart:124"
+  },
+  "incomeTotal": "总收入",
+  "@incomeTotal": {
+    "description": "术语表：总收入 total income。同理已有的 totalGold（总金币）是另一指标，勿混用。　位置：lib/view/widget/income_summary_bar.dart:53"
+  }
+}

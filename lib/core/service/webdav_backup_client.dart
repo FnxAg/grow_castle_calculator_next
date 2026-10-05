@@ -19,16 +19,15 @@ class WebDavFileInfo {
   final int? contentLength;
 }
 
-/// WebDAV 异常：message 为面向用户的中文提示
+/// WebDAV 异常
 class WebDavException implements Exception {
-  WebDavException(this.statusCode, this.message);
+  const WebDavException(this.statusCode);
 
   /// HTTP 状态码；-1 表示网络层错误（超时/无法连接）
   final int statusCode;
-  final String message;
 
   @override
-  String toString() => message;
+  String toString() => 'WebDavException($statusCode)';
 }
 
 /// 备份文件的 WebDAV 客户端：webdav_client_plus 之上的薄适配层。
@@ -143,7 +142,7 @@ class WebDavBackupClient {
       final status = response.statusCode ?? -1;
       if (status == 404) return const WebDavFileInfo(exists: false);
       if (status < 200 || status >= 300) {
-        throw WebDavException(status, messageForStatus(status));
+        throw WebDavException(status);
       }
       return WebDavFileInfo(
         exists: true,
@@ -170,30 +169,13 @@ class WebDavBackupClient {
     }
   }
 
-  /// 状态码 → 面向用户的中文提示
-  static String messageForStatus(int status) {
-    switch (status) {
-      case 401:
-        return '账号或密码错误（HTTP 401）';
-      case 403:
-        return '没有访问权限（HTTP 403）';
-      case 404:
-        return '云端还没有备份文件';
-      case 405:
-        return '服务器不支持该操作（HTTP 405）';
-      default:
-        return '服务器返回错误（HTTP $status）';
-    }
-  }
-
   /// 把包/传输层抛出的异常翻译为 [WebDavException]（幂等：已是本类型则原样返回）
   static WebDavException _translate(Object error) {
     if (error is WebDavException) return error;
     if (error is dav.WebdavException) {
-      final status = error.statusCode ?? -1;
-      return WebDavException(status, messageForStatus(status));
+      return WebDavException(error.statusCode ?? -1);
     }
     // 非协议错误（超时/无法连接/DNS/TLS）由 dio 抛出，统一归为网络层失败
-    return WebDavException(-1, '无法连接服务器，请检查网络与 WebDAV 地址');
+    return const WebDavException(-1);
   }
 }

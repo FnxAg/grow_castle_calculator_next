@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:material_ui/material_ui.dart';
@@ -8,24 +9,36 @@ import 'package:material_ui/material_ui.dart';
 class WaveStatusPage extends StatelessWidget {
   const WaveStatusPage({super.key});
 
-  static const _gameSpeedEntries = [(0, '2速'), (1, '2速 + 10广'), (2, '3速')];
-  static const _chronoEntries = [
-    (0, '白闹钟(+10%)'),
-    (1, '黄闹钟(+14%)'),
-    (2, '蓝闹钟(+20%)'),
+  /// 下拉项文案随语言变化，故按当前 [AppLocalizations] 现取
+  static List<(int, String)> _gameSpeedEntries(AppLocalizations l10n) => [
+    (0, l10n.optionSpeed2x),
+    (1, l10n.optionSpeed2xAds10),
+    (2, l10n.optionSpeed3x),
   ];
-  static const _equipEntries = [(false, '未装备'), (true, '已装备')];
-  static const _devilHornEntries = [
-    (1, '无'),
+
+  static List<(int, String)> _chronoEntries(AppLocalizations l10n) => [
+    (0, l10n.optionChronoWhite),
+    (1, l10n.optionChronoYellow),
+    (2, l10n.optionChronoBlue),
+  ];
+
+  static List<(bool, String)> _equipEntries(AppLocalizations l10n) => [
+    (false, l10n.optionNotEquipped),
+    (true, l10n.optionEquipped),
+  ];
+
+  static List<(int, String)> _devilHornEntries(AppLocalizations l10n) => [
+    (1, l10n.optionNone),
     (2, '+1'),
     (3, '+2'),
     (4, '+3'),
     (5, '+4'),
     (6, '+5'),
   ];
-  static const _autoBattleEntries = [
-    (true, '金挂(GAB) / 破挂(FAB)'),
-    (false, '时挂(TAB)'),
+
+  static List<(bool, String)> _autoBattleEntries(AppLocalizations l10n) => [
+    (true, l10n.optionAutoBattleGoldBreak),
+    (false, l10n.optionAutoBattleTime),
   ];
 
   static final _gameSpeedKey = GlobalKey();
@@ -37,6 +50,7 @@ class WaveStatusPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final store = Stores.infoStore;
     return ListenableBuilder(
       listenable: Listenable.merge([
@@ -48,8 +62,26 @@ class WaveStatusPage extends StatelessWidget {
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: .start,
-              children: [const Text('跳波状态'), _AppBarInfo()],
+              children: [Text(l10n.waveStatus), _AppBarInfo()],
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.info_outline),
+                onPressed: () => showDialog<void>(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                    title: Text(l10n.sectionInfo),
+                    content: Text(l10n.dialogWaveStatusDisclaimer),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(l10n.actionClose),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
           body: ValueListenableBuilder<int>(
             valueListenable: Stores.infoStore.waveStatusNotifier,
@@ -66,59 +98,56 @@ class WaveStatusPage extends StatelessWidget {
                   // 游戏速度：gameSpeed
                   _settingTile<int>(
                     context,
-                    label: '游戏速度',
+                    label: l10n.labelGameSpeed,
                     dropdownKey: _gameSpeedKey,
                     value: store.getCurrentUserGameSpeed(),
-                    entries: _gameSpeedEntries,
+                    entries: _gameSpeedEntries(l10n),
                     onChanged: store.setCurrentUserGameSpeed,
                   ),
                   // 闹钟转职：chronoClass
                   _settingTile<int>(
                     context,
-                    label: '闹钟类型',
+                    label: l10n.labelChronoType,
                     dropdownKey: _chronoKey,
                     value: store.getCurrentUserChronoClass(),
-                    entries: _chronoEntries,
+                    entries: _chronoEntries(l10n),
                     onChanged: store.setCurrentUserChronoClass,
                   ),
                   // 10%角：horn
                   _settingTile<bool>(
                     context,
-                    label: '10%角',
+                    label: l10n.labelHorn10,
                     dropdownKey: _hornKey,
                     value: store.getCurrentUserHorn(),
-                    entries: _equipEntries,
+                    entries: _equipEntries(l10n),
                     onChanged: store.setCurrentUserHorn,
                   ),
                   // 30%角：goldenHorn
                   _settingTile<bool>(
                     context,
-                    label: '30%角',
+                    label: l10n.labelHorn30,
                     dropdownKey: _goldenHornKey,
                     value: store.getCurrentUserGoldenHorn(),
-                    entries: _equipEntries,
+                    entries: _equipEntries(l10n),
                     onChanged: store.setCurrentUserGoldenHorn,
                   ),
                   // 恶魔号角跳波数：devilHornSkip
                   _settingTile<int>(
                     context,
-                    label: '恶魔号角跳波数',
+                    label: l10n.labelDevilHornSkip,
                     dropdownKey: _devilHornKey,
                     value: store.getCurrentUserDevilHornSkip(),
-                    entries: _devilHornEntries,
+                    entries: _devilHornEntries(l10n),
                     onChanged: store.setCurrentUserDevilHornSkip,
                   ),
                   // 挂机类型：isGoldAutoBattle
                   _settingTile<bool>(
                     context,
-                    label: '挂机类型',
+                    label: l10n.labelAutoBattleType,
                     dropdownKey: _autoBattleKey,
                     value: store.getCurrentUserIsGoldAutoBattle(),
-                    entries: _autoBattleEntries,
-                    infoContent: const Text(
-                      '时挂 (TAB) 选项默认启用释放乐队技能 (BAND SKILL) ，'
-                      '且兽人号角和经验号角同时上场。',
-                    ),
+                    entries: _autoBattleEntries(l10n),
+                    infoContent: Text(l10n.infoAutoBattleTab),
                     onChanged: store.setCurrentUserIsGoldAutoBattle,
                   ),
                 ],
@@ -139,44 +168,54 @@ class WaveStatusPage extends StatelessWidget {
     Widget? infoContent,
     required ValueChanged<T> onChanged,
   }) {
-    return ListTile(
-      onTap: () => _openDropdown(dropdownKey),
-      title: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(label),
-          if (infoContent != null) ...[
-            const SizedBox(width: 4),
-            GestureDetector(
-              onTap: () {
-                showDialog<void>(
-                  context: context,
-                  builder: (BuildContext context) => AlertDialog(
-                    title: Text(label),
-                    content: infoContent,
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: const Text('取消'),
-                      ),
-                    ],
-                  ),
-                );
-              },
-              child: Icon(
-                Icons.info_outline,
-                size: 18,
-                color: Theme.of(context).colorScheme.onSurfaceVariant,
+    return LayoutBuilder(
+      builder: (context, constraints) => ListTile(
+        onTap: () => _openDropdown(dropdownKey),
+        title: Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            // 英文标签比中文长得多，给它弹性并允许省略
+            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
+            if (infoContent != null) ...[
+              const SizedBox(width: 4),
+              GestureDetector(
+                onTap: () {
+                  showDialog<void>(
+                    context: context,
+                    builder: (BuildContext context) => AlertDialog(
+                      title: Text(label),
+                      content: infoContent,
+                      actions: [
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(),
+                          child: Text(
+                            AppLocalizations.of(context).actionCancel,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+                child: Icon(
+                  Icons.info_outline,
+                  size: 18,
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                ),
               ),
-            ),
+            ],
           ],
-        ],
-      ),
-      trailing: _TrailingDropdown<T>(
-        buttonKey: dropdownKey,
-        value: value,
-        entries: entries,
-        onChanged: onChanged,
+        ),
+        // 英文选项明显长于中文，若不加约束，trailing 会占满整行并触发
+        // ListTile 的 "Trailing widget consumes the entire tile width" 断言
+        trailing: ConstrainedBox(
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.45),
+          child: _TrailingDropdown<T>(
+            buttonKey: dropdownKey,
+            value: value,
+            entries: entries,
+            onChanged: onChanged,
+          ),
+        ),
       ),
     );
   }
@@ -296,6 +335,9 @@ class _TrailingDropdown<T> extends StatelessWidget {
         key: buttonKey,
         value: value,
         isDense: true,
+        // 与调用方的宽度约束配合：撑满可用宽度并让超长选项省略，
+        // 而不是把文字挤出边界
+        isExpanded: true,
         alignment: AlignmentDirectional.centerEnd,
         borderRadius: BorderRadius.circular(8),
         style: theme.textTheme.bodyMedium?.copyWith(
@@ -308,7 +350,10 @@ class _TrailingDropdown<T> extends StatelessWidget {
         ),
         items: [
           for (final (v, label) in entries)
-            DropdownMenuItem<T>(value: v, child: Text(label)),
+            DropdownMenuItem<T>(
+              value: v,
+              child: Text(label, overflow: TextOverflow.ellipsis),
+            ),
         ],
         onChanged: (v) {
           if (v != null) onChanged(v);

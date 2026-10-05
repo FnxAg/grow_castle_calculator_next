@@ -2,6 +2,8 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
@@ -11,17 +13,25 @@ import 'package:material_ui/material_ui.dart';
 
 /// 工具 tab 下的三类排行榜
 enum RankingKind {
-  player(title: '个人排行榜', icon: Icons.eco, crossIcon: Icons.all_inclusive),
-  guild(title: '公会排行榜', icon: Icons.flag_circle, crossIcon: null),
-  hell(title: '无尽排行榜', icon: Icons.all_inclusive, crossIcon: Icons.eco);
+  player(icon: Icons.eco, crossIcon: Icons.all_inclusive),
+  guild(icon: Icons.flag_circle, crossIcon: null),
+  hell(icon: Icons.all_inclusive, crossIcon: Icons.eco);
 
-  const RankingKind({required this.title, required this.icon, this.crossIcon});
+  const RankingKind({required this.icon, this.crossIcon});
 
-  final String title;
   final IconData icon;
 
   final IconData? crossIcon;
 }
+
+/// [RankingKind] 的本地化名称：枚举是 const，取不到 l10n，故按 kind 解析。
+/// 榜单列表以外的页面（工具页入口、趋势页标题、名次弹窗）也走这里。
+String rankingKindLabel(AppLocalizations l10n, RankingKind kind) =>
+    switch (kind) {
+      RankingKind.player => l10n.rankingKindPlayer,
+      RankingKind.guild => l10n.rankingKindGuild,
+      RankingKind.hell => l10n.rankingKindHell,
+    };
 
 /// 排行榜分数趋势图
 class RankingChartPage extends StatefulWidget {
@@ -56,10 +66,12 @@ class _RankingChartPageState extends State<RankingChartPage> {
       RankingKind.hell => RankingCache.hellRanking(),
     };
     if (!mounted) return;
+    // 取 l10n 必须在 await 之后：initState 里同步取 Localizations 会断言失败
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _loading = false;
       if (result is QueryError) {
-        _error = _errorMessage(result);
+        _error = _errorMessage(l10n, result);
         return;
       }
       _rows = switch (widget.kind) {
@@ -80,18 +92,23 @@ class _RankingChartPageState extends State<RankingChartPage> {
     });
   }
 
-  String _errorMessage(QueryError error) {
+  String _errorMessage(AppLocalizations l10n, QueryError error) {
     return switch (error) {
-      NameNotFound() => '暂无榜单数据',
-      TimeoutError() => '查询超时，请稍后重试',
+      NameNotFound() => l10n.emptyRankingData,
+      TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text('${widget.kind.title}趋势')),
+      appBar: AppBar(
+        title: Text(
+          l10n.labelRankingTrend(rankingKindLabel(l10n, widget.kind)),
+        ),
+      ),
       body: _buildBody(),
     );
   }
@@ -107,7 +124,9 @@ class _RankingChartPageState extends State<RankingChartPage> {
         ),
       );
     }
-    if (_rows.isEmpty) return const Center(child: Text('暂无数据'));
+    if (_rows.isEmpty) {
+      return Center(child: Text(AppLocalizations.of(context).emptyData));
+    }
 
     final visibleRows = _rows.take(_selectedRange).toList();
     final maxScore = visibleRows.fold<int>(
@@ -119,12 +138,13 @@ class _RankingChartPageState extends State<RankingChartPage> {
       (min, row) => row.score < min ? row.score : min,
     );
 
+    final l10n = AppLocalizations.of(context);
     final rangeSelector = SegmentedButton<int>(
       showSelectedIcon: false,
-      segments: const [
-        ButtonSegment(value: 50, label: Text('前 50')),
-        ButtonSegment(value: 100, label: Text('前 100')),
-        ButtonSegment(value: 300, label: Text('前 300')),
+      segments: [
+        ButtonSegment(value: 50, label: Text(l10n.labelTopCount(50))),
+        ButtonSegment(value: 100, label: Text(l10n.labelTopCount(100))),
+        ButtonSegment(value: 300, label: Text(l10n.labelTopCount(300))),
       ],
       selected: {_selectedRange},
       onSelectionChanged: (selection) => setState(() {
@@ -132,7 +152,11 @@ class _RankingChartPageState extends State<RankingChartPage> {
       }),
     );
     final summary = Text(
-      '前 ${visibleRows.length} 名 · 最高 ${maxScore.format()} · 最低 ${minScore.format()}',
+      l10n.labelRankSummary(
+        visibleRows.length,
+        maxScore.format(),
+        minScore.format(),
+      ),
       textAlign: TextAlign.center,
       style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
     );
@@ -171,6 +195,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
 
   LineChartData _chartData(List<_RankRow> rows, int minScore, int maxScore) {
     final scheme = Theme.of(context).colorScheme;
+    final english = !context.isChineseLocale;
     final scoreRange = (maxScore - minScore).abs();
     final chartMinY = (minScore - scoreRange * 0.08).clamp(0, double.infinity);
     final chartMaxY = maxScore + (scoreRange == 0 ? 1 : scoreRange * 0.08);
@@ -200,7 +225,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
                 return const SizedBox.shrink();
               }
               return Text(
-                _formatAxisValue(value),
+                _formatAxisValue(value, english: english),
                 style: const TextStyle(fontSize: 10.0),
               );
             },
@@ -256,19 +281,12 @@ class _RankingChartPageState extends State<RankingChartPage> {
     );
   }
 
-  String _formatAxisValue(double value) {
+  /// 轴标签：中文用 万/亿/万亿，英文用 K/M/B（[english] 由调用点按语言传入）。
+  /// 万以下的数值保留原来的取整 + 千位分隔符写法。
+  String _formatAxisValue(double value, {required bool english}) {
     if (widget.kind != RankingKind.hell) return value.round().format();
-    final absolute = value.abs();
-    if (absolute >= 1000000000000) {
-      return '${(value / 1000000000000).toStringAsFixed(1)}万亿';
-    }
-    if (absolute >= 100000000) {
-      return '${(value / 100000000).toStringAsFixed(1)}亿';
-    }
-    if (absolute >= 10000) {
-      return '${(value / 10000).toStringAsFixed(1)}万';
-    }
-    return value.round().format();
+    if (value.abs() < 10000) return value.round().format();
+    return value.formatCompact(fractionDigits: 1, english: english);
   }
 }
 
@@ -331,6 +349,8 @@ class _RankingPageState extends State<RankingPage> {
     ).wait;
 
     if (!mounted) return;
+    // 取 l10n 必须在 await 之后：initState 里同步取 Localizations 会断言失败
+    final l10n = AppLocalizations.of(context);
 
     String? refreshFailure;
     setState(() {
@@ -358,9 +378,9 @@ class _RankingPageState extends State<RankingPage> {
         _rows = rows;
       } else if (hasContent) {
         // 已有内容
-        refreshFailure = _errorMessage(result);
+        refreshFailure = _errorMessage(l10n, result);
       } else {
-        _error = _errorMessage(result);
+        _error = _errorMessage(l10n, result);
       }
 
       // 交叉榜单索引
@@ -379,25 +399,29 @@ class _RankingPageState extends State<RankingPage> {
     });
 
     if (refreshFailure != null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('刷新失败：$refreshFailure')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(l10n.snackRefreshFailed(refreshFailure!))),
+      );
     }
   }
 
-  String _errorMessage(QueryError error) {
+  String _errorMessage(AppLocalizations l10n, QueryError error) {
     return switch (error) {
-      NameNotFound() => '暂无榜单数据',
-      TimeoutError() => '查询超时，请稍后重试',
+      NameNotFound() => l10n.emptyRankingData,
+      TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };
   }
 
   void _showMilestoneRanks() {
+    final l10n = AppLocalizations.of(context);
     showDialog<void>(
       context: context,
       builder: (dialogContext) {
         return AlertDialog(
-          title: Text('${widget.kind.title}名次'),
+          title: Text(
+            l10n.dialogRankMilestones(rankingKindLabel(l10n, widget.kind)),
+          ),
           content: SizedBox(
             width: 420,
             child: ListView.separated(
@@ -415,7 +439,7 @@ class _RankingPageState extends State<RankingPage> {
                     radius: 14,
                     child: Text('$rank', style: const TextStyle(fontSize: 11)),
                   ),
-                  title: Text(row?.name ?? '暂无数据'),
+                  title: Text(row?.name ?? l10n.emptyData),
                   subtitle: row == null ? null : Text(row.score.format()),
                   enabled: row != null,
                   onTap: row == null
@@ -431,7 +455,7 @@ class _RankingPageState extends State<RankingPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(dialogContext).pop(),
-              child: const Text('关闭'),
+              child: Text(l10n.actionClose),
             ),
           ],
         );
@@ -441,9 +465,10 @@ class _RankingPageState extends State<RankingPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(widget.kind.title),
+        title: Text(rankingKindLabel(l10n, widget.kind)),
         actions: [
           SeasonIndicator(
             notifier: switch (widget.kind) {
@@ -454,7 +479,7 @@ class _RankingPageState extends State<RankingPage> {
           ),
           IconButton(
             icon: const Icon(Icons.show_chart),
-            tooltip: '查看分数趋势',
+            tooltip: l10n.tooltipViewScoreTrend,
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -465,7 +490,7 @@ class _RankingPageState extends State<RankingPage> {
           ),
           IconButton(
             icon: const Icon(Icons.format_list_numbered),
-            tooltip: '查看特殊名次',
+            tooltip: l10n.tooltipViewMilestoneRanks,
             onPressed: _rows.isEmpty ? null : _showMilestoneRanks,
           ),
         ],
@@ -482,7 +507,7 @@ class _RankingPageState extends State<RankingPage> {
       return _buildError();
     }
     if (_rows.isEmpty) {
-      return const Center(child: Text('暂无数据'));
+      return Center(child: Text(AppLocalizations.of(context).emptyData));
     }
     return LayoutBuilder(
       builder: (context, constraints) {
@@ -543,7 +568,7 @@ class _RankingPageState extends State<RankingPage> {
               ),
               const SizedBox(height: 12),
               Text(
-                '点击左侧条目查看玩家详情',
+                AppLocalizations.of(context).hintSelectPlayerDetail,
                 textAlign: TextAlign.center,
                 style: TextStyle(color: scheme.onSurfaceVariant),
               ),
@@ -579,7 +604,7 @@ class _RankingPageState extends State<RankingPage> {
             FilledButton.icon(
               onPressed: () => _load(force: true),
               icon: const Icon(Icons.refresh),
-              label: const Text('重试'),
+              label: Text(AppLocalizations.of(context).actionRetry),
             ),
           ],
         ),

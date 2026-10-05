@@ -6,6 +6,7 @@ import 'package:url_launcher/url_launcher.dart';
 import 'package:grow_castle_calculator_next/core/service/update_checker.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/about_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/backup_page.dart';
@@ -33,6 +34,7 @@ class _SettingPageState extends State<SettingPage> {
   }
 
   Future<void> _checkUpdate() async {
+    final l10n = AppLocalizations.of(context);
     FocusManager.instance.primaryFocus?.unfocus();
     if (_checking) return;
     setState(() => _checking = true);
@@ -42,14 +44,15 @@ class _SettingPageState extends State<SettingPage> {
 
     if (release == null) {
       ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('检查更新失败，请检查网络后重试')));
+          .showSnackBar(SnackBar(content: Text(l10n.snackUpdateCheckFailed)));
       return;
     }
     final current = _currentVersion;
     if (current != null &&
         UpdateChecker.compareVersions(release.tagName, current) <= 0) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('已是最新版本 v$current')));
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(l10n.snackAlreadyLatest(current))));
       return;
     }
     final body = release.body;
@@ -59,15 +62,18 @@ class _SettingPageState extends State<SettingPage> {
       builder: (context) {
         final theme = Theme.of(context);
         return AlertDialog(
-          title: const Text('发现新版本'),
+          title: Text(l10n.dialogUpdateAvailable),
           content: SingleChildScrollView(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  '最新版本 ${release.tagName}'
-                  '${current == null ? '' : '（当前 v$current）'}',
+                  l10n.dialogUpdateAvailableBody(
+                    current == null ? 'no' : 'yes',
+                    release.tagName,
+                    current ?? '',
+                  ),
                   style: theme.textTheme.bodyMedium?.copyWith(
                     fontWeight: FontWeight.bold,
                   ),
@@ -75,7 +81,7 @@ class _SettingPageState extends State<SettingPage> {
                 if (hasNotes) ...[
                   const SizedBox(height: 12),
                   Text(
-                    '更新日志：',
+                    l10n.labelChangelog,
                     style: theme.textTheme.bodyMedium?.copyWith(
                       fontWeight: FontWeight.w600,
                     ),
@@ -89,14 +95,14 @@ class _SettingPageState extends State<SettingPage> {
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(),
-              child: const Text('取消'),
+              child: Text(l10n.actionCancel),
             ),
             FilledButton(
               onPressed: () {
                 Navigator.of(context).pop();
                 _launchUrl(release.htmlUrl);
               },
-              child: const Text('打开发布页'),
+              child: Text(l10n.actionOpenReleasePage),
             ),
           ],
         );
@@ -108,35 +114,40 @@ class _SettingPageState extends State<SettingPage> {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('无法打开链接：$url')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).snackCannotOpenLink(url)),
+        ),
+      );
     }
   }
 
   void _showApiUrlDialog(BuildContext context, AppSettingsStore store) {
+    final l10n = AppLocalizations.of(context);
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
       builder: (context) => SettingEditDialog(
-        title: '第三方 API',
+        title: l10n.settingsThirdPartyApi,
         initialValue: store.apiUrlNotifier.value,
-        decoration: const InputDecoration(labelText: 'API 地址'),
+        decoration: InputDecoration(labelText: l10n.labelApiUrl),
         onSubmit: store.setApiUrl,
       ),
     );
   }
 
   void _showConcurrencyDialog(BuildContext context, AppSettingsStore store) {
+    final l10n = AppLocalizations.of(context);
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
       builder: (context) => SettingEditDialog(
-        title: '查询并发数',
+        title: l10n.settingsQueryConcurrency,
         initialValue: '${store.lastOnlineConcurrencyNotifier.value}',
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(
-          labelText: '并发数',
+        decoration: InputDecoration(
+          labelText: l10n.labelConcurrency,
           helperText: '1-10',
           isDense: true,
         ),
@@ -152,16 +163,17 @@ class _SettingPageState extends State<SettingPage> {
     BuildContext context,
     AppSettingsStore store,
   ) {
+    final l10n = AppLocalizations.of(context);
     FocusManager.instance.primaryFocus?.unfocus();
     showDialog<void>(
       context: context,
       builder: (context) => SettingEditDialog(
-        title: '记录间隔',
+        title: l10n.settingsTrackInterval,
         initialValue: '${store.gameTrackIntervalMinutesNotifier.value}',
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(
-          labelText: '分钟',
+        decoration: InputDecoration(
+          labelText: l10n.labelMinutes,
           helperText: '1-43200',
           isDense: true,
         ),
@@ -176,13 +188,15 @@ class _SettingPageState extends State<SettingPage> {
   @override
   Widget build(BuildContext context) {
     final appSettingsStore = Stores.appSettingsStore;
+    final l10n = AppLocalizations.of(context);
+    final currentVersion = _currentVersion;
     return Scaffold(
-      appBar: AppBar(title: const Text('设置')),
+      appBar: AppBar(title: Text(l10n.tabSettings)),
       body: ListView(
         children: [
           ListTile(
             leading: const Icon(Icons.group),
-            title: const Text('用户管理'),
+            title: Text(l10n.settingsUserManagement),
             subtitle: ValueListenableBuilder(
               valueListenable: Stores.infoStore.currentUserNotifier,
               builder: (context, value, child) {
@@ -197,33 +211,69 @@ class _SettingPageState extends State<SettingPage> {
               );
             },
           ),
-          const ListTile(leading: Icon(Icons.color_lens), title: Text('主题模式')),
+          ListTile(
+            leading: const Icon(Icons.color_lens),
+            title: Text(l10n.settingsThemeMode),
+          ),
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 16.0),
             child: ValueListenableBuilder<ThemeMode>(
               valueListenable: appSettingsStore.themeModeNotifier,
               builder: (context, mode, _) {
                 return SegmentedButton<ThemeMode>(
-                  segments: const [
+                  segments: [
                     ButtonSegment(
                       value: ThemeMode.system,
-                      icon: Icon(Icons.brightness_auto),
-                      label: Text('系统'),
+                      icon: const Icon(Icons.brightness_auto),
+                      label: Text(l10n.themeSystem),
                     ),
                     ButtonSegment(
                       value: ThemeMode.light,
-                      icon: Icon(Icons.light_mode),
-                      label: Text('亮色'),
+                      icon: const Icon(Icons.light_mode),
+                      label: Text(l10n.themeLight),
                     ),
                     ButtonSegment(
                       value: ThemeMode.dark,
-                      icon: Icon(Icons.dark_mode),
-                      label: Text('暗色'),
+                      icon: const Icon(Icons.dark_mode),
+                      label: Text(l10n.themeDark),
                     ),
                   ],
                   selected: {mode},
                   onSelectionChanged: (selection) {
                     appSettingsStore.setThemeMode(selection.first);
+                  },
+                );
+              },
+            ),
+          ),
+          ListTile(
+            leading: const Icon(Icons.translate),
+            title: Text(AppLocalizations.of(context).settingsLanguage),
+          ),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16.0),
+            child: ValueListenableBuilder<AppLanguage>(
+              valueListenable: appSettingsStore.languageNotifier,
+              builder: (context, language, _) {
+                return SegmentedButton<AppLanguage>(
+                  segments: [
+                    ButtonSegment(
+                      value: AppLanguage.system,
+                      icon: const Icon(Icons.brightness_auto),
+                      label: Text(l10n.languageSystem),
+                    ),
+                    ButtonSegment(
+                      value: AppLanguage.zh,
+                      label: Text(l10n.languageChinese),
+                    ),
+                    ButtonSegment(
+                      value: AppLanguage.en,
+                      label: Text(l10n.languageEnglish),
+                    ),
+                  ],
+                  selected: {language},
+                  onSelectionChanged: (selection) {
+                    appSettingsStore.setLanguage(selection.first);
                   },
                 );
               },
@@ -237,8 +287,8 @@ class _SettingPageState extends State<SettingPage> {
                 builder: (context, enabled, _) {
                   return ListTile(
                     leading: const Icon(Icons.api),
-                    title: const Text('第三方 API'),
-                    subtitle: const Text('玩家详情页获取波速信息'),
+                    title: Text(l10n.settingsThirdPartyApi),
+                    subtitle: Text(l10n.settingsThirdPartyApiSubtitle),
                     onTap: () =>
                         appSettingsStore.setThirdPartyApiEnabled(!enabled),
                     trailing: Switch(
@@ -263,7 +313,7 @@ class _SettingPageState extends State<SettingPage> {
                               ? const SizedBox(height: 0)
                               : ListTile(
                                   leading: const Icon(Icons.link),
-                                  title: const Text('API 地址'),
+                                  title: Text(l10n.labelApiUrl),
                                   subtitle: Text(url),
                                   onTap: () => _showApiUrlDialog(
                                     context,
@@ -289,8 +339,8 @@ class _SettingPageState extends State<SettingPage> {
                       appSettingsStore.setAutoLastOnlineEnabled(!enabled);
                     },
                     leading: const Icon(Icons.schedule),
-                    title: const Text('自动查询上次在线'),
-                    subtitle: const Text('公会详情页查询成员"上次在线"'),
+                    title: Text(l10n.settingsAutoLastOnline),
+                    subtitle: Text(l10n.settingsAutoLastOnlineSubtitle),
                     trailing: Switch(
                       value: enabled,
                       onChanged: appSettingsStore.setAutoLastOnlineEnabled,
@@ -312,7 +362,7 @@ class _SettingPageState extends State<SettingPage> {
                             ? const SizedBox(height: 0)
                             : ListTile(
                                 leading: const Icon(Icons.network_check),
-                                title: const Text('查询并发数'),
+                                title: Text(l10n.settingsQueryConcurrency),
                                 subtitle: Text('$concurrency'),
                                 onTap: () => _showConcurrencyDialog(
                                   context,
@@ -334,8 +384,8 @@ class _SettingPageState extends State<SettingPage> {
                 builder: (context, enabled, _) {
                   return ListTile(
                     leading: const Icon(Icons.timeline),
-                    title: const Text('游戏轨迹记录'),
-                    subtitle: const Text('记录个人数据变化'),
+                    title: Text(l10n.settingsGameTrack),
+                    subtitle: Text(l10n.settingsGameTrackSubtitle),
                     onTap: () => appSettingsStore.setGameTrackEnabled(!enabled),
                     trailing: Switch(
                       value: enabled,
@@ -359,8 +409,10 @@ class _SettingPageState extends State<SettingPage> {
                             : ListTile(
                                 enabled: enabled,
                                 leading: const Icon(Icons.timer_outlined),
-                                title: const Text('轨迹记录最小间隔'),
-                                subtitle: Text('$minutes 分钟'),
+                                title: Text(l10n.settingsGameTrackMinInterval),
+                                subtitle: Text(
+                                  l10n.settingsGameTrackIntervalValue(minutes),
+                                ),
                                 onTap: () => _showGameTrackIntervalDialog(
                                   context,
                                   appSettingsStore,
@@ -376,8 +428,8 @@ class _SettingPageState extends State<SettingPage> {
           // 数据备份：WebDAV 云备份/恢复 + 本地导入导出
           ListTile(
             leading: const Icon(Icons.cloud_outlined),
-            title: const Text('数据备份'),
-            subtitle: const Text('WebDAV 云备份 · 本地导入导出'),
+            title: Text(l10n.settingsDataBackup),
+            subtitle: Text(l10n.settingsDataBackupSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
@@ -389,10 +441,10 @@ class _SettingPageState extends State<SettingPage> {
           // 检查更新：查询 GitHub 最新发布（镜像备用），发现新版弹窗展示
           ListTile(
             leading: const Icon(Icons.system_update_alt),
-            title: const Text('检查更新'),
-            subtitle: _currentVersion == null
+            title: Text(l10n.settingsCheckUpdate),
+            subtitle: currentVersion == null
                 ? null
-                : Text('当前版本 v$_currentVersion'),
+                : Text(l10n.settingsCurrentVersion(currentVersion)),
             trailing: _checking
                 ? const SizedBox(
                     width: 18,
@@ -404,7 +456,7 @@ class _SettingPageState extends State<SettingPage> {
           ),
           ListTile(
             leading: const Icon(Icons.info),
-            title: const Text('关于'),
+            title: Text(l10n.settingsAbout),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();

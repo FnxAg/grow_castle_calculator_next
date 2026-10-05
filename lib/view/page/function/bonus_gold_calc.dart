@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
@@ -61,18 +62,22 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
   }
 
   void _applyPercent(double percent) {
+    final l10n = AppLocalizations.of(context);
     final filled = (percent * 100).roundToDouble() / 100;
     showDialog<void>(
       context: context,
       builder: (context) => AlertDialog(
-        title: const Text('确认填入收益'),
+        title: Text(l10n.dialogConfirmApplyIncome),
         content: Text(
-          '金挂收益：${Stores.infoStore.getCurrentUserGabBonus()}% -> ${filled.format(fractionDigits: 2)}%？',
+          l10n.dialogApplyGabBonusContent(
+            Stores.infoStore.getCurrentUserGabBonus().format(fractionDigits: 2),
+            filled.format(fractionDigits: 2),
+          ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
-            child: const Text('取消'),
+            child: Text(l10n.actionCancel),
           ),
           TextButton(
             onPressed: () {
@@ -81,12 +86,12 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
-                    '已填入金挂平均收益 ${filled.format(fractionDigits: 2)}%',
+                    l10n.snackAppliedGabBonus(filled.format(fractionDigits: 2)),
                   ),
                 ),
               );
             },
-            child: const Text('确认'),
+            child: Text(l10n.actionConfirm),
           ),
         ],
       ),
@@ -102,6 +107,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final store = Stores.infoStore;
     return ListenableBuilder(
       listenable: Listenable.merge([
@@ -113,29 +119,29 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: .start,
-              children: [const Text('推波收益计算'), _AppBarInfo()],
+              children: [Text(l10n.wavePushIncomeCalc), _AppBarInfo()],
             ),
             actions: [
               IconButton(
                 icon: const Icon(Icons.restore_page),
-                tooltip: '重置',
+                tooltip: l10n.actionReset,
                 onPressed: () {
                   showDialog<void>(
                     context: context,
                     builder: (dialogContext) => AlertDialog(
-                      title: const Text('重置'),
-                      content: const Text('确认清空当前用户的所有收入样本？'),
+                      title: Text(l10n.actionReset),
+                      content: Text(l10n.dialogResetIncomeSamples),
                       actions: [
                         TextButton(
                           onPressed: () => Navigator.of(dialogContext).pop(),
-                          child: const Text('取消'),
+                          child: Text(l10n.actionCancel),
                         ),
                         TextButton(
                           onPressed: () {
                             Navigator.of(dialogContext).pop();
                             setState(() => _incomes.clear());
                           },
-                          child: const Text('确认'),
+                          child: Text(l10n.actionConfirm),
                         ),
                       ],
                     ),
@@ -160,10 +166,10 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
               final Widget bodyView = Expanded(
                 flex: isWide ? 6 : 1,
                 child: _incomes.isEmpty
-                    ? const Center(
+                    ? Center(
                         child: Text(
-                          '暂无收入样本',
-                          style: TextStyle(color: Colors.grey),
+                          l10n.emptyIncomeSamples,
+                          style: const TextStyle(color: Colors.grey),
                         ),
                       )
                     : ListView.builder(
@@ -204,23 +210,24 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
     required double avgIncome,
     required double percent,
   }) {
+    final l10n = AppLocalizations.of(context);
     return Padding(
       padding: const EdgeInsets.all(16.0),
       child: SummaryCard(
         children: <Widget>[
           SummaryRow(
             leadingIcon: Icons.money,
-            title: Text('金挂成本'),
+            title: Text(l10n.labelGabCost),
             trailing: SummaryRowValueText(text: gabCost.format()),
           ),
           SummaryRow(
             leadingIcon: Icons.monetization_on,
-            title: Text('平均收入'),
+            title: Text(l10n.labelAverageIncome),
             trailing: SummaryRowValueText(text: avgIncome.format()),
           ),
           SummaryRow(
             leadingIcon: Icons.percent,
-            title: Text('百分比'),
+            title: Text(l10n.labelPercent),
             trailing: SummaryRowValueText(
               text: '${percent.format(fractionDigits: 2)}%',
             ),
@@ -234,13 +241,13 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
                     ? null
                     : () => _applyPercent(percent),
                 icon: const Icon(Icons.draw),
-                label: const Text('填入'),
+                label: Text(l10n.actionFillIn),
               ),
               const SizedBox(width: 12.0),
               FilledButton.tonalIcon(
                 onPressed: () => _addIncomeDialog(),
                 icon: const Icon(Icons.add),
-                label: const Text('添加'),
+                label: Text(l10n.actionAdd),
               ),
             ],
           ),
@@ -333,24 +340,25 @@ class _AddIncomeDialogState extends State<_AddIncomeDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('输入每波金币收入'),
+      title: Text(l10n.dialogInputWaveIncome),
       content: SelectAllTextField(
         controller: _controller,
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: const InputDecoration(
+        decoration: InputDecoration(
           helperText: '0-9',
-          labelText: '每波金币收入',
+          labelText: l10n.labelWaveGoldIncome,
         ),
         autofocus: true,
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(l10n.actionCancel),
         ),
-        TextButton(onPressed: _submit, child: const Text('添加')),
+        TextButton(onPressed: _submit, child: Text(l10n.actionAdd)),
       ],
     );
   }

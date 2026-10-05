@@ -3,6 +3,8 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_input_field.dart';
 
@@ -54,59 +56,59 @@ class _FormationCardTileState extends State<FormationCardTile> {
     return GestureDetector(
       onSecondaryTapUp: _showContextMenu,
       child: ListTile(
-      // 显式拖拽句柄：避免在 TextField 区域长按触发重排
-      leading: Listener(
-        onPointerDown: (_) {
-          // 拖拽时条目会暂时移入 Overlay，先释放输入框焦点避免 Debug
-          // 模式下 EditableText 的焦点与 RenderObject 状态不一致。
-          FocusManager.instance.primaryFocus?.unfocus();
-        },
-        child: ReorderableDragStartListener(
-          index: widget.index,
-          child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 24),
-            child: Container(
-              width: 24,
-              height: 24,
-              alignment: Alignment.center,
-              decoration: BoxDecoration(
-                color: scheme.primaryContainer,
-                borderRadius: BorderRadius.circular(999.0),
-              ),
-              child: Text(
-                (widget.index + 1).toString(),
-                style: const TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 16.0,
+        // 显式拖拽句柄：避免在 TextField 区域长按触发重排
+        leading: Listener(
+          onPointerDown: (_) {
+            // 拖拽时条目会暂时移入 Overlay，先释放输入框焦点避免 Debug
+            // 模式下 EditableText 的焦点与 RenderObject 状态不一致。
+            FocusManager.instance.primaryFocus?.unfocus();
+          },
+          child: ReorderableDragStartListener(
+            index: widget.index,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 24),
+              child: Container(
+                width: 24,
+                height: 24,
+                alignment: Alignment.center,
+                decoration: BoxDecoration(
+                  color: scheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(999.0),
+                ),
+                child: Text(
+                  (widget.index + 1).toString(),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16.0,
+                  ),
                 ),
               ),
             ),
           ),
         ),
-      ),
-      title: ListenableBuilder(
-        listenable: Listenable.merge([
-          widget.dataVersion,
-          Stores.infoStore.totalGoldNotifier,
-          Stores.infoStore.waveNotifier,
-        ]),
-        builder: (context, _) => AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: SizeTransition(
-              sizeFactor: animation,
-              axis: Axis.horizontal,
-              child: child,
+        title: ListenableBuilder(
+          listenable: Listenable.merge([
+            widget.dataVersion,
+            Stores.infoStore.totalGoldNotifier,
+            Stores.infoStore.waveNotifier,
+          ]),
+          builder: (context, _) => AnimatedSwitcher(
+            duration: const Duration(milliseconds: 220),
+            switchInCurve: Curves.easeOutCubic,
+            switchOutCurve: Curves.easeInCubic,
+            transitionBuilder: (child, animation) => FadeTransition(
+              opacity: animation,
+              child: SizeTransition(
+                sizeFactor: animation,
+                axis: Axis.horizontal,
+                child: child,
+              ),
             ),
+            child: widget.viewMode ? _summaryView() : _inputView(),
           ),
-          child: widget.viewMode ? _summaryView() : _inputView(),
         ),
-      ),
-      trailing: _menuButton(),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
+        trailing: _menuButton(),
+        contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
       ),
     );
   }
@@ -124,6 +126,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
 
   Widget _summaryView() {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final store = Stores.infoStore;
     final applied = _applied;
     final name = store.getTextValue(widget.id);
@@ -132,9 +135,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
     final totalGold = store.totalGoldNotifier.value;
     final wave = store.waveNotifier.value;
     final share = applied && totalGold > 0 ? gold / totalGold * 100 : 0.0;
-    final oneOverRatio = applied && wave > 0 && level > 0
-        ? level / wave
-        : 0.0;
+    final oneOverRatio = applied && wave > 0 && level > 0 ? level / wave : 0.0;
     final ratio = oneOverRatio > 0 ? 1 / oneOverRatio : 0.0;
     final nameStyle = TextStyle(
       fontWeight: FontWeight.w600,
@@ -155,20 +156,23 @@ class _FormationCardTileState extends State<FormationCardTile> {
                   name.isNotEmpty
                       ? name
                       : widget.id == 1
-                      ? '城堡'
+                      ? l10n.unitNameCastle
                       : widget.id == 2
-                      ? '城弓'
-                      : '单位 ${widget.id}',
+                      ? l10n.unitNameCastleBow
+                      : l10n.unitNameGeneric(widget.id),
                   overflow: TextOverflow.ellipsis,
                   style: nameStyle,
                 ),
               ),
               const SizedBox(width: 8.0),
               Text(
-                '${level.format()} · ${gold.formatCompact(english: false)}',
+                '${level.format()} · '
+                '${gold.formatCompact(english: !context.isChineseLocale)}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
-                  color: applied ? theme.colorScheme.primary : theme.disabledColor,
+                  color: applied
+                      ? theme.colorScheme.primary
+                      : theme.disabledColor,
                 ),
               ),
             ],
@@ -176,11 +180,21 @@ class _FormationCardTileState extends State<FormationCardTile> {
           const SizedBox(height: 2.0),
           Row(
             children: [
-              _metric(theme, '占比', '${_formatMetric(share)}%', applied),
+              _metric(
+                theme,
+                l10n.metricShare,
+                '${_formatMetric(share)}%',
+                applied,
+              ),
               const SizedBox(width: 10.0),
-              _metric(theme, '1/比例', _formatMetric(oneOverRatio), applied),
+              _metric(
+                theme,
+                l10n.metricOneOverRatio,
+                _formatMetric(oneOverRatio),
+                applied,
+              ),
               const SizedBox(width: 10.0),
-              _metric(theme, '比例', _formatMetric(ratio), applied),
+              _metric(theme, l10n.metricRatio, _formatMetric(ratio), applied),
             ],
           ),
         ],
@@ -192,7 +206,9 @@ class _FormationCardTileState extends State<FormationCardTile> {
     return Text(
       '$label $value',
       style: theme.textTheme.bodySmall?.copyWith(
-        color: applied ? theme.colorScheme.onSurfaceVariant : theme.disabledColor,
+        color: applied
+            ? theme.colorScheme.onSurfaceVariant
+            : theme.disabledColor,
       ),
     );
   }
@@ -208,12 +224,17 @@ class _FormationCardTileState extends State<FormationCardTile> {
   }
 
   Widget _nameField() {
+    final l10n = AppLocalizations.of(context);
     return FormationInputField(
       controller: widget.textController,
       focusNode: widget.textFocusNode,
       enabled: true,
       visualDisabled: !_applied,
-      labelText: '${widget.id == 1 ? '城堡' : widget.id == 2 ? '城弓' : ''}名称',
+      labelText: widget.id == 1
+          ? l10n.nameLabelCastle
+          : widget.id == 2
+          ? l10n.nameLabelCastleBow
+          : l10n.nameLabelGeneric,
       keyboardType: TextInputType.text,
     );
   }
@@ -224,7 +245,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
       focusNode: widget.numberFocusNode,
       enabled: true,
       visualDisabled: !_applied,
-      labelText: '等级',
+      labelText: AppLocalizations.of(context).labelLevel,
       keyboardType: TextInputType.number,
       inputFormatters: [FilteringTextInputFormatter.digitsOnly],
     );
@@ -236,7 +257,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
       child: PopupMenuButton(
         padding: EdgeInsets.zero,
         iconSize: 20,
-        tooltip: '操作',
+        tooltip: AppLocalizations.of(context).tooltipActions,
         itemBuilder: (context) => _menuItems(),
       ),
     );
@@ -258,6 +279,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
 
   /// 操作菜单项：左键菜单按钮与右键整行菜单共用
   List<PopupMenuEntry<void>> _menuItems() {
+    final l10n = AppLocalizations.of(context);
     return [
       PopupMenuItem(
         onTap: _toggleApplied,
@@ -268,29 +290,29 @@ class _FormationCardTileState extends State<FormationCardTile> {
               color: _applied ? Colors.green : Colors.red,
             ),
             const SizedBox(width: 8.0),
-            Text(_applied ? '已应用' : '未应用'),
+            Text(_applied ? l10n.actionApplied : l10n.actionNotApplied),
           ],
         ),
       ),
       // 清除表单
       PopupMenuItem(
         onTap: _clear,
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.clear),
-            SizedBox(width: 8.0),
-            Text('清空'),
+            const Icon(Icons.clear),
+            const SizedBox(width: 8.0),
+            Text(l10n.actionClear),
           ],
         ),
       ),
       PopupMenuItem(
         enabled: widget.id != 1 && widget.id != 2,
         onTap: () => widget.onRemove(widget.id),
-        child: const Row(
+        child: Row(
           children: [
-            Icon(Icons.delete, color: Colors.red),
-            SizedBox(width: 8.0),
-            Text('删除', style: TextStyle(color: Colors.red)),
+            const Icon(Icons.delete, color: Colors.red),
+            const SizedBox(width: 8.0),
+            Text(l10n.actionDelete, style: const TextStyle(color: Colors.red)),
           ],
         ),
       ),

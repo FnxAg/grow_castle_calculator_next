@@ -4,6 +4,8 @@ import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
@@ -78,6 +80,7 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListenableBuilder(
       listenable: Listenable.merge([
         Stores.infoStore.currentUserNotifier,
@@ -88,7 +91,7 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: .start,
-              children: [const Text('轨迹图表'), _AppBarInfo()],
+              children: [Text(l10n.gameTrackChart), _AppBarInfo()],
             ),
             actions: [
               if (_records.isNotEmpty)
@@ -96,8 +99,10 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
                   padding: const EdgeInsets.symmetric(horizontal: 12),
                   child: Center(
                     child: Text(
-                      '起始 ${_formatAppBarDate(_records.first.recordedAt)}\n'
-                      '截止 ${_formatAppBarDate(_records.last.recordedAt)}',
+                      l10n.labelChartRange(
+                        _formatAppBarDate(_records.first.recordedAt),
+                        _formatAppBarDate(_records.last.recordedAt),
+                      ),
                       textAlign: TextAlign.right,
                       style: Theme.of(context).textTheme.labelSmall,
                     ),
@@ -106,7 +111,7 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
             ],
           ),
           body: _chartRecords.length < 2
-              ? const Center(child: Text('至少需要两条轨迹记录'))
+              ? Center(child: Text(l10n.emptyChartNeedTwoRecords))
               : Padding(
                   padding: const EdgeInsets.all(12),
                   child: LayoutBuilder(
@@ -126,7 +131,8 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
         : Padding(
             padding: const EdgeInsets.only(bottom: 8),
             child: Text(
-              '已压缩显示：共 ${_records.length} 条，显示 ${_chartRecords.length} 条',
+              AppLocalizations.of(context)
+                  .labelChartDownsampled(_records.length, _chartRecords.length),
               style: Theme.of(context).textTheme.bodySmall,
             ),
           );
@@ -146,17 +152,19 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
 
   /// 4 张图表
   Widget _buildChartGrid(BuildContext context, {required bool fillHeight}) {
+    final l10n = AppLocalizations.of(context);
     final panels = [
       for (final chart in [
         (
-          '总波数',
+          l10n.totalWave,
           (GameTrackRecord r) => r.wave.toDouble(),
           (double value) => value.round().format(),
         ),
         (
-          '总经济',
+          l10n.totalEconomy,
           (GameTrackRecord r) => r.totalGold,
-          (double value) => value.formatCompact(english: false),
+          (double value) =>
+              value.formatCompact(english: !context.isChineseLocale),
         ),
         (
           'GP',
@@ -164,7 +172,7 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
           (double value) => value.format(fractionDigits: 3),
         ),
         (
-          '指数',
+          l10n.metricIndex,
           (GameTrackRecord r) => r.gpCN,
           (double value) => value.format(fractionDigits: 3),
         ),

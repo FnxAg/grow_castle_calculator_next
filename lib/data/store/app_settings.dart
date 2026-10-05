@@ -1,9 +1,20 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
+/// 界面语言。[system] 表示跟随设备语言（由 MaterialApp 自己解析）
+enum AppLanguage {
+  system,
+  zh,
+  en;
+
+  /// 与 MaterialApp.locale 对应：system 返回 null，交给系统解析
+  Locale? get locale => this == system ? null : Locale(name);
+}
+
 class AppSettingsStore {
   static const String _boxName = 'app_meta';
   static const String _themeModeKey = 'themeMode';
+  static const String _languageKey = 'language';
   static const String _apiUrlKey = 'apiUrl';
   static const String _thirdPartyApiEnabledKey = 'thirdPartyApiEnabled';
   static const String _autoLastOnlineEnabledKey = 'autoLastOnlineEnabled';
@@ -18,6 +29,7 @@ class AppSettingsStore {
 
   final Box _box;
   final ValueNotifier<ThemeMode> themeModeNotifier;
+  final ValueNotifier<AppLanguage> languageNotifier;
   final ValueNotifier<String> apiUrlNotifier;
   final ValueNotifier<bool> thirdPartyApiEnabledNotifier;
   final ValueNotifier<bool> autoLastOnlineEnabledNotifier;
@@ -26,28 +38,29 @@ class AppSettingsStore {
   final ValueNotifier<int> gameTrackIntervalMinutesNotifier;
 
   AppSettingsStore()
-      : _box = Hive.box(_boxName),
-        themeModeNotifier = ValueNotifier<ThemeMode>(
-          _readThemeMode(Hive.box(_boxName)),
-        ),
-        apiUrlNotifier = ValueNotifier<String>(
-          _readApiUrl(Hive.box(_boxName)),
-        ),
-        thirdPartyApiEnabledNotifier = ValueNotifier<bool>(
-          _readThirdPartyApiEnabled(Hive.box(_boxName)),
-        ),
-        autoLastOnlineEnabledNotifier = ValueNotifier<bool>(
-          _readAutoLastOnlineEnabled(Hive.box(_boxName)),
-        ),
-        lastOnlineConcurrencyNotifier = ValueNotifier<int>(
-          _readLastOnlineConcurrency(Hive.box(_boxName)),
-        ),
-        gameTrackEnabledNotifier = ValueNotifier<bool>(
-          _readGameTrackEnabled(Hive.box(_boxName)),
-        ),
-        gameTrackIntervalMinutesNotifier = ValueNotifier<int>(
-          _readGameTrackIntervalMinutes(Hive.box(_boxName)),
-        );
+    : _box = Hive.box(_boxName),
+      themeModeNotifier = ValueNotifier<ThemeMode>(
+        _readThemeMode(Hive.box(_boxName)),
+      ),
+      languageNotifier = ValueNotifier<AppLanguage>(
+        _readLanguage(Hive.box(_boxName)),
+      ),
+      apiUrlNotifier = ValueNotifier<String>(_readApiUrl(Hive.box(_boxName))),
+      thirdPartyApiEnabledNotifier = ValueNotifier<bool>(
+        _readThirdPartyApiEnabled(Hive.box(_boxName)),
+      ),
+      autoLastOnlineEnabledNotifier = ValueNotifier<bool>(
+        _readAutoLastOnlineEnabled(Hive.box(_boxName)),
+      ),
+      lastOnlineConcurrencyNotifier = ValueNotifier<int>(
+        _readLastOnlineConcurrency(Hive.box(_boxName)),
+      ),
+      gameTrackEnabledNotifier = ValueNotifier<bool>(
+        _readGameTrackEnabled(Hive.box(_boxName)),
+      ),
+      gameTrackIntervalMinutesNotifier = ValueNotifier<int>(
+        _readGameTrackIntervalMinutes(Hive.box(_boxName)),
+      );
 
   static ThemeMode _readThemeMode(Box box) {
     final raw = box.get(_themeModeKey);
@@ -59,16 +72,37 @@ class AppSettingsStore {
     return ThemeMode.system;
   }
 
+  static AppLanguage _readLanguage(Box box) {
+    final raw = box.get(_languageKey);
+    for (final language in AppLanguage.values) {
+      if (language.name == raw) {
+        return language;
+      }
+    }
+    return AppLanguage.system;
+  }
+
+  void setLanguage(AppLanguage language) {
+    if (languageNotifier.value == language) {
+      return;
+    }
+    languageNotifier.value = language;
+    _box.put(_languageKey, language.name);
+  }
+
   /// 重新从 box 读取全部设置并刷新各 notifier（数据恢复/导入后调用；
   /// ValueNotifier 等值不触发通知，安全）
   void reload() {
     themeModeNotifier.value = _readThemeMode(_box);
+    languageNotifier.value = _readLanguage(_box);
     apiUrlNotifier.value = _readApiUrl(_box);
     thirdPartyApiEnabledNotifier.value = _readThirdPartyApiEnabled(_box);
     autoLastOnlineEnabledNotifier.value = _readAutoLastOnlineEnabled(_box);
     lastOnlineConcurrencyNotifier.value = _readLastOnlineConcurrency(_box);
     gameTrackEnabledNotifier.value = _readGameTrackEnabled(_box);
-    gameTrackIntervalMinutesNotifier.value = _readGameTrackIntervalMinutes(_box);
+    gameTrackIntervalMinutesNotifier.value = _readGameTrackIntervalMinutes(
+      _box,
+    );
   }
 
   void setThemeMode(ThemeMode mode) {

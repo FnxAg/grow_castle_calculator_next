@@ -7,10 +7,23 @@ import 'package:grow_castle_calculator_next/core/src/item_display_rules.dart';
 import 'package:grow_castle_calculator_next/core/src/item_generator.dart';
 import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_rule_edit_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 
 const _rollBatchSize = 500;
+
+/// [ItemSource] 的本地化名称：枚举是数据层类型（`label` 为中文常量），
+/// 不改枚举，改由这里按 source 解析。
+String _sourceLabel(AppLocalizations l10n, ItemSource source) =>
+    switch (source) {
+      ItemSource.dragon1 => l10n.itemSourceDragon1,
+      ItemSource.dragon2 => l10n.itemSourceDragon2,
+      ItemSource.dragon3 => l10n.itemSourceDragon3,
+      ItemSource.dragon4 => l10n.itemSourceDragon4,
+      ItemSource.dragon5 => l10n.itemSourceDragon5,
+      ItemSource.dragon6 => l10n.itemSourceDragon6,
+    };
 
 Future<Map<String, dynamic>> _rollBatch(Map<String, dynamic> args) async {
   final generator = ItemGenerator(random: Random());
@@ -53,10 +66,10 @@ Future<Map<String, dynamic>> _rollBatchInIsolate(
   Map<String, dynamic> args,
 ) async {
   final resultPort = ReceivePort();
-  final isolate = await Isolate.spawn(
-    _rollBatchInIsolateEntry,
-    [resultPort.sendPort, args],
-  );
+  final isolate = await Isolate.spawn(_rollBatchInIsolateEntry, [
+    resultPort.sendPort,
+    args,
+  ]);
   try {
     return Map<String, dynamic>.from(await resultPort.first as Map);
   } finally {
@@ -111,8 +124,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
       _rolling = false;
       _rollResult = null;
       _items = [
-        for (var i = 0; i < _count; i++)
-          _generator.generate(source: _source),
+        for (var i = 0; i < _count; i++) _generator.generate(source: _source),
       ];
     });
   }
@@ -120,10 +132,10 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   /// roll到死：一件一件自动 roll，直到命中已启用的高亮规则（可手动停止）
   Future<void> _startRollToHit() async {
     if (_rolling) return;
+    final l10n = AppLocalizations.of(context);
     if (!Stores.itemRuleStore.rules.any((r) => r.enabled)) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('请先在“高亮规则”中启用至少一条规则')),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(l10n.snackNeedEnabledRule)));
       return;
     }
     setState(() {
@@ -149,11 +161,13 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
       if (!_rolling) break;
       final rawItem = result['item'];
       if (rawItem != null) {
-        final item = _generatedItemFromMap(Map<String, dynamic>.from(rawItem as Map));
+        final item = _generatedItemFromMap(
+          Map<String, dynamic>.from(rawItem as Map),
+        );
         setState(() {
           _rolling = false;
           _rollCount = count;
-          _rollResult = '命中！共 roll 了 ${count.format()} 次';
+          _rollResult = l10n.rollToHitHit(count.format());
           _items = [item];
         });
         return;
@@ -165,7 +179,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
     setState(() {
       _rolling = false;
       _rollCount = count;
-      _rollResult = '已手动停止，共 roll 了 ${count.format()} 次';
+      _rollResult = l10n.rollToHitStopped(count.format());
     });
   }
 
@@ -174,6 +188,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context);
     final levelCount = <ItemLevel, int>{};
     for (final item in _items) {
       levelCount.update(item.level, (c) => c + 1, ifAbsent: () => 1);
@@ -181,10 +196,10 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('刷龙模拟器'),
+        title: Text(l10n.toolDragonSimulator),
         actions: [
           IconButton(
-            tooltip: '高亮规则',
+            tooltip: l10n.highlightRules,
             icon: const Icon(Icons.rule),
             onPressed: () {
               FocusManager.instance.primaryFocus?.unfocus();
@@ -198,128 +213,146 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
         ],
       ),
       // 本页固定设置区最高（约 440），矮窗口下必须能滚
-      body: ShortWindowFallback(minHeight: 460, child: Column(
-        children: [
-          // ── 设置区 ──
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text('装备来源', style: theme.textTheme.labelLarge),
-                const SizedBox(height: 8),
-                SegmentedButton<ItemSource>(
-                  segments: [
-                    for (final source in ItemSource.values)
-                      ButtonSegment(
-                        value: source,
-                        label: Text(source.label),
-                        // 二龙起的掉落含高级装备，标注一下
-                        tooltip: source.dropRates.entries
-                            .map((e) => '${e.key.name} ${(e.value * 100).toStringAsFixed(1)}%')
-                            .join(' / '),
-                      ),
-                  ],
-                  selected: {_source},
-                  showSelectedIcon: false,
-                  onSelectionChanged: (s) => setState(() => _source = s.first),
-                ),
-                const SizedBox(height: 16),
-                Text('roll 单次数量', style: theme.textTheme.labelLarge),
-                const SizedBox(height: 8),
-                SegmentedButton<int>(
-                  segments: const [
-                    ButtonSegment(value: 1, label: Text('1')),
-                    ButtonSegment(value: 10, label: Text('10')),
-                    ButtonSegment(value: 100, label: Text('100')),
-                    ButtonSegment(value: 1000, label: Text('1000')),
-                    ButtonSegment(value: 10000, label: Text('10000')),
-                  ],
-                  selected: {_count},
-                  showSelectedIcon: false,
-                  onSelectionChanged: (s) => setState(() => _count = s.first),
-                ),
-                const SizedBox(height: 12),
-                Row(
-                  children: [
-                    Expanded(
-                      child: FilledButton.icon(
-                        onPressed: _generate,
-                        icon: const Icon(Icons.casino_outlined),
-                        label: const Text('roll 单次'),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: FilledButton.tonalIcon(
-                        onPressed: _rolling ? _stopRollToHit : _startRollToHit,
-                        icon: Icon(_rolling ? Icons.stop : Icons.autorenew),
-                        label: Text(_rolling ? '停止' : 'roll 到死'),
-                      ),
-                    ),
-                  ],
-                ),
-                // roll到死 状态提示
-                if (_rolling || _rollResult != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 8),
-                    child: Text(
-                      _rolling
-                          ? 'roll 到死进行中：已 roll ${_rollCount.format()} 次…'
-                          : _rollResult!,
-                      style: theme.textTheme.bodySmall?.copyWith(
-                        color: _rolling ? theme.colorScheme.primary : null,
-                      ),
-                    ),
+      body: ShortWindowFallback(
+        minHeight: 460,
+        child: Column(
+          children: [
+            // ── 设置区 ──
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(l10n.labelItemSource, style: theme.textTheme.labelLarge),
+                  const SizedBox(height: 8),
+                  SegmentedButton<ItemSource>(
+                    segments: [
+                      for (final source in ItemSource.values)
+                        ButtonSegment(
+                          value: source,
+                          label: Text(_sourceLabel(l10n, source)),
+                          // 二龙起的掉落含高级装备，标注一下
+                          tooltip: source.dropRates.entries
+                              .map(
+                                (e) =>
+                                    '${e.key.name} ${(e.value * 100).toStringAsFixed(1)}%',
+                              )
+                              .join(' / '),
+                        ),
+                    ],
+                    selected: {_source},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (s) =>
+                        setState(() => _source = s.first),
                   ),
-              ],
-            ),
-          ),
-      
-          // ── 本次等级分布 ──
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: Row(
-              children: [
-                for (final entry in levelCount.entries)
-                  Padding(
-                    padding: const EdgeInsets.only(right: 12),
-                    child: Text(
-                      '${entry.key.name} ×${entry.value}',
-                      style: theme.textTheme.bodyMedium,
-                    ),
+                  const SizedBox(height: 16),
+                  Text(
+                    l10n.labelRollBatchSize,
+                    style: theme.textTheme.labelLarge,
                   ),
-              ],
+                  const SizedBox(height: 8),
+                  SegmentedButton<int>(
+                    segments: const [
+                      ButtonSegment(value: 1, label: Text('1')),
+                      ButtonSegment(value: 10, label: Text('10')),
+                      ButtonSegment(value: 100, label: Text('100')),
+                      ButtonSegment(value: 1000, label: Text('1000')),
+                      ButtonSegment(value: 10000, label: Text('10000')),
+                    ],
+                    selected: {_count},
+                    showSelectedIcon: false,
+                    onSelectionChanged: (s) => setState(() => _count = s.first),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: FilledButton.icon(
+                          onPressed: _generate,
+                          icon: const Icon(Icons.casino_outlined),
+                          label: Text(l10n.actionRollOnce),
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Expanded(
+                        child: FilledButton.tonalIcon(
+                          onPressed: _rolling
+                              ? _stopRollToHit
+                              : _startRollToHit,
+                          icon: Icon(_rolling ? Icons.stop : Icons.autorenew),
+                          label: Text(
+                            _rolling ? l10n.actionStop : l10n.actionRollToHit,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  // roll到死 状态提示
+                  if (_rolling || _rollResult != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8),
+                      child: Text(
+                        _rolling
+                            ? l10n.rollToHitRunning(_rollCount.format())
+                            : _rollResult!,
+                        style: theme.textTheme.bodySmall?.copyWith(
+                          color: _rolling ? theme.colorScheme.primary : null,
+                        ),
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 16),
-      
-          // ── 结果区（规则变更时自动刷新排序与高亮）──
-          Expanded(
-            child: ValueListenableBuilder<List<UserHighlightRule>>(
-              valueListenable: Stores.itemRuleStore.rulesNotifier,
-              builder: (context, rules, _) {
-                // 命中规则（如白cd + 红cd + 加强）的装备置顶，
-                // 其余按装备等级从高到低排列：E > L > S > A > B
-                final items = [..._items]..sort((a, b) {
-                    final pinnedA = matchRule(a, rules)?.pinToTop ?? false;
-                    final pinnedB = matchRule(b, rules)?.pinToTop ?? false;
-                    if (pinnedA != pinnedB) return pinnedA ? -1 : 1;
-                    return b.level.index.compareTo(a.level.index);
-                  });
-                return ListView.builder(
-                  padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                  itemCount: items.length,
-                  itemBuilder: (context, index) {
-                    final item = items[index];
-                    return _ItemCard(item: item, rule: matchRule(item, rules));
-                  },
-                );
-              },
+
+            // ── 本次等级分布 ──
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: Row(
+                children: [
+                  for (final entry in levelCount.entries)
+                    Padding(
+                      padding: const EdgeInsets.only(right: 12),
+                      child: Text(
+                        '${entry.key.name} ×${entry.value}',
+                        style: theme.textTheme.bodyMedium,
+                      ),
+                    ),
+                ],
+              ),
             ),
-          ),
-        ],
-      )),
+            const Divider(height: 16),
+
+            // ── 结果区（规则变更时自动刷新排序与高亮）──
+            Expanded(
+              child: ValueListenableBuilder<List<UserHighlightRule>>(
+                valueListenable: Stores.itemRuleStore.rulesNotifier,
+                builder: (context, rules, _) {
+                  // 命中规则（如白cd + 红cd + 加强）的装备置顶，
+                  // 其余按装备等级从高到低排列：E > L > S > A > B
+                  final items = [..._items]
+                    ..sort((a, b) {
+                      final pinnedA = matchRule(a, rules)?.pinToTop ?? false;
+                      final pinnedB = matchRule(b, rules)?.pinToTop ?? false;
+                      if (pinnedA != pinnedB) return pinnedA ? -1 : 1;
+                      return b.level.index.compareTo(a.level.index);
+                    });
+                  return ListView.builder(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    itemCount: items.length,
+                    itemBuilder: (context, index) {
+                      final item = items[index];
+                      return _ItemCard(
+                        item: item,
+                        rule: matchRule(item, rules),
+                      );
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
@@ -358,7 +391,7 @@ class _ItemCard extends StatelessWidget {
               Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Text(
-                  '✦ ${rule.hint.isEmpty ? '未命名规则' : rule.hint}',
+                  '✦ ${rule.hint.isEmpty ? AppLocalizations.of(context).unnamedRule : rule.hint}',
                   style: theme.textTheme.labelMedium?.copyWith(
                     color: theme.colorScheme.primary,
                     fontWeight: FontWeight.bold,
@@ -368,7 +401,10 @@ class _ItemCard extends StatelessWidget {
             // 头部：等级 + 类型
             Row(
               children: [
-                Text('[${item.level.name}]', style: theme.textTheme.titleMedium),
+                Text(
+                  '[${item.level.name}]',
+                  style: theme.textTheme.titleMedium,
+                ),
                 const SizedBox(width: 8),
                 Text(item.type.name, style: theme.textTheme.titleMedium),
               ],
@@ -390,10 +426,7 @@ class _ItemCard extends StatelessWidget {
                     ),
                     const SizedBox(width: 8),
                     Expanded(child: Text(line.line.label)),
-                    Text(
-                      _valueText(line),
-                      style: theme.textTheme.bodyLarge,
-                    ),
+                    Text(_valueText(line), style: theme.textTheme.bodyLarge),
                   ],
                 ),
               ),
@@ -413,10 +446,10 @@ class _ItemCard extends StatelessWidget {
   }
 
   Color _lineColorOf(LineColor color) => switch (color) {
-        LineColor.white => Colors.white,
-        LineColor.red => Colors.redAccent,
-        LineColor.yellow => Colors.amber,
-      };
+    LineColor.white => Colors.white,
+    LineColor.red => Colors.redAccent,
+    LineColor.yellow => Colors.amber,
+  };
 
   /// 数值显示：被加强的词条显示“原始值 -> 加强后的值”，
   /// 加强后的值不受小数位限制，该有几位小数就有几位小数

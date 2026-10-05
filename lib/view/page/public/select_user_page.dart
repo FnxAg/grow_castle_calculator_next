@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/user_info.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
@@ -23,15 +25,14 @@ class _SelectUserPageState extends State<SelectUserPage> {
   Widget build(BuildContext context) {
     final InfoStore infoStore = Stores.infoStore;
     final List<String> userList = infoStore.getAllUsernames();
+    final l10n = AppLocalizations.of(context);
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('用户管理'),
+        title: Text(l10n.settingsUserManagement),
         actions: [
           IconButton(
-            icon: Icon(
-              !_settingState ? Icons.edit : Icons.edit_off,
-            ),
+            icon: Icon(!_settingState ? Icons.edit : Icons.edit_off),
             onPressed: () {
               setState(() {
                 _settingState = !_settingState;
@@ -49,123 +50,139 @@ class _SelectUserPageState extends State<SelectUserPage> {
           return GestureDetector(
             onSecondaryTapUp: (_) => _showUnitSummary(username),
             child: ListTile(
-            title: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Wrap(
-                        spacing: 8.0,
-                        crossAxisAlignment: WrapCrossAlignment.center,
-                        children: [
-                          Text(username),
-                          if (guild.isNotEmpty)
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Wrap(
+                          spacing: 8.0,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(username),
+                            if (guild.isNotEmpty)
+                              PillChip(
+                                text: Text(
+                                  guild,
+                                  style: const TextStyle(
+                                    fontSize: 11.0,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                icon: Icons.flag_circle,
+                              ),
+                          ],
+                        ),
+                        Row(
+                          children: [
                             PillChip(
                               text: Text(
-                                guild,
-                                style: const TextStyle(
-                                  fontSize: 11.0,
-                                  fontWeight: FontWeight.w600,
+                                infoStore.getUserWave(username).format(),
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color,
                                 ),
                               ),
-                              icon: Icons.flag_circle,
+                              icon: Icons.emoji_events,
                             ),
-                        ],
-                      ),
-                      Row(
-                        children: [
-                          PillChip(
-                            text: Text(
-                              infoStore.getUserWave(username).format(),
-                              style: TextStyle(
-                                fontSize: 12.0,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
+                            const SizedBox(width: 1.0),
+                            PillChip(
+                              text: Text(
+                                infoStore
+                                    .getUserTotalGold(username)
+                                    .formatCompact(
+                                      fractionDigits: 2,
+                                      english: !context.isChineseLocale,
+                                    ),
+                                style: TextStyle(
+                                  fontSize: 12.0,
+                                  color: Theme.of(context)
+                                      .textTheme
+                                      .bodySmall
+                                      ?.color,
+                                ),
                               ),
+                              icon: Icons.monetization_on,
                             ),
-                            icon: Icons.emoji_events,
-                          ),
-                          const SizedBox(width: 1.0),
-                          PillChip(
-                            text: Text(
-                              infoStore.getUserTotalGold(username).formatCompact(fractionDigits: 2, english: false),
-                              style: TextStyle(
-                                fontSize: 12.0,
-                                color: Theme.of(context).textTheme.bodySmall?.color,
-                              ),
-                            ),
-                            icon: Icons.monetization_on,
-                          ),
-                        ],
-                      ),
-
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            leading: infoStore.getCurrentUsername() == username
-                ? const Icon(Icons.check, color: Colors.green)
-                : const SizedBox(width: 24.0),
-            // 编辑态显示编辑/删除按钮；单位汇总按钮常显（长按与右键同入口）
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                if (_settingState && infoStore.getUserId(username) != 0) ...[
-                  IconButton(
-                    icon: const Icon(Icons.edit),
-                    onPressed: switch (infoStore.getUserId(username)) {
-                      0 => () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('默认用户不可重命名')),
-                        );
-                      },
-                      _ => () => _renameDialog(infoStore, username),
-                    },
-                  ),
-                  IconButton(
-                    icon: const Icon(Icons.delete, color: Colors.red),
-                    onPressed: switch (infoStore.getUserId(username)) {
-                      0 => () {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          const SnackBar(content: Text('默认用户不可删除')),
-                        );
-                      },
-                      _ => () {
-                        showDialog<void>(
-                          context: context,
-                          builder: (context) => _DeleteUserDialog(
-                            infoStore: infoStore,
-                            userId: username,
-                            onDeleted: () => setState(() {}),
-                          ),
-                        );
-                      },
-                    },
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
-                isDesktop ? IconButton(
-                  icon: const Icon(Icons.info_outline, size: 20),
-                  tooltip: '详细信息',
-                  onPressed: () => _showUnitSummary(username),
-                ) : const SizedBox.shrink(),
-              ],
+              ),
+              leading: infoStore.getCurrentUsername() == username
+                  ? const Icon(Icons.check, color: Colors.green)
+                  : const SizedBox(width: 24.0),
+              // 编辑态显示编辑/删除按钮；单位汇总按钮常显（长按与右键同入口）
+              trailing: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (_settingState && infoStore.getUserId(username) != 0) ...[
+                    IconButton(
+                      icon: const Icon(Icons.edit),
+                      onPressed: switch (infoStore.getUserId(username)) {
+                        0 => () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.snackDefaultUserNoRename),
+                            ),
+                          );
+                        },
+                        _ => () => _renameDialog(infoStore, username),
+                      },
+                    ),
+                    IconButton(
+                      icon: const Icon(Icons.delete, color: Colors.red),
+                      onPressed: switch (infoStore.getUserId(username)) {
+                        0 => () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(l10n.snackDefaultUserNoDelete),
+                            ),
+                          );
+                        },
+                        _ => () {
+                          showDialog<void>(
+                            context: context,
+                            builder: (context) => _DeleteUserDialog(
+                              infoStore: infoStore,
+                              userId: username,
+                              onDeleted: () => setState(() {}),
+                            ),
+                          );
+                        },
+                      },
+                    ),
+                  ],
+                  isDesktop
+                      ? IconButton(
+                          icon: const Icon(Icons.info_outline, size: 20),
+                          tooltip: l10n.tooltipDetails,
+                          onPressed: () => _showUnitSummary(username),
+                        )
+                      : const SizedBox.shrink(),
+                ],
+              ),
+              onTap: () {
+                infoStore.setCurrentUser(username);
+                Navigator.pop(context);
+              },
+              // 长按查看该用户的单位汇总（任意用户均可用，含默认用户）
+              onLongPress: () => _showUnitSummary(username),
             ),
-            onTap: () {
-              infoStore.setCurrentUser(username);
-              Navigator.pop(context);
-            },
-            // 长按查看该用户的单位汇总（任意用户均可用，含默认用户）
-            onLongPress: () => _showUnitSummary(username),
-          ),
           );
         },
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addUserDialog,
         icon: const Icon(Icons.add),
-        label: const Text('添加用户'),
+        label: Text(l10n.actionAddUser),
       ),
     );
   }
@@ -175,7 +192,11 @@ class _SelectUserPageState extends State<SelectUserPage> {
     final data = Stores.infoStore.getUserData(username);
     if (data == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('未找到用户「$username」的数据')),
+        SnackBar(
+          content: Text(
+            AppLocalizations.of(context).errorUserDataNotFound(username),
+          ),
+        ),
       );
       return;
     }
@@ -248,15 +269,16 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
   @override
   Widget build(BuildContext context) {
     final bool ready = _remaining <= 0;
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('删除用户'),
-      content: Text('确定要删除用户 "${widget.userId}" 吗？'),
+      title: Text(l10n.dialogDeleteUser),
+      content: Text(l10n.dialogDeleteUserConfirm(widget.userId)),
       actions: [
         TextButton(
           onPressed: () {
             Navigator.of(context).pop();
           },
-          child: const Text('取消'),
+          child: Text(l10n.actionCancel),
         ),
         // 倒计时中：红色剩余秒数、禁用；倒计时结束：红色"删除"、可点击
         TextButton(
@@ -268,7 +290,7 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
                 }
               : null,
           child: Text(
-            ready ? '删除' : '$_remaining s',
+            ready ? l10n.actionDelete : '$_remaining s',
             style: const TextStyle(color: Colors.red),
           ),
         ),
@@ -278,10 +300,7 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
 }
 
 class _AddUserDialog extends StatefulWidget {
-  const _AddUserDialog({
-    required this.infoStore,
-    required this.onAdded,
-  });
+  const _AddUserDialog({required this.infoStore, required this.onAdded});
 
   final InfoStore infoStore;
 
@@ -313,9 +332,8 @@ class _AddUserDialogState extends State<_AddUserDialog> {
         widget.infoStore.setCurrentUser(username);
         widget.onAdded();
       } catch (e) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString())),
-        );
+        ScaffoldMessenger.of(context)
+            .showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
     Navigator.of(context).pop();
@@ -323,20 +341,21 @@ class _AddUserDialogState extends State<_AddUserDialog> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('添加用户'),
+      title: Text(l10n.actionAddUser),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           NameTextField(
             controller: _userController,
-            labelText: '用户名',
+            labelText: l10n.labelUsername,
             autofocus: true,
           ),
           const SizedBox(height: 8.0),
           NameTextField(
             controller: _guildController,
-            labelText: '公会（选填）',
+            labelText: l10n.labelGuildOptional,
             autofocus: false,
           ),
         ],
@@ -344,12 +363,9 @@ class _AddUserDialogState extends State<_AddUserDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(l10n.actionCancel),
         ),
-        TextButton(
-          onPressed: _submit,
-          child: const Text('添加'),
-        ),
+        TextButton(onPressed: _submit, child: Text(l10n.actionAdd)),
       ],
     );
   }
@@ -411,29 +427,29 @@ class _EditUserDialogState extends State<_EditUserDialog> {
       }
       widget.onSaved();
     } catch (e) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
+      ScaffoldMessenger.of(context)
+          .showSnackBar(SnackBar(content: Text(e.toString())));
     }
     Navigator.of(context).pop();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: const Text('编辑用户'),
+      title: Text(l10n.dialogEditUser),
       content: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
           NameTextField(
             controller: _userController,
-            labelText: '用户名',
+            labelText: l10n.labelUsername,
             autofocus: true,
           ),
           const SizedBox(height: 8.0),
           NameTextField(
             controller: _guildController,
-            labelText: '公会',
+            labelText: l10n.tabGuild,
             autofocus: false,
           ),
         ],
@@ -441,12 +457,9 @@ class _EditUserDialogState extends State<_EditUserDialog> {
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
-          child: const Text('取消'),
+          child: Text(l10n.actionCancel),
         ),
-        TextButton(
-          onPressed: _submit,
-          child: const Text('保存'),
-        ),
+        TextButton(onPressed: _submit, child: Text(l10n.actionSave)),
       ],
     );
   }

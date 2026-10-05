@@ -2,6 +2,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
@@ -163,10 +164,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
     }
   }
 
-  /// 一次性获取当前用户所需的三类排名（个人赛季 / 无尽 / 所属公会），
-  /// 大小写不敏感匹配；TTL 缓存命中零请求，未命中/过期则在此并行抓取；
-  /// [force] 为 true（手动同步）时忽略缓存强制重新抓取，失败保留旧缓存。
-  /// 挂载时调用用于恢复页面重建后丢失的胶囊；查询成功后调用刷新为最新数据。
+  /// 获取排名
   Future<void> _loadRanks({bool force = false}) async {
     final userId = Stores.infoStore.getCurrentUserId();
     final currentUser = Stores.infoStore.getCurrentUsername();
@@ -181,9 +179,6 @@ class _FormationCalcPageState extends State<FormationCalcPage>
           ? Future<Object?>.value(null)
           : RankingCache.guildRanking(force: force),
     ).wait;
-    // 顺带预热当前用户所属公会的成员列表（成功后缓存，无 TTL、手动刷新才
-    // 更新）：抽屉「公会」页首次进入直接命中缓存，避免成员首拉的转圈等待；
-    // 不 await，不影响胶囊更新的时机。
     if (guild.isNotEmpty) {
       RankingCache.guildDetail(guild, force: force);
     }
@@ -228,8 +223,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
     });
   }
 
-  /// 在个人赛季榜中定位玩家：返回（排名, 与上一名分数差, 与下一名分数差）；
-  /// 不在榜内时三项均为 null
+  /// 在个人赛季榜中定位玩家
   ({int? rank, int? gapPrev, int? gapNext}) _locatePlayer(
     List<PlayerRankInfo> items,
     String lowerName,
@@ -249,14 +243,16 @@ class _FormationCalcPageState extends State<FormationCalcPage>
     return (rank: null, gapPrev: null, gapNext: null);
   }
 
-  /// 联网查询当前用户的波数与赛季波数，成功写入 store，失败弹 SnackBar。
-  /// 冷却检查仅对用户手动点击生效；启动自动查询走 [_performQuery] 不经过这里。
+  /// 联网查询
   Future<void> _queryOnline() async {
     final now = DateTime.now();
     final last = _lastQueryAt;
     if (last != null && now.difference(last) < _queryCooldown) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('查询过于频繁，请稍后后再试')));
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(AppLocalizations.of(context).snackQueryTooFrequent),
+        ),
+      );
       return;
     }
     // 先记录时间再发起请求：查询进行中也同样受冷却保护
@@ -264,10 +260,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
     await _performQuery();
   }
 
-  /// 执行查询并写入 store。
-  ///
-  /// [silent] 为 true 时（启动自动查询）不弹任何 SnackBar，失败静默忽略，
-  /// 界面由 store 的 notifier 自动更新；手动路径的冷却与提示由 [_queryOnline] 负责。
+  /// 执行查询
   Future<void> _performQuery({bool silent = false}) async {
     setState(() => _querying = true);
 
@@ -279,36 +272,53 @@ class _FormationCalcPageState extends State<FormationCalcPage>
     if (result is PlayerQueryResult) {
       if (result.wave == 0 && result.queryDate.isEmpty) {
         if (!silent) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(SnackBar(content: Text('用户「$name」已被封禁')));
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(AppLocalizations.of(context).snackUserBanned(name)),
+            ),
+          );
         }
         return;
       }
       await _loadRanks(force: !silent);
       if (!mounted) return;
       if (!silent) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '数据获取成功：用户「$name」, 波数 ${result.wave.format()}, 赛季波数 ${result.seasonalScore.format()}',
+              l10n.snackQuerySuccess(
+                name,
+                result.wave.format(),
+                result.seasonalScore.format(),
+              ),
             ),
           ),
         );
       }
     } else if (result is QueryError) {
       if (!silent) {
+        final l10n = AppLocalizations.of(context);
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('查询失败：${_queryErrorMessage(name, result)}')),
+          SnackBar(
+            content: Text(
+              l10n.snackQueryFailed(_queryErrorMessage(l10n, name, result)),
+            ),
+          ),
         );
       }
     }
     setState(() => _querying = false);
   }
 
-  String _queryErrorMessage(String name, QueryError error) {
+  String _queryErrorMessage(
+    AppLocalizations l10n,
+    String name,
+    QueryError error,
+  ) {
     return switch (error) {
-      NameNotFound() => '未找到「$name」的赛季数据',
-      TimeoutError() => '查询超时，请稍后重试',
+      NameNotFound() => l10n.errorSeasonDataNotFound(name),
+      TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };
   }
@@ -322,6 +332,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
       ]),
       builder: (context, _) {
         final isWide = context.isWideScreen;
+        final l10n = AppLocalizations.of(context);
         final List<Widget> actions = <Widget>[
           if (isDesktop && Stores.infoStore.getCurrentUserId() != 0)
             IconButton(
@@ -332,12 +343,12 @@ class _FormationCalcPageState extends State<FormationCalcPage>
                       child: CircularProgressIndicator(strokeWidth: 2.0),
                     )
                   : const Icon(Icons.cloud_sync),
-              tooltip: '拉取数据',
+              tooltip: l10n.tooltipFetchData,
               onPressed: _queryOnline,
             ),
           IconButton(
             icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
-            tooltip: _viewMode ? '输入模式' : '查看模式',
+            tooltip: _viewMode ? l10n.tooltipInputMode : l10n.tooltipViewMode,
             onPressed: () {
               FocusManager.instance.primaryFocus?.unfocus();
               setState(() => _viewMode = !_viewMode);
@@ -345,7 +356,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
           ),
           IconButton(
             icon: const Icon(Icons.add),
-            tooltip: '新增条目',
+            tooltip: l10n.tooltipAddEntry,
             onPressed: () => Stores.infoStore.addNewCard(),
           ),
         ];
@@ -356,10 +367,10 @@ class _FormationCalcPageState extends State<FormationCalcPage>
             builder: (context, _, _) {
               final cardIds = Stores.infoStore.getCardIds();
               if (cardIds.isEmpty) {
-                return const Center(
+                return Center(
                   child: Text(
-                    '暂无条目，点击右上角 + 添加',
-                    style: TextStyle(color: Colors.grey),
+                    l10n.emptyFormationHint,
+                    style: const TextStyle(color: Colors.grey),
                   ),
                 );
               }
@@ -415,12 +426,12 @@ class _FormationCalcPageState extends State<FormationCalcPage>
           guildRank: _guildRank,
           onQuery: _queryOnline,
         );
-        
+
         return Scaffold(
           appBar: AppBar(
             title: Column(
               crossAxisAlignment: .start,
-              children: [Text('阵容'), _AppBarInfo()],
+              children: [Text(l10n.tabFormation), _AppBarInfo()],
             ),
             bottom: LoadingIndicatorAppBar(
               bottom: null,

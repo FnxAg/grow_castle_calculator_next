@@ -1,10 +1,11 @@
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
 
 /// app 根外壳
-/// 
+///
 /// 窄屏沿用底部 NavigationBar，宽屏（>= [Breakpoints.expanded]）改用左侧。
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
@@ -19,7 +20,9 @@ class _MainShellState extends State<MainShell> {
 
   /// 各 tab 首页的 GlobalKey：跨 840 断点时子树形状变化（包/不包内层
   /// Navigator），靠 key 重挂载保住各页 State（输入、滚动位置等）
-  final List<GlobalKey> _tabKeys = [for (var i = 0; i < mainPages.length; i++) GlobalKey()];
+  final List<GlobalKey> _tabKeys = [
+    for (var i = 0; i < mainPages.length; i++) GlobalKey(),
+  ];
 
   /// 各 tab 内层 Navigator 的 key（仅宽屏挂载）：Esc 返回时定位当前 tab 的栈
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
@@ -113,10 +116,8 @@ class _MainShellState extends State<MainShell> {
     if (!isWide) return content;
     return Navigator(
       key: _navigatorKeys[index],
-      onGenerateRoute: (settings) => MaterialPageRoute(
-        settings: settings,
-        builder: (_) => content,
-      ),
+      onGenerateRoute: (settings) =>
+          MaterialPageRoute(settings: settings, builder: (_) => content),
     );
   }
 
@@ -124,20 +125,23 @@ class _MainShellState extends State<MainShell> {
   Widget _buildRail() {
     return ListenableBuilder(
       listenable: _selectIndex,
-      builder: (context, _) => NavigationRail(
-        selectedIndex: _selectIndex.value,
-        onDestinationSelected: _selectPage,
-        // M3 下默认不显示标签（只剩图标），宽屏有横向余量，常显更易辨认
-        labelType: NavigationRailLabelType.all,
-        scrollable: true,
-        destinations: [
-          for (final page in mainPages)
-            NavigationRailDestination(
-              icon: Icon(page.icon),
-              label: Text(page.title),
-            ),
-        ],
-      ),
+      builder: (context, _) {
+        final l10n = AppLocalizations.of(context);
+        return NavigationRail(
+          selectedIndex: _selectIndex.value,
+          onDestinationSelected: _selectPage,
+          // M3 下默认不显示标签（只剩图标），宽屏有横向余量，常显更易辨认
+          labelType: NavigationRailLabelType.all,
+          scrollable: true,
+          destinations: [
+            for (final page in mainPages)
+              NavigationRailDestination(
+                icon: Icon(page.icon),
+                label: Text(page.title(l10n)),
+              ),
+          ],
+        );
+      },
     );
   }
 
@@ -146,6 +150,7 @@ class _MainShellState extends State<MainShell> {
     return ListenableBuilder(
       listenable: _selectIndex,
       builder: (context, child) {
+        final l10n = AppLocalizations.of(context);
         return NavigationBar(
           selectedIndex: _selectIndex.value,
           height: kBottomNavigationBarHeight * 1.1,
@@ -154,11 +159,13 @@ class _MainShellState extends State<MainShell> {
           labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
           destinations: [
             for (final page in mainPages)
-              NavigationDestination(icon: Icon(page.icon), label: page.title),
+              NavigationDestination(
+                icon: Icon(page.icon),
+                label: page.title(l10n),
+              ),
           ],
         );
       },
     );
   }
 }
-

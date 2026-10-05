@@ -1,4 +1,5 @@
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_switch_tile.dart';
 import 'package:material_ui/material_ui.dart';
@@ -11,15 +12,16 @@ class OtherTab extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final store = Stores.infoStore;
     var otherIncomeWidgets = [
       IncomeSwitchTile(
-        label: '赛季殖民地',
+        label: l10n.labelSeasonColony,
         readValue: store.getCurrentUserSeasonColony,
         onChanged: store.setCurrentUserSeasonColony,
       ),
       IncomeSwitchTile(
-        label: '金币大树',
+        label: l10n.labelGoldenTree,
         readValue: store.getCurrentUserGoldenTree,
         onChanged: store.setCurrentUserGoldenTree,
       ),

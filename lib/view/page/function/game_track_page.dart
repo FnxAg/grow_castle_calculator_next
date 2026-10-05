@@ -1,6 +1,8 @@
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function/track/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
@@ -54,12 +56,13 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
     await Stores.gameTrackStore.deleteRecord(userId, record.id);
     if (!mounted) return;
     setState(_loadRecords);
+    final l10n = AppLocalizations.of(context);
     ScaffoldMessenger.of(context).hideCurrentSnackBar();
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: const Text('已删除轨迹记录'),
+        content: Text(l10n.snackTrackDeleted),
         action: SnackBarAction(
-          label: '撤销',
+          label: l10n.actionUndo,
           onPressed: () async {
             await Stores.gameTrackStore.restoreRecord(userId, record);
             if (mounted) setState(_loadRecords);
@@ -71,6 +74,7 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return ListenableBuilder(
       listenable: Listenable.merge([
         Stores.infoStore.currentUserNotifier,
@@ -82,7 +86,7 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
             title: Column(
               crossAxisAlignment: .start,
               children: [
-                const Text('游戏轨迹'),
+                Text(l10n.gameTrack),
                 _AppBarInfo(trackLength: _records.length),
               ],
             ),
@@ -90,20 +94,17 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
               if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
                 IconButton(
                   icon: const Icon(Icons.warning, color: Colors.orange),
-                  tooltip: '注意',
+                  tooltip: l10n.dialogWarning,
                   onPressed: () {
                     showDialog(
                       context: context,
                       builder: (context) => AlertDialog(
-                        title: const Text('注意'),
-                        content: const Text(
-                          '游戏轨迹记录功能已关闭，'
-                          '无法记录新的轨迹数据。',
-                        ),
+                        title: Text(l10n.dialogWarning),
+                        content: Text(l10n.dialogGameTrackOff),
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.of(context).pop(),
-                            child: const Text('知道了'),
+                            child: Text(l10n.actionGotIt),
                           ),
                         ],
                       ),
@@ -112,7 +113,7 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
                 ),
               IconButton(
                 icon: const Icon(Icons.show_chart),
-                tooltip: '查看轨迹图表',
+                tooltip: l10n.tooltipViewTrackChart,
                 onPressed: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
@@ -123,7 +124,9 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
               ),
               IconButton(
                 icon: const Icon(Icons.sort),
-                tooltip: _newestFirst ? '按时间由远到近' : '按时间由近到远',
+                tooltip: _newestFirst
+                    ? l10n.tooltipSortOldestFirst
+                    : l10n.tooltipSortNewestFirst,
                 onPressed: _toggleSort,
               ),
             ],
@@ -131,13 +134,15 @@ class _GameTrackPageState extends State<GameTrackPage> with CurrentUserReload {
           body: Column(
             children: [
               _userId == 0
-                  ? Expanded(child: const Center(child: Text('当前为默认用户，无法记录轨迹')))
+                  ? Expanded(
+                      child: Center(child: Text(l10n.emptyTrackDefaultUser)),
+                    )
                   : _records.isEmpty && !_gameTrackEnabled
-                  ? const Expanded(
-                      child: Center(child: Text('轨迹记录功能已关闭，请在设置中打开「游戏轨迹记录」')),
+                  ? Expanded(
+                      child: Center(child: Text(l10n.emptyTrackDisabled)),
                     )
                   : _records.isEmpty
-                  ? const Expanded(child: Center(child: Text('暂无轨迹记录')))
+                  ? Expanded(child: Center(child: Text(l10n.emptyGameTrack)))
                   : Expanded(
                       child: ListView.builder(
                         padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
@@ -178,7 +183,9 @@ class _TrackCard extends StatelessWidget {
       PillChip(icon: Icons.emoji_events, text: Text('${record.wave}')),
       PillChip(
         icon: Icons.monetization_on,
-        text: Text(record.totalGold.formatCompact(english: false)),
+        text: Text(
+          record.totalGold.formatCompact(english: !context.isChineseLocale),
+        ),
       ),
       PillChip(
         icon: Icons.star,
@@ -203,19 +210,14 @@ class _TrackCard extends StatelessWidget {
                 ),
                 IconButton(
                   icon: const Icon(Icons.delete_outline),
-                  tooltip: '删除记录',
+                  tooltip: AppLocalizations.of(context).tooltipDeleteRecord,
                   onPressed: onDelete,
                 ),
               ],
             ),
-            Row(
-              children: [
-                for (final chip in trackInfo) ...[
-                  chip,
-                  const SizedBox(width: 4),
-                ],
-              ],
-            ),
+            // 用 Wrap 而非 Row：英文单位（K/M）比中文（万/亿）宽一点，
+            // 三个胶囊在窄屏排不下时应当换行而不是溢出
+            Wrap(spacing: 4, runSpacing: 4, children: trackInfo),
             if (record.units.isNotEmpty) ...[
               const SizedBox(height: 8),
               Wrap(
@@ -294,7 +296,10 @@ class _AppBarInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final TextStyle textStyle = const TextStyle(fontSize: 12.0);
-    final Widget trackInfo = Text('共 $trackLength 条记录', style: textStyle);
+    final Widget trackInfo = Text(
+      AppLocalizations.of(context).labelTrackCount(trackLength),
+      style: textStyle,
+    );
     final List<Widget> segments = <Widget>[CurrentUser(), trackInfo];
     return AppBarInfo(children: segments);
   }

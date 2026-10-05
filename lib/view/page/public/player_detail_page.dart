@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:measure_size/render_object.dart';
@@ -146,6 +147,8 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
           ).wait;
 
     if (!mounted) return;
+    // 此处已在 await 之后：initState 的同步段不能查 Localizations
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _loading = false;
       _playerRank = null;
@@ -157,7 +160,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
           _wphHistory = history;
         }
       } else if (result is QueryError) {
-        _error = _errorMessage(result);
+        _error = _errorMessage(l10n, result);
       }
       final lowerName = widget.playerName.toLowerCase();
       if (players is SeasonQueryResult<PlayerRankInfo>) {
@@ -180,10 +183,10 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
     });
   }
 
-  String _errorMessage(QueryError error) {
+  String _errorMessage(AppLocalizations l10n, QueryError error) {
     return switch (error) {
-      NameNotFound() => '未找到「${widget.playerName}」的赛季数据',
-      TimeoutError() => '查询超时，请稍后重试',
+      NameNotFound() => l10n.errorSeasonDataNotFound(widget.playerName),
+      TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };
   }
@@ -225,7 +228,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
               ),
               IconButton(
                 icon: const Icon(Icons.close),
-                tooltip: '关闭详情',
+                tooltip: AppLocalizations.of(context).tooltipCloseDetail,
                 onPressed: widget.onClose,
               ),
             ],
@@ -269,7 +272,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
             FilledButton.icon(
               onPressed: _load,
               icon: const Icon(Icons.refresh),
-              label: const Text('重试'),
+              label: Text(AppLocalizations.of(context).actionRetry),
             ),
           ],
         ),
@@ -287,7 +290,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
           Icon(Icons.block, size: 36.0, color: scheme.error),
           const SizedBox(height: 12.0),
           Text(
-            '玩家「${widget.playerName}」已被封禁',
+            AppLocalizations.of(context).errorPlayerBanned(widget.playerName),
             textAlign: TextAlign.center,
             style: TextStyle(color: scheme.onSurfaceVariant),
           ),
@@ -297,7 +300,9 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
   }
 
   Widget _buildResult(PlayerQueryResult r) {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    // ' ago' 为英文硬编码（中文界面同样显示），本期不改
     final lastOnline = PlayerApiService.formatLastOnline(
       r.queryDate,
       DateTime.now(),
@@ -332,7 +337,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                                 bottom: 4.0,
                               ),
                               child: Text(
-                                '每小时波速（第三方 API）',
+                                l10n.labelWphHistory,
                                 style: Theme.of(context).textTheme.titleSmall
                                     ?.copyWith(color: scheme.onSurfaceVariant),
                               ),
@@ -341,7 +346,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                               Padding(
                                 padding: const EdgeInsets.only(top: 8.0),
                                 child: Text(
-                                  '赛季 ${group.season}',
+                                  l10n.labelSeason(group.season),
                                   style: const TextStyle(
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -396,14 +401,14 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                             children: <Widget>[
                               SummaryRow(
                                 leadingIcon: Icons.emoji_events,
-                                title: const Text('总波数'),
+                                title: Text(l10n.totalWave),
                                 trailing: SummaryRowValueText(
                                   text: r.wave.format(),
                                 ),
                               ),
                               SummaryRow(
                                 leadingIcon: Icons.eco,
-                                title: const Text('赛季波数'),
+                                title: Text(l10n.seasonWave),
                                 trailing: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
@@ -426,7 +431,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                               if (_hellScore != null)
                                 SummaryRow(
                                   leadingIcon: Icons.all_inclusive,
-                                  title: const Text('无尽分数'),
+                                  title: Text(l10n.endlessScore),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [
@@ -448,8 +453,9 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                                 ),
                               SummaryRow(
                                 leadingIcon: Icons.schedule,
-                                title: const Text('上次在线'),
+                                title: Text(l10n.lastOnline),
                                 trailing: SummaryRowValueText(
+                                  // ' ago' 英文硬编码，待服务层统一处理
                                   text: '$lastOnline ago',
                                 ),
                               ),

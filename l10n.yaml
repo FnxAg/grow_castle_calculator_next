@@ -1,0 +1,15 @@
+# gen-l10n 配置。Flutter 3.47 起 synthetic-package 已移除：生成物直接落在
+# arb-dir（这里即 lib/l10n/），随包提交。l10n.yaml 存在时 flutter run / build
+# 会自动重新生成（见 flutter_tools 的 GenerateLocalizationsTarget.canSkip），
+# 但 `flutter test` 不走该 target，改完 arb 要手动跑一次 `flutter gen-l10n`。
+arb-dir: lib/l10n
+template-arb-file: app_zh.arb
+output-localization-file: app_localizations.dart
+output-class: AppLocalizations
+
+# 缺 delegate 时直接抛异常而不是给 null，页面里可以少写一个 !
+nullable-getter: false
+
+# 决定 AppLocalizations.supportedLocales 的顺序。设备语言既非中非英时，Flutter
+# 回退到 supportedLocales.first —— 放 en 在前，日语/韩语设备显示英文
+preferred-supported-locales: [en, zh]

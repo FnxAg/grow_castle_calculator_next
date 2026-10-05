@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">GCC Next</string>
+    <!-- 桌面小组件文案。小组件由系统渲染，跟随**系统语言**而非应用内的语言设置 -->
+    <string name="widget_label">GCC Next Data</string>
+    <string name="widget_description">Shows the current user\'s total wave, season wave and online status</string>
+    <string name="widget_label_wave">Total Wave</string>
+    <string name="widget_label_season_wave">Season Wave</string>
+    <string name="widget_placeholder_username">Open the app to view data</string>
+    <string name="widget_default_username">Default user</string>
+    <string name="widget_default_user_hint">Currently the default user. Open the app to create your own account.</string>
+    <string name="widget_refresh_desc">Refresh</string>
+    <string name="widget_refreshing">Refreshing…</string>
+    <string name="widget_ellipsis">…</string>
+    <string name="widget_dash">—</string>
+</resources>
