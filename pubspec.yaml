@@ -10,8 +10,8 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
-  cupertino_icons: ^1.0.8
-  get_it: ^9.2.1
+  cupertino_icons: ^2.0.0
+  get_it: ^9.3.0
   hive_flutter: ^1.1.0
   intl: ^0.20.3
   flutter_displaymode: ^0.7.0
@@ -22,11 +22,11 @@ dependencies:
   path_provider: ^2.1.6
   url_launcher: ^6.3.2
   fl_chart: ^1.2.0
-  material_ui: ^1.1.1
+  material_ui: ^1.5.0
   dynamic_color: ^2.1.0
   measure_size: ^5.0.2
   flutter_markdown_plus: ^1.0.12
-  file_picker: ^12.2.0
+  file_picker: ^13.1.0
   webdav_client_plus: ^2.0.0
   flutter_localizations:
     sdk: flutter
