@@ -296,6 +296,7 @@
   "rollToHitHit": "命中！共 roll 了 {count} 次",
   "rollToHitStopped": "已手動停止，共 roll 了 {count} 次",
   "labelItemSource": "裝備來源",
+  "labelHighestTierBonus": "最高品階掉落率加成",
   "labelRollBatchSize": "roll 單次數量",
   "actionRollOnce": "roll 單次",
   "actionStop": "停止",

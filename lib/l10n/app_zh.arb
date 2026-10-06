@@ -1370,6 +1370,10 @@
   "@labelItemSource": {
     "description": "下方的选项文本来自数据层 ItemSource.label（一龙~六龙），需另行处理　位置：lib/view/page/tool/dragon_simulator_page.dart:209"
   },
+  "labelHighestTierBonus": "最高品阶掉落率加成",
+  "@labelHighestTierBonus": {
+    "description": "加成从最低品阶的掉落率上扣除（七龙 U+0.2% 则 A-0.2%）；选项值为 +0% / +0.1% / +0.2%，语言无关故不另立词条"
+  },
   "labelRollBatchSize": "roll 单次数量",
   "@labelRollBatchSize": {
     "description": "中文夹用英文 roll（游戏惯用语），英文保留 roll　位置：lib/view/page/tool/dragon_simulator_page.dart:228"

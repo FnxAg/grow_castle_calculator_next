@@ -1878,6 +1878,12 @@ abstract class AppLocalizations {
   /// **'装备来源'**
   String get labelItemSource;
 
+  /// 加成从最低品阶的掉落率上扣除（七龙 U+0.2% 则 A-0.2%）；选项值为 +0% / +0.1% / +0.2%，语言无关故不另立词条
+  ///
+  /// In zh, this message translates to:
+  /// **'最高品阶掉落率加成'**
+  String get labelHighestTierBonus;
+
   /// 中文夹用英文 roll（游戏惯用语），英文保留 roll　位置：lib/view/page/tool/dragon_simulator_page.dart:228
   ///
   /// In zh, this message translates to:

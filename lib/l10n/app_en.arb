@@ -294,6 +294,7 @@
   "rollToHitHit": "Hit! Rolled {count} times",
   "rollToHitStopped": "Stopped manually. Rolled {count} times",
   "labelItemSource": "Item Source",
+  "labelHighestTierBonus": "Top-tier drop rate bonus",
   "labelRollBatchSize": "Roll count per batch",
   "actionRollOnce": "Roll Once",
   "actionStop": "Stop",

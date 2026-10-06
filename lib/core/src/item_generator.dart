@@ -110,8 +110,10 @@ class ItemGenerator {
     ItemSource? source,
     ItemLevel? level,
     ItemType? type,
+    double highestTierBonus = 0,
   }) {
-    final resolvedLevel = source?.rollLevel(_random) ?? level;
+    final resolvedLevel =
+        source?.rollLevel(_random, highestTierBonus: highestTierBonus) ?? level;
     if (resolvedLevel == null) {
       throw ArgumentError('provide either source or level');
     }

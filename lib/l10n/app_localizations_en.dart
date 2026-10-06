@@ -1105,6 +1105,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelItemSource => 'Item Source';
 
   @override
+  String get labelHighestTierBonus => 'Top-tier drop rate bonus';
+
+  @override
   String get labelRollBatchSize => 'Roll count per batch';
 
   @override

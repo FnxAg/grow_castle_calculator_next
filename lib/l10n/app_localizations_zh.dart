@@ -1029,6 +1029,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelItemSource => '装备来源';
 
   @override
+  String get labelHighestTierBonus => '最高品阶掉落率加成';
+
+  @override
   String get labelRollBatchSize => 'roll 单次数量';
 
   @override
@@ -2389,6 +2392,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get labelItemSource => '裝備來源';
+
+  @override
+  String get labelHighestTierBonus => '最高品階掉落率加成';
 
   @override
   String get labelRollBatchSize => 'roll 單次數量';

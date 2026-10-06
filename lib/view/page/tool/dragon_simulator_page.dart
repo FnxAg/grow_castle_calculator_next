@@ -16,8 +16,13 @@ const _rollBatchSize = 500;
 /// 「roll 单次数量」可选档位
 const _countOptions = [1, 10, 100, 1000, 10000];
 
-/// 掉落率摘要，如 `B 100%` / `A 94.0% / E 2.5% / U 3.5%`
-String _dropRatesText(ItemSource source) => source.dropRates.entries
+/// 「最高品阶掉落率加成」可选档位
+const _bonusOptions = [0.0, 0.001, 0.002];
+
+/// 掉落率摘要
+String _dropRatesText(ItemSource source, double bonus) => source
+    .ratesWithBonus(bonus)
+    .entries
     .map((e) => '${e.key.name} ${(e.value * 100).toStringAsFixed(1)}%')
     .join(' / ');
 
@@ -35,13 +40,14 @@ String _sourceLabel(AppLocalizations l10n, ItemSource source) =>
 Future<Map<String, dynamic>> _rollBatch(Map<String, dynamic> args) async {
   final generator = ItemGenerator(random: Random());
   final source = ItemSource.values[args['source'] as int];
+  final bonus = (args['bonus'] as num?)?.toDouble() ?? 0;
   final rules = [
     for (final rule in args['rules'] as List)
       UserHighlightRule.fromJson(Map<String, dynamic>.from(rule as Map)),
   ];
 
   for (var i = 0; i < _rollBatchSize; i++) {
-    final item = generator.generate(source: source);
+    final item = generator.generate(source: source, highestTierBonus: bonus);
     if (matchRule(item, rules) != null) {
       return {
         'count': i + 1,
@@ -110,8 +116,10 @@ class DragonSimulatorPage extends StatefulWidget {
 class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   final _generator = ItemGenerator(random: Random());
 
-  ItemSource _source = ItemSource.dragon6;
-  int _count = 1000;
+  static ItemSource _source = ItemSource.dragon6;
+  static int _count = 1000;
+  static double _bonus = 0;
+
   List<GeneratedItem> _items = [];
 
   /// roll到死 状态
@@ -131,7 +139,8 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
       _rolling = false;
       _rollResult = null;
       _items = [
-        for (var i = 0; i < _count; i++) _generator.generate(source: _source),
+        for (var i = 0; i < _count; i++)
+          _generator.generate(source: _source, highestTierBonus: _bonus),
       ];
     });
   }
@@ -157,6 +166,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
     ];
     final batchArgs = <String, dynamic>{
       'source': _source.index,
+      'bonus': _bonus,
       'rules': rules,
     };
     var count = 0;
@@ -223,18 +233,14 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
         minHeight: 460,
         child: Column(
           children: [
-            // ── 设置区 ──
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // 用下拉而不是分段按钮：7 条龙 / 5 档次数在窄屏上必然横向溢出，
-                  // 而且菜单项里能直接写掉落率（手机上没有 hover，tooltip 出不来）
                   DropdownButtonFormField<ItemSource>(
                     initialValue: _source,
                     isExpanded: true,
-                    // 不指定 border：与页内其它输入框一致走默认的底部横线
                     decoration: InputDecoration(
                       labelText: l10n.labelItemSource,
                       isDense: true,
@@ -243,11 +249,6 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                       for (final source in ItemSource.values)
                         DropdownMenuItem(
                           value: source,
-                          // child: Text(
-                          //   '${_sourceLabel(l10n, source)}'
-                          //   '  ${_dropRatesText(source)}',
-                          //   overflow: TextOverflow.ellipsis,
-                          // ),
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -256,13 +257,13 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
-                                _dropRatesText(source),
+                                _dropRatesText(source, _bonus),
                                 style: theme.textTheme.bodySmall?.copyWith(
                                   color: theme.colorScheme.onSurfaceVariant,
                                 ),
                               ),
                             ],
-                          )
+                          ),
                         ),
                     ],
                     onChanged: (source) {
@@ -283,6 +284,25 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                     ],
                     onChanged: (count) {
                       if (count != null) setState(() => _count = count);
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<double>(
+                    initialValue: _bonus,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.labelHighestTierBonus,
+                      isDense: true,
+                    ),
+                    items: [
+                      for (final bonus in _bonusOptions)
+                        DropdownMenuItem(
+                          value: bonus,
+                          child: Text('+${(bonus * 100).toStringAsFixed(1)}%'),
+                        ),
+                    ],
+                    onChanged: (bonus) {
+                      if (bonus != null) setState(() => _bonus = bonus);
                     },
                   ),
                   const SizedBox(height: 12),

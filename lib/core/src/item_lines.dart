@@ -39,26 +39,40 @@ enum ItemSource {
   final String label;
   final Map<ItemLevel, double> dropRates;
 
-  /// 按掉落概率随机一个等级
-  ItemLevel rollLevel(Random rng) {
+  /// 叠加「最高品阶掉落率加成」后的掉落表：最高品阶 +[bonus]，
+  /// 同时在**最低品阶**上扣掉同样多（加成是从最低品阶挪过来的，总量守恒）。
+  /// 例：七龙 U +0.2% → A -0.2%，即 `{A: 0.938, E: 0.025, U: 0.037}`。
+  /// 只有一档时（如一龙只有 B）加减互相抵消，返回原表。
+  Map<ItemLevel, double> ratesWithBonus(double bonus) {
+    if (bonus == 0 || dropRates.length < 2) return dropRates;
+    final highest = dropRates.keys.reduce((a, b) => a.index >= b.index ? a : b);
+    final lowest = dropRates.keys.reduce((a, b) => a.index <= b.index ? a : b);
+    return {
+      for (final entry in dropRates.entries)
+        entry.key: entry.key == highest
+            ? entry.value + bonus
+            : entry.key == lowest
+            ? entry.value - bonus
+            : entry.value,
+    };
+  }
+
+  /// 按掉落概率随机一个等级；[highestTierBonus] 见 [ratesWithBonus]
+  ItemLevel rollLevel(Random rng, {double highestTierBonus = 0}) {
+    final rates = ratesWithBonus(highestTierBonus);
     final roll = rng.nextDouble();
     var cumulative = 0.0;
-    for (final entry in dropRates.entries) {
+    for (final entry in rates.entries) {
       cumulative += entry.value;
       if (roll < cumulative) return entry.key;
     }
-    return dropRates.keys.last;
+    return rates.keys.last;
   }
 }
 
 /// 词条颜色（决定词条可出现的槽位：
 /// 第 1、2 槽必定白，第 3 槽白或红，第 4 槽必定黄）
-enum LineColor {
-  white,
-  red,
-  yellow,
-  purple,
-}
+enum LineColor { white, red, yellow, purple }
 
 /// 词条冲突类型：同类型的词条在一件装备上共享计数。
 /// 目前仅有 cooldown 跨颜色共享类型（白词条 cooldown 与红词条 cooldown），
@@ -478,45 +492,35 @@ enum ItemLine {
     LineColor.purple,
     LineNumType.percent,
     range: (10, 50),
-    allowedTypes: {
-      ItemType.bow,
-    },
+    allowedTypes: {ItemType.bow},
   ),
   multipleShot(
     'Multiple Shot +',
     LineColor.purple,
     LineNumType.integer,
     range: (1, 2),
-    allowedTypes: {
-      ItemType.bow,
-    },
+    allowedTypes: {ItemType.bow},
   ),
   lightningArrowExtraHit(
     'Lightning Arrow Extra Hit %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 50),
-    allowedTypes: {
-      ItemType.bow,
-    },
+    allowedTypes: {ItemType.bow},
   ),
   mpSteal(
     'MP Steal %',
     LineColor.purple,
     LineNumType.percent,
     range: (0.1, 1),
-    allowedTypes: {
-      ItemType.bow,
-    },
+    allowedTypes: {ItemType.bow},
   ),
   hpSteal(
     'HP Steal %',
     LineColor.purple,
     LineNumType.percent,
     range: (0.1, 1),
-    allowedTypes: {
-      ItemType.bow,
-    },
+    allowedTypes: {ItemType.bow},
   ),
   elementalFusion(
     'Elemental Fusion %',
@@ -535,54 +539,42 @@ enum ItemLine {
     LineColor.purple,
     LineNumType.decimal,
     range: (0.1, 1),
-    allowedTypes: {
-      ItemType.staff,
-    },
+    allowedTypes: {ItemType.staff},
   ),
   meteorBurningGroundPerSec(
     'Meteor Burning Ground / Sec %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 25),
-    allowedTypes: {
-      ItemType.staff,
-    },
+    allowedTypes: {ItemType.staff},
   ),
   volcanoExtraCast(
     'Volcano Extra Cast %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 80),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   earthquakeDealsDmg(
     'Earthquake Deals Damage %',
     LineColor.purple,
     LineNumType.percent,
     range: (100, 600),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   mpOnRepair(
     'MP on Repair %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 25),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   poisonDartsExplosion(
     'Poison Darts Explosion %',
     LineColor.purple,
     LineNumType.percent,
     range: (50, 200),
-    allowedTypes: {
-      ItemType.sword,
-    },
+    allowedTypes: {ItemType.sword},
   ),
   poisonDartsPierce(
     'Poison Darts Pierce %',
@@ -601,36 +593,28 @@ enum ItemLine {
     LineColor.purple,
     LineNumType.integer,
     range: (1, 4),
-    allowedTypes: {
-      ItemType.sword,
-    },
+    allowedTypes: {ItemType.sword},
   ),
   bombard(
     'Bombard +',
     LineColor.purple,
     LineNumType.integer,
     range: (1, 4),
-    allowedTypes: {
-      ItemType.sword,
-    },
+    allowedTypes: {ItemType.sword},
   ),
   clusterBurst(
     'Cluster Burst %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 50),
-    allowedTypes: {
-      ItemType.sword,
-    },
+    allowedTypes: {ItemType.sword},
   ),
   thunderHammer(
     'Thunder Hammer +',
     LineColor.purple,
     LineNumType.integer,
     range: (1, 2),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   shockWaveSec(
     'Shock Wave Sec +',
@@ -673,9 +657,7 @@ enum ItemLine {
     LineColor.purple,
     LineNumType.percent,
     range: (5, 15),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   poisonDrone(
     'Poison Drone %',
@@ -694,18 +676,14 @@ enum ItemLine {
     LineColor.purple,
     LineNumType.percent,
     range: (5, 25),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   shadowAttackExtraCast(
     'Shadow Attack Extra Cast %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 80),
-    allowedTypes: {
-      ItemType.sword,
-    },
+    allowedTypes: {ItemType.sword},
   ),
   waterSlash(
     'Water Slash +',
@@ -724,18 +702,14 @@ enum ItemLine {
     LineColor.purple,
     LineNumType.integer,
     range: (1, 2),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   waterSpear(
     'Water Spear +',
     LineColor.purple,
     LineNumType.integer,
     range: (1, 2),
-    allowedTypes: {
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.hammer},
   ),
   thorTargetsAir(
     'Thor Targets Air',
@@ -759,7 +733,7 @@ enum ItemLine {
       ItemType.necklace,
       ItemType.bracelet,
       ItemType.earrings,
-    }
+    },
   ),
   fairySmallWormNum(
     'Fairy . Small Worm +',
@@ -771,63 +745,49 @@ enum ItemLine {
       ItemType.necklace,
       ItemType.bracelet,
       ItemType.earrings,
-    }
+    },
   ),
   fairySmallWormDmg(
     'Fairy . Small Worm %',
     LineColor.purple,
     LineNumType.percent,
     range: (25, 100),
-    allowedTypes: {
-      ItemType.sword,
-      ItemType.bow,
-      ItemType.hammer,
-    },
+    allowedTypes: {ItemType.sword, ItemType.bow, ItemType.hammer},
   ),
   antlion(
     'Antlion %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 50),
-    allowedTypes: {
-      ItemType.sword,
-    },
+    allowedTypes: {ItemType.sword},
   ),
   arrowRain(
     'Arrow Rain +',
     LineColor.purple,
     LineNumType.integer,
     range: (1, 4),
-    allowedTypes: {
-      ItemType.bow,
-    },
+    allowedTypes: {ItemType.bow},
   ),
   blizzardAirDmg(
     'Blizzard Air Damage %',
     LineColor.purple,
     LineNumType.percent,
     range: (25, 100),
-    allowedTypes: {
-      ItemType.staff,
-    },
+    allowedTypes: {ItemType.staff},
   ),
   createLightningTrapOnAttack(
     'Create Lightning Trap on Attack %',
     LineColor.purple,
     LineNumType.percent,
     range: (1, 10),
-    allowedTypes: {
-      ItemType.sword,
-    },
+    allowedTypes: {ItemType.sword},
   ),
   bombArrow(
     'Bomb Arrow %',
     LineColor.purple,
     LineNumType.percent,
     range: (10, 30),
-    allowedTypes: {
-      ItemType.bow,
-    },
+    allowedTypes: {ItemType.bow},
   ),
   bonusExp(
     'Bonus Exp %',
