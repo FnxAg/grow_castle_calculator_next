@@ -2,13 +2,22 @@ import 'package:material_ui/material_ui.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 /// 界面语言。[system] 表示跟随设备语言（由 MaterialApp 自己解析）
+///
+/// 枚举名会按 [name] 持久化，改动名字等于让老用户的设置失效。
 enum AppLanguage {
   system,
-  zh,
+  zhHans,
+  zhHant,
   en;
 
-  /// 与 MaterialApp.locale 对应：system 返回 null，交给系统解析
-  Locale? get locale => this == system ? null : Locale(name);
+  /// 与 MaterialApp.locale 对应：system 返回 null，交给系统解析。
+  /// 繁体必须带 Hant 脚本，不能写成 `Locale('zhHant')`
+  Locale? get locale => switch (this) {
+    system => null,
+    zhHans => const Locale('zh'),
+    zhHant => Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
+    en => const Locale('en'),
+  };
 }
 
 class AppSettingsStore {

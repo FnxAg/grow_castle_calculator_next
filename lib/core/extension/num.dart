@@ -15,7 +15,11 @@ extension DoubleNumFormat on double {
   }
 
   /// 数量级缩写
-  String formatCompact({int fractionDigits = 2, bool english = false}) {
+  String formatCompact({
+    int fractionDigits = 2,
+    bool english = false,
+    bool traditional = false,
+  }) {
     if (isNaN || isInfinite) return toString();
     final units = english
         ? const <(double, String)>[
@@ -25,6 +29,13 @@ extension DoubleNumFormat on double {
             (1e9, 'B'),
             (1e6, 'M'),
             (1e3, 'K'),
+          ]
+        : traditional
+        ? const <(double, String)>[
+            (1e16, '億億'),
+            (1e12, '萬億'),
+            (1e8, '億'),
+            (1e4, '萬'),
           ]
         : const <(double, String)>[
             (1e16, '亿亿'),

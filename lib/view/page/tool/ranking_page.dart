@@ -196,6 +196,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
   LineChartData _chartData(List<_RankRow> rows, int minScore, int maxScore) {
     final scheme = Theme.of(context).colorScheme;
     final english = !context.isChineseLocale;
+    final traditional = context.isTraditionalChineseLocale;
     final scoreRange = (maxScore - minScore).abs();
     final chartMinY = (minScore - scoreRange * 0.08).clamp(0, double.infinity);
     final chartMaxY = maxScore + (scoreRange == 0 ? 1 : scoreRange * 0.08);
@@ -225,7 +226,11 @@ class _RankingChartPageState extends State<RankingChartPage> {
                 return const SizedBox.shrink();
               }
               return Text(
-                _formatAxisValue(value, english: english),
+                _formatAxisValue(
+                  value,
+                  english: english,
+                  traditional: traditional,
+                ),
                 style: const TextStyle(fontSize: 10.0),
               );
             },
@@ -283,10 +288,18 @@ class _RankingChartPageState extends State<RankingChartPage> {
 
   /// 轴标签：中文用 万/亿/万亿，英文用 K/M/B（[english] 由调用点按语言传入）。
   /// 万以下的数值保留原来的取整 + 千位分隔符写法。
-  String _formatAxisValue(double value, {required bool english}) {
+  String _formatAxisValue(
+    double value, {
+    required bool english,
+    required bool traditional,
+  }) {
     if (widget.kind != RankingKind.hell) return value.round().format();
     if (value.abs() < 10000) return value.round().format();
-    return value.formatCompact(fractionDigits: 1, english: english);
+    return value.formatCompact(
+      fractionDigits: 1,
+      english: english,
+      traditional: traditional,
+    );
   }
 }
 

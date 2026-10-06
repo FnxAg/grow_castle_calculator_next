@@ -19,6 +19,7 @@ class CurrentUserTotalGold extends StatelessWidget {
           totalGold.formatCompact(
             fractionDigits: 2,
             english: !context.isChineseLocale,
+            traditional: context.isTraditionalChineseLocale,
           ),
           style: textStyle,
         );

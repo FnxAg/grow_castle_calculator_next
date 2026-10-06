@@ -96,6 +96,7 @@ abstract class AppLocalizations {
   static const List<Locale> supportedLocales = <Locale>[
     Locale('en'),
     Locale('zh'),
+    Locale.fromSubtags(languageCode: 'zh', scriptCode: 'Hant'),
   ];
 
   /// 第 0 个 tab 名（底部导航 / 侧边栏），同时用作阵容页 AppBar 标题
@@ -343,6 +344,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'简体中文'**
   String get languageChinese;
+
+  /// 语言选项一律用该语言自身的写法；本 key 供简体/英文界面显示「繁體中文」这一项
+  ///
+  /// In zh, this message translates to:
+  /// **'繁體中文'**
+  String get languageTraditionalChinese;
 
   /// No description provided for @languageEnglish.
   ///
@@ -2466,6 +2473,18 @@ class _AppLocalizationsDelegate
 }
 
 AppLocalizations lookupAppLocalizations(Locale locale) {
+  // Lookup logic when language+script codes are specified.
+  switch (locale.languageCode) {
+    case 'zh':
+      {
+        switch (locale.scriptCode) {
+          case 'Hant':
+            return AppLocalizationsZhHant();
+        }
+        break;
+      }
+  }
+
   // Lookup logic when only language code is specified.
   switch (locale.languageCode) {
     case 'en':

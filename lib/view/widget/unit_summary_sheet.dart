@@ -228,6 +228,7 @@ class _OverviewPanel extends StatelessWidget {
                   label: l10n.totalGold,
                   value: data.totalGold.formatCompact(
                     english: !context.isChineseLocale,
+                    traditional: context.isTraditionalChineseLocale,
                   ),
                 ),
               ),

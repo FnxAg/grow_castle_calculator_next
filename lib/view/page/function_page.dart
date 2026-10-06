@@ -110,6 +110,7 @@ class _FunctionPageState extends State<FunctionPage> {
                           totalIncome.formatCompact(
                             fractionDigits: 2,
                             english: !context.isChineseLocale,
+                            traditional: context.isTraditionalChineseLocale,
                           ),
                           style: style,
                         );

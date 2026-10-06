@@ -138,6 +138,7 @@ class FormationSummaryBar extends StatelessWidget {
                 text: gold.formatCompact(
                   fractionDigits: 2,
                   english: !context.isChineseLocale,
+                  traditional: context.isTraditionalChineseLocale,
                 ),
               ),
             ),

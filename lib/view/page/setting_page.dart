@@ -185,6 +185,57 @@ class _SettingPageState extends State<SettingPage> {
     );
   }
 
+  /// 单选设置行
+  Widget _choiceTile<T>({
+    required IconData leading,
+    required String title,
+    required T current,
+    required List<(T, String, IconData?)> options,
+    required ValueChanged<T> onSelected,
+  }) {
+    final l10n = AppLocalizations.of(context);
+    final currentLabel = options
+        .firstWhere((option) => option.$1 == current)
+        .$2;
+    return ListTile(
+      leading: Icon(leading),
+      title: Text(title),
+      subtitle: Text(currentLabel),
+      trailing: const Icon(Icons.chevron_right),
+      onTap: () async {
+        final picked = await showDialog<T>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(title),
+            contentPadding: const EdgeInsets.symmetric(vertical: 8.0),
+            content: RadioGroup<T>(
+              groupValue: current,
+              onChanged: (value) => Navigator.of(dialogContext).pop(value),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  for (final (value, label, icon) in options)
+                    RadioListTile<T>(
+                      value: value,
+                      secondary: icon == null ? null : Icon(icon),
+                      title: Text(label),
+                    ),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.actionCancel),
+              ),
+            ],
+          ),
+        );
+        if (picked != null) onSelected(picked);
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final appSettingsStore = Stores.appSettingsStore;
@@ -211,72 +262,37 @@ class _SettingPageState extends State<SettingPage> {
               );
             },
           ),
-          ListTile(
-            leading: const Icon(Icons.color_lens),
-            title: Text(l10n.settingsThemeMode),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ValueListenableBuilder<ThemeMode>(
-              valueListenable: appSettingsStore.themeModeNotifier,
-              builder: (context, mode, _) {
-                return SegmentedButton<ThemeMode>(
-                  segments: [
-                    ButtonSegment(
-                      value: ThemeMode.system,
-                      icon: const Icon(Icons.brightness_auto),
-                      label: Text(l10n.themeSystem),
-                    ),
-                    ButtonSegment(
-                      value: ThemeMode.light,
-                      icon: const Icon(Icons.light_mode),
-                      label: Text(l10n.themeLight),
-                    ),
-                    ButtonSegment(
-                      value: ThemeMode.dark,
-                      icon: const Icon(Icons.dark_mode),
-                      label: Text(l10n.themeDark),
-                    ),
-                  ],
-                  selected: {mode},
-                  onSelectionChanged: (selection) {
-                    appSettingsStore.setThemeMode(selection.first);
-                  },
-                );
-              },
+          ValueListenableBuilder<ThemeMode>(
+            valueListenable: appSettingsStore.themeModeNotifier,
+            builder: (context, mode, _) => _choiceTile<ThemeMode>(
+              leading: Icons.color_lens,
+              title: l10n.settingsThemeMode,
+              current: mode,
+              options: [
+                (ThemeMode.system, l10n.themeSystem, Icons.brightness_auto),
+                (ThemeMode.light, l10n.themeLight, Icons.light_mode),
+                (ThemeMode.dark, l10n.themeDark, Icons.dark_mode),
+              ],
+              onSelected: appSettingsStore.setThemeMode,
             ),
           ),
-          ListTile(
-            leading: const Icon(Icons.translate),
-            title: Text(AppLocalizations.of(context).settingsLanguage),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: ValueListenableBuilder<AppLanguage>(
-              valueListenable: appSettingsStore.languageNotifier,
-              builder: (context, language, _) {
-                return SegmentedButton<AppLanguage>(
-                  segments: [
-                    ButtonSegment(
-                      value: AppLanguage.system,
-                      icon: const Icon(Icons.brightness_auto),
-                      label: Text(l10n.languageSystem),
-                    ),
-                    ButtonSegment(
-                      value: AppLanguage.zh,
-                      label: Text(l10n.languageChinese),
-                    ),
-                    ButtonSegment(
-                      value: AppLanguage.en,
-                      label: Text(l10n.languageEnglish),
-                    ),
-                  ],
-                  selected: {language},
-                  onSelectionChanged: (selection) {
-                    appSettingsStore.setLanguage(selection.first);
-                  },
-                );
-              },
+          ValueListenableBuilder<AppLanguage>(
+            valueListenable: appSettingsStore.languageNotifier,
+            builder: (context, language, _) => _choiceTile<AppLanguage>(
+              leading: Icons.translate,
+              title: l10n.settingsLanguage,
+              current: language,
+              options: [
+                (
+                  AppLanguage.system,
+                  l10n.languageSystem,
+                  Icons.brightness_auto,
+                ),
+                (AppLanguage.zhHans, l10n.languageChinese, null),
+                (AppLanguage.zhHant, l10n.languageTraditionalChinese, null),
+                (AppLanguage.en, l10n.languageEnglish, null),
+              ],
+              onSelected: appSettingsStore.setLanguage,
             ),
           ),
           Column(

@@ -184,7 +184,10 @@ class _TrackCard extends StatelessWidget {
       PillChip(
         icon: Icons.monetization_on,
         text: Text(
-          record.totalGold.formatCompact(english: !context.isChineseLocale),
+          record.totalGold.formatCompact(
+            english: !context.isChineseLocale,
+            traditional: context.isTraditionalChineseLocale,
+          ),
         ),
       ),
       PillChip(

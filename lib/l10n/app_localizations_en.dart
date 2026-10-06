@@ -144,6 +144,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageChinese => '简体中文';
 
   @override
+  String get languageTraditionalChinese => '繁體中文';
+
+  @override
   String get languageEnglish => 'English';
 
   @override

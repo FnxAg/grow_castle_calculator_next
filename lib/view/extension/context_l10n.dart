@@ -12,4 +12,11 @@ extension L10nLocale on BuildContext {
   ///
   /// 例：`formatCompact` 的 `english` 参数——中文用 万/亿，其余语言用 K/M/B。
   bool get isChineseLocale => Localizations.localeOf(this).languageCode == 'zh';
+
+  /// 界面语言是否为繁体中文（`zh_Hant`）。
+  ///
+  /// 只影响中文字形本身有简繁之分的场合，如 `formatCompact` 的 `traditional`
+  /// 参数（繁体用「億」而非「亿」）。
+  bool get isTraditionalChineseLocale =>
+      Localizations.localeOf(this).scriptCode == 'Hant';
 }

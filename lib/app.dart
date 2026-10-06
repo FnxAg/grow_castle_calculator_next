@@ -19,6 +19,28 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
   Color defaultColor = Colors.blue;
 
+  /// 简繁判定
+  static Locale _resolveLocale(
+    List<Locale>? preferredLocales,
+    Iterable<Locale> supportedLocales,
+  ) {
+    for (final locale in preferredLocales ?? const <Locale>[]) {
+      if (locale.languageCode != 'zh') break;
+      final isTraditional =
+          locale.scriptCode == 'Hant' ||
+          const {'TW', 'HK', 'MO'}.contains(locale.countryCode);
+      final wantedScript = isTraditional ? 'Hant' : null;
+      for (final supported in supportedLocales) {
+        if (supported.languageCode == 'zh' &&
+            supported.scriptCode == wantedScript) {
+          return supported;
+        }
+      }
+      break;
+    }
+    return basicLocaleListResolution(preferredLocales, supportedLocales);
+  }
+
   String? get platformFontFamily {
     if (Platform.isWindows) {
       return 'Segoe UI';
@@ -104,6 +126,7 @@ class _MyAppState extends State<MyApp> with WidgetsBindingObserver {
             ...GlobalMaterialLocalizations.delegates,
           ],
           supportedLocales: AppLocalizations.supportedLocales,
+          localeListResolutionCallback: _resolveLocale,
           locale: appSettings.languageNotifier.value.locale,
           themeMode: appSettings.themeModeNotifier.value,
           home: const MainShell(),

@@ -167,7 +167,7 @@ class _FormationCardTileState extends State<FormationCardTile> {
               const SizedBox(width: 8.0),
               Text(
                 '${level.format()} · '
-                '${gold.formatCompact(english: !context.isChineseLocale)}',
+                '${gold.formatCompact(english: !context.isChineseLocale, traditional: context.isTraditionalChineseLocale)}',
                 style: TextStyle(
                   fontWeight: FontWeight.bold,
                   color: applied

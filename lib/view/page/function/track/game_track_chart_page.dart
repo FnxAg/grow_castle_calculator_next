@@ -163,8 +163,10 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
         (
           l10n.totalEconomy,
           (GameTrackRecord r) => r.totalGold,
-          (double value) =>
-              value.formatCompact(english: !context.isChineseLocale),
+          (double value) => value.formatCompact(
+            english: !context.isChineseLocale,
+            traditional: context.isTraditionalChineseLocale,
+          ),
         ),
         (
           'GP',

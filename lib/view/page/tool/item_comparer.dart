@@ -938,6 +938,7 @@ class _ResultView extends StatelessWidget {
     final theme = Theme.of(context);
     // 数量级缩写随界面语言切换（中文 万/亿，英文 K/M/B）
     final english = !context.isChineseLocale;
+    final traditional = context.isTraditionalChineseLocale;
     final style = theme.textTheme.bodyMedium?.copyWith(
       color: highlight ? theme.colorScheme.primary : null,
       fontWeight: highlight ? FontWeight.w700 : null,
@@ -949,14 +950,20 @@ class _ResultView extends StatelessWidget {
           SizedBox(width: 68, child: Text(label, style: style)),
           Expanded(
             child: Text(
-              result.normalHit.formatCompact(english: english),
+              result.normalHit.formatCompact(
+                english: english,
+                traditional: traditional,
+              ),
               textAlign: TextAlign.right,
               style: style,
             ),
           ),
           Expanded(
             child: Text(
-              result.critHit.formatCompact(english: english),
+              result.critHit.formatCompact(
+                english: english,
+                traditional: traditional,
+              ),
               textAlign: TextAlign.right,
               style: style,
             ),
@@ -971,7 +978,10 @@ class _ResultView extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              result.dps.formatCompact(english: english),
+              result.dps.formatCompact(
+                english: english,
+                traditional: traditional,
+              ),
               textAlign: TextAlign.right,
               style: style,
             ),

@@ -98,6 +98,8 @@ class _SelectUserPageState extends State<SelectUserPage> {
                                     .formatCompact(
                                       fractionDigits: 2,
                                       english: !context.isChineseLocale,
+                                      traditional:
+                                          context.isTraditionalChineseLocale,
                                     ),
                                 style: TextStyle(
                                   fontSize: 12.0,

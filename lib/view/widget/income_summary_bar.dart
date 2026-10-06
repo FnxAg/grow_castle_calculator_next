@@ -17,6 +17,7 @@ class IncomeSummaryBar extends StatelessWidget {
       builder: (context, _, _) {
         final l10n = AppLocalizations.of(context);
         final english = !context.isChineseLocale;
+        final traditional = context.isTraditionalChineseLocale;
         final income = Stores.infoStore.getCurrentUserDailyIncomeBreakdown();
         return Padding(
           padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
@@ -29,6 +30,7 @@ class IncomeSummaryBar extends StatelessWidget {
                   text: income.colony.formatCompact(
                     fractionDigits: 2,
                     english: english,
+                    traditional: traditional,
                   ),
                 ),
               ),
@@ -39,6 +41,7 @@ class IncomeSummaryBar extends StatelessWidget {
                   text: income.autoBattle.formatCompact(
                     fractionDigits: 2,
                     english: english,
+                    traditional: traditional,
                   ),
                 ),
               ),
@@ -49,6 +52,7 @@ class IncomeSummaryBar extends StatelessWidget {
                   text: income.other.formatCompact(
                     fractionDigits: 2,
                     english: english,
+                    traditional: traditional,
                   ),
                 ),
               ),
@@ -59,6 +63,7 @@ class IncomeSummaryBar extends StatelessWidget {
                   text: income.total.formatCompact(
                     fractionDigits: 2,
                     english: english,
+                    traditional: traditional,
                   ),
                 ),
               ),
