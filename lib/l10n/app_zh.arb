@@ -1544,20 +1544,11 @@
     }
   },
   "lineColorWhite": "白词条",
-  "@lineColorWhite": {
-    "description": "分组表头（白/红/金按词条颜色分组）　位置：lib/view/page/tool/item_rule_edit_page.dart:588"
-  },
   "lineColorRed": "红词条",
-  "@lineColorRed": {
-    "description": "位置：lib/view/page/tool/item_rule_edit_page.dart:589"
-  },
   "lineColorGold": "金词条",
-  "@lineColorGold": {
-    "description": "代码里枚举叫 LineColor.yellow 但中文显示『金』；英文取 Gold 与中文对齐，避免同一分组两种叫法　位置：lib/view/page/tool/item_rule_edit_page.dart:590"
-  },
+  "lineColorPurple": "紫词条",
   "labelItemLines": "装备 {index} 词条",
   "@labelItemLines": {
-    "description": "代码是 '装备 1 词条'/'装备 2 词条' 两条字面量，建议合并为带占位符的一条　位置：lib/view/page/tool/item_comparer.dart:318, lib/view/page/tool/item_comparer.dart:323",
     "placeholders": {
       "index": {
         "type": "int"

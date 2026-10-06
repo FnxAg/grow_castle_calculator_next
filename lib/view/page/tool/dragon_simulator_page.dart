@@ -13,8 +13,14 @@ import 'package:grow_castle_calculator_next/view/responsive/short_window_fallbac
 
 const _rollBatchSize = 500;
 
-/// [ItemSource] 的本地化名称：枚举是数据层类型（`label` 为中文常量），
-/// 不改枚举，改由这里按 source 解析。
+/// 「roll 单次数量」可选档位
+const _countOptions = [1, 10, 100, 1000, 10000];
+
+/// 掉落率摘要，如 `B 100%` / `A 94.0% / E 2.5% / U 3.5%`
+String _dropRatesText(ItemSource source) => source.dropRates.entries
+    .map((e) => '${e.key.name} ${(e.value * 100).toStringAsFixed(1)}%')
+    .join(' / ');
+
 String _sourceLabel(AppLocalizations l10n, ItemSource source) =>
     switch (source) {
       ItemSource.dragon1 => l10n.itemSourceDragon1,
@@ -23,6 +29,7 @@ String _sourceLabel(AppLocalizations l10n, ItemSource source) =>
       ItemSource.dragon4 => l10n.itemSourceDragon4,
       ItemSource.dragon5 => l10n.itemSourceDragon5,
       ItemSource.dragon6 => l10n.itemSourceDragon6,
+      ItemSource.dragon7 => l10n.itemSourceDragon7,
     };
 
 Future<Map<String, dynamic>> _rollBatch(Map<String, dynamic> args) async {
@@ -212,7 +219,6 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
           ),
         ],
       ),
-      // 本页固定设置区最高（约 440），矮窗口下必须能滚
       body: ShortWindowFallback(
         minHeight: 460,
         child: Column(
@@ -223,45 +229,61 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(l10n.labelItemSource, style: theme.textTheme.labelLarge),
-                  const SizedBox(height: 8),
-                  SegmentedButton<ItemSource>(
-                    segments: [
+                  // 用下拉而不是分段按钮：7 条龙 / 5 档次数在窄屏上必然横向溢出，
+                  // 而且菜单项里能直接写掉落率（手机上没有 hover，tooltip 出不来）
+                  DropdownButtonFormField<ItemSource>(
+                    initialValue: _source,
+                    isExpanded: true,
+                    // 不指定 border：与页内其它输入框一致走默认的底部横线
+                    decoration: InputDecoration(
+                      labelText: l10n.labelItemSource,
+                      isDense: true,
+                    ),
+                    items: [
                       for (final source in ItemSource.values)
-                        ButtonSegment(
+                        DropdownMenuItem(
                           value: source,
-                          label: Text(_sourceLabel(l10n, source)),
-                          // 二龙起的掉落含高级装备，标注一下
-                          tooltip: source.dropRates.entries
-                              .map(
-                                (e) =>
-                                    '${e.key.name} ${(e.value * 100).toStringAsFixed(1)}%',
-                              )
-                              .join(' / '),
+                          // child: Text(
+                          //   '${_sourceLabel(l10n, source)}'
+                          //   '  ${_dropRatesText(source)}',
+                          //   overflow: TextOverflow.ellipsis,
+                          // ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                _sourceLabel(l10n, source),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                              Text(
+                                _dropRatesText(source),
+                                style: theme.textTheme.bodySmall?.copyWith(
+                                  color: theme.colorScheme.onSurfaceVariant,
+                                ),
+                              ),
+                            ],
+                          )
                         ),
                     ],
-                    selected: {_source},
-                    showSelectedIcon: false,
-                    onSelectionChanged: (s) =>
-                        setState(() => _source = s.first),
+                    onChanged: (source) {
+                      if (source != null) setState(() => _source = source);
+                    },
                   ),
-                  const SizedBox(height: 16),
-                  Text(
-                    l10n.labelRollBatchSize,
-                    style: theme.textTheme.labelLarge,
-                  ),
-                  const SizedBox(height: 8),
-                  SegmentedButton<int>(
-                    segments: const [
-                      ButtonSegment(value: 1, label: Text('1')),
-                      ButtonSegment(value: 10, label: Text('10')),
-                      ButtonSegment(value: 100, label: Text('100')),
-                      ButtonSegment(value: 1000, label: Text('1000')),
-                      ButtonSegment(value: 10000, label: Text('10000')),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<int>(
+                    initialValue: _count,
+                    isExpanded: true,
+                    decoration: InputDecoration(
+                      labelText: l10n.labelRollBatchSize,
+                      isDense: true,
+                    ),
+                    items: [
+                      for (final count in _countOptions)
+                        DropdownMenuItem(value: count, child: Text('$count')),
                     ],
-                    selected: {_count},
-                    showSelectedIcon: false,
-                    onSelectionChanged: (s) => setState(() => _count = s.first),
+                    onChanged: (count) {
+                      if (count != null) setState(() => _count = count);
+                    },
                   ),
                   const SizedBox(height: 12),
                   Row(
@@ -430,15 +452,6 @@ class _ItemCard extends StatelessWidget {
                   ],
                 ),
               ),
-            // itemQuality 提示
-            // if (quality != null)
-            //   Padding(
-            //     padding: const EdgeInsets.only(top: 4),
-            //     child: Text(
-            //       'Item Quality ${_natural(quality)}% → 前 3 条 ×${_natural(1 + quality / 100)}',
-            //       style: theme.textTheme.bodySmall?.copyWith(color: theme.colorScheme.primary),
-            //     ),
-            //   ),
           ],
         ),
       ),
@@ -449,6 +462,7 @@ class _ItemCard extends StatelessWidget {
     LineColor.white => Colors.white,
     LineColor.red => Colors.redAccent,
     LineColor.yellow => Colors.amber,
+    LineColor.purple => Colors.purpleAccent,
   };
 
   /// 数值显示：被加强的词条显示“原始值 -> 加强后的值”，

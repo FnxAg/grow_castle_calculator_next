@@ -2082,25 +2082,31 @@ abstract class AppLocalizations {
   /// **'{count} 条'**
   String labelLineCount(int count);
 
-  /// 分组表头（白/红/金按词条颜色分组）　位置：lib/view/page/tool/item_rule_edit_page.dart:588
+  /// No description provided for @lineColorWhite.
   ///
   /// In zh, this message translates to:
   /// **'白词条'**
   String get lineColorWhite;
 
-  /// 位置：lib/view/page/tool/item_rule_edit_page.dart:589
+  /// No description provided for @lineColorRed.
   ///
   /// In zh, this message translates to:
   /// **'红词条'**
   String get lineColorRed;
 
-  /// 代码里枚举叫 LineColor.yellow 但中文显示『金』；英文取 Gold 与中文对齐，避免同一分组两种叫法　位置：lib/view/page/tool/item_rule_edit_page.dart:590
+  /// No description provided for @lineColorGold.
   ///
   /// In zh, this message translates to:
   /// **'金词条'**
   String get lineColorGold;
 
-  /// 代码是 '装备 1 词条'/'装备 2 词条' 两条字面量，建议合并为带占位符的一条　位置：lib/view/page/tool/item_comparer.dart:318, lib/view/page/tool/item_comparer.dart:323
+  /// No description provided for @lineColorPurple.
+  ///
+  /// In zh, this message translates to:
+  /// **'紫词条'**
+  String get lineColorPurple;
+
+  /// No description provided for @labelItemLines.
   ///
   /// In zh, this message translates to:
   /// **'装备 {index} 词条'**

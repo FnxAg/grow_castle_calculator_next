@@ -43,10 +43,7 @@ class _MainShellState extends State<MainShell> {
     super.dispose();
   }
 
-  /// 全局 Esc 处理：返回上一页/关闭弹层。
-  /// 必须消费事件——否则内置的 Esc→DismissIntent 也会触发，弹层会被弹两次。
-  /// 语义与内置一致（maybePop 弹最顶路由：对话框/菜单/页面依次适用），
-  /// 并额外覆盖了内置不处理的普通页面路由（barrierDismissible=false）。
+  /// 全局 Esc 处理，返回上一页/关闭弹层
   bool _handleKey(KeyEvent event) {
     if (event is! KeyDownEvent && event is! KeyRepeatEvent) return false;
     if (event.logicalKey != LogicalKeyboardKey.escape) return false;
@@ -63,8 +60,7 @@ class _MainShellState extends State<MainShell> {
     return true;
   }
 
-  /// 切换页面：先释放焦点再切页。焦点若仍挂在已被切走的页面上，移动端会
-  /// 自动弹出软键盘，且 PageView 会为了显示获焦子页而自动滚回来造成页面抽风
+  /// 切换页面时先收起键盘焦点再切换页面
   void _selectPage(int index) {
     FocusManager.instance.primaryFocus?.unfocus();
     _selectIndex.value = index;
@@ -83,7 +79,7 @@ class _MainShellState extends State<MainShell> {
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          if (isWide) _buildRail(),
+          if (isWide) ...[_buildRail(), const VerticalDivider(width: 0.3, thickness: 1)],
           Expanded(child: _buildPages()),
         ],
       ),
@@ -130,8 +126,7 @@ class _MainShellState extends State<MainShell> {
         return NavigationRail(
           selectedIndex: _selectIndex.value,
           onDestinationSelected: _selectPage,
-          // M3 下默认不显示标签（只剩图标），宽屏有横向余量，常显更易辨认
-          labelType: NavigationRailLabelType.all,
+          labelType: NavigationRailLabelType.selected,
           scrollable: true,
           destinations: [
             for (final page in mainPages)

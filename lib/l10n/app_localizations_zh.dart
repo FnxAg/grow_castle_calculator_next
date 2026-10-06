@@ -1151,6 +1151,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lineColorGold => '金词条';
 
   @override
+  String get lineColorPurple => '紫词条';
+
+  @override
   String labelItemLines(int index) {
     return '装备 $index 词条';
   }
@@ -2508,6 +2511,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get lineColorGold => '金詞條';
+
+  @override
+  String get lineColorPurple => '紫詞條';
 
   @override
   String labelItemLines(int index) {

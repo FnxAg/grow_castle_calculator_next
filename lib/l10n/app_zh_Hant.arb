@@ -333,6 +333,7 @@
   "lineColorWhite": "白詞條",
   "lineColorRed": "紅詞條",
   "lineColorGold": "金詞條",
+  "lineColorPurple": "紫詞條",
   "labelItemLines": "裝備 {index} 詞條",
   "dialogItemCompareHelpIntro": "此工具用於比較兩件裝備的期望值。\n\n",
   "dialogItemCompareHelpStepsTitle": "使用步驟：\n",

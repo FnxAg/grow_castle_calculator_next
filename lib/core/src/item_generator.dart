@@ -50,17 +50,18 @@ class GeneratedItem {
     }
     final q = quality;
     if (q != null) {
-      buffer.writeln('  (itemQuality ${q.toStringAsFixed(2)}% → top 3 lines ×${(1 + q / 100).toStringAsFixed(4)})');
+      buffer.writeln(
+        '  (itemQuality ${q.toStringAsFixed(2)}% → top 3 lines ×${(1 + q / 100).toStringAsFixed(4)})',
+      );
     }
     return buffer.toString();
   }
 }
 
-/// 抽装备模拟器（草案）
+/// 刷龙模拟器
 ///
-/// 生成流程（对应游戏逻辑）：
-/// 1. 确定装备的等级与类型（等级由装备来源掉落表随机；
-///    类型未指定时按掉落概率随机：武器各 15%、饰品各 10%）
+/// 生成流程：
+/// 1. 确定装备的等级与类型
 /// 2. 从全部 47 个词条中抽取一个
 /// 3. 检查词条颜色是否符合品级要求（第 1、2 槽白 / 第 3 槽白或红 / 第 4 槽黄），不满足回到 2
 /// 4. 检查词条类型是否符合装备类型要求（如 multiShot 仅弓与饰品），不满足回到 2
@@ -69,6 +70,9 @@ class GeneratedItem {
 ///    武器 50% / 饰品 25% 概率改从红词条池重抽（重抽时仍校验装备类型与同类型上限）
 /// 7. 仅在抽第 4 条时：从黄词条池抽取
 /// 8. 全部词条确定后，统一抽取各词条数值（此时才应用 itemQuality 加强）
+///
+/// U 装（七龙掉落）是独立分支：**只有一条紫词条，没有白/红/黄词条，也没有
+/// itemQuality**，所以不参与上面的槽位流程，数值也不受加强影响。
 class ItemGenerator {
   ItemGenerator({Random? random}) : _random = random ?? Random();
 
@@ -91,7 +95,7 @@ class ItemGenerator {
     ItemType.earrings: 0.10,
   };
 
-  /// 拒绝采样最大尝试次数，防止极端情况下死循环
+  /// 拒绝采样最大尝试次数
   static const int _maxTries = 1000;
 
   /// 生成一件装备
@@ -111,10 +115,25 @@ class ItemGenerator {
     if (resolvedLevel == null) {
       throw ArgumentError('provide either source or level');
     }
-    if (resolvedLevel == ItemLevel.U) {
-      throw UnsupportedError('no stat values for ItemLevel.U yet');
-    }
     final resolvedType = type ?? rollType();
+
+    if (resolvedLevel == ItemLevel.U) {
+      final pool = ItemLine.purpleLines
+          .where((l) => _typeAllowed(l, resolvedType))
+          .toList(growable: false);
+      if (pool.isEmpty) {
+        throw StateError(
+          'no U (purple) stat line available for ${resolvedType.name}',
+        );
+      }
+      final line = _drawFrom(pool);
+      return GeneratedItem(
+        level: resolvedLevel,
+        type: resolvedType,
+        lines: [GeneratedLine(line, line.rollValue(resolvedLevel, _random))],
+      );
+    }
+
     final lines = <ItemLine>[];
 
     // 第 1 条：必定为白（B 级装备仅此一条）
@@ -122,7 +141,9 @@ class ItemGenerator {
 
     // 第 2 条（A 级及以上）：必定为白
     if (resolvedLevel != ItemLevel.B) {
-      lines.add(_drawWithChecks(resolvedType, (l) => l.color == LineColor.white));
+      lines.add(
+        _drawWithChecks(resolvedType, (l) => l.color == LineColor.white),
+      );
     }
 
     // 第 3 条（L/E 级）：白或红，含步骤 5、6
@@ -137,12 +158,14 @@ class ItemGenerator {
 
     // 步骤 8：统一 roll 数值
     final generated = [
-      for (final l in lines) GeneratedLine(l, l.rollValue(resolvedLevel, _random)),
+      for (final l in lines)
+        GeneratedLine(l, l.rollValue(resolvedLevel, _random)),
     ];
 
     // itemQuality：加强前 3 条词条（黄词条第 4 槽不受加成）
-    final qualityLine =
-        generated.where((l) => l.line == ItemLine.itemQuality).firstOrNull;
+    final qualityLine = generated
+        .where((l) => l.line == ItemLine.itemQuality)
+        .firstOrNull;
     if (qualityLine != null) {
       final quality = qualityLine.value;
       for (var i = 0; i < generated.length; i++) {
@@ -157,7 +180,11 @@ class ItemGenerator {
       }
     }
 
-    return GeneratedItem(level: resolvedLevel, type: resolvedType, lines: generated);
+    return GeneratedItem(
+      level: resolvedLevel,
+      type: resolvedType,
+      lines: generated,
+    );
   }
 
   /// 第 3 条抽取（步骤 5、6）
@@ -183,7 +210,8 @@ class ItemGenerator {
       if (_random.nextDouble() < redrawChance) {
         final pool = ItemLine.redLines
             .where(
-                (l) => _typeAllowed(l, type) && _sameTypeAllowed(l, existing))
+              (l) => _typeAllowed(l, type) && _sameTypeAllowed(l, existing),
+            )
             .toList(growable: false);
         if (pool.isNotEmpty) {
           line = _drawFrom(pool);
@@ -202,8 +230,10 @@ class ItemGenerator {
       if (!_typeAllowed(line, type)) continue;
       if (accept(line)) return line;
     }
-    throw StateError('no valid stat line rolled within $_maxTries tries; '
-        'check the filter conditions');
+    throw StateError(
+      'no valid stat line rolled within $_maxTries tries; '
+      'check the filter conditions',
+    );
   }
 
   /// 步骤 4：词条是否允许出现在该装备类型上（multiShot 仅弓与饰品）

@@ -31,7 +31,7 @@ class _AboutPageState extends State<AboutPage> {
       _AboutEntry(
         icon: Icons.info_outline,
         title: l10n.aboutAdaptedVersion,
-        subtitle: 'v1.50.14',
+        subtitle: 'v1.51.5',
         tappable: false,
       ),
       _linkEntry(

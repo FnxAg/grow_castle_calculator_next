@@ -675,7 +675,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get labelIncludesItemRules => 'Includes: stat highlight rules';
+  String get labelIncludesItemRules => 'Includes: line highlight rules';
 
   @override
   String get labelIncludesAppSettings => 'Includes: app settings';
@@ -727,7 +727,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelUsernameHint => '0-9, a-z, A-Z, -, _, space';
 
   @override
-  String get waveStatus => 'Wave Skip Status';
+  String get waveStatus => '跳波状态';
 
   @override
   String get wavePushIncomeCalc => 'Waving Income';
@@ -841,8 +841,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionAutoBattleTime => 'TAB';
 
   @override
-  String get dialogWaveStatusDisclaimer =>
-      'For reference only. Actual in-game results may differ significantly.';
+  String get dialogWaveStatusDisclaimer => '数据仅供参考，实际游戏中可能会有较大偏差。';
 
   @override
   String get actionClose => 'Close';
@@ -985,7 +984,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dialogIncomeNotice =>
-      'Fill in \"Wave Skip Status\" first, otherwise the result will be inaccurate.\n\nThe result here is daily income.';
+      'Fill in \"Wave Skip lineus\" first, otherwise the result will be inaccurate.\n\nThe result here is daily income.';
 
   @override
   String get tabIncomeColony => 'Colony';
@@ -1033,7 +1032,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get toolItemComparer => 'Item Comparison';
 
   @override
-  String get toolBestLineCalc => 'Best Stat Combo';
+  String get toolBestLineCalc => 'Best line Combo';
 
   @override
   String get rankingKindPlayer => 'Player Leaderboard';
@@ -1168,17 +1167,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errorWhiteLinesWithRed =>
-      'A red stat is already selected — at most 2 white stats';
+      'A red line is already selected — at most 2 white lines';
 
   @override
-  String get errorWhiteLinesMax => 'At most 3 white stats';
+  String get errorWhiteLinesMax => 'At most 3 white lines';
 
   @override
   String get errorRedWithThreeWhite =>
-      'Already 3 white stats — a red stat cannot be selected';
+      'Already 3 white lines — a red line cannot be selected';
 
   @override
-  String get errorNoLineSelected => 'Select at least one stat';
+  String get errorNoLineSelected => 'Select at least one line';
 
   @override
   String get errorValueNotNumber => 'Enter a number or leave it blank';
@@ -1215,7 +1214,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get helpRuleForm =>
-      'Tip: at most 1 red and 1 gold stat each; a red stat cannot be picked once white stats total 3.\nValue ranges are checked against the stat\'s raw value (before boosting) — leave blank for no limit.\n\nThe lower bound must be below the upper bound, and entered values must stay within the stat\'s allowed range.';
+      'Tip: at most 1 red and 1 gold line each; a red line cannot be picked once white lines total 3.\nValue ranges are checked against the line\'s raw value (before boosting) — leave blank for no limit.\n\nThe lower bound must be below the upper bound, and entered values must stay within the line\'s allowed range.';
 
   @override
   String labelLineCount(int count) {
@@ -1229,17 +1228,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get lineColorWhite => 'White stat';
+  String get lineColorWhite => 'White line';
 
   @override
-  String get lineColorRed => 'Red stat';
+  String get lineColorRed => 'Red line';
 
   @override
-  String get lineColorGold => 'Gold stat';
+  String get lineColorGold => 'Gold line';
+
+  @override
+  String get lineColorPurple => 'Purple line';
 
   @override
   String labelItemLines(int index) {
-    return 'Item $index stats';
+    return 'Item $index lines';
   }
 
   @override
@@ -1255,11 +1257,11 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dialogItemCompareHelpStep2 =>
-      '2. Enter the white stats of both items under \"Item 1 / Item 2\",';
+      '2. Enter the white lines of both items under \"Item 1 / Item 2\",';
 
   @override
   String get dialogItemCompareHelpStep2Note =>
-      'Mind the stat type: all elemental damage goes under \"Element Damage\" — enter the matching elemental damage stat for your unit;\n';
+      'Mind the line type: all elemental damage goes under \"Element Damage\" — enter the matching elemental damage line for your unit;\n';
 
   @override
   String get dialogItemCompareHelpStep3 =>
@@ -1270,21 +1272,21 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dialogItemCompareHelpNormalUnitDesc =>
-      'Fill in Attacks Per Second and Increased Speed; the Attack Speed % stat is counted.\n';
+      'Fill in Attacks Per Second and Increased Speed; the Attack Speed % line is counted.\n';
 
   @override
   String get dialogItemCompareHelpSkillUnit => 'Skill units:';
 
   @override
   String get dialogItemCompareHelpSkillUnitDesc =>
-      'Leave both blank; the Attack Speed % stat is ignored.';
+      'Leave both blank; the Attack Speed % line is ignored.';
 
   @override
   String get dialogItemCompareHelpNoteLabel => '\n\nNote: ';
 
   @override
   String get dialogItemCompareHelpNoteDesc =>
-      'Orb and treasure stats can also be used — just mind the stat type.';
+      'Orb and treasure lines can also be used — just mind the line type.';
 
   @override
   String get dialogResetConfirm => 'Clear all inputs?';
@@ -1293,16 +1295,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelNoItemPanel => 'No-Item Panel';
 
   @override
-  String get actionAddLine => 'Add stat';
+  String get actionAddLine => 'Add line';
 
   @override
-  String get hintSelectLineType => 'Select stat type';
+  String get hintSelectLineType => 'Select line type';
 
   @override
   String get hintValue => 'Value';
 
   @override
-  String get tooltipDeleteLine => 'Delete stat';
+  String get tooltipDeleteLine => 'Delete line';
 
   @override
   String get labelNoCrit => 'No crit';
@@ -1350,7 +1352,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get compareVerdictTie => 'Both items have the same DPS';
 
   @override
-  String get labelNoDamageLines => '(No damage stats)';
+  String get labelNoDamageLines => '(No damage lines)';
 
   @override
   String get dialogBestLineHelpAvgDmg =>
@@ -1364,8 +1366,8 @@ class AppLocalizationsEn extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count stats',
-      one: '$count stat',
+      other: '$count lines',
+      one: '$count line',
     );
     return '$_temp0';
   }

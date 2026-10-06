@@ -11,6 +11,7 @@ Color lineColorOf(LineColor color) => switch (color) {
   LineColor.white => Colors.white,
   LineColor.red => Colors.redAccent,
   LineColor.yellow => Colors.amber,
+  LineColor.purple => Colors.purpleAccent,
 };
 
 /// 装备类型显示名：数据层 [ItemType] 没有显示名，也没有可取的 l10n，
@@ -245,13 +246,15 @@ class _RuleFormPageState extends State<_RuleFormPage> {
   /// 是否已勾选红色词条
   bool get _hasRed => _counts.keys.any((l) => l.color == LineColor.red);
 
-  /// 词条是否有可约束的数值范围（白词条、itemQuality、非固定值红词条）
+  /// 词条是否有可约束的数值范围
   bool _hasValueRange(ItemLine line) =>
       line.color == LineColor.white ||
       line == ItemLine.itemQuality ||
-      (line.color == LineColor.red && !line.isFixed);
+      (line.color == LineColor.red && !line.isFixed) ||
+      (line.color == LineColor.purple && !line.isFixed);
 
-  /// 勾选/取消一个词条（含防呆：红/金同色最多 1 条，白 3 条与红互斥）
+  /// 勾选/取消一个词条（含防呆：红/金同色最多 1 条，白 3 条与红互斥，
+  /// 紫词条与其它颜色互斥）
   void _toggleLine(ItemLine line, bool checked) {
     final l10n = AppLocalizations.of(context);
     setState(() {
@@ -259,6 +262,15 @@ class _RuleFormPageState extends State<_RuleFormPage> {
         _counts.remove(line);
         return;
       }
+      // 紫词条与其他颜色词条互斥，且只能同时出现一条
+      if (line.color == LineColor.purple) {
+        _counts.removeWhere((existing, _) => existing != line);
+        _counts[line] = 1;
+        _ensureRangeControllers(line);
+        return;
+      }
+      _counts.removeWhere((existing, _) => existing.color == LineColor.purple);
+
       // 红/金词条同色最多一条：选择新词条时自动取消同色已选项
       if (line.color == LineColor.red || line.color == LineColor.yellow) {
         final sameColor = _counts.keys
@@ -282,11 +294,15 @@ class _RuleFormPageState extends State<_RuleFormPage> {
         return;
       }
       _counts[line] = 1;
-      if (_hasValueRange(line)) {
-        _minControllers.putIfAbsent(line, TextEditingController.new);
-        _maxControllers.putIfAbsent(line, TextEditingController.new);
-      }
+      _ensureRangeControllers(line);
     });
+  }
+
+  /// 勾选后才需要范围输入框的控制器（取消勾选时不销毁，保留已输入的数值）
+  void _ensureRangeControllers(ItemLine line) {
+    if (!_hasValueRange(line)) return;
+    _minControllers.putIfAbsent(line, TextEditingController.new);
+    _maxControllers.putIfAbsent(line, TextEditingController.new);
   }
 
   /// 调整白色词条数量（1 ↔ 2），带合计上限检查
@@ -409,10 +425,10 @@ class _RuleFormPageState extends State<_RuleFormPage> {
               children: [
                 TextField(
                   controller: _hintController,
+                  // 不指定 border：与页内其它输入框一致走默认的底部横线
                   decoration: InputDecoration(
                     labelText: l10n.labelHintText,
                     hintText: l10n.hintRuleHintExample,
-                    border: const OutlineInputBorder(),
                   ),
                 ),
                 const SizedBox(height: 8),
@@ -451,7 +467,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
             ),
           ),
           const Divider(height: 1),
-          // 词条多选：按颜色分组；白词条可要求同时出现两条（1条/2条切换）
+          // 词条多选
           Expanded(
             child: ListView(
               children: [
@@ -490,7 +506,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                   style: const TextStyle(fontSize: 13),
                                 ),
                               ),
-                              // 白词条可同时出现两条（其他颜色词条每槽最多一条）
+                              // 白词条可同时出现两条
                               if (_counts.containsKey(line) &&
                                   line.color == LineColor.white)
                                 SegmentedButton<int>(
@@ -514,8 +530,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                 ),
                             ],
                           ),
-                          // 数值范围（留空不限）：判断的是词条原始值（加强前的值）。
-                          // 没有数值范围的词条（金词条、固定值红词条）不显示
+                          // 数值范围
                           if (_counts.containsKey(line) && _hasValueRange(line))
                             Padding(
                               padding: const EdgeInsets.only(
@@ -549,7 +564,6 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                             line.numType == LineNumType.percent
                                             ? '%'
                                             : null,
-                                        // isDense: true,
                                       ),
                                     ),
                                   ),
@@ -601,12 +615,11 @@ class _RuleFormPageState extends State<_RuleFormPage> {
   }
 
   Widget _sectionHeader(AppLocalizations l10n, LineColor color) {
-    // 背景色：白词条用灰色底（白色底在浅色模式下看不见），红/黄用词条本色；
-    // 文字颜色按背景深浅取黑白，保证两种主题模式都可读
     final (background, foreground) = switch (color) {
       LineColor.white => (Colors.grey.shade400, Colors.black87),
       LineColor.red => (Colors.redAccent, Colors.white),
       LineColor.yellow => (Colors.amber, Colors.black87),
+      LineColor.purple => (Colors.purpleAccent, Colors.white),
     };
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 12, 16, 4),
@@ -621,6 +634,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
             LineColor.white => l10n.lineColorWhite,
             LineColor.red => l10n.lineColorRed,
             LineColor.yellow => l10n.lineColorGold,
+            LineColor.purple => l10n.lineColorPurple,
           },
           style: Theme.of(context).textTheme.labelLarge
               ?.copyWith(color: foreground, fontWeight: FontWeight.bold),

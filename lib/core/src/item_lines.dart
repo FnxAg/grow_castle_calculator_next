@@ -1,16 +1,7 @@
 import 'dart:math';
 
 /// 装备等级
-enum ItemLevel {
-  B,
-  A,
-  S,
-  L,
-  E,
-
-  /// 暂无词条数值数据（预留）
-  U;
-}
+enum ItemLevel { B, A, S, L, E, U }
 
 /// 装备类型
 enum ItemType {
@@ -28,13 +19,9 @@ enum ItemType {
 
   /// 是否为武器（决定第 3 条白词条改抽红词条的概率）
   bool get isWeapon => switch (this) {
-        ItemType.bow ||
-        ItemType.sword ||
-        ItemType.staff ||
-        ItemType.hammer =>
-          true,
-        _ => false,
-      };
+    ItemType.bow || ItemType.sword || ItemType.staff || ItemType.hammer => true,
+    _ => false,
+  };
 }
 
 /// 装备来源（掉落来源），决定各等级的掉落概率
@@ -44,14 +31,12 @@ enum ItemSource {
   dragon3('三龙', {ItemLevel.B: 0.885, ItemLevel.A: 0.095, ItemLevel.S: 0.02}),
   dragon4('四龙', {ItemLevel.B: 0.785, ItemLevel.A: 0.15, ItemLevel.S: 0.065}),
   dragon5('五龙', {ItemLevel.A: 0.91, ItemLevel.S: 0.05, ItemLevel.L: 0.04}),
-  dragon6('六龙', {ItemLevel.A: 0.915, ItemLevel.S: 0.05, ItemLevel.E: 0.035});
+  dragon6('六龙', {ItemLevel.A: 0.915, ItemLevel.S: 0.05, ItemLevel.E: 0.035}),
+  dragon7('七龙', {ItemLevel.A: 0.94, ItemLevel.E: 0.025, ItemLevel.U: 0.035});
 
   const ItemSource(this.label, this.dropRates);
 
-  /// 显示名
   final String label;
-
-  /// 各等级的掉落概率（百分数值，总和为 1.0）
   final Map<ItemLevel, double> dropRates;
 
   /// 按掉落概率随机一个等级
@@ -62,7 +47,7 @@ enum ItemSource {
       cumulative += entry.value;
       if (roll < cumulative) return entry.key;
     }
-    return dropRates.keys.last; // 兜底：浮点累加误差
+    return dropRates.keys.last;
   }
 }
 
@@ -71,27 +56,30 @@ enum ItemSource {
 enum LineColor {
   white,
   red,
-  yellow;
+  yellow,
+  purple,
 }
 
 /// 词条冲突类型：同类型的词条在一件装备上共享计数。
 /// 目前仅有 cooldown 跨颜色共享类型（白词条 cooldown 与红词条 cooldown），
 /// 其余词条的冲突类型即其自身（如 damageInt 与 damagePercent 互不冲突）。
-enum LineType {
-  cooldown;
-}
+enum LineType { cooldown }
 
 enum LineNumType {
   /// 百分比类型
   percent,
+
   /// 整数类型
   integer,
+
   /// 小数类型
   decimal,
+
   /// 固定值类型
   fixed,
+
   /// 静态类型
-  static;
+  static,
 }
 
 /// 白词条各等级数值范围（最低值, 最高值, 强化每级涨幅）
@@ -100,197 +88,775 @@ typedef WhiteLineRange = (double min, double max, double increase);
 /// 词条数值范围（最低值, 最高值）
 typedef LineRange = (double min, double max);
 
-/// 装备词条（共 47 条：15 白 + 10 红 + 22 黄）
-///
-/// 机制说明：
-/// - 白词条的数值范围随装备等级变化；红词条的数值范围固定；黄词条为技能等级 +1
-/// - 红词条中 min == max 的是固定值词条（如 multiShot），不受 itemQuality 加强影响
-/// - itemQuality 特殊：数值在 20%~25% 随机，用于加强前 3 条词条
+/// 装备词条
 enum ItemLine {
-  // ── 白词条（第 1、2 槽）────────────────────────────
-  damageInt('Damage +', LineColor.white, LineNumType.integer, perLevel: {
-    ItemLevel.B: (10, 80, 3),
-    ItemLevel.A: (10, 80, 3),
-    ItemLevel.S: (80, 100, 3),
-    ItemLevel.L: (80, 100, 3),
-    ItemLevel.E: (80, 100, 3),
-  }),
+  // 白词条
+  damageInt(
+    'Damage +',
+    LineColor.white,
+    LineNumType.integer,
+    perLevel: {
+      ItemLevel.B: (10, 80, 3),
+      ItemLevel.A: (10, 80, 3),
+      ItemLevel.S: (80, 100, 3),
+      ItemLevel.L: (80, 100, 3),
+      ItemLevel.E: (80, 100, 3),
+    },
+  ),
 
-  damagePercent('Damage %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (2, 8, 0.1),
-    ItemLevel.A: (2, 8, 0.1),
-    ItemLevel.S: (8, 10, 0.1),
-    ItemLevel.L: (8, 10, 0.1),
-    ItemLevel.E: (8, 10, 0.1),
-  }),
+  damagePercent(
+    'Damage %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (2, 8, 0.1),
+      ItemLevel.A: (2, 8, 0.1),
+      ItemLevel.S: (8, 10, 0.1),
+      ItemLevel.L: (8, 10, 0.1),
+      ItemLevel.E: (8, 10, 0.1),
+    },
+  ),
 
-  coldDamage('Cold Damage %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (5, 12, 0.1),
-    ItemLevel.A: (5, 12, 0.1),
-    ItemLevel.S: (12, 15, 0.1),
-    ItemLevel.L: (12, 15, 0.1),
-    ItemLevel.E: (12, 15, 0.1),
-  }),
+  coldDamage(
+    'Cold Damage %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (5, 12, 0.1),
+      ItemLevel.A: (5, 12, 0.1),
+      ItemLevel.S: (12, 15, 0.1),
+      ItemLevel.L: (12, 15, 0.1),
+      ItemLevel.E: (12, 15, 0.1),
+    },
+  ),
 
-  fireDamage('Fire Damage %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (5, 12, 0.1),
-    ItemLevel.A: (5, 12, 0.1),
-    ItemLevel.S: (12, 15, 0.1),
-    ItemLevel.L: (12, 15, 0.1),
-    ItemLevel.E: (12, 15, 0.1),
-  }),
+  fireDamage(
+    'Fire Damage %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (5, 12, 0.1),
+      ItemLevel.A: (5, 12, 0.1),
+      ItemLevel.S: (12, 15, 0.1),
+      ItemLevel.L: (12, 15, 0.1),
+      ItemLevel.E: (12, 15, 0.1),
+    },
+  ),
 
-  poisonDamage('Poison Damage %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (5, 12, 0.1),
-    ItemLevel.A: (5, 12, 0.1),
-    ItemLevel.S: (12, 15, 0.1),
-    ItemLevel.L: (12, 15, 0.1),
-    ItemLevel.E: (12, 15, 0.1),
-  }),
+  poisonDamage(
+    'Poison Damage %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (5, 12, 0.1),
+      ItemLevel.A: (5, 12, 0.1),
+      ItemLevel.S: (12, 15, 0.1),
+      ItemLevel.L: (12, 15, 0.1),
+      ItemLevel.E: (12, 15, 0.1),
+    },
+  ),
 
-  lightningDamage('Lightning Damage %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (5, 12, 0.1),
-    ItemLevel.A: (5, 12, 0.1),
-    ItemLevel.S: (12, 15, 0.1),
-    ItemLevel.L: (12, 15, 0.1),
-    ItemLevel.E: (12, 15, 0.1),
-  }),
+  lightningDamage(
+    'Lightning Damage %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (5, 12, 0.1),
+      ItemLevel.A: (5, 12, 0.1),
+      ItemLevel.S: (12, 15, 0.1),
+      ItemLevel.L: (12, 15, 0.1),
+      ItemLevel.E: (12, 15, 0.1),
+    },
+  ),
 
-  physicalDamage('Physical Damage %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (5, 12, 0.1),
-    ItemLevel.A: (5, 12, 0.1),
-    ItemLevel.S: (12, 15, 0.1),
-    ItemLevel.L: (12, 15, 0.1),
-    ItemLevel.E: (12, 15, 0.1),
-  }),
+  physicalDamage(
+    'Physical Damage %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (5, 12, 0.1),
+      ItemLevel.A: (5, 12, 0.1),
+      ItemLevel.S: (12, 15, 0.1),
+      ItemLevel.L: (12, 15, 0.1),
+      ItemLevel.E: (12, 15, 0.1),
+    },
+  ),
 
-  attackSpeed('Attack Speed %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (2, 8, 0.1),
-    ItemLevel.A: (2, 8, 0.1),
-    ItemLevel.S: (8, 10, 0.1),
-    ItemLevel.L: (8, 10, 0.1),
-    ItemLevel.E: (8, 10, 0.1),
-  }),
+  attackSpeed(
+    'Attack Speed %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (2, 8, 0.1),
+      ItemLevel.A: (2, 8, 0.1),
+      ItemLevel.S: (8, 10, 0.1),
+      ItemLevel.L: (8, 10, 0.1),
+      ItemLevel.E: (8, 10, 0.1),
+    },
+  ),
 
-  criticalChance('Critical Chance %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (1, 4, 0.05),
-    ItemLevel.A: (1, 4, 0.05),
-    ItemLevel.S: (4, 5, 0.05),
-    ItemLevel.L: (4, 5, 0.05),
-    ItemLevel.E: (4, 5, 0.05),
-  }),
+  criticalChance(
+    'Critical Chance %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (1, 4, 0.05),
+      ItemLevel.A: (1, 4, 0.05),
+      ItemLevel.S: (4, 5, 0.05),
+      ItemLevel.L: (4, 5, 0.05),
+      ItemLevel.E: (4, 5, 0.05),
+    },
+  ),
 
-  criticalDamage('Critical Damage %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (10, 24, 0.2),
-    ItemLevel.A: (10, 24, 0.2),
-    ItemLevel.S: (24, 30, 0.2),
-    ItemLevel.L: (24, 30, 0.2),
-    ItemLevel.E: (24, 30, 0.2),
-  }),
+  criticalDamage(
+    'Critical Damage %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (10, 24, 0.2),
+      ItemLevel.A: (10, 24, 0.2),
+      ItemLevel.S: (24, 30, 0.2),
+      ItemLevel.L: (24, 30, 0.2),
+      ItemLevel.E: (24, 30, 0.2),
+    },
+  ),
 
-  mpCost('MP Cost %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (2, 8, 0.1),
-    ItemLevel.A: (2, 8, 0.1),
-    ItemLevel.S: (8, 10, 0.1),
-    ItemLevel.L: (8, 10, 0.1),
-    ItemLevel.E: (8, 10, 0.1),
-  }),
+  mpCost(
+    'MP Cost %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (2, 8, 0.1),
+      ItemLevel.A: (2, 8, 0.1),
+      ItemLevel.S: (8, 10, 0.1),
+      ItemLevel.L: (8, 10, 0.1),
+      ItemLevel.E: (8, 10, 0.1),
+    },
+  ),
 
-  cooldown('Cooldown %', LineColor.white, LineNumType.percent,
-      conflictType: LineType.cooldown, perLevel: {
-    ItemLevel.B: (1, 4, 0.05),
-    ItemLevel.A: (1, 4, 0.05),
-    ItemLevel.S: (4, 5, 0.05),
-    ItemLevel.L: (4, 5, 0.05),
-    ItemLevel.E: (4, 5, 0.05),
-  }),
+  cooldown(
+    'Cooldown %',
+    LineColor.white,
+    LineNumType.percent,
+    conflictType: LineType.cooldown,
+    perLevel: {
+      ItemLevel.B: (1, 4, 0.05),
+      ItemLevel.A: (1, 4, 0.05),
+      ItemLevel.S: (4, 5, 0.05),
+      ItemLevel.L: (4, 5, 0.05),
+      ItemLevel.E: (4, 5, 0.05),
+    },
+  ),
 
-  goldPerHit('Gold per Hit', LineColor.white, LineNumType.integer, perLevel: {
-    ItemLevel.B: (10, 25, 1),
-    ItemLevel.A: (10, 25, 1),
-    ItemLevel.S: (25, 31, 1),
-    ItemLevel.L: (25, 31, 1),
-    ItemLevel.E: (25, 31, 1),
-  }),
+  goldPerHit(
+    'Gold per Hit',
+    LineColor.white,
+    LineNumType.integer,
+    perLevel: {
+      ItemLevel.B: (10, 25, 1),
+      ItemLevel.A: (10, 25, 1),
+      ItemLevel.S: (25, 31, 1),
+      ItemLevel.L: (25, 31, 1),
+      ItemLevel.E: (25, 31, 1),
+    },
+  ),
 
-  knockbackChance('Knockback Chance %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (2, 8, 0.1),
-    ItemLevel.A: (2, 8, 0.1),
-    ItemLevel.S: (8, 10, 0.1),
-    ItemLevel.L: (8, 10, 0.1),
-    ItemLevel.E: (8, 10, 0.1),
-  }),
+  knockbackChance(
+    'Knockback Chance %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (2, 8, 0.1),
+      ItemLevel.A: (2, 8, 0.1),
+      ItemLevel.S: (8, 10, 0.1),
+      ItemLevel.L: (8, 10, 0.1),
+      ItemLevel.E: (8, 10, 0.1),
+    },
+  ),
 
-  stunChance('Stun Chance %', LineColor.white, LineNumType.percent, perLevel: {
-    ItemLevel.B: (2, 8, 0.1),
-    ItemLevel.A: (2, 8, 0.1),
-    ItemLevel.S: (8, 10, 0.1),
-    ItemLevel.L: (8, 10, 0.1),
-    ItemLevel.E: (8, 10, 0.1),
-  }),
+  stunChance(
+    'Stun Chance %',
+    LineColor.white,
+    LineNumType.percent,
+    perLevel: {
+      ItemLevel.B: (2, 8, 0.1),
+      ItemLevel.A: (2, 8, 0.1),
+      ItemLevel.S: (8, 10, 0.1),
+      ItemLevel.L: (8, 10, 0.1),
+      ItemLevel.E: (8, 10, 0.1),
+    },
+  ),
 
-  // ── 红词条（第 3 槽）────────────────────────────────
-  redCooldown('Cooldown -', LineColor.red, LineNumType.decimal,
-      range: (1.6, 2.0), conflictType: LineType.cooldown),
+  // 红词条
+  redCooldown(
+    'Cooldown -',
+    LineColor.red,
+    LineNumType.decimal,
+    range: (1.6, 2.0),
+    conflictType: LineType.cooldown,
+  ),
 
-  areaSkillDamage('Area Skill Damage %', LineColor.red, LineNumType.percent, range: (80, 100)),
+  areaSkillDamage(
+    'Area Skill Damage %',
+    LineColor.red,
+    LineNumType.percent,
+    range: (80, 100),
+  ),
 
   slow('Slow Seconds', LineColor.red, LineNumType.decimal, range: (1.6, 2.0)),
 
-  airDamage('Air Damage %', LineColor.red, LineNumType.percent, range: (40, 50)),
+  airDamage(
+    'Air Damage %',
+    LineColor.red,
+    LineNumType.percent,
+    range: (40, 50),
+  ),
 
-  bossDamage('Boss Damage %', LineColor.red, LineNumType.percent, range: (40, 50)),
+  bossDamage(
+    'Boss Damage %',
+    LineColor.red,
+    LineNumType.percent,
+    range: (40, 50),
+  ),
 
-  damageReduced('Damage Reduced %', LineColor.red, LineNumType.percent, range: (20, 25)),
+  damageReduced(
+    'Damage Reduced %',
+    LineColor.red,
+    LineNumType.percent,
+    range: (20, 25),
+  ),
 
-  summonedTime('Summoned Time +', LineColor.red, LineNumType.decimal, range: (1.6, 2.0)),
+  summonedTime(
+    'Summoned Time +',
+    LineColor.red,
+    LineNumType.decimal,
+    range: (1.6, 2.0),
+  ),
 
-  /// 固定值词条
-  chainLightning('Chain Lightning +', LineColor.red, LineNumType.fixed, range: (2, 2)),
+  chainLightning(
+    'Chain Lightning +',
+    LineColor.red,
+    LineNumType.fixed,
+    range: (2, 2),
+  ),
 
-  /// 固定值词条，仅弓类武器与饰品可出现
-  arrow('Arrow +', LineColor.red, LineNumType.fixed, 
-      range: (1, 1),
-      allowedTypes: {
-        ItemType.bow,
-        ItemType.ring,
-        ItemType.necklace,
-        ItemType.bracelet,
-        ItemType.earrings,
-      }),
+  arrow(
+    'Arrow +',
+    LineColor.red,
+    LineNumType.fixed,
+    range: (1, 1),
+    allowedTypes: {
+      ItemType.bow,
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
 
-  /// 固定值词条
-  summonedUnits('Summoned Units +', LineColor.red, LineNumType.fixed, range: (1, 1)),
+  summonedUnits(
+    'Summoned Units +',
+    LineColor.red,
+    LineNumType.fixed,
+    range: (1, 1),
+  ),
 
-  // ── 金词条（第 4 槽，技能等级 +1）───────────────────
-  skillBonusGold('Bonus Gold Skill LV +1', LineColor.yellow, LineNumType.static),
+  // 金词条
+  skillBonusGold(
+    'Bonus Gold Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
   skillBonusExp('Bonus Exp Skill LV +1', LineColor.yellow, LineNumType.static),
   skillCooldown('Cooldown Skill LV +1', LineColor.yellow, LineNumType.static),
   skillDamage('Damage Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillCriticalChance('Critical Chance Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillCriticalChance(
+    'Critical Chance Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
   skillDefense('Defense Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillArcherSpeed('Archer Speed Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillHeroDamage('Hero Damage Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillLeaderDefense('Leader, Summoner Defense Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillPhysicalMastery('Physical Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillColonyGold('Colony Gold Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillColonyCooldown('Colony Cooldown Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillFireMastery('Fire Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillIceMastery('Ice Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillArcherRange('Archer Range Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillLightningMastery('Lightning Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillPoisonMastery('Poison Mastery Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillCriticalDamage('Critical Damage Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillPerfectGold('Perfect Gold Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillMimicChance('Mimic Chance Skill LV +1', LineColor.yellow, LineNumType.static),
-  skillMpRecovery('MP Recovery Skill LV +1', LineColor.yellow, LineNumType.static),
+  skillArcherSpeed(
+    'Archer Speed Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillHeroDamage(
+    'Hero Damage Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillLeaderDefense(
+    'Leader, Summoner Defense Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillPhysicalMastery(
+    'Physical Mastery Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillColonyGold(
+    'Colony Gold Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillColonyCooldown(
+    'Colony Cooldown Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillFireMastery(
+    'Fire Mastery Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillIceMastery(
+    'Ice Mastery Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillArcherRange(
+    'Archer Range Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillLightningMastery(
+    'Lightning Mastery Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillPoisonMastery(
+    'Poison Mastery Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillCriticalDamage(
+    'Critical Damage Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillPerfectGold(
+    'Perfect Gold Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillMimicChance(
+    'Mimic Chance Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
+  skillMpRecovery(
+    'MP Recovery Skill LV +1',
+    LineColor.yellow,
+    LineNumType.static,
+  ),
 
-  /// 特殊词条：数值在 20%~25% 随机，加强前 3 条词条
-  itemQuality('Item Quality +', LineColor.yellow, LineNumType.percent, range: (20, 25));
+  /// 金词条 - 加强
+  itemQuality(
+    'Item Quality +',
+    LineColor.yellow,
+    LineNumType.percent,
+    range: (20, 25),
+  ),
+
+  // 紫词条
+  archerTrio(
+    'Archer Trio %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 30),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  bossHunter(
+    'Boss Hunter %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 50),
+    allowedTypes: {
+      ItemType.bow,
+    },
+  ),
+  multipleShot(
+    'Multiple Shot +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 2),
+    allowedTypes: {
+      ItemType.bow,
+    },
+  ),
+  lightningArrowExtraHit(
+    'Lightning Arrow Extra Hit %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 50),
+    allowedTypes: {
+      ItemType.bow,
+    },
+  ),
+  mpSteal(
+    'MP Steal %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (0.1, 1),
+    allowedTypes: {
+      ItemType.bow,
+    },
+  ),
+  hpSteal(
+    'HP Steal %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (0.1, 1),
+    allowedTypes: {
+      ItemType.bow,
+    },
+  ),
+  elementalFusion(
+    'Elemental Fusion %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 50),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  freezeSec(
+    'Freeze Sec +',
+    LineColor.purple,
+    LineNumType.decimal,
+    range: (0.1, 1),
+    allowedTypes: {
+      ItemType.staff,
+    },
+  ),
+  meteorBurningGroundPerSec(
+    'Meteor Burning Ground / Sec %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 25),
+    allowedTypes: {
+      ItemType.staff,
+    },
+  ),
+  volcanoExtraCast(
+    'Volcano Extra Cast %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 80),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  earthquakeDealsDmg(
+    'Earthquake Deals Damage %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (100, 600),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  mpOnRepair(
+    'MP on Repair %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 25),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  poisonDartsExplosion(
+    'Poison Darts Explosion %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (50, 200),
+    allowedTypes: {
+      ItemType.sword,
+    },
+  ),
+  poisonDartsPierce(
+    'Poison Darts Pierce %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 50),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  rampage(
+    'Rampage +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 4),
+    allowedTypes: {
+      ItemType.sword,
+    },
+  ),
+  bombard(
+    'Bombard +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 4),
+    allowedTypes: {
+      ItemType.sword,
+    },
+  ),
+  clusterBurst(
+    'Cluster Burst %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 50),
+    allowedTypes: {
+      ItemType.sword,
+    },
+  ),
+  thunderHammer(
+    'Thunder Hammer +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 2),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  shockWaveSec(
+    'Shock Wave Sec +',
+    LineColor.purple,
+    LineNumType.decimal,
+    range: (0.1, 1.5),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  bestOffense(
+    'Best Offense %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (1, 10),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  bestDefense(
+    'Best Defense %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (5, 25),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  blackPowder(
+    'Black Powder %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (5, 15),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  poisonDrone(
+    'Poison Drone %',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 3),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  createPoisonDroneOnAttack(
+    'Create Poison Drone on Attack %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (5, 25),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  shadowAttackExtraCast(
+    'Shadow Attack Extra Cast %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 80),
+    allowedTypes: {
+      ItemType.sword,
+    },
+  ),
+  waterSlash(
+    'Water Slash +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 3),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  waterBlast(
+    'Water Blast +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 2),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  waterSpear(
+    'Water Spear +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 2),
+    allowedTypes: {
+      ItemType.hammer,
+    },
+  ),
+  thorTargetsAir(
+    'Thor Targets Air',
+    LineColor.purple,
+    LineNumType.fixed,
+    range: (1, 1),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  saraGainsArcherTrioSkill(
+    'Sara Gains Archer Trio Skill',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (100, 200),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    }
+  ),
+  fairySmallWormNum(
+    'Fairy . Small Worm +',
+    LineColor.purple,
+    LineNumType.fixed,
+    range: (1, 1),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    }
+  ),
+  fairySmallWormDmg(
+    'Fairy . Small Worm %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (25, 100),
+    allowedTypes: {
+      ItemType.sword,
+      ItemType.bow,
+      ItemType.hammer,
+    },
+  ),
+  antlion(
+    'Antlion %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 50),
+    allowedTypes: {
+      ItemType.sword,
+    },
+  ),
+  arrowRain(
+    'Arrow Rain +',
+    LineColor.purple,
+    LineNumType.integer,
+    range: (1, 4),
+    allowedTypes: {
+      ItemType.bow,
+    },
+  ),
+  blizzardAirDmg(
+    'Blizzard Air Damage %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (25, 100),
+    allowedTypes: {
+      ItemType.staff,
+    },
+  ),
+  createLightningTrapOnAttack(
+    'Create Lightning Trap on Attack %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (1, 10),
+    allowedTypes: {
+      ItemType.sword,
+    },
+  ),
+  bombArrow(
+    'Bomb Arrow %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (10, 30),
+    allowedTypes: {
+      ItemType.bow,
+    },
+  ),
+  bonusExp(
+    'Bonus Exp %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (5, 15),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  ),
+  bonusGold(
+    'Bonus Gold %',
+    LineColor.purple,
+    LineNumType.percent,
+    range: (1, 5),
+    allowedTypes: {
+      ItemType.ring,
+      ItemType.necklace,
+      ItemType.bracelet,
+      ItemType.earrings,
+    },
+  );
 
   const ItemLine(
     this.label,
-    this.color, 
+    this.color,
     this.numType, {
     this.perLevel,
     this.range,
@@ -298,7 +864,7 @@ enum ItemLine {
     this.allowedTypes,
   });
 
-  /// 显示名
+  /// 显示名称
   final String label;
 
   /// 词条颜色
@@ -319,9 +885,7 @@ enum ItemLine {
   /// 可出现的装备类型集合（如 multiShot 仅弓与饰品），null 表示无限制
   final Set<ItemType>? allowedTypes;
 
-  // ── 静态词条池 ──────────────────────────────────────
-
-  /// 全部 47 个词条
+  /// 全部词条
   static List<ItemLine> get all => values;
 
   /// 白词条池
@@ -336,7 +900,11 @@ enum ItemLine {
   static List<ItemLine> get yellowLines =>
       values.where((l) => l.color == LineColor.yellow).toList(growable: false);
 
-  // ── 数值 ────────────────────────────────────────────
+  /// 紫词条池
+  static List<ItemLine> get purpleLines =>
+      values.where((l) => l.color == LineColor.purple).toList(growable: false);
+
+  // 数值
 
   /// 指定等级下的数值范围；黄词条（技能 +1）无范围，itemQuality 为 20~25
   LineRange? valueRange(ItemLevel level) {
@@ -348,6 +916,8 @@ enum ItemLine {
         return range!;
       case LineColor.yellow:
         return this == ItemLine.itemQuality ? (20, 25) : null;
+      case LineColor.purple:
+        return range!;
     }
   }
 
@@ -367,25 +937,23 @@ enum ItemLine {
         return range!;
       case LineColor.yellow:
         return this == ItemLine.itemQuality ? (20, 25) : null;
+      case LineColor.purple:
+        return range!;
     }
   }
 
   /// 是否为固定值词条（红词条中 min == max）
-  // bool get isFixed => color == LineColor.red && range!.$1 == range!.$2;
   bool get isFixed => numType == LineNumType.fixed;
 
-  /// 是否为百分比词条（label 带 % 或 itemQuality），精度为 1 位小数（如 4.5）
-  // bool get isPercent => label.contains('%') || this == ItemLine.itemQuality;
+  /// 是否为百分比词条（label 带 % 或 itemQuality），精度为 1 位小数
   bool get isPercent => numType == LineNumType.percent;
 
   /// 是否只 roll 整数（Damage +、Gold per Hit）
-  // bool get rollsInteger =>
-  //     this == ItemLine.damageInt || this == ItemLine.goldPerHit;
   bool get rollsInteger => numType == LineNumType.integer;
 
   /// 随机初始值（范围内均匀随机；固定值词条返回固定值）。
-  /// 精度：整数词条 0 位小数，百分比词条 1 位小数（如 4.5），
-  /// 其余词条 3 位小数（如 1.653）
+  /// 精度：整数词条 0 位小数，百分比词条 1 位小数，
+  /// 其余词条 3 位小数
   double rollValue(ItemLevel level, Random rng) {
     switch (color) {
       case LineColor.white:
@@ -398,10 +966,13 @@ enum ItemLine {
         return this == ItemLine.itemQuality
             ? _roundToPrecision(20 + rng.nextDouble() * 5)
             : 1;
+      case LineColor.purple:
+        final (min, max) = range!;
+        return _roundToPrecision(min + rng.nextDouble() * (max - min));
     }
   }
 
-  /// 按词条类型四舍五入：整数 0 位、百分比 1 位、其余 3 位小数
+  /// 固定精度
   double _roundToPrecision(double value) {
     if (rollsInteger) return value.roundToDouble();
     final decimals = isPercent ? 10 : 1000;
