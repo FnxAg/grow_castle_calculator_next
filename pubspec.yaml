@@ -1,11 +1,11 @@
 name: grow_castle_calculator_next
 description: "A tool for mobile game Grow Castle."
 publish_to: 'none'
-version: 1.6.0+1
+version: 1.7.0+1
 
 environment:
-  sdk: ">=3.13.1"
-  flutter: ">=3.47.1"
+  sdk: ">=3.13.5"
+  flutter: ">=3.47.6"
 
 dependencies:
   flutter:
