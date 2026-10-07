@@ -751,7 +751,7 @@ enum ItemLine {
     'Fairy . Small Worm %',
     LineColor.purple,
     LineNumType.percent,
-    range: (25, 100),
+    range: (10, 25),
     allowedTypes: {ItemType.sword, ItemType.bow, ItemType.hammer},
   ),
   antlion(
@@ -830,19 +830,19 @@ enum ItemLine {
   /// 词条颜色
   final LineColor color;
 
-  /// 数值类型（整数、百分比、小数），null 表示按 label 判断
+  /// 数值类型，null 表示按 label 判断
   final LineNumType? numType;
 
   /// 白词条各等级数值范围
   final Map<ItemLevel, WhiteLineRange>? perLevel;
 
-  /// 红词条数值范围
+  /// 红 / 紫词条数值范围
   final LineRange? range;
 
   /// 冲突类型（跨词条共享计数用），null 表示仅与自身冲突
   final LineType? conflictType;
 
-  /// 可出现的装备类型集合（如 multiShot 仅弓与饰品），null 表示无限制
+  /// 可出现的装备类型集合，null 表示无限制
   final Set<ItemType>? allowedTypes;
 
   /// 全部词条
@@ -881,8 +881,7 @@ enum ItemLine {
     }
   }
 
-  /// 全部等级下的初始值范围（跨等级取并集，供规则数值校验用）；
-  /// 黄词条（技能 +1）无范围，itemQuality 为 20~25
+  /// 范围校验
   LineRange? overallValueRange() {
     switch (color) {
       case LineColor.white:
@@ -902,18 +901,16 @@ enum ItemLine {
     }
   }
 
-  /// 是否为固定值词条（红词条中 min == max）
+  /// 是否为固定值词条
   bool get isFixed => numType == LineNumType.fixed;
 
-  /// 是否为百分比词条（label 带 % 或 itemQuality），精度为 1 位小数
+  /// 是否为百分比词条，精度为 1 位小数
   bool get isPercent => numType == LineNumType.percent;
 
-  /// 是否只 roll 整数（Damage +、Gold per Hit）
+  /// 是否只 roll 整数
   bool get rollsInteger => numType == LineNumType.integer;
 
-  /// 随机初始值（范围内均匀随机；固定值词条返回固定值）。
-  /// 精度：整数词条 0 位小数，百分比词条 1 位小数，
-  /// 其余词条 3 位小数
+  /// 随机初始值
   double rollValue(ItemLevel level, Random rng) {
     switch (color) {
       case LineColor.white:
@@ -939,16 +936,14 @@ enum ItemLine {
     return (value * decimals).roundToDouble() / decimals;
   }
 
-  /// 应用 itemQuality 加成（[qualityPercent] 为 20~25 的百分数值）
-  /// - 黄词条（第 4 槽）不受加成
-  /// - 固定值红词条加强后只保留整数部分（如 1 × 1.2 → 1，相当于没加强）
+  /// Item Quality
   double applyQualityBoost(double value, double qualityPercent) {
     if (color == LineColor.yellow) return value;
     final boosted = value * (1 + qualityPercent / 100);
     return isFixed ? boosted.truncateToDouble() : boosted;
   }
 
-  /// 是否与 [other] 属于同类型（冲突计数用）
+  /// 同类型判断
   bool sameType(ItemLine other) =>
       this == other ||
       (conflictType != null && conflictType == other.conflictType);
