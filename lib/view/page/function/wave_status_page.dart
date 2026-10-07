@@ -174,7 +174,6 @@ class WaveStatusPage extends StatelessWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            // 英文标签比中文长得多，给它弹性并允许省略
             Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
             if (infoContent != null) ...[
               const SizedBox(width: 4),
@@ -205,8 +204,6 @@ class WaveStatusPage extends StatelessWidget {
             ],
           ],
         ),
-        // 英文选项明显长于中文，若不加约束，trailing 会占满整行并触发
-        // ListTile 的 "Trailing widget consumes the entire tile width" 断言
         trailing: ConstrainedBox(
           constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.45),
           child: _TrailingDropdown<T>(
@@ -335,8 +332,6 @@ class _TrailingDropdown<T> extends StatelessWidget {
         key: buttonKey,
         value: value,
         isDense: true,
-        // 与调用方的宽度约束配合：撑满可用宽度并让超长选项省略，
-        // 而不是把文字挤出边界
         isExpanded: true,
         alignment: AlignmentDirectional.centerEnd,
         borderRadius: BorderRadius.circular(8),

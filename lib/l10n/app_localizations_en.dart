@@ -727,7 +727,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelUsernameHint => '0-9, a-z, A-Z, -, _, space';
 
   @override
-  String get waveStatus => '跳波状态';
+  String get waveStatus => 'Wave Status';
 
   @override
   String get wavePushIncomeCalc => 'Waving Income';
@@ -1041,7 +1041,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rankingKindGuild => 'Guild Leaderboard';
 
   @override
-  String get rankingKindHell => 'Endless Leaderboard';
+  String get rankingKindHell => 'Hell Mode Leaderboard';
 
   @override
   String get emptyRankingData => 'No leaderboard data';
