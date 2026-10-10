@@ -2,16 +2,16 @@ import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
-/// 阵容页底部汇总条：总波数 / 赛季波数（可编辑、可联网查询）、排名胶囊、
-/// 总金币、GP、指数。数值变化由 store 的 ValueNotifier 驱动实时更新。
-class FormationSummaryBar extends StatelessWidget {
+/// 阵容页底部汇总条
+class FormationSummaryBar extends ConsumerWidget {
   const FormationSummaryBar({
     super.key,
     required this.querying,
@@ -23,28 +23,29 @@ class FormationSummaryBar extends StatelessWidget {
     required this.onQuery,
   });
 
-  /// 联网查询进行中（按钮显示转圈并禁用）
+  /// 联网查询进行中
   final bool querying;
 
-  /// 玩家赛季榜排名（前 300 内才显示，不在榜单则隐藏）
+  /// 玩家赛季榜排名
   final int? playerRank;
 
-  /// 与上一名/下一名的分数差距；首名/末名时对应侧为 null
+  /// 与上一名/下一名的分数差距
   final int? playerGapPrev;
   final int? playerGapNext;
 
-  /// 无尽榜排名（前 300 内才显示）
+  /// 无尽榜排名
   final int? hellRank;
 
-  /// 所属公会在公会榜上的排名（前 300 内才显示）
+  /// 所属公会在公会榜上的排名
   final int? guildRank;
 
-  /// 联网查询按钮回调（冷却与提示逻辑在页面 State 中）
+  /// 联网查询按钮回调
   final VoidCallback onQuery;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
+    final isDefaultUser = ref.watch(currentUserIdProvider) == 0;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
       child: SummaryCard(
@@ -53,7 +54,7 @@ class FormationSummaryBar extends StatelessWidget {
             leadingIcon: Icons.emoji_events,
             title: Text(l10n.totalWave),
             actions: [
-              if (Stores.infoStore.getCurrentUserId() == 0)
+              if (isDefaultUser)
                 _SmallIconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: l10n.tooltipEditTotalWave,
@@ -64,11 +65,11 @@ class FormationSummaryBar extends StatelessWidget {
                       title: l10n.dialogSetTotalWave,
                       labelText: l10n.totalWave,
                       fallback: 1,
-                      onSave: Stores.infoStore.setUserWave,
+                      onSave: ref.users.setUserWave,
                     );
                   },
                 ),
-              if (isMobile && Stores.infoStore.getCurrentUserId() != 0)
+              if (isMobile && !isDefaultUser)
                 _SmallIconButton(
                   icon: querying
                       ? const SizedBox(
@@ -81,17 +82,15 @@ class FormationSummaryBar extends StatelessWidget {
                   onPressed: querying ? null : onQuery,
                 ),
             ],
-            trailing: ValueListenableBuilder<int>(
-              valueListenable: Stores.infoStore.waveNotifier,
-              builder: (context, wave, _) =>
-                  SummaryRowValueText(text: wave.format()),
+            trailing: SummaryRowValueText(
+              text: ref.watch(currentUserWaveProvider).format(),
             ),
           ),
           SummaryRow(
             leadingIcon: Icons.eco,
             title: Text(l10n.seasonWave),
             actions: [
-              if (Stores.infoStore.getCurrentUserId() == 0)
+              if (isDefaultUser)
                 _SmallIconButton(
                   icon: const Icon(Icons.edit),
                   tooltip: l10n.tooltipEditSeasonWave,
@@ -102,19 +101,16 @@ class FormationSummaryBar extends StatelessWidget {
                       title: l10n.dialogSetSeasonWave,
                       labelText: l10n.seasonWave,
                       fallback: 0,
-                      onSave: Stores.infoStore.setCurrentUserSeasonWave,
+                      onSave: ref.users.setCurrentUserSeasonWave,
                     );
                   },
                 ),
             ],
-            trailing: ValueListenableBuilder<int>(
-              valueListenable: Stores.infoStore.seasonWaveNotifier,
-              builder: (context, seasonWave, _) =>
-                  SummaryRowValueText(text: seasonWave.format()),
+            trailing: SummaryRowValueText(
+              text: ref.watch(currentUserSeasonWaveProvider).format(),
             ),
           ),
-          // 排名行：个人赛季 / 无尽 / 所属公会三类榜单有任一排名才显示；
-          // 联网数据返回后整行才出现，做入场过渡：卡片高度平滑展开 + 内容淡入上移
+          // 排名行
           AnimatedSize(
             duration: const Duration(milliseconds: 300),
             curve: Curves.easeOutCubic,
@@ -132,15 +128,14 @@ class FormationSummaryBar extends StatelessWidget {
           SummaryRow(
             leadingIcon: Icons.monetization_on,
             title: Text(l10n.totalGold),
-            trailing: ValueListenableBuilder<double>(
-              valueListenable: Stores.infoStore.totalGoldNotifier,
-              builder: (context, gold, _) => SummaryRowValueText(
-                text: gold.formatCompact(
-                  fractionDigits: 2,
-                  english: !context.isChineseLocale,
-                  traditional: context.isTraditionalChineseLocale,
-                ),
-              ),
+            trailing: SummaryRowValueText(
+              text: ref
+                  .watch(currentUserTotalGoldProvider)
+                  .formatCompact(
+                    fractionDigits: 2,
+                    english: !context.isChineseLocale,
+                    traditional: context.isTraditionalChineseLocale,
+                  ),
             ),
           ),
           SummaryRow(
@@ -149,17 +144,11 @@ class FormationSummaryBar extends StatelessWidget {
               mainAxisSize: MainAxisSize.min,
               children: [Text(l10n.goldPower)],
             ),
-            trailing: ListenableBuilder(
-              listenable: Listenable.merge([
-                Stores.infoStore.gpNotifier,
-                Stores.infoStore.gpCNNotifier,
-              ]),
-              builder: (context, _) => SummaryRowValueText(
-                text:
-                    '${Stores.infoStore.gpNotifier.value.format(fractionDigits: 3)}'
-                    ' · '
-                    '${Stores.infoStore.gpCNNotifier.value.format(fractionDigits: 3)}',
-              ),
+            trailing: SummaryRowValueText(
+              text:
+                  '${ref.watch(currentUserGpProvider).format(fractionDigits: 3)}'
+                  ' · '
+                  '${ref.watch(currentUserGpCnProvider).format(fractionDigits: 3)}',
             ),
           ),
         ],
@@ -245,8 +234,6 @@ class _WaveEditDialogState extends State<_WaveEditDialog> {
   }
 }
 
-/// 排名行首次展示时播放入场过渡（淡入上移 350ms）；同一会话内页面销毁重建后
-/// 直接展示、不再重复播放动画（static 标志位存活于整个 App 生命周期）。
 class _RankIntro extends StatelessWidget {
   const _RankIntro({
     required this.playerRank,
@@ -262,7 +249,6 @@ class _RankIntro extends StatelessWidget {
   final int? hellRank;
   final int? guildRank;
 
-  /// 本会话是否已播放过入场动画；已播放则后续直接渲染不带动画
   static bool _played = false;
 
   @override
@@ -292,7 +278,7 @@ class _RankIntro extends StatelessWidget {
   }
 }
 
-/// 排名胶囊行：个人赛季 / 无尽 / 所属公会，内容过宽时可横向滚动
+/// 排名胶囊行
 class _RankRow extends StatelessWidget {
   const _RankRow({
     required this.playerRank,
@@ -315,10 +301,7 @@ class _RankRow extends StatelessWidget {
       fontSize: 11.0,
       fontWeight: FontWeight.w600,
     );
-    // 可见胶囊与其后的间距成对收集；间距只插在胶囊之间，
-    // 最后一个胶囊后不再追加 SizedBox
     final chips = <(Widget, double)>[
-      // 个人赛季榜：与上一名/下一名的分数差距（首尾无对应名次则隐藏）
       if (playerGapPrev != null)
         (
           PillChip(
@@ -369,7 +352,6 @@ class _RankRow extends StatelessWidget {
         Icon(Icons.leaderboard, size: 20.0, color: colorScheme.primary),
         const SizedBox(width: 8.0),
         Text(AppLocalizations.of(context).ranking),
-        // 胶囊靠右，与其他行的数值展示样式统一
         Expanded(
           child: Align(
             alignment: Alignment.centerRight,

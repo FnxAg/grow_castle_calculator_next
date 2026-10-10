@@ -1,15 +1,15 @@
 import 'package:flutter/gestures.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 跳波状态页
-class WaveStatusPage extends StatelessWidget {
+class WaveStatusPage extends ConsumerWidget {
   const WaveStatusPage({super.key});
 
-  /// 下拉项文案随语言变化，故按当前 [AppLocalizations] 现取
   static List<(int, String)> _gameSpeedEntries(AppLocalizations l10n) => [
     (0, l10n.optionSpeed2x),
     (1, l10n.optionSpeed2xAds10),
@@ -49,113 +49,99 @@ class WaveStatusPage extends StatelessWidget {
   static final _autoBattleKey = GlobalKey();
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final store = Stores.infoStore;
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        store.currentUserNotifier,
-        store.dataVersionNotifier,
-      ]),
-      builder: (context, _) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: .start,
-              children: [Text(l10n.waveStatus), _AppBarInfo()],
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.info_outline),
-                onPressed: () => showDialog<void>(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(l10n.sectionInfo),
-                    content: Text(l10n.dialogWaveStatusDisclaimer),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(l10n.actionClose),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-          body: ValueListenableBuilder<int>(
-            valueListenable: Stores.infoStore.waveStatusNotifier,
-            builder: (context, _, _) {
-              final store = Stores.infoStore;
-              final wph = store.getCurrentUserWph();
-              final rwph = store.getCurrentUserRwph();
-              return ListView(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(12),
-                    child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
-                  ),
-                  // 游戏速度：gameSpeed
-                  _settingTile<int>(
-                    context,
-                    label: l10n.labelGameSpeed,
-                    dropdownKey: _gameSpeedKey,
-                    value: store.getCurrentUserGameSpeed(),
-                    entries: _gameSpeedEntries(l10n),
-                    onChanged: store.setCurrentUserGameSpeed,
-                  ),
-                  // 闹钟转职：chronoClass
-                  _settingTile<int>(
-                    context,
-                    label: l10n.labelChronoType,
-                    dropdownKey: _chronoKey,
-                    value: store.getCurrentUserChronoClass(),
-                    entries: _chronoEntries(l10n),
-                    onChanged: store.setCurrentUserChronoClass,
-                  ),
-                  // 10%角：horn
-                  _settingTile<bool>(
-                    context,
-                    label: l10n.labelHorn10,
-                    dropdownKey: _hornKey,
-                    value: store.getCurrentUserHorn(),
-                    entries: _equipEntries(l10n),
-                    onChanged: store.setCurrentUserHorn,
-                  ),
-                  // 30%角：goldenHorn
-                  _settingTile<bool>(
-                    context,
-                    label: l10n.labelHorn30,
-                    dropdownKey: _goldenHornKey,
-                    value: store.getCurrentUserGoldenHorn(),
-                    entries: _equipEntries(l10n),
-                    onChanged: store.setCurrentUserGoldenHorn,
-                  ),
-                  // 恶魔号角跳波数：devilHornSkip
-                  _settingTile<int>(
-                    context,
-                    label: l10n.labelDevilHornSkip,
-                    dropdownKey: _devilHornKey,
-                    value: store.getCurrentUserDevilHornSkip(),
-                    entries: _devilHornEntries(l10n),
-                    onChanged: store.setCurrentUserDevilHornSkip,
-                  ),
-                  // 挂机类型：isGoldAutoBattle
-                  _settingTile<bool>(
-                    context,
-                    label: l10n.labelAutoBattleType,
-                    dropdownKey: _autoBattleKey,
-                    value: store.getCurrentUserIsGoldAutoBattle(),
-                    entries: _autoBattleEntries(l10n),
-                    infoContent: Text(l10n.infoAutoBattleTab),
-                    onChanged: store.setCurrentUserIsGoldAutoBattle,
+    final user = ref.watch(currentUserProvider);
+    final wph = ref.watch(theoreticalWphProvider);
+    final rwph = ref.watch(theoreticalRwphProvider);
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: .start,
+          children: [Text(l10n.waveStatus), _AppBarInfo()],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.info_outline),
+            onPressed: () => showDialog<void>(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(l10n.sectionInfo),
+                content: Text(l10n.dialogWaveStatusDisclaimer),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.actionClose),
                   ),
                 ],
-              );
-            },
+              ),
+            ),
           ),
-        );
-      },
+        ],
+      ),
+      body: ListView(
+        children: [
+          Padding(
+            padding: const EdgeInsets.all(12),
+            child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
+          ),
+          // 游戏速度：gameSpeed
+          _settingTile<int>(
+            context,
+            label: l10n.labelGameSpeed,
+            dropdownKey: _gameSpeedKey,
+            value: user.gameSpeed,
+            entries: _gameSpeedEntries(l10n),
+            onChanged: ref.users.setCurrentUserGameSpeed,
+          ),
+          // 闹钟转职：chronoClass
+          _settingTile<int>(
+            context,
+            label: l10n.labelChronoType,
+            dropdownKey: _chronoKey,
+            value: user.chronoClass,
+            entries: _chronoEntries(l10n),
+            onChanged: ref.users.setCurrentUserChronoClass,
+          ),
+          // 10%角：horn
+          _settingTile<bool>(
+            context,
+            label: l10n.labelHorn10,
+            dropdownKey: _hornKey,
+            value: user.horn,
+            entries: _equipEntries(l10n),
+            onChanged: ref.users.setCurrentUserHorn,
+          ),
+          // 30%角：goldenHorn
+          _settingTile<bool>(
+            context,
+            label: l10n.labelHorn30,
+            dropdownKey: _goldenHornKey,
+            value: user.goldenHorn,
+            entries: _equipEntries(l10n),
+            onChanged: ref.users.setCurrentUserGoldenHorn,
+          ),
+          // 恶魔号角跳波数：devilHornSkip
+          _settingTile<int>(
+            context,
+            label: l10n.labelDevilHornSkip,
+            dropdownKey: _devilHornKey,
+            value: user.devilHornSkip,
+            entries: _devilHornEntries(l10n),
+            onChanged: ref.users.setCurrentUserDevilHornSkip,
+          ),
+          // 挂机类型：isGoldAutoBattle
+          _settingTile<bool>(
+            context,
+            label: l10n.labelAutoBattleType,
+            dropdownKey: _autoBattleKey,
+            value: user.isGoldAutoBattle,
+            entries: _autoBattleEntries(l10n),
+            infoContent: Text(l10n.infoAutoBattleTab),
+            onChanged: ref.users.setCurrentUserIsGoldAutoBattle,
+          ),
+        ],
+      ),
     );
   }
 
@@ -277,7 +263,7 @@ class _ResultCard extends StatelessWidget {
   }
 }
 
-/// 结果卡内的单个指标：小标签 + 加粗大数值
+/// 结果卡内的单个指标
 class _HeroMetric extends StatelessWidget {
   const _HeroMetric({required this.label, required this.value});
 

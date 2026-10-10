@@ -1,15 +1,17 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:measure_size/render_object.dart';
 
 /// 玩家详情页
-class PlayerDetailPage extends StatefulWidget {
+class PlayerDetailPage extends ConsumerStatefulWidget {
   const PlayerDetailPage({
     super.key,
     required this.playerName,
@@ -19,17 +21,17 @@ class PlayerDetailPage extends StatefulWidget {
 
   final String playerName;
 
-  /// 嵌入主从两栏右侧面板：不渲染独立 Scaffold/AppBar，头部自带关闭按钮
+  /// 嵌入主从两栏右侧面板
   final bool embedded;
 
   /// 嵌入模式头部关闭按钮回调（清除列表页的选中态）
   final VoidCallback? onClose;
 
   @override
-  State<PlayerDetailPage> createState() => _PlayerDetailPageState();
+  ConsumerState<PlayerDetailPage> createState() => _PlayerDetailPageState();
 }
 
-class _PlayerDetailPageState extends State<PlayerDetailPage>
+class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     with TickerProviderStateMixin {
   bool _loading = true;
   String? _error;
@@ -72,7 +74,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
   @override
   void didUpdateWidget(covariant PlayerDetailPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 主从面板复用同一实例切换玩家：重置展示状态并重新拉取
+    // 主从面板复用同一实例切换玩家,，重置展示状态并重新拉取
     if (oldWidget.playerName != widget.playerName) {
       paddingHeight.value = 0;
       summaryOffset.value = 0;
@@ -135,6 +137,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
             PlayerApiService.queryPlayerWphHistory(
               widget.playerName,
               Stores.appSettingsStore.apiUrlNotifier.value,
+              username: ref.read(currentUsernameProvider),
             ),
             RankingCache.playerRanking(),
             RankingCache.hellRanking(),
@@ -147,7 +150,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
           ).wait;
 
     if (!mounted) return;
-    // 此处已在 await 之后：initState 的同步段不能查 Localizations
+    // 此处已在 await 之后，initState 的同步段不能查 Localizations
     final l10n = AppLocalizations.of(context);
     setState(() {
       _loading = false;
@@ -193,8 +196,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    // 波速网格 + 汇总吸顶：宽屏直接铺满；每行格子数由 _wphGrid 内部的
-    // LayoutBuilder 按局部宽度自适应
     final body = _buildBody();
     if (!widget.embedded) {
       return Scaffold(
@@ -210,8 +211,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
         body: body,
       );
     }
-    // 嵌入主从两栏的右侧面板：紧凑头部（名字 + 关闭按钮）+ 加载条，
-    // 无独立 Scaffold/AppBar（外层列表页已有）
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
@@ -302,7 +301,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
   Widget _buildResult(PlayerQueryResult r) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    // ' ago' 为英文硬编码（中文界面同样显示），本期不改
     final lastOnline = PlayerApiService.formatLastOnline(
       r.queryDate,
       DateTime.now(),
@@ -357,7 +355,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                                   top: 8.0,
                                   bottom: 4.0,
                                 ),
-                                // 固定高度、行内拉伸铺满：右侧无空白
                                 child: _wphGrid(group.wphs),
                               ),
                             ],
@@ -455,7 +452,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                                 leadingIcon: Icons.schedule,
                                 title: Text(l10n.lastOnline),
                                 trailing: SummaryRowValueText(
-                                  // ' ago' 英文硬编码，待服务层统一处理
                                   text: '$lastOnline ago',
                                 ),
                               ),
@@ -480,7 +476,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
       builder: (context, constraints) {
         const minCell = 48.0;
         const spacing = 6.0;
-        // 每行格子数：保证格子不小于最小宽度
+        // 每行格子数
         final perRow = ((constraints.maxWidth + spacing) / (minCell + spacing))
             .floor();
         final rows = <List<int?>>[];

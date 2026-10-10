@@ -1,5 +1,5 @@
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
-import 'package:grow_castle_calculator_next/data/store/user_data.dart';
+import 'package:grow_castle_calculator_next/model/userdata/user_data.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:material_ui/material_ui.dart';

@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
 import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
@@ -15,143 +17,109 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart
 import 'package:material_ui/material_ui.dart';
 
 /// 当前用户的功能页
-class FunctionPage extends StatefulWidget {
+class FunctionPage extends ConsumerWidget {
   const FunctionPage({super.key});
 
   @override
-  State<FunctionPage> createState() => _FunctionPageState();
-}
-
-class _FunctionPageState extends State<FunctionPage> {
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final store = Stores.infoStore;
     final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
       color: Theme.of(context).colorScheme.primary,
       fontWeight: FontWeight.w600,
     );
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        store.currentUserNotifier,
-        store.dataVersionNotifier,
-      ]),
-      builder: (BuildContext context, _) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: .start,
-              children: [Text(l10n.tabFunction), _AppBarInfo()],
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: .start,
+          children: [Text(l10n.tabFunction), _AppBarInfo()],
+        ),
+      ),
+      body: ListView(
+        children: [
+          ListTile(
+            leading: const Icon(Icons.bolt),
+            title: Text(l10n.waveStatus),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const WaveStatusPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.percent),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.wavePushIncomeCalc,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                const SizedBox(width: 8.0),
+                Text(
+                  '${ref.watch(currentUserGabBonusProvider).toStringAsFixed(2)}%',
+                  style: style,
+                ),
+              ],
             ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const BonusGoldCalcPage(),
+                ),
+              );
+            },
           ),
-          body: ListView(
-            children: [
-              ListTile(
-                leading: const Icon(Icons.bolt),
-                title: Text(l10n.waveStatus),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const WaveStatusPage(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.percent),
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.wavePushIncomeCalc,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    ValueListenableBuilder(
-                      valueListenable: store.incomeNotifier,
-                      builder: (context, value, child) {
-                        return Text(
-                          '${store.getCurrentUserGabBonus().toStringAsFixed(2)}%',
-                          style: style,
-                        );
-                      },
-                    ),
-                  ],
+          ListTile(
+            leading: const Icon(Icons.monetization_on),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(l10n.tabIncome, overflow: TextOverflow.ellipsis),
                 ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const BonusGoldCalcPage(),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.monetization_on),
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.tabIncome,
-                        overflow: TextOverflow.ellipsis,
+                const SizedBox(width: 8.0),
+                Text(
+                  ref
+                      .watch(dailyIncomeProvider)
+                      .total
+                      .formatCompact(
+                        fractionDigits: 2,
+                        english: !context.isChineseLocale,
+                        traditional: context.isTraditionalChineseLocale,
                       ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    ValueListenableBuilder(
-                      valueListenable: store.incomeNotifier,
-                      builder: (context, _, child) {
-                        final totalIncome = store
-                            .getCurrentUserDailyIncomeBreakdown()
-                            .total;
-                        return Text(
-                          totalIncome.formatCompact(
-                            fractionDigits: 2,
-                            english: !context.isChineseLocale,
-                            traditional: context.isTraditionalChineseLocale,
-                          ),
-                          style: style,
-                        );
-                      },
-                    ),
-                  ],
+                  style: style,
                 ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(builder: (context) => const IncomePage()),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const Icon(Icons.timeline),
-                title: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.gameTrack,
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    _RelativeTimeText(style: style),
-                  ],
-                ),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const GameTrackPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
+              ],
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const IncomePage()),
+              );
+            },
           ),
-        );
-      },
+          ListTile(
+            leading: const Icon(Icons.timeline),
+            title: Row(
+              children: [
+                Expanded(
+                  child: Text(l10n.gameTrack, overflow: TextOverflow.ellipsis),
+                ),
+                const SizedBox(width: 8.0),
+                _RelativeTimeText(style: style),
+              ],
+            ),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const GameTrackPage()),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -161,34 +129,21 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final store = Stores.infoStore;
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        store.lastOnlineNotifier,
-        store.guildNotifier,
-      ]),
-      builder: (context, _) {
-        final segments = <Widget>[
-          CurrentUser(),
-          LastOnline(),
-          CurrentUserGuild(),
-        ];
-        return AppBarInfo(children: segments);
-      },
-    );
+    final segments = <Widget>[CurrentUser(), LastOnline(), CurrentUserGuild()];
+    return AppBarInfo(children: segments);
   }
 }
 
-class _RelativeTimeText extends StatefulWidget {
+class _RelativeTimeText extends ConsumerStatefulWidget {
   const _RelativeTimeText({required this.style});
 
   final TextStyle? style;
 
   @override
-  State<_RelativeTimeText> createState() => _RelativeTimeTextState();
+  ConsumerState<_RelativeTimeText> createState() => _RelativeTimeTextState();
 }
 
-class _RelativeTimeTextState extends State<_RelativeTimeText> {
+class _RelativeTimeTextState extends ConsumerState<_RelativeTimeText> {
   Timer? _timer;
 
   @override
@@ -207,7 +162,7 @@ class _RelativeTimeTextState extends State<_RelativeTimeText> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final lastTime = Stores.gameTrackStore.getLastRecordTime(
-      Stores.infoStore.getCurrentUserId(),
+      ref.read(currentUserIdProvider),
     );
     final text = lastTime == null
         ? l10n.noRecord

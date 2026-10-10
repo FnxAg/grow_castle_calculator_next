@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -7,6 +8,7 @@ import 'package:grow_castle_calculator_next/core/service/update_checker.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/about_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/backup_page.dart';
@@ -18,6 +20,15 @@ class SettingPage extends StatefulWidget {
 
   @override
   State<SettingPage> createState() => _SettingPageState();
+}
+
+class _CurrentUsernameSubtitle extends ConsumerWidget {
+  const _CurrentUsernameSubtitle();
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    return Text(ref.watch(currentUsernameProvider));
+  }
 }
 
 class _SettingPageState extends State<SettingPage> {
@@ -248,12 +259,7 @@ class _SettingPageState extends State<SettingPage> {
           ListTile(
             leading: const Icon(Icons.group),
             title: Text(l10n.settingsUserManagement),
-            subtitle: ValueListenableBuilder(
-              valueListenable: Stores.infoStore.currentUserNotifier,
-              builder: (context, value, child) {
-                return Text(Stores.infoStore.getCurrentUsername());
-              },
-            ),
+            subtitle: const _CurrentUsernameSubtitle(),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();

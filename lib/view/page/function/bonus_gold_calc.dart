@@ -1,31 +1,29 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_gab_bonus.dart';
-import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 单条收入相对金挂成本的收益率（%）：成本非正（当前波数过低）时记 0，
-/// 避免负成本导致的除零/噪音百分比
+/// 单条收入相对金挂成本的收益率，成本非正时记 0
 double _sampleRate(num income, double safeCost) =>
     safeCost > 0 ? (income - safeCost) / safeCost * 100 : 0.0;
 
-/// 收入百分比计算页：输入样本计算平均收益率。
-class BonusGoldCalcPage extends StatefulWidget {
+/// 收入百分比计算页
+class BonusGoldCalcPage extends ConsumerStatefulWidget {
   const BonusGoldCalcPage({super.key});
 
   @override
-  State<BonusGoldCalcPage> createState() => _BonusGoldCalcPageState();
+  ConsumerState<BonusGoldCalcPage> createState() => _BonusGoldCalcPageState();
 }
 
-class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
-    with CurrentUserReload {
+class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage> {
   /// 会话缓存
   static final Map<int, List<int>> _incomesByUser = {};
 
@@ -35,18 +33,20 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
   @override
   void initState() {
     super.initState();
+    ref.listenManual(userReloadSignalProvider, (_, _) {
+      if (!mounted) return;
+      reloadForCurrentUser();
+    });
     _loadIncomes();
   }
 
-  /// 样本按 userId 分桶，切换用户时换回该用户自己的一份
-  @override
   void reloadForCurrentUser() {
     setState(_loadIncomes);
   }
 
   void _loadIncomes() {
     _incomes = _incomesByUser.putIfAbsent(
-      Stores.infoStore.getCurrentUserId(),
+      ref.read(currentUserIdProvider),
       () => [],
     );
   }
@@ -70,7 +70,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
         title: Text(l10n.dialogConfirmApplyIncome),
         content: Text(
           l10n.dialogApplyGabBonusContent(
-            Stores.infoStore.getCurrentUserGabBonus().format(fractionDigits: 2),
+            ref.read(currentUserGabBonusProvider).format(fractionDigits: 2),
             filled.format(fractionDigits: 2),
           ),
         ),
@@ -82,7 +82,7 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
           TextButton(
             onPressed: () {
               Navigator.of(context).pop();
-              Stores.infoStore.setCurrentUserGabBonus(filled);
+              ref.users.setCurrentUserGabBonus(filled);
               ScaffoldMessenger.of(context).showSnackBar(
                 SnackBar(
                   content: Text(
@@ -108,100 +108,90 @@ class _BonusGoldCalcPageState extends State<BonusGoldCalcPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final store = Stores.infoStore;
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        store.currentUserNotifier,
-        store.dataVersionNotifier,
-      ]),
-      builder: (context, _) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: .start,
-              children: [Text(l10n.wavePushIncomeCalc), _AppBarInfo()],
-            ),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.restore_page),
-                tooltip: l10n.actionReset,
-                onPressed: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (dialogContext) => AlertDialog(
-                      title: Text(l10n.actionReset),
-                      content: Text(l10n.dialogResetIncomeSamples),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(dialogContext).pop(),
-                          child: Text(l10n.actionCancel),
-                        ),
-                        TextButton(
-                          onPressed: () {
-                            Navigator.of(dialogContext).pop();
-                            setState(() => _incomes.clear());
-                          },
-                          child: Text(l10n.actionConfirm),
-                        ),
-                      ],
+    final wave = ref.watch(currentUserWaveProvider);
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: .start,
+          children: [Text(l10n.wavePushIncomeCalc), _AppBarInfo()],
+        ),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.restore_page),
+            tooltip: l10n.actionReset,
+            onPressed: () {
+              showDialog<void>(
+                context: context,
+                builder: (dialogContext) => AlertDialog(
+                  title: Text(l10n.actionReset),
+                  content: Text(l10n.dialogResetIncomeSamples),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.of(dialogContext).pop(),
+                      child: Text(l10n.actionCancel),
                     ),
-                  );
-                },
-              ),
-            ],
-          ),
-          body: ListenableBuilder(
-            listenable: store.waveNotifier,
-            builder: (context, _) {
-              final isWide = context.isWideScreen;
-              final wave = store.waveNotifier.value;
-              final gabCost = _gabCost(wave);
-              final safeCost = gabCost > 0 ? gabCost : 0.0;
-              final avgIncome = _incomes.isEmpty
-                  ? 0.0
-                  : _incomes.reduce((a, b) => a + b) / _incomes.length;
-              final percent = _incomes.isEmpty
-                  ? 0.0
-                  : _sampleRate(avgIncome, safeCost);
-              final Widget bodyView = Expanded(
-                flex: isWide ? 6 : 1,
-                child: _incomes.isEmpty
-                    ? Center(
-                        child: Text(
-                          l10n.emptyIncomeSamples,
-                          style: const TextStyle(color: Colors.grey),
-                        ),
-                      )
-                    : ListView.builder(
-                        itemCount: _incomes.length,
-                        itemBuilder: (context, index) {
-                          final income = _incomes[index];
-                          return _IncomeTile(
-                            index: index,
-                            income: income,
-                            rate: _sampleRate(income, safeCost),
-                            onRemove: () => _removeIncome(index),
-                          );
-                        },
-                      ),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.of(dialogContext).pop();
+                        setState(() => _incomes.clear());
+                      },
+                      child: Text(l10n.actionConfirm),
+                    ),
+                  ],
+                ),
               );
-              final Widget summary = _buildSummaryCard(
-                gabCost: gabCost,
-                avgIncome: avgIncome,
-                percent: percent,
-              );
-              return isWide
-                  ? Row(
-                      children: [
-                        bodyView,
-                        Expanded(flex: 4, child: summary),
-                      ],
-                    )
-                  : Column(children: [bodyView, summary]);
             },
           ),
-        );
-      },
+        ],
+      ),
+      body: Builder(
+        builder: (context) {
+          final isWide = context.isWideScreen;
+          final gabCost = _gabCost(wave);
+          final safeCost = gabCost > 0 ? gabCost : 0.0;
+          final avgIncome = _incomes.isEmpty
+              ? 0.0
+              : _incomes.reduce((a, b) => a + b) / _incomes.length;
+          final percent = _incomes.isEmpty
+              ? 0.0
+              : _sampleRate(avgIncome, safeCost);
+          final Widget bodyView = Expanded(
+            flex: isWide ? 6 : 1,
+            child: _incomes.isEmpty
+                ? Center(
+                    child: Text(
+                      l10n.emptyIncomeSamples,
+                      style: const TextStyle(color: Colors.grey),
+                    ),
+                  )
+                : ListView.builder(
+                    itemCount: _incomes.length,
+                    itemBuilder: (context, index) {
+                      final income = _incomes[index];
+                      return _IncomeTile(
+                        index: index,
+                        income: income,
+                        rate: _sampleRate(income, safeCost),
+                        onRemove: () => _removeIncome(index),
+                      );
+                    },
+                  ),
+          );
+          final Widget summary = _buildSummaryCard(
+            gabCost: gabCost,
+            avgIncome: avgIncome,
+            percent: percent,
+          );
+          return isWide
+              ? Row(
+                  children: [
+                    bodyView,
+                    Expanded(flex: 4, child: summary),
+                  ],
+                )
+              : Column(children: [bodyView, summary]);
+        },
+      ),
     );
   }
 
