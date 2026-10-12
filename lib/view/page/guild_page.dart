@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
@@ -48,6 +49,9 @@ class GuildDetailPage extends StatelessWidget {
 }
 
 class _GuildPageState extends ConsumerState<GuildPage> {
+  final ScrollController _guildScrollController = ScrollController();
+  bool _showGuildSummary = true;
+
   bool _firstLoading = true;
   bool _loading = true;
   String? _error;
@@ -107,11 +111,29 @@ class _GuildPageState extends ConsumerState<GuildPage> {
   @override
   void initState() {
     super.initState();
+    _guildScrollController.addListener(_handleGuildScroll);
     ref.listenManual(userReloadSignalProvider, (_, _) {
       if (!mounted) return;
       reloadForCurrentUser();
     });
     _load();
+  }
+
+  void _handleGuildScroll() {
+    final direction = _guildScrollController.position.userScrollDirection;
+    if (direction == ScrollDirection.reverse && _showGuildSummary) {
+      setState(() => _showGuildSummary = false);
+    } else if (direction == ScrollDirection.forward && !_showGuildSummary) {
+      setState(() => _showGuildSummary = true);
+    }
+  }
+
+  @override
+  void dispose() {
+    _guildScrollController
+      ..removeListener(_handleGuildScroll)
+      ..dispose();
+    super.dispose();
   }
 
   /// 切换用户
@@ -505,32 +527,11 @@ class _GuildPageState extends ConsumerState<GuildPage> {
     return Column(
       children: [
         // 公会名 + 公会排名（前 300 内）+ 成员数
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 10.0, 24.0, 8.0),
-          child: Row(
-            children: [
-              // 公会榜排名，前后为与上一名/下一名的分数差距
-              for (var i = 0; i < chips.length; i++) ...[
-                chips[i].$1,
-                if (i < chips.length - 1) SizedBox(width: chips[i + 1].$2),
-              ],
-              const Spacer(),
-              Text(
-                l10n.guildMemberCountAndScore(
-                  _members.length,
-                  totalScore.format(),
-                ),
-                style: Theme.of(context).textTheme.bodySmall
-                    ?.copyWith(color: scheme.primary),
-              ),
-            ],
-          ),
-        ),
-        const Divider(height: 1.0),
         Expanded(
           child: RefreshIndicator(
             onRefresh: _refresh,
             child: ListView.builder(
+              controller: _guildScrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: _members.length,
               itemBuilder: (context, index) {
@@ -647,6 +648,39 @@ class _GuildPageState extends ConsumerState<GuildPage> {
               },
             ),
           ),
+        ),
+        AnimatedSize(
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+          alignment: Alignment.topCenter,
+          child: _showGuildSummary
+              ? Column(
+                  children: [
+                    const Divider(height: 1.0),
+                    Padding(
+                      padding: const EdgeInsets.fromLTRB(16.0, 10.0, 24.0, 8.0),
+                      child: Row(
+                        children: [
+                          for (var i = 0; i < chips.length; i++) ...[
+                            chips[i].$1,
+                            if (i < chips.length - 1)
+                              SizedBox(width: chips[i + 1].$2),
+                          ],
+                          const Spacer(),
+                          Text(
+                            l10n.guildMemberCountAndScore(
+                              _members.length,
+                              totalScore.format(),
+                            ),
+                            style: Theme.of(context).textTheme.bodySmall
+                                ?.copyWith(color: scheme.primary),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                )
+              : const SizedBox.shrink(),
         ),
       ],
     );
