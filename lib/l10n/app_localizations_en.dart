@@ -1439,7 +1439,7 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get endlessScore => 'Endless score';
+  String get hellModeScore => 'Hell Mode score';
 
   @override
   String get lastOnline => 'Last online';

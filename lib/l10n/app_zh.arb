@@ -1267,7 +1267,7 @@
   },
   "rankingKindHell": "无尽排行榜",
   "@rankingKindHell": {
-    "description": "术语表：无尽 = endless　位置：lib/view/page/tool/ranking_page.dart:16"
+    "description": "术语表：无尽 = hell mode　位置：lib/view/page/tool/ranking_page.dart:16"
   },
   "emptyRankingData": "暂无榜单数据",
   "@emptyRankingData": {
@@ -1818,9 +1818,9 @@
       }
     }
   },
-  "endlessScore": "无尽分数",
-  "@endlessScore": {
-    "description": "汇总卡的 SummaryRow 标题。术语表：无尽 endless / 分数 score。仅当无尽榜有数据时显示。　位置：lib/view/page/public/player_detail_page.dart:429"
+  "hellModeScore": "无尽分数",
+  "@hellModeScore": {
+    "description": "汇总卡的 SummaryRow 标题。术语表：无尽 hell mode / 分数 score。仅当无尽榜有数据时显示。　位置：lib/view/page/public/player_detail_page.dart:429"
   },
   "lastOnline": "上次在线",
   "@lastOnline": {

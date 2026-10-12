@@ -383,7 +383,7 @@
   "errorPlayerBanned": "玩家「{name}」已被封鎖",
   "labelWphHistory": "每小時波速（第三方 API）",
   "labelSeason": "賽季 {season}",
-  "endlessScore": "無盡分數",
+  "hellModeScore": "無盡分數",
   "lastOnline": "上次線上",
   "unitEnabledCount": "{enabled}/{total} 啟用",
   "metricGoldShare": "金幣佔比",

@@ -5,8 +5,6 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 弹出单位汇总表单
-///
-/// 展示 [username] 用户的单位汇总，数据来自 [data] 快照（不随输入实时变化），
 void showUnitSummarySheet(
   BuildContext context, {
   required String username,
@@ -109,7 +107,6 @@ class _UnitSummarySheet extends StatelessWidget {
           ),
           const SizedBox(height: 8.0),
           const Divider(height: 1.0),
-          // 快照数据不随输入变化，无需监听 notifier
           Expanded(
             child: ListView.separated(
               controller: scrollController,
@@ -303,10 +300,7 @@ class _UnitSummaryRow extends StatelessWidget {
     final wave = data.wave;
     final totalGold = data.totalGold;
 
-    // 占比 = 单位金币 / 总金币；未启用固定为 0
     final share = applied && totalGold > 0 ? gold / totalGold * 100 : 0.0;
-    // 1/比例 = 单位等级 / 总波数；比例 为其倒数（总波数 / 单位等级）；
-    // 未启用或除数为 0 时均为 0
     final oneOverRatio = applied && wave > 0 && level > 0 ? level / wave : 0.0;
     final ratio = oneOverRatio > 0 ? 1 / oneOverRatio : 0.0;
 
@@ -387,7 +381,6 @@ class _UnitSummaryRow extends StatelessWidget {
     );
   }
 
-  /// 占比/比例数值：数值过小时自动增加小数位，避免显示成 0.00
   static String _fmt(double v) {
     if (v == 0) return '0';
     final digits = v.abs() < 0.0001

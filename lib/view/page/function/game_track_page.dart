@@ -218,8 +218,6 @@ class _TrackCard extends StatelessWidget {
                 ),
               ],
             ),
-            // 用 Wrap 而非 Row：英文单位（K/M）比中文（万/亿）宽一点，
-            // 三个胶囊在窄屏排不下时应当换行而不是溢出
             Wrap(spacing: 4, runSpacing: 4, children: trackInfo),
             if (record.units.isNotEmpty) ...[
               const SizedBox(height: 8),

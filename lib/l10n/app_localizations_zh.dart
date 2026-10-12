@@ -1335,7 +1335,7 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get endlessScore => '无尽分数';
+  String get hellModeScore => '无尽分数';
 
   @override
   String get lastOnline => '上次在线';
@@ -2700,7 +2700,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get endlessScore => '無盡分數';
+  String get hellModeScore => '無盡分數';
 
   @override
   String get lastOnline => '上次線上';

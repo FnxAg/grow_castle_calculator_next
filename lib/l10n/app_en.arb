@@ -382,7 +382,7 @@
   "errorPlayerBanned": "Player \"{name}\" is banned",
   "labelWphHistory": "Waves per hour (third-party API)",
   "labelSeason": "Season {season}",
-  "endlessScore": "Endless score",
+  "hellModeScore": "Hell Mode score",
   "lastOnline": "Last online",
   "unitEnabledCount": "{enabled}/{total} enabled",
   "metricGoldShare": "Gold share",

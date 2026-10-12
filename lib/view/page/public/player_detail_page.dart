@@ -19,7 +19,7 @@ class PlayerDetailPage extends StatefulWidget {
 
   final String playerName;
 
-  /// 嵌入主从两栏右侧面板：不渲染独立 Scaffold/AppBar，头部自带关闭按钮
+  /// 嵌入主从两栏右侧面板
   final bool embedded;
 
   /// 嵌入模式头部关闭按钮回调（清除列表页的选中态）
@@ -41,16 +41,16 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
   double _snapStart = 0.0;
   double _snapEnd = 0.0;
 
-  /// 第三方 API 的每赛季每小时波速快照（null 表示未加载/失败，区块不展示）
+  /// 第三方 API 的每赛季每小时波速快照
   List<SeasonWphGroup>? _wphHistory;
 
-  /// 玩家赛季榜排名；不在榜单或榜单请求失败时为 null
+  /// 玩家赛季榜排名
   int? _playerRank;
 
-  /// 无尽榜分数；不在榜单或榜单请求失败时为 null
+  /// 无尽榜分数
   int? _hellScore;
 
-  /// 无尽榜排名；不在榜单或榜单请求失败时为 null
+  /// 无尽榜排名
   int? _hellRank;
 
   @override
@@ -147,7 +147,6 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
           ).wait;
 
     if (!mounted) return;
-    // 此处已在 await 之后：initState 的同步段不能查 Localizations
     final l10n = AppLocalizations.of(context);
     setState(() {
       _loading = false;
@@ -431,7 +430,7 @@ class _PlayerDetailPageState extends State<PlayerDetailPage>
                               if (_hellScore != null)
                                 SummaryRow(
                                   leadingIcon: Icons.all_inclusive,
-                                  title: Text(l10n.endlessScore),
+                                  title: Text(l10n.hellModeScore),
                                   trailing: Row(
                                     mainAxisSize: MainAxisSize.min,
                                     children: [

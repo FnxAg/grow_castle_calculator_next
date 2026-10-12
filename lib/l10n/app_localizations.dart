@@ -1782,7 +1782,7 @@ abstract class AppLocalizations {
   /// **'公会排行榜'**
   String get rankingKindGuild;
 
-  /// 术语表：无尽 = endless　位置：lib/view/page/tool/ranking_page.dart:16
+  /// 术语表：无尽 = hell mode　位置：lib/view/page/tool/ranking_page.dart:16
   ///
   /// In zh, this message translates to:
   /// **'无尽排行榜'**
@@ -2400,11 +2400,11 @@ abstract class AppLocalizations {
   /// **'赛季 {season}'**
   String labelSeason(String season);
 
-  /// 汇总卡的 SummaryRow 标题。术语表：无尽 endless / 分数 score。仅当无尽榜有数据时显示。　位置：lib/view/page/public/player_detail_page.dart:429
+  /// 汇总卡的 SummaryRow 标题。术语表：无尽 hell mode / 分数 score。仅当无尽榜有数据时显示。　位置：lib/view/page/public/player_detail_page.dart:429
   ///
   /// In zh, this message translates to:
   /// **'无尽分数'**
-  String get endlessScore;
+  String get hellModeScore;
 
   /// 汇总卡行标题（术语表：上次在线 last online）。右侧值当前是英文硬编码拼接 "… ago"，详见报告「英文硬编码」一节——本期不改的话，英文界面会出现 "Last online  12min ago" 而中文界面是「上次在线  12min ago」。　位置：lib/view/page/public/player_detail_page.dart:451
   ///
