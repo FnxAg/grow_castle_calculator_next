@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:material_ui/material_ui.dart';
@@ -285,11 +286,15 @@ class _HeroMetric extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 2),
-        Text(
-          value,
-          style: textTheme.headlineMedium?.copyWith(
-            color: colorScheme.onPrimaryContainer,
-            fontWeight: FontWeight.w800,
+        AnimatedTextSwitcher(
+          alignment: .center,
+          child: Text(
+            value,
+            key: ValueKey(value),
+            style: textTheme.headlineMedium?.copyWith(
+              color: colorScheme.onPrimaryContainer,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ],

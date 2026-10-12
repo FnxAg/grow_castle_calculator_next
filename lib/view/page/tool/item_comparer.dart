@@ -1,7 +1,4 @@
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
-
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
@@ -9,10 +6,14 @@ import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 装备对比
 class ItemComparerPage extends StatefulWidget {
@@ -875,7 +876,7 @@ class _ResultView extends StatelessWidget {
               Expanded(
                 child: Text(
                   title,
-                  textAlign: TextAlign.right,
+                  textAlign: .right,
                   style: theme.textTheme.labelSmall?.copyWith(
                     color: scheme.onSurfaceVariant,
                   ),
@@ -936,7 +937,6 @@ class _ResultView extends StatelessWidget {
     bool highlight = false,
   }) {
     final theme = Theme.of(context);
-    // 数量级缩写随界面语言切换（中文 万/亿，英文 K/M/B）
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
     final style = theme.textTheme.bodyMedium?.copyWith(
@@ -949,41 +949,56 @@ class _ResultView extends StatelessWidget {
         children: [
           SizedBox(width: 68, child: Text(label, style: style)),
           Expanded(
-            child: Text(
-              result.normalHit.formatCompact(
-                english: english,
-                traditional: traditional,
+            child: AnimatedTextSwitcher(
+              alignment: .centerRight,
+              child: Text(
+                result.normalHit.formatCompact(
+                  english: english,
+                  traditional: traditional,
+                ),
+                key: ValueKey(result.normalHit),
+                textAlign: TextAlign.right,
+                style: style,
               ),
-              textAlign: TextAlign.right,
-              style: style,
             ),
           ),
           Expanded(
-            child: Text(
-              result.critHit.formatCompact(
-                english: english,
-                traditional: traditional,
+            child: AnimatedTextSwitcher(
+              alignment: .centerRight,
+              child: Text(
+                result.critHit.formatCompact(
+                  english: english,
+                  traditional: traditional,
+                ),
+                key: ValueKey(result.critHit),
+                textAlign: TextAlign.right,
+                style: style,
               ),
-              textAlign: TextAlign.right,
-              style: style,
             ),
           ),
           Expanded(
-            child: Text(
-              // 面板攻速两项未填齐时为 null，显示 —（攻速未参与计算）
-              result.aps?.format() ?? '—',
-              textAlign: TextAlign.right,
-              style: style,
+            child: AnimatedTextSwitcher(
+              alignment: .centerRight,
+              child: Text(
+                result.aps?.format() ?? '—',
+                key: ValueKey(result.aps),
+                textAlign: TextAlign.right,
+                style: style,
+              ),
             ),
           ),
           Expanded(
-            child: Text(
-              result.dps.formatCompact(
-                english: english,
-                traditional: traditional,
+            child: AnimatedTextSwitcher(
+              alignment: .centerRight,
+              child: Text(
+                result.dps.formatCompact(
+                  english: english,
+                  traditional: traditional,
+                ),
+                key: ValueKey(result.dps),
+                textAlign: TextAlign.right,
+                style: style,
               ),
-              textAlign: TextAlign.right,
-              style: style,
             ),
           ),
         ],

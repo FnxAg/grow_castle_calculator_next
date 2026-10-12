@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SummaryCard extends StatelessWidget {
@@ -59,12 +60,16 @@ class SummaryRowValueText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Text(
-      text,
-      style: TextStyle(
-        fontSize: 16.0,
-        fontWeight: FontWeight.bold,
-        color: colorScheme.primary,
+    return AnimatedTextSwitcher(
+      alignment: .centerRight,
+      child: Text(
+        text,
+        key: ValueKey(text),
+        style: TextStyle(
+          fontSize: 16.0,
+          fontWeight: FontWeight.bold,
+          color: colorScheme.primary,
+        ),
       ),
     );
   }

@@ -1,5 +1,6 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:material_ui/material_ui.dart';
 
 class LastOnline extends ConsumerWidget {
@@ -13,6 +14,12 @@ class LastOnline extends ConsumerWidget {
     final TextStyle textStyle = const TextStyle(fontSize: 12.0);
     final lastOnline = ref.watch(currentUserLastOnlineProvider);
     if (lastOnline.isEmpty) return Text('-', style: textStyle);
-    return Text('$lastOnline ago', style: textStyle);
+    return AnimatedTextSwitcher(
+      child: Text(
+        '$lastOnline ago',
+        style: textStyle,
+        key: ValueKey(lastOnline),
+      ),
+    );
   }
 }

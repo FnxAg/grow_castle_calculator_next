@@ -66,8 +66,7 @@ class _SelectAllTextFieldState extends State<SelectAllTextField> {
   }
 
   /// 首次获得焦点（点击/autofocus 都经由 FocusNode 通知）时全选当前内容，
-  /// 之后聚焦不再处理，由 TextField 默认行为放置光标。
-  /// 桌面端直接跳过：保留鼠标点击定位光标与拖选的自然体验
+  /// 之后聚焦不再处理，由 TextField 默认行为放置光标
   void _onFocusChanged() {
     if (_focusNode.hasFocus && !_selectedOnce && isMobile) {
       _selectedOnce = true;
@@ -93,7 +92,6 @@ class _SelectAllTextFieldState extends State<SelectAllTextField> {
       maxLengthEnforcement: widget.maxLengthEnforcement,
       enabled: widget.enabled,
       autofocus: widget.autofocus,
-      // 不接管 onTap：首次聚焦由 FocusNode 监听覆盖，之后点击走默认光标行为
     );
   }
 }

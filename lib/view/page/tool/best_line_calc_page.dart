@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
@@ -259,15 +260,21 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
             dense: true,
             contentPadding: const EdgeInsets.symmetric(horizontal: 8),
             selected: best,
-            title: Text(_comboText(l10n, combo)),
-            trailing: Text(
-              _gainText(gain),
-              style: best
-                  ? TextStyle(
-                      color: scheme.primary,
-                      fontWeight: FontWeight.bold,
-                    )
-                  : null,
+            title: AnimatedTextSwitcher(
+              child: Text(_comboText(l10n, combo), key: ValueKey(combo)),
+            ),
+            // title: Text(_comboText(l10n, combo)),
+            trailing: AnimatedTextSwitcher(
+              child: Text(
+                _gainText(gain),
+                key: ValueKey(gain),
+                style: best
+                    ? TextStyle(
+                        color: scheme.primary,
+                        fontWeight: FontWeight.bold,
+                      )
+                    : null,
+              ),
             ),
           );
         },

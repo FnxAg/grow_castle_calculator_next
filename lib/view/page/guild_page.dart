@@ -12,6 +12,7 @@ import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
@@ -610,13 +611,8 @@ class _GuildPageState extends ConsumerState<GuildPage> {
                         width: _timeColumnWidth,
                         child: Align(
                           alignment: Alignment.centerRight,
-                          child: AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 150),
-                            transitionBuilder: (child, animation) =>
-                                FadeTransition(
-                                  opacity: animation,
-                                  child: child,
-                                ),
+                          child: AnimatedTextSwitcher(
+                            alignment: .centerRight,
                             child: (lastOnline == null || lastOnline.isEmpty)
                                 ? const SizedBox(width: 0)
                                 : Text(
@@ -633,13 +629,17 @@ class _GuildPageState extends ConsumerState<GuildPage> {
                       const SizedBox(width: 6.0),
                       SizedBox(
                         width: _scoreColumnWidth,
-                        child: Text(
-                          member.score.format(),
-                          textAlign: TextAlign.right,
-                          style: _scoreStyle.copyWith(
-                            color: isSelf ? scheme.primary : null,
+                        child: AnimatedTextSwitcher(
+                          alignment: .centerRight,
+                          child: Text(
+                            member.score.format(),
+                            key: ValueKey(member.score),
+                            textAlign: TextAlign.right,
+                            style: _scoreStyle.copyWith(
+                              color: isSelf ? scheme.primary : null,
+                            ),
+                            maxLines: 1,
                           ),
-                          maxLines: 1,
                         ),
                       ),
                     ],
