@@ -1,12 +1,10 @@
 import 'dart:convert';
 
-/// 归档文件不合法的具体原因。语言中立，文案由 UI 层翻译
-/// （见 lib/view/extension/service_error_l10n.dart）
 enum ArchiveError {
   /// JSON 解析失败
   invalidJson,
 
-  /// 结构不对（不是本应用的备份）
+  /// 结构错误
   invalid,
 
   /// 缺少版本信息
@@ -15,7 +13,7 @@ enum ArchiveError {
   /// 由更新版本的应用创建
   newerVersion,
 
-  /// 版本号不认识
+  /// 未知版本号
   unsupportedVersion,
 
   /// 缺少数据内容
@@ -31,9 +29,6 @@ class DataArchiveException implements Exception {
   String toString() => 'DataArchiveException(${error.name})';
 }
 
-/// 归档解析产物：各 section 均为「可直接写入 Hive box」的形态。
-///
-/// section 为 null 表示归档中缺失该节（旧格式/被裁剪），恢复时应保留本地数据。
 class ArchiveContents {
   ArchiveContents({
     required this.formatVersion,
@@ -50,9 +45,7 @@ class ArchiveContents {
   final DateTime? exportedAt;
   final String? appVersion;
 
-  /// 用户数据：key 已从 JSON 字符串还原为 int；
-  /// 值为 UserData.toMap() 形态（嵌套 int-key map 经 JSON 后为字符串 key，
-  /// 由 UserData.fromMap 的 int.tryParse 兜底解析，见 user_data.dart）
+  /// 用户数据
   final Map<int, dynamic>? userData;
   final Map<String, dynamic>? userMeta;
   final Map<String, dynamic>? appMeta;
@@ -61,7 +54,7 @@ class ArchiveContents {
 
   int get userCount => userData?.length ?? 0;
 
-  /// 游戏轨迹记录数（game_track 各 `user_<id>` 键下 List 的长度之和）
+  /// 游戏轨迹记录数
   int get trackRecordCount {
     if (gameTrack == null) return 0;
     var total = 0;
@@ -72,8 +65,6 @@ class ArchiveContents {
   }
 }
 
-/// 全量数据归档的编解码（纯逻辑，不触碰 Hive/文件/网络）。
-///
 /// 单一 UTF-8 JSON 文件，schema v1：
 /// ```json
 /// {
@@ -90,11 +81,10 @@ class ArchiveContents {
 abstract final class DataArchive {
   static const int formatVersion = 1;
 
-  /// 编码时从 app_meta 排除的键前缀：WebDAV 配置（含云端凭据）不进备份文件
+  /// 编码时从 app_meta 排除的键前缀
   static const String appConfigExcludePrefix = 'webdav';
 
-  /// 把 5 个 Hive box 的快照编码为完整归档 map。
-  /// [now] 与 [appVersion] 可注入便于测试。
+  /// 把 5 个 Hive box 的快照编码为完整归档 map
   static Map<String, dynamic> encode({
     required Map<Object?, dynamic> userDataBox,
     required Map<Object?, dynamic> userMetaBox,
@@ -104,8 +94,6 @@ abstract final class DataArchive {
     DateTime? now,
     String? appVersion,
   }) {
-    // user_data:仅收 int key 且值为 Map 的条目（与 InfoStore._loadFromHive 的
-    // 验收条件一致），key 显式字符串化
     final userData = <String, dynamic>{};
     userDataBox.forEach((key, value) {
       if (key is int && value is Map) {
@@ -133,12 +121,9 @@ abstract final class DataArchive {
         'gameTrack': Map<String, dynamic>.from(gameTrackBox),
       },
     };
-    // JSON 编码仅接受字符串 key;Hive 内嵌的 int-key map(如 unitGold/applyFlags)
-    // 在归档层就逐层字符串化,保证整档可直接 jsonEncode
     return _jsonSafe(archive) as Map<String, dynamic>;
   }
 
-  /// 逐层把 map 的 key 转成字符串(值递归处理),其余类型原样返回
   static Object? _jsonSafe(Object? value) {
     if (value is Map) {
       return {
@@ -152,7 +137,6 @@ abstract final class DataArchive {
     return value;
   }
 
-  /// 解析归档 JSON 文本；损坏/版本过新时抛 [DataArchiveException]。
   static ArchiveContents decode(String text) {
     Object? decoded;
     try {
@@ -182,7 +166,6 @@ abstract final class DataArchive {
     }
     final data = Map<String, dynamic>.from(rawData);
 
-    // user_data:JSON key 是字符串,顶层还原为 int;解析失败/非 Map 值跳过
     final userData = <int, dynamic>{};
     final rawUserData = data['userData'];
     if (rawUserData is Map) {
@@ -194,8 +177,6 @@ abstract final class DataArchive {
       }
     }
 
-    // user_meta:currentUserId/nextUserId 类型兜底;
-    // nextUserId 防御性抬升,防止脏归档导致新用户 id 与现有用户重叠
     Map<String, dynamic>? userMeta;
     final rawUserMeta = data['userMeta'];
     if (rawUserMeta is Map) {
@@ -224,7 +205,6 @@ abstract final class DataArchive {
 
   static const String _metaNextUserIdKey = 'nextUserId';
 
-  /// 解析一节 JSON map;不是 Map 时返回 null(该节缺失)
   static Map<String, dynamic>? _parseSection(Object? raw) {
     return raw is Map ? Map<String, dynamic>.from(raw) : null;
   }

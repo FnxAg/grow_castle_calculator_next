@@ -1,9 +1,10 @@
 import 'dart:async';
 
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/data/store/user_info.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
@@ -11,20 +12,23 @@ import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart'
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 import 'package:material_ui/material_ui.dart';
 
-class SelectUserPage extends StatefulWidget {
+class SelectUserPage extends ConsumerStatefulWidget {
   const SelectUserPage({super.key});
 
   @override
-  State<SelectUserPage> createState() => _SelectUserPageState();
+  ConsumerState<SelectUserPage> createState() => _SelectUserPageState();
 }
 
-class _SelectUserPageState extends State<SelectUserPage> {
+class _SelectUserPageState extends ConsumerState<SelectUserPage> {
   bool _settingState = false;
 
   @override
   Widget build(BuildContext context) {
-    final InfoStore infoStore = Stores.infoStore;
-    final List<String> userList = infoStore.getAllUsernames();
+    // 整体 watch：用户列表与每个用户的波数/总金币都从这里渲染，
+    // 增删改切之后本页自动重建，不再需要子对话框回调 setState
+    final state = ref.watch(usersProvider);
+    final List<String> userList = state.usernames;
+    final String currentUsername = state.currentUser.username;
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
@@ -45,8 +49,9 @@ class _SelectUserPageState extends State<SelectUserPage> {
         itemCount: userList.length,
         itemBuilder: (ctx, index) {
           final String username = userList[index];
-          final String guild = infoStore.getUserGuild(username);
-          // 桌面端右键也可打开单位汇总（触屏长按入口保留）
+          final user = state.findByUsername(username);
+          final String guild = user?.guild ?? '';
+          // 桌面端右键也可打开单位汇总，同时保留触屏长按入口
           return GestureDetector(
             onSecondaryTapUp: (_) => _showUnitSummary(username),
             child: ListTile(
@@ -79,7 +84,7 @@ class _SelectUserPageState extends State<SelectUserPage> {
                           children: [
                             PillChip(
                               text: Text(
-                                infoStore.getUserWave(username).format(),
+                                (user?.wave ?? 1).format(),
                                 style: TextStyle(
                                   fontSize: 12.0,
                                   color: Theme.of(context)
@@ -93,14 +98,12 @@ class _SelectUserPageState extends State<SelectUserPage> {
                             const SizedBox(width: 1.0),
                             PillChip(
                               text: Text(
-                                infoStore
-                                    .getUserTotalGold(username)
-                                    .formatCompact(
-                                      fractionDigits: 2,
-                                      english: !context.isChineseLocale,
-                                      traditional:
-                                          context.isTraditionalChineseLocale,
-                                    ),
+                                (user?.totalGold ?? 0.0).formatCompact(
+                                  fractionDigits: 2,
+                                  english: !context.isChineseLocale,
+                                  traditional:
+                                      context.isTraditionalChineseLocale,
+                                ),
                                 style: TextStyle(
                                   fontSize: 12.0,
                                   color: Theme.of(context)
@@ -118,17 +121,17 @@ class _SelectUserPageState extends State<SelectUserPage> {
                   ),
                 ],
               ),
-              leading: infoStore.getCurrentUsername() == username
+              leading: currentUsername == username
                   ? const Icon(Icons.check, color: Colors.green)
                   : const SizedBox(width: 24.0),
-              // 编辑态显示编辑/删除按钮；单位汇总按钮常显（长按与右键同入口）
+              // 编辑态显示编辑/删除按钮
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_settingState && infoStore.getUserId(username) != 0) ...[
+                  if (_settingState && state.findId(username) != 0) ...[
                     IconButton(
                       icon: const Icon(Icons.edit),
-                      onPressed: switch (infoStore.getUserId(username)) {
+                      onPressed: switch (state.findId(username)) {
                         0 => () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -136,12 +139,12 @@ class _SelectUserPageState extends State<SelectUserPage> {
                             ),
                           );
                         },
-                        _ => () => _renameDialog(infoStore, username),
+                        _ => () => _renameDialog(username),
                       },
                     ),
                     IconButton(
                       icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: switch (infoStore.getUserId(username)) {
+                      onPressed: switch (state.findId(username)) {
                         0 => () {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
@@ -152,11 +155,8 @@ class _SelectUserPageState extends State<SelectUserPage> {
                         _ => () {
                           showDialog<void>(
                             context: context,
-                            builder: (context) => _DeleteUserDialog(
-                              infoStore: infoStore,
-                              userId: username,
-                              onDeleted: () => setState(() {}),
-                            ),
+                            builder: (context) =>
+                                _DeleteUserDialog(userId: username),
                           );
                         },
                       },
@@ -172,10 +172,10 @@ class _SelectUserPageState extends State<SelectUserPage> {
                 ],
               ),
               onTap: () {
-                infoStore.setCurrentUser(username);
+                ref.users.setCurrentUser(username);
                 Navigator.pop(context);
               },
-              // 长按查看该用户的单位汇总（任意用户均可用，含默认用户）
+              // 长按查看该用户的单位汇总
               onLongPress: () => _showUnitSummary(username),
             ),
           );
@@ -189,9 +189,9 @@ class _SelectUserPageState extends State<SelectUserPage> {
     );
   }
 
-  /// 打开指定用户的单位汇总（信息按钮 / 长按 / 右键共用入口）
+  /// 打开指定用户的单位汇总
   void _showUnitSummary(String username) {
-    final data = Stores.infoStore.getUserData(username);
+    final data = ref.read(usersProvider).findByUsername(username);
     if (data == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -208,43 +208,29 @@ class _SelectUserPageState extends State<SelectUserPage> {
   void _addUserDialog() {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => _AddUserDialog(
-        infoStore: Stores.infoStore,
-        onAdded: () => setState(() {}),
-      ),
+      builder: (dialogContext) => const _AddUserDialog(),
     );
   }
 
-  void _renameDialog(InfoStore infoStore, String username) {
+  void _renameDialog(String username) {
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => _EditUserDialog(
-        infoStore: infoStore,
-        username: username,
-        onSaved: () => setState(() {}),
-      ),
+      builder: (dialogContext) => _EditUserDialog(username: username),
     );
   }
 }
 
-/// 删除用户确认对话框：弹出后先 3 秒倒计时（红色数字、不可删除），
-/// 倒计时结束才允许点击"删除"，防止误触误删。
-class _DeleteUserDialog extends StatefulWidget {
-  const _DeleteUserDialog({
-    required this.infoStore,
-    required this.userId,
-    required this.onDeleted,
-  });
+/// 删除用户确认对话框，3 秒倒计时后允许删除
+class _DeleteUserDialog extends ConsumerStatefulWidget {
+  const _DeleteUserDialog({required this.userId});
 
-  final InfoStore infoStore;
   final String userId;
-  final VoidCallback onDeleted;
 
   @override
-  State<_DeleteUserDialog> createState() => _DeleteUserDialogState();
+  ConsumerState<_DeleteUserDialog> createState() => _DeleteUserDialogState();
 }
 
-class _DeleteUserDialogState extends State<_DeleteUserDialog> {
+class _DeleteUserDialogState extends ConsumerState<_DeleteUserDialog> {
   static const int _countdownSeconds = 3;
   Timer? _timer;
   int _remaining = _countdownSeconds;
@@ -282,12 +268,11 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
           },
           child: Text(l10n.actionCancel),
         ),
-        // 倒计时中：红色剩余秒数、禁用；倒计时结束：红色"删除"、可点击
+        // 倒计时中
         TextButton(
           onPressed: ready
               ? () {
-                  widget.infoStore.deleteUser(widget.userId);
-                  widget.onDeleted();
+                  ref.users.deleteUser(widget.userId);
                   Navigator.of(context).pop();
                 }
               : null,
@@ -301,18 +286,14 @@ class _DeleteUserDialogState extends State<_DeleteUserDialog> {
   }
 }
 
-class _AddUserDialog extends StatefulWidget {
-  const _AddUserDialog({required this.infoStore, required this.onAdded});
-
-  final InfoStore infoStore;
-
-  final VoidCallback onAdded;
+class _AddUserDialog extends ConsumerStatefulWidget {
+  const _AddUserDialog();
 
   @override
-  State<_AddUserDialog> createState() => _AddUserDialogState();
+  ConsumerState<_AddUserDialog> createState() => _AddUserDialogState();
 }
 
-class _AddUserDialogState extends State<_AddUserDialog> {
+class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
   final TextEditingController _userController = TextEditingController();
   final TextEditingController _guildController = TextEditingController();
 
@@ -327,12 +308,11 @@ class _AddUserDialogState extends State<_AddUserDialog> {
     final username = _userController.text.trim();
     if (username.isNotEmpty) {
       try {
-        widget.infoStore.createUser(
+        ref.users.createUser(
           username,
           guild: _guildController.text.trim(),
         );
-        widget.infoStore.setCurrentUser(username);
-        widget.onAdded();
+        ref.users.setCurrentUser(username);
       } catch (e) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(e.toString())));
@@ -373,24 +353,16 @@ class _AddUserDialogState extends State<_AddUserDialog> {
   }
 }
 
-class _EditUserDialog extends StatefulWidget {
-  const _EditUserDialog({
-    required this.infoStore,
-    required this.username,
-    required this.onSaved,
-  });
-
-  final InfoStore infoStore;
+class _EditUserDialog extends ConsumerStatefulWidget {
+  const _EditUserDialog({required this.username});
 
   final String username;
 
-  final VoidCallback onSaved;
-
   @override
-  State<_EditUserDialog> createState() => _EditUserDialogState();
+  ConsumerState<_EditUserDialog> createState() => _EditUserDialogState();
 }
 
-class _EditUserDialogState extends State<_EditUserDialog> {
+class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
   late final TextEditingController _userController;
   late final TextEditingController _guildController;
 
@@ -399,7 +371,7 @@ class _EditUserDialogState extends State<_EditUserDialog> {
     super.initState();
     _userController = TextEditingController(text: widget.username);
     _guildController = TextEditingController(
-      text: widget.infoStore.getUserGuild(widget.username),
+      text: ref.read(usersProvider).findByUsername(widget.username)?.guild ?? '',
     );
   }
 
@@ -414,20 +386,19 @@ class _EditUserDialogState extends State<_EditUserDialog> {
     final String newUsername = _userController.text.trim();
     final String newGuild = _guildController.text.trim();
     final String oldGuild =
-        widget.infoStore.getUserData(widget.username)?.guild ?? '';
+        ref.read(usersProvider).findByUsername(widget.username)?.guild ?? '';
     final bool renamed =
         newUsername.isNotEmpty && newUsername != widget.username;
     try {
       if (renamed) {
-        widget.infoStore.renameUser(widget.username, newUsername);
+        ref.users.renameUser(widget.username, newUsername);
       }
       if (newGuild != oldGuild) {
-        widget.infoStore.setUserGuild(
+        ref.users.setUserGuild(
           renamed ? newUsername : widget.username,
           newGuild,
         );
       }
-      widget.onSaved();
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text(e.toString())));

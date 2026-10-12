@@ -1,38 +1,38 @@
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/last_online_cache.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
-import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 公会页
-class GuildPage extends StatefulWidget {
+class GuildPage extends ConsumerStatefulWidget {
   const GuildPage({super.key, this.guildName, this.userHeader = true});
 
-  /// 要展示的公会名
   final String? guildName;
 
   final bool userHeader;
 
   @override
-  State<GuildPage> createState() => _GuildPageState();
+  ConsumerState<GuildPage> createState() => _GuildPageState();
 }
 
-/// 公会成员详情页（带 AppBar 的完整路由壳），供工具页公会榜点击进入；
-/// 内部复用 [GuildPage] 的加载与展示逻辑（不自带用户页外壳）。
+/// 公会成员详情页
 class GuildDetailPage extends StatelessWidget {
   const GuildDetailPage({super.key, required this.guildName});
 
@@ -47,7 +47,7 @@ class GuildDetailPage extends StatelessWidget {
   }
 }
 
-class _GuildPageState extends State<GuildPage> with CurrentUserReload {
+class _GuildPageState extends ConsumerState<GuildPage> {
   bool _firstLoading = true;
   bool _loading = true;
   String? _error;
@@ -107,11 +107,14 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
   @override
   void initState() {
     super.initState();
+    ref.listenManual(userReloadSignalProvider, (_, _) {
+      if (!mounted) return;
+      reloadForCurrentUser();
+    });
     _load();
   }
 
   /// 切换用户
-  @override
   void reloadForCurrentUser() {
     setState(() {
       _members = const [];
@@ -122,8 +125,9 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
 
   /// 加载公会数据
   Future<void> _load({bool force = false}) async {
-    final guild = (widget.guildName ?? Stores.infoStore.getCurrentUserGuild())
-        .trim();
+    final String rawGuild =
+        widget.guildName ?? ref.read(currentUserGuildProvider);
+    final guild = rawGuild.trim();
     final hasContent = _members.isNotEmpty;
     setState(() {
       _loading = true;
@@ -137,7 +141,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
         _firstLoading = false;
         if (!hasContent) {
           _emptyGuild = true;
-          _emptyGuildIsDefaultUser = Stores.infoStore.getCurrentUserId() == 0;
+          _emptyGuildIsDefaultUser = ref.read(currentUserIdProvider) == 0;
         }
       });
       return;
@@ -264,9 +268,10 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
 
   /// 下拉刷新
   Future<void> _refresh() async {
-    final guild = (widget.guildName ?? Stores.infoStore.getCurrentUserGuild())
-        .trim();
-    final result = await Stores.infoStore.syncCurrentUser();
+    final String rawGuild =
+        widget.guildName ?? ref.read(currentUserGuildProvider);
+    final guild = rawGuild.trim();
+    final result = await ref.read(usersProvider.notifier).syncCurrentUser();
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
     if (result is QueryError) {
@@ -309,7 +314,6 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
           final list = _buildMemberList(wide: wide);
           if (!wide) return list;
           return Row(
-            // stretch 给两栏紧的高度约束
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Expanded(child: list),
@@ -327,45 +331,35 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
     if (!widget.userHeader) {
       return body;
     }
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        Stores.infoStore.currentUserNotifier,
-        Stores.infoStore.dataVersionNotifier,
-      ]),
-      builder: (context, _) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: .start,
-              children: [Text(l10n.tabGuild), _AppBarInfo()],
-            ),
-            bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
-            actions: [
-              isDesktop
-                  ? IconButton(
-                      onPressed: _refresh,
-                      tooltip: l10n.tooltipFetchData,
-                      icon: !_loading
-                          ? Icon(Icons.cloud_sync)
-                          : SizedBox(
-                              width: 20,
-                              height: 20,
-                              child: CircularProgressIndicator(
-                                strokeWidth: 2.0,
-                              ),
-                            ),
-                    )
-                  : SizedBox.shrink(),
-              SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
-            ],
-          ),
-          body: body,
-        );
-      },
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: .start,
+          children: [Text(l10n.tabGuild), _AppBarInfo()],
+        ),
+        bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
+        actions: [
+          isDesktop
+              ? IconButton(
+                  onPressed: _refresh,
+                  tooltip: l10n.tooltipFetchData,
+                  icon: !_loading
+                      ? Icon(Icons.cloud_sync)
+                      : SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: CircularProgressIndicator(strokeWidth: 2.0),
+                        ),
+                )
+              : SizedBox.shrink(),
+          SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
+        ],
+      ),
+      body: body,
     );
   }
 
-  /// 查询失败提示 + 操作按钮（公会未配置时跳转用户管理，网络类错误重试）
+  /// 查询失败提示 + 操作按钮，公会未配置时跳转用户管理，网络类错误重试
   Widget _buildError() {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
@@ -468,20 +462,16 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
     );
   }
 
-  /// 成员列表：按赛季波数从大到小展示，当前用户高亮；
-  /// [wide] 为主从两栏模式：选中行高亮，点击改为面板展示
+  /// 成员列表，按赛季波数从大到小展示，当前用户高亮；
   Widget _buildMemberList({required bool wide}) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
-    final currentUser = Stores.infoStore.getCurrentUsername();
-    // 公会成员赛季波数总和（成员行右侧展示的就是各自 score）
+    final currentUser = ref.read(currentUsernameProvider);
     final totalScore = _members.fold<int>(0, (sum, m) => sum + m.score);
     const chipTextStyle = TextStyle(
       fontSize: 11.0,
       fontWeight: FontWeight.w600,
     );
-    // 公会榜排名胶囊与其前置间距成对收集；间距只插在胶囊之间，
-    // 第一个胶囊前不追加 SizedBox（紧跟行首对齐左缘）
     final chips = <(Widget, double)>[
       if (_guildGapPrev != null)
         (
@@ -519,7 +509,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
           padding: const EdgeInsets.fromLTRB(16.0, 10.0, 24.0, 8.0),
           child: Row(
             children: [
-              // 公会榜排名（前 300 内才显示），前后为与上一名/下一名的分数差距
+              // 公会榜排名，前后为与上一名/下一名的分数差距
               for (var i = 0; i < chips.length; i++) ...[
                 chips[i].$1,
                 if (i < chips.length - 1) SizedBox(width: chips[i + 1].$2),
@@ -552,7 +542,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
                 final lastOnline = _lastOnlineByLower[lowerName];
                 return ListTile(
                   selected: wide && member.name == _selectedMember,
-                  // 点击成员进入玩家详情页（宽屏下改为右侧面板展示）
+                  // 点击成员进入玩家详情页，宽屏下改为右侧面板展示
                   onTap: () => _openMember(member),
                   leading: CircleAvatar(
                     radius: 14.0,
@@ -578,7 +568,7 @@ class _GuildPageState extends State<GuildPage> with CurrentUserReload {
                           color: isSelf ? scheme.primary : null,
                         ),
                       ),
-                      // 个人赛季榜 / 无尽榜排名胶囊（均未上榜则不显示）
+                      // 个人赛季榜 / 无尽榜排名胶囊
                       if (seasonRank != null || hellRank != null) ...[
                         const SizedBox(height: 2.0),
                         Wrap(

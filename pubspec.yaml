@@ -30,11 +30,17 @@ dependencies:
   webdav_client_plus: ^2.0.0
   flutter_localizations:
     sdk: flutter
+  json_annotation: ^4.12.0
+  flutter_riverpod: ^3.4.3
+  riverpod_annotation: ^4.0.7
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
   flutter_lints: ^6.0.0
+  build_runner: ^2.4.6
+  json_serializable: ^6.7.0
+  riverpod_generator: ^4.0.9
 
 flutter:
   uses-material-design: true

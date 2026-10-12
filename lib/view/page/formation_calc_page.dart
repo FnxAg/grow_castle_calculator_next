@@ -1,31 +1,30 @@
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
-import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_listtile.dart';
 import 'package:grow_castle_calculator_next/view/widget/formation_summary_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 阵容经济计算页
-class FormationCalcPage extends StatefulWidget {
+class FormationCalcPage extends ConsumerStatefulWidget {
   const FormationCalcPage({super.key});
 
   @override
-  State<FormationCalcPage> createState() => _FormationCalcPageState();
+  ConsumerState<FormationCalcPage> createState() => _FormationCalcPageState();
 }
 
-class _FormationCalcPageState extends State<FormationCalcPage>
-    with CurrentUserReload {
-  /// 本次会话中已自动查询过的用户名。
+class _FormationCalcPageState extends ConsumerState<FormationCalcPage> {
   static final Set<String> _autoQueriedUsers = {};
 
   /// 最近一次查询到的排名快照
@@ -43,7 +42,6 @@ class _FormationCalcPageState extends State<FormationCalcPage>
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
   final Map<int, TextEditingController> _textControllers = {};
-  final ValueNotifier<int> _formationDataVersion = ValueNotifier(0);
   static bool _viewMode = false;
 
   FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
@@ -53,36 +51,40 @@ class _FormationCalcPageState extends State<FormationCalcPage>
   TextEditingController _numberControllerFor(int id) {
     return _numberControllers.putIfAbsent(id, () {
       final c = TextEditingController(
-        text: Stores.infoStore.getNumberValue(id),
+        text: ref.read(currentUserProvider).numberValues[id] ?? '',
       );
-      c.addListener(() {
-        Stores.infoStore.setNumberValue(id, c.text);
-        _formationDataVersion.value++;
-      });
+      c.addListener(() => ref.users.setNumberValue(id, c.text));
       return c;
     });
   }
 
   TextEditingController _textControllerFor(int id) {
     return _textControllers.putIfAbsent(id, () {
-      final c = TextEditingController(text: Stores.infoStore.getTextValue(id));
-      c.addListener(() {
-        Stores.infoStore.setTextValue(id, c.text);
-        _formationDataVersion.value++;
-      });
+      final c = TextEditingController(
+        text: ref.read(currentUserProvider).textValues[id] ?? '',
+      );
+      c.addListener(() => ref.users.setTextValue(id, c.text));
       return c;
     });
   }
 
   @override
+  void initState() {
+    super.initState();
+    ref.listenManual(userReloadSignalProvider, (_, _) {
+      if (!mounted) return;
+      setState(reloadForCurrentUser);
+    });
+    _loadCurrentUser();
+  }
+
+  @override
   void dispose() {
     _discardCardCaches();
-    _formationDataVersion.dispose();
     super.dispose();
   }
 
-  /// 丢弃按卡片 id 缓存的控制器与焦点。它们装着某个用户的文本，切换用户后
-  /// 必须整体重建，否则旧文本会在下一次输入时为旧值触发写入、污染新用户
+  /// 丢弃按卡片 id 缓存的控制器与焦点
   void _discardCardCaches() {
     for (final node in _numberFocusNodes.values) {
       node.dispose();
@@ -107,7 +109,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
     _textFocusNodes.remove(id)?.dispose();
     _numberControllers.remove(id)?.dispose();
     _textControllers.remove(id)?.dispose();
-    Stores.infoStore.removeCard(id);
+    ref.users.removeCard(id);
   }
 
   static const Duration _queryCooldown = Duration(seconds: 5);
@@ -121,14 +123,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
   int? _playerGapPrev;
   int? _playerGapNext;
 
-  @override
-  void initState() {
-    super.initState();
-    _loadCurrentUser();
-  }
-
   /// 切换用户：先丢弃上一个用户的缓存，再按新用户重新初始化本页
-  @override
   void reloadForCurrentUser() {
     _discardCardCaches();
     setState(() {
@@ -143,12 +138,13 @@ class _FormationCalcPageState extends State<FormationCalcPage>
     _loadCurrentUser();
   }
 
-  /// 按当前用户初始化页面状态（挂载时、以及切换用户后调用）
+  /// 按当前用户初始化页面状态，挂载时、以及切换用户后调用
   void _loadCurrentUser() {
-    if (Stores.infoStore.getCurrentUserId() != 0) {
+    final userId = ref.read(currentUserIdProvider);
+    if (userId != 0) {
       final cache = _rankCache;
-      final username = Stores.infoStore.getCurrentUsername();
-      if (cache != null && cache.$1 == Stores.infoStore.getCurrentUserId()) {
+      final username = ref.read(currentUsernameProvider);
+      if (cache != null && cache.$1 == userId) {
         _playerRank = cache.$2;
         _playerGapPrev = cache.$3;
         _playerGapNext = cache.$4;
@@ -166,10 +162,10 @@ class _FormationCalcPageState extends State<FormationCalcPage>
 
   /// 获取排名
   Future<void> _loadRanks({bool force = false}) async {
-    final userId = Stores.infoStore.getCurrentUserId();
-    final currentUser = Stores.infoStore.getCurrentUsername();
+    final userId = ref.read(currentUserIdProvider);
+    final currentUser = ref.read(currentUsernameProvider);
     final lower = currentUser.toLowerCase();
-    final guild = Stores.infoStore.getCurrentUserGuild();
+    final guild = ref.read(currentUserProvider).guild;
     final guildLower = guild.toLowerCase();
     setState(() => _loadingRanks = true);
     final (players, hell, guilds) = await (
@@ -255,7 +251,7 @@ class _FormationCalcPageState extends State<FormationCalcPage>
       );
       return;
     }
-    // 先记录时间再发起请求：查询进行中也同样受冷却保护
+    // 先记录时间再发起请求
     _lastQueryAt = now;
     await _performQuery();
   }
@@ -264,8 +260,8 @@ class _FormationCalcPageState extends State<FormationCalcPage>
   Future<void> _performQuery({bool silent = false}) async {
     setState(() => _querying = true);
 
-    final name = Stores.infoStore.getCurrentUsername();
-    final result = await Stores.infoStore.syncCurrentUser();
+    final name = ref.read(currentUsernameProvider);
+    final result = await ref.read(usersProvider.notifier).syncCurrentUser();
 
     if (!mounted) return;
 
@@ -325,130 +321,115 @@ class _FormationCalcPageState extends State<FormationCalcPage>
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        Stores.infoStore.currentUserNotifier,
-        Stores.infoStore.dataVersionNotifier,
-      ]),
-      builder: (context, _) {
-        final isWide = context.isWideScreen;
-        final l10n = AppLocalizations.of(context);
-        final List<Widget> actions = <Widget>[
-          if (isDesktop && Stores.infoStore.getCurrentUserId() != 0)
-            IconButton(
-              icon: _querying
-                  ? const SizedBox(
-                      width: 20.0,
-                      height: 20.0,
-                      child: CircularProgressIndicator(strokeWidth: 2.0),
-                    )
-                  : const Icon(Icons.cloud_sync),
-              tooltip: l10n.tooltipFetchData,
-              onPressed: _queryOnline,
-            ),
-          IconButton(
-            icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
-            tooltip: _viewMode ? l10n.tooltipInputMode : l10n.tooltipViewMode,
-            onPressed: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-              setState(() => _viewMode = !_viewMode);
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.add),
-            tooltip: l10n.tooltipAddEntry,
-            onPressed: () => Stores.infoStore.addNewCard(),
-          ),
-        ];
-        final Widget formationExpanded = Expanded(
-          flex: isWide ? 6 : 1,
-          child: ValueListenableBuilder<int>(
-            valueListenable: Stores.infoStore.cardIdsNotifier,
-            builder: (context, _, _) {
-              final cardIds = Stores.infoStore.getCardIds();
-              if (cardIds.isEmpty) {
-                return Center(
-                  child: Text(
-                    l10n.emptyFormationHint,
-                    style: const TextStyle(color: Colors.grey),
-                  ),
-                );
-              }
-              return ReorderableListView.builder(
-                key: const PageStorageKey('formation_card_list'),
-                itemCount: cardIds.length,
-                proxyDecorator: (child, index, animation) {
-                  return AnimatedBuilder(
-                    animation: animation,
-                    builder: (context, child) {
-                      final double elevation = 4.0 * animation.value;
-                      return Material(
-                        elevation: elevation,
-                        shadowColor: Colors.black26,
-                        borderRadius: BorderRadius.circular(8.0),
-                        child: IgnorePointer(child: child),
-                      );
-                    },
-                    child: child,
-                  );
-                },
-                onReorderItem: (oldIndex, newIndex) {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  Stores.infoStore.reorderCard(oldIndex, newIndex);
-                },
-                itemBuilder: (context, index) {
-                  final id = cardIds[index];
-                  return FormationCardTile(
-                    key: ValueKey(id),
-                    id: id,
-                    index: index,
-                    textController: _textControllerFor(id),
-                    numberController: _numberControllerFor(id),
-                    textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                    numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                    viewMode: _viewMode,
-                    dataVersion: _formationDataVersion,
-                    onRemove: _removeCard,
-                  );
-                },
-                buildDefaultDragHandles: false,
-                scrollDirection: .vertical,
-              );
-            },
-          ),
-        );
-        final Widget formationSummaryBar = FormationSummaryBar(
-          querying: _querying,
-          playerRank: _playerRank,
-          playerGapPrev: _playerGapPrev,
-          playerGapNext: _playerGapNext,
-          hellRank: _hellRank,
-          guildRank: _guildRank,
-          onQuery: _queryOnline,
-        );
-
-        return Scaffold(
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: .start,
-              children: [Text(l10n.tabFormation), _AppBarInfo()],
-            ),
-            bottom: LoadingIndicatorAppBar(
-              bottom: null,
-              isLoading: _querying || _loadingRanks,
-            ),
-            actions: actions,
-          ),
-          body: isWide
-              ? Row(
-                  children: [
-                    formationExpanded,
-                    Expanded(flex: 4, child: formationSummaryBar),
-                  ],
+    final isWide = context.isWideScreen;
+    final l10n = AppLocalizations.of(context);
+    final cardIds = ref.watch(currentUserCardIdsProvider);
+    final List<Widget> actions = <Widget>[
+      if (isDesktop && ref.watch(currentUserIdProvider) != 0)
+        IconButton(
+          icon: _querying
+              ? const SizedBox(
+                  width: 20.0,
+                  height: 20.0,
+                  child: CircularProgressIndicator(strokeWidth: 2.0),
                 )
-              : Column(children: [formationExpanded, formationSummaryBar]),
-        );
-      },
+              : const Icon(Icons.cloud_sync),
+          tooltip: l10n.tooltipFetchData,
+          onPressed: _queryOnline,
+        ),
+      IconButton(
+        icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
+        tooltip: _viewMode ? l10n.tooltipInputMode : l10n.tooltipViewMode,
+        onPressed: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          setState(() => _viewMode = !_viewMode);
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.add),
+        tooltip: l10n.tooltipAddEntry,
+        onPressed: () => ref.users.addNewCard(),
+      ),
+    ];
+    final Widget formationExpanded = Expanded(
+      flex: isWide ? 6 : 1,
+      child: cardIds.isEmpty
+          ? Center(
+              child: Text(
+                l10n.emptyFormationHint,
+                style: const TextStyle(color: Colors.grey),
+              ),
+            )
+          : ReorderableListView.builder(
+              key: const PageStorageKey('formation_card_list'),
+              itemCount: cardIds.length,
+              proxyDecorator: (child, index, animation) {
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final double elevation = 4.0 * animation.value;
+                    return Material(
+                      elevation: elevation,
+                      shadowColor: Colors.black26,
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: IgnorePointer(child: child),
+                    );
+                  },
+                  child: child,
+                );
+              },
+              onReorderItem: (oldIndex, newIndex) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                ref.users.reorderCard(oldIndex, newIndex);
+              },
+              itemBuilder: (context, index) {
+                final id = cardIds[index];
+                return FormationCardTile(
+                  key: ValueKey(id),
+                  id: id,
+                  index: index,
+                  textController: _textControllerFor(id),
+                  numberController: _numberControllerFor(id),
+                  textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                  numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                  viewMode: _viewMode,
+                  onRemove: _removeCard,
+                );
+              },
+              buildDefaultDragHandles: false,
+              scrollDirection: .vertical,
+            ),
+    );
+    final Widget formationSummaryBar = FormationSummaryBar(
+      querying: _querying,
+      playerRank: _playerRank,
+      playerGapPrev: _playerGapPrev,
+      playerGapNext: _playerGapNext,
+      hellRank: _hellRank,
+      guildRank: _guildRank,
+      onQuery: _queryOnline,
+    );
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: .start,
+          children: [Text(l10n.tabFormation), _AppBarInfo()],
+        ),
+        bottom: LoadingIndicatorAppBar(
+          bottom: null,
+          isLoading: _querying || _loadingRanks,
+        ),
+        actions: actions,
+      ),
+      body: isWide
+          ? Row(
+              children: [
+                formationExpanded,
+                Expanded(flex: 4, child: formationSummaryBar),
+              ],
+            )
+          : Column(children: [formationExpanded, formationSummaryBar]),
     );
   }
 }
@@ -458,19 +439,11 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        Stores.infoStore.lastOnlineNotifier,
-        Stores.infoStore.guildNotifier,
-      ]),
-      builder: (context, _) {
-        final List<Widget> segments = <Widget>[
-          CurrentUser(),
-          LastOnline(),
-          CurrentUserGuild(),
-        ];
-        return AppBarInfo(children: segments);
-      },
-    );
+    final List<Widget> segments = <Widget>[
+      CurrentUser(),
+      LastOnline(),
+      CurrentUserGuild(),
+    ];
+    return AppBarInfo(children: segments);
   }
 }

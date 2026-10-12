@@ -1,40 +1,42 @@
 import 'package:fl_chart/fl_chart.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/current_user_reload.dart';
 
-class GameTrackChartPage extends StatefulWidget {
+class GameTrackChartPage extends ConsumerStatefulWidget {
   const GameTrackChartPage({super.key});
 
   @override
-  State<GameTrackChartPage> createState() => _GameTrackChartPageState();
+  ConsumerState<GameTrackChartPage> createState() => _GameTrackChartPageState();
 }
 
-class _GameTrackChartPageState extends State<GameTrackChartPage>
-    with CurrentUserReload {
+class _GameTrackChartPageState extends ConsumerState<GameTrackChartPage> {
   static const int _maxChartPoints = 300;
 
   late List<GameTrackRecord> _records;
   late List<GameTrackRecord> _chartRecords;
 
-  int get _userId => Stores.infoStore.getCurrentUserId();
+  int get _userId => ref.read(currentUserIdProvider);
 
   @override
   void initState() {
     super.initState();
+    ref.listenManual(userReloadSignalProvider, (_, _) {
+      if (!mounted) return;
+      reloadForCurrentUser();
+    });
     _loadRecords();
   }
 
-  /// 轨迹记录按 userId 读取，切换用户后重新取一份并重采样
-  @override
   void reloadForCurrentUser() {
     setState(_loadRecords);
   }
@@ -81,46 +83,38 @@ class _GameTrackChartPageState extends State<GameTrackChartPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return ListenableBuilder(
-      listenable: Listenable.merge([
-        Stores.infoStore.currentUserNotifier,
-        Stores.infoStore.dataVersionNotifier,
-      ]),
-      builder: (context, _) {
-        return Scaffold(
-          appBar: AppBar(
-            title: Column(
-              crossAxisAlignment: .start,
-              children: [Text(l10n.gameTrackChart), _AppBarInfo()],
+    return Scaffold(
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: .start,
+          children: [Text(l10n.gameTrackChart), _AppBarInfo()],
+        ),
+        actions: [
+          if (_records.isNotEmpty)
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              child: Center(
+                child: Text(
+                  l10n.labelChartRange(
+                    _formatAppBarDate(_records.first.recordedAt),
+                    _formatAppBarDate(_records.last.recordedAt),
+                  ),
+                  textAlign: TextAlign.right,
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
+              ),
             ),
-            actions: [
-              if (_records.isNotEmpty)
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 12),
-                  child: Center(
-                    child: Text(
-                      l10n.labelChartRange(
-                        _formatAppBarDate(_records.first.recordedAt),
-                        _formatAppBarDate(_records.last.recordedAt),
-                      ),
-                      textAlign: TextAlign.right,
-                      style: Theme.of(context).textTheme.labelSmall,
-                    ),
-                  ),
-                ),
-            ],
-          ),
-          body: _chartRecords.length < 2
-              ? Center(child: Text(l10n.emptyChartNeedTwoRecords))
-              : Padding(
-                  padding: const EdgeInsets.all(12),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) =>
-                        _buildChartBody(context, constraints),
-                  ),
-                ),
-        );
-      },
+        ],
+      ),
+      body: _chartRecords.length < 2
+          ? Center(child: Text(l10n.emptyChartNeedTwoRecords))
+          : Padding(
+              padding: const EdgeInsets.all(12),
+              child: LayoutBuilder(
+                builder: (context, constraints) =>
+                    _buildChartBody(context, constraints),
+              ),
+            ),
     );
   }
 

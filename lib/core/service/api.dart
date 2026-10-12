@@ -3,9 +3,8 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
-import 'api_client.dart';
+import 'package:grow_castle_calculator_next/core/service/api_client.dart';
 
-/// 赛季起止时间（来自接口 result.date，可能缺失或格式异常）。
 class SeasonRange {
   final DateTime? start;
   final DateTime? end;
@@ -13,7 +12,6 @@ class SeasonRange {
   const SeasonRange({this.start, this.end});
 }
 
-/// 一次带赛季信息的查询结果：列表数据 + 该赛季的起止时间。
 class SeasonQueryResult<T> {
   final List<T> items;
   final SeasonRange season;
@@ -177,13 +175,15 @@ class PlayerApiService {
   ///
   /// Returns a [PlayerQueryResult] on success, or a [QueryError] on failure.
   static Future<Object /* PlayerQueryResult | QueryError */> query(
-      String playerName) async {
+    String playerName,
+  ) async {
     return _queryPlayer(_buildPlayerNowUrl(playerName.trim()));
   }
 
   /// Common player query logic shared by now/last season endpoints.
   static Future<Object /* PlayerQueryResult | QueryError */> _queryPlayer(
-      String url) async {
+    String url,
+  ) async {
     final uri = Uri.parse(url);
 
     try {
@@ -242,7 +242,8 @@ class PlayerApiService {
   ///
   /// Returns a [SeasonQueryResult] of [PlayerRankInfo] on success,
   /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<PlayerRankInfo> | QueryError */> queryPlayerRanking() async {
+  static Future<Object /* SeasonQueryResult<PlayerRankInfo> | QueryError */>
+  queryPlayerRanking() async {
     final uri = Uri.parse(_buildPlayerRankingUrl());
 
     try {
@@ -275,11 +276,13 @@ class PlayerApiService {
       final players = <PlayerRankInfo>[];
       for (final item in list) {
         if (item is! Map<String, dynamic>) continue;
-        players.add(PlayerRankInfo(
-          rank: _parseInt(item['rank']),
-          name: (item['name'] as String?) ?? '',
-          score: _parseInt(item['score']),
-        ));
+        players.add(
+          PlayerRankInfo(
+            rank: _parseInt(item['rank']),
+            name: (item['name'] as String?) ?? '',
+            score: _parseInt(item['score']),
+          ),
+        );
       }
 
       return SeasonQueryResult(
@@ -297,7 +300,8 @@ class PlayerApiService {
   ///
   /// Returns a [SeasonQueryResult] of [HellRankInfo] on success,
   /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<HellRankInfo> | QueryError */> queryHellRanking() async {
+  static Future<Object /* SeasonQueryResult<HellRankInfo> | QueryError */>
+  queryHellRanking() async {
     final uri = Uri.parse(_buildHellRankingUrl());
 
     try {
@@ -330,11 +334,13 @@ class PlayerApiService {
       final players = <HellRankInfo>[];
       for (final item in list) {
         if (item is! Map<String, dynamic>) continue;
-        players.add(HellRankInfo(
-          rank: _parseInt(item['rank']),
-          name: (item['name'] as String?) ?? '',
-          score: _parseInt(item['score']),
-        ));
+        players.add(
+          HellRankInfo(
+            rank: _parseInt(item['rank']),
+            name: (item['name'] as String?) ?? '',
+            score: _parseInt(item['score']),
+          ),
+        );
       }
 
       return SeasonQueryResult(
@@ -352,7 +358,8 @@ class PlayerApiService {
   ///
   /// Returns a [SeasonQueryResult] of [GuildInfo] on success,
   /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<GuildInfo> | QueryError */> queryGuildRanking() async {
+  static Future<Object /* SeasonQueryResult<GuildInfo> | QueryError */>
+  queryGuildRanking() async {
     final uri = Uri.parse(_buildGuildsUrl());
 
     try {
@@ -385,11 +392,13 @@ class PlayerApiService {
       final guilds = <GuildInfo>[];
       for (final item in list) {
         if (item is! Map<String, dynamic>) continue;
-        guilds.add(GuildInfo(
-          rank: _parseInt(item['rank']),
-          name: (item['name'] as String?) ?? '',
-          score: _parseInt(item['score']),
-        ));
+        guilds.add(
+          GuildInfo(
+            rank: _parseInt(item['rank']),
+            name: (item['name'] as String?) ?? '',
+            score: _parseInt(item['score']),
+          ),
+        );
       }
 
       return SeasonQueryResult(
@@ -407,8 +416,8 @@ class PlayerApiService {
   ///
   /// Returns a [SeasonQueryResult] of [GuildMember] sorted by score descending,
   /// or a [QueryError] on failure. Members with null names are excluded.
-  static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */> queryGuildDetail(
-      String guildName) async {
+  static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */>
+  queryGuildDetail(String guildName) async {
     final uri = Uri.parse(_buildGuildDetailUrl(guildName.trim()));
 
     try {
@@ -443,10 +452,9 @@ class PlayerApiService {
         if (item is! Map<String, dynamic>) continue;
         final name = item['name'];
         if (name == null) continue; // skip null names
-        members.add(GuildMember(
-          name: name.toString(),
-          score: _parseInt(item['score']),
-        ));
+        members.add(
+          GuildMember(name: name.toString(), score: _parseInt(item['score'])),
+        );
       }
 
       // Sort by score descending.
@@ -472,18 +480,23 @@ class PlayerApiService {
   /// seasons ordered newest first, or a [QueryError]. Player without
   /// third-party data (404/empty list) yields an empty list.
   static Future<Object /* List<SeasonWphGroup> | QueryError */>
-      queryPlayerWphHistory(String playerName, String baseUrl) async {
+  queryPlayerWphHistory(
+    String playerName,
+    String baseUrl, {
+    required String username,
+  }) async {
     final base = baseUrl.endsWith('/')
         ? baseUrl.substring(0, baseUrl.length - 1)
         : baseUrl;
     final uri = Uri.parse(
-        '$base/season/all/players/${Uri.encodeComponent(playerName.trim())}');
+      '$base/season/all/players/${Uri.encodeComponent(playerName.trim())}',
+    );
 
     try {
       final response = await ApiClient.get(
         uri,
         // 默认第三方 API 附带 `User`（当前用户）与 UA；自建地址不带
-        options: await ApiClient.thirdPartyOptions(baseUrl),
+        options: await ApiClient.thirdPartyOptions(baseUrl, username: username),
       ).timeout(_timeout);
       if (response.statusCode == 404) return const <SeasonWphGroup>[];
       if (response.statusCode != 200) {
@@ -507,10 +520,11 @@ class PlayerApiService {
             .add(wphValue is num ? wphValue.toInt() : null);
       }
 
-      final result = bySeason.entries
-          .map((e) => SeasonWphGroup(season: e.key, wphs: e.value))
-          .toList()
-        ..sort((a, b) => b.season.compareTo(a.season));
+      final result =
+          bySeason.entries
+              .map((e) => SeasonWphGroup(season: e.key, wphs: e.value))
+              .toList()
+            ..sort((a, b) => b.season.compareTo(a.season));
       return result;
     } on TimeoutException {
       return const TimeoutError();

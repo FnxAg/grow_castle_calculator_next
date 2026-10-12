@@ -1,20 +1,14 @@
+library;
+
 import 'package:get_it/get_it.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_rule_store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
-import 'package:grow_castle_calculator_next/data/store/user_info.dart';
 import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
 
 abstract final class Stores {
   static final GetIt _getIt = GetIt.instance;
-
-  static InfoStore get infoStore {
-    if (!_getIt.isRegistered<InfoStore>()) {
-      _getIt.registerSingleton<InfoStore>(InfoStore());
-    }
-    return _getIt<InfoStore>();
-  }
 
   static AppSettingsStore get appSettingsStore {
     if (!_getIt.isRegistered<AppSettingsStore>()) {
@@ -30,7 +24,7 @@ abstract final class Stores {
     return _getIt<ItemRuleStore>();
   }
 
-  /// 装备对比页的输入数据（持久化于 app_meta box）
+  /// 装备对比页的输入数据，持久化于 app_meta box
   static ItemComparerStore get itemComparerStore {
     if (!_getIt.isRegistered<ItemComparerStore>()) {
       _getIt.registerSingleton<ItemComparerStore>(ItemComparerStore());
@@ -45,7 +39,7 @@ abstract final class Stores {
     return _getIt<GameTrackStore>();
   }
 
-  /// WebDAV 备份配置（持久化于 app_meta box 的 webdav* 键）
+  /// WebDAV 备份配置，持久化于 app_meta box 的 webdav* 键
   static WebDavConfigStore get webDavConfigStore {
     if (!_getIt.isRegistered<WebDavConfigStore>()) {
       _getIt.registerSingleton<WebDavConfigStore>(WebDavConfigStore());

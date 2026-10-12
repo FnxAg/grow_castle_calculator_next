@@ -1,27 +1,24 @@
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_switch_tile.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 收入来源「殖民地」tab：殖民地等级/额外殖民地与装备输入。
-///
-/// 输入实时写入 store（data 字段持久化），结果汇总见页面底部 IncomeSummaryBar。
-class ColonyTab extends StatefulWidget {
+/// 收入来源「殖民地」tab
+class ColonyTab extends ConsumerStatefulWidget {
   const ColonyTab({super.key});
 
   @override
-  State<ColonyTab> createState() => _ColonyTabState();
+  ConsumerState<ColonyTab> createState() => _ColonyTabState();
 }
 
-class _ColonyTabState extends State<ColonyTab> {
+class _ColonyTabState extends ConsumerState<ColonyTab> {
   final Map<String, TextEditingController> _controllers = {};
 
-  /// 整数输入框控制器：创建时带 store 持久化初值，
-  /// 编辑实时写入 store（空/非法输入回退 0）
   TextEditingController _intController(
     String key,
     int value,
@@ -45,24 +42,24 @@ class _ColonyTabState extends State<ColonyTab> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final store = Stores.infoStore;
+    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
+      color: Theme.of(context).colorScheme.primary,
+      fontWeight: FontWeight.w600,
+    );
+    final wave = ref.watch(currentUserWaveProvider);
     final List<Widget> colonyIncomeWidgets = [
       ListTile(
         title: Row(
           children: [
             Text(l10n.labelColonyLevel),
             const Spacer(),
-            ValueListenableBuilder<int>(
-              valueListenable: Stores.infoStore.incomeNotifier,
-              builder: (context, _, _) {
-                final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
+            Builder(
+              builder: (context) {
+                final infiniteColony = ref.watch(
+                  currentUserProvider.select((u) => u.infiniteColony),
                 );
-                final wave = store.getCurrentUserWave();
                 final value = wave > 0
-                    ? (store.getCurrentUserInfiniteColony() / wave * 1000)
-                          .format()
+                    ? (infiniteColony / wave * 1000).format()
                     : '0';
                 return Text(value, style: style);
               },
@@ -74,8 +71,8 @@ class _ColonyTabState extends State<ColonyTab> {
           child: SelectAllTextField(
             controller: _intController(
               'infiniteColony',
-              store.getCurrentUserInfiniteColony(),
-              store.setCurrentUserInfiniteColony,
+              ref.read(currentUserProvider).infiniteColony,
+              ref.users.setCurrentUserInfiniteColony,
             ),
             decoration: const InputDecoration(isDense: true, prefixText: 'Lv.'),
             keyboardType: TextInputType.number,
@@ -90,8 +87,8 @@ class _ColonyTabState extends State<ColonyTab> {
           child: SelectAllTextField(
             controller: _intController(
               'icCooldown',
-              store.getCurrentUserIcCooldown(),
-              store.setCurrentUserIcCooldown,
+              ref.read(currentUserProvider).icCooldownSkill,
+              ref.users.setCurrentUserIcCooldown,
             ),
             decoration: const InputDecoration(isDense: true),
             keyboardType: TextInputType.number,
@@ -106,8 +103,8 @@ class _ColonyTabState extends State<ColonyTab> {
           child: SelectAllTextField(
             controller: _intController(
               'icGold',
-              store.getCurrentUserIcGold(),
-              store.setCurrentUserIcGold,
+              ref.read(currentUserProvider).icGoldSkill,
+              ref.users.setCurrentUserIcGold,
             ),
             decoration: const InputDecoration(isDense: true),
             keyboardType: TextInputType.number,
@@ -117,13 +114,13 @@ class _ColonyTabState extends State<ColonyTab> {
       ),
       IncomeSwitchTile(
         label: l10n.labelWheel,
-        readValue: store.getCurrentUserEquipWheel,
-        onChanged: store.setCurrentUserEquipWheel,
+        value: ref.watch(currentUserProvider.select((u) => u.equipWheel)),
+        onChanged: ref.users.setCurrentUserEquipWheel,
       ),
       IncomeSwitchTile(
         label: l10n.labelWhip,
-        readValue: store.getCurrentUserEquipWhip,
-        onChanged: store.setCurrentUserEquipWhip,
+        value: ref.watch(currentUserProvider.select((u) => u.equipWhip)),
+        onChanged: ref.users.setCurrentUserEquipWhip,
       ),
     ];
     return isMobile

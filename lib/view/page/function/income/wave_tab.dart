@@ -1,24 +1,21 @@
-import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 收入来源「推波」tab：金挂/时挂时长与收益输入。
-///
-/// 输入实时写入 store（data 字段持久化），结果汇总见页面底部 IncomeSummaryBar。
-/// 金挂 + 时挂合计超过 24h（一天时长）时，在「时挂时间」输入框以 errorText 实时提示。
-class WaveTab extends StatefulWidget {
+/// 收入来源「推波」tab
+class WaveTab extends ConsumerStatefulWidget {
   const WaveTab({super.key});
 
   @override
-  State<WaveTab> createState() => _WaveTabState();
+  ConsumerState<WaveTab> createState() => _WaveTabState();
 }
 
-class _WaveTabState extends State<WaveTab> {
+class _WaveTabState extends ConsumerState<WaveTab> {
   final Map<String, TextEditingController> _controllers = {};
 
-  /// 双精度输入框控制器：创建时带 store 持久化初值，
   TextEditingController _doubleController(
     String key,
     double value,
@@ -55,9 +52,9 @@ class _WaveTabState extends State<WaveTab> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final store = Stores.infoStore;
-    final gabTime = _hoursOf('gabTime', store.getCurrentUserGabTime());
-    final tabTime = _hoursOf('tabTime', store.getCurrentUserTabTime());
+    final user = ref.read(currentUserProvider);
+    final gabTime = _hoursOf('gabTime', user.gabTime);
+    final tabTime = _hoursOf('tabTime', user.tabTime);
     final total = gabTime + tabTime;
     final errorText = total > 24.0 + 1e-9 ? 'Sum > 24h' : null;
 
@@ -69,8 +66,8 @@ class _WaveTabState extends State<WaveTab> {
           child: SelectAllTextField(
             controller: _doubleController(
               'gabBonus',
-              store.getCurrentUserGabBonus(),
-              store.setCurrentUserGabBonus,
+              user.gabBonus,
+              ref.users.setCurrentUserGabBonus,
             ),
             decoration: const InputDecoration(isDense: true, suffixText: '%'),
             keyboardType: TextInputType.number,
@@ -84,8 +81,8 @@ class _WaveTabState extends State<WaveTab> {
           child: SelectAllTextField(
             controller: _doubleController(
               'gabTime',
-              store.getCurrentUserGabTime(),
-              store.setCurrentUserGabTime,
+              user.gabTime,
+              ref.users.setCurrentUserGabTime,
             ),
             decoration: InputDecoration(
               isDense: true,
@@ -103,8 +100,8 @@ class _WaveTabState extends State<WaveTab> {
           child: SelectAllTextField(
             controller: _doubleController(
               'tabTime',
-              store.getCurrentUserTabTime(),
-              store.setCurrentUserTabTime,
+              user.tabTime,
+              ref.users.setCurrentUserTabTime,
             ),
             decoration: InputDecoration(
               isDense: true,
