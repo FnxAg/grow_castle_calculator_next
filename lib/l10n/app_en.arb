@@ -222,6 +222,7 @@
   "optionAutoBattleTime": "TAB",
   "dialogWavelineusDisclaimer": "For reference only. Actual in-game results may differ significantly.",
   "actionClose": "Close",
+  "dialogWaveStatusDisclaimer": "For reference only. Actual in-game wave status may differ significantly.",
   "labelChronoType": "Chrono type",
   "labelHorn10": "10% Horn",
   "labelHorn30": "30% Horn",

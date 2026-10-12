@@ -841,7 +841,8 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionAutoBattleTime => 'TAB';
 
   @override
-  String get dialogWaveStatusDisclaimer => '数据仅供参考，实际游戏中可能会有较大偏差。';
+  String get dialogWaveStatusDisclaimer =>
+      'For reference only. Actual in-game wave status may differ significantly.';
 
   @override
   String get actionClose => 'Close';
