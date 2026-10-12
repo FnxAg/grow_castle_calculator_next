@@ -131,7 +131,7 @@ class UserData {
     // 所有字段读时兜底
     return UserData(
       version: _asInt(map['version'], 1),
-      username: map['username']?.toString() ?? 'default',
+      username: map['username']?.toString() ?? 'Default User',
       guild: map['guild']?.toString() ?? '',
       cardIds: _castCardIds(info['cardIds']),
       applyFlags: _castIntKeyBoolMap(info['applyFlags']),
@@ -419,7 +419,7 @@ class UserData {
 /// 0 是固定分配给默认用户的编号
 const Map<int, Map<String, dynamic>> defaultUserData = {
   0: {
-    'username': 'default',
+    'username': 'Default User',
     'version': UserData.currentVersion,
     'guild': '',
     'info': {

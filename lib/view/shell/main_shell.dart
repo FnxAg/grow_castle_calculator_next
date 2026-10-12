@@ -5,8 +5,6 @@ import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
 
 /// app 根外壳
-///
-/// 窄屏沿用底部 NavigationBar，宽屏（>= [Breakpoints.expanded]）改用左侧。
 class MainShell extends StatefulWidget {
   const MainShell({super.key});
 
@@ -54,7 +52,7 @@ class _MainShellState extends State<MainShell> {
         nav.pop();
       }
     } else {
-      // 窄屏：无内层 Navigator，弹根栈（与改造前一致）
+      // 窄屏：无内层 Navigator，弹根栈
       Navigator.of(context).maybePop();
     }
     return true;
@@ -92,11 +90,10 @@ class _MainShellState extends State<MainShell> {
     return PageView(
       controller: _pageController,
       onPageChanged: (index) {
-        // 滑动切页时同步高亮（点击切页的高亮已在 _selectPage 里设置）
         _selectIndex.value = index;
         FocusManager.instance.primaryFocus?.unfocus();
       },
-      // 相邻页保活：保留各页输入状态，并支持左右滑动切换
+      // 相邻页保活
       allowImplicitScrolling: true,
       children: [
         for (final (i, page) in mainPages.indexed) _buildTab(i, page, isWide),

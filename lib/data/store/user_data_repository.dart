@@ -51,7 +51,7 @@ class UserDataRepository {
 
     if (users.isEmpty) {
       // 空库兜底时，建 0 号默认用户并落盘
-      final defaultUser = UserData(username: 'default');
+      final defaultUser = UserData(username: 'Default User');
       writeUser(0, defaultUser);
       writeMeta(currentUserId: 0, nextUserId: 1);
       return UserSnapshot(
