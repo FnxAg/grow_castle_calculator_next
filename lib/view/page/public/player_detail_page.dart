@@ -480,15 +480,16 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
   }
 
   Widget _wphGrid(List<int?> wphs, int wph) {
+    final schema = Theme.of(context).colorScheme;
     final slowWPH = wph * 0.95;
     final passiveWPH = wph * 1.05;
     final skipWhiteWPH = wph * 1.5;
-    final nullColor = Colors.grey.shade300;
-    final downColor = Colors.red.shade100;
-    final slowColor = Colors.cyan.shade100;
-    final passiveColor = Colors.blue.shade200;
-    final skipWhiteColor = Colors.green.shade200;
-    final skipOrangeColor = Colors.orange.shade200;
+    final nullColor = Colors.grey;
+    final downColor = Colors.red;
+    final slowColor = Colors.cyan;
+    final passiveColor = Colors.blue;
+    final skipWhiteColor = Colors.green;
+    final skipOrangeColor = Colors.orange;
     return LayoutBuilder(
       builder: (context, constraints) {
         const minCell = 48.0;
@@ -518,17 +519,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                           height: 28.0,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: switch (rows[r][i]) {
-                              null => nullColor,
-                              final value when value < 0 => downColor,
-                              final value when value == 0 => downColor,
-                              final value when value <= slowWPH => slowColor,
-                              final value when value <= passiveWPH =>
-                                passiveColor,
-                              final value when value <= skipWhiteWPH =>
-                                skipWhiteColor,
-                              _ => skipOrangeColor,
-                            },
+                            color: schema.primaryContainer,
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(
@@ -536,6 +527,17 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                             style: TextStyle(
                               fontSize: 12.0,
                               fontWeight: FontWeight.w600,
+                              color: switch (rows[r][i]) {
+                                null => nullColor,
+                                final value when value < 0 => downColor,
+                                final value when value == 0 => downColor,
+                                final value when value <= slowWPH => slowColor,
+                                final value when value <= passiveWPH =>
+                                  passiveColor,
+                                final value when value <= skipWhiteWPH =>
+                                  skipWhiteColor,
+                                _ => skipOrangeColor,
+                              },
                             ),
                           ),
                         ),
