@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
@@ -300,6 +301,10 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
   Widget _buildResult(PlayerQueryResult r) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final wph = ref.watch(theoreticalWphProvider);
+    final isCurrentUser =
+        widget.playerName.toLowerCase() ==
+        ref.watch(currentUsernameProvider).toLowerCase();
     final lastOnline = PlayerApiService.formatLastOnline(
       r.queryDate,
       DateTime.now(),
@@ -354,7 +359,12 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                                   top: 8.0,
                                   bottom: 4.0,
                                 ),
-                                child: _wphGrid(group.wphs),
+                                child: _wphGrid(
+                                  group.wphs,
+                                  isCurrentUser
+                                      ? wph
+                                      : _inferPassiveWph(group.wphs),
+                                ),
                               ),
                             ],
                           ],
@@ -469,8 +479,16 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     );
   }
 
-  Widget _wphGrid(List<int?> wphs) {
-    final scheme = Theme.of(context).colorScheme;
+  Widget _wphGrid(List<int?> wphs, int wph) {
+    final slowWPH = wph * 0.95;
+    final passiveWPH = wph * 1.05;
+    final skipWhiteWPH = wph * 1.5;
+    final nullColor = Colors.grey.shade300;
+    final downColor = Colors.red.shade100;
+    final slowColor = Colors.cyan.shade100;
+    final passiveColor = Colors.blue.shade200;
+    final skipWhiteColor = Colors.green.shade200;
+    final skipOrangeColor = Colors.orange.shade200;
     return LayoutBuilder(
       builder: (context, constraints) {
         const minCell = 48.0;
@@ -500,7 +518,17 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                           height: 28.0,
                           alignment: Alignment.center,
                           decoration: BoxDecoration(
-                            color: scheme.primaryContainer,
+                            color: switch (rows[r][i]) {
+                              null => nullColor,
+                              final value when value < 0 => downColor,
+                              final value when value == 0 => downColor,
+                              final value when value <= slowWPH => slowColor,
+                              final value when value <= passiveWPH =>
+                                passiveColor,
+                              final value when value <= skipWhiteWPH =>
+                                skipWhiteColor,
+                              _ => skipOrangeColor,
+                            },
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(
@@ -508,7 +536,6 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                             style: TextStyle(
                               fontSize: 12.0,
                               fontWeight: FontWeight.w600,
-                              color: scheme.onPrimaryContainer,
                             ),
                           ),
                         ),
@@ -522,4 +549,90 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
       },
     );
   }
+}
+
+final _maxTheoreticalWph = getWph(
+  devilHornSkip: 6,
+  isGoldAutoBattle: false,
+  gameSpeed: gameSpeedRatio.length - 1,
+  chronoBonus: chronoBonusRatio.length - 1,
+  equipHorn: true,
+  equipGoldenHorn: true,
+);
+
+int _inferPassiveWph(List<int?> wphs) {
+  final upperBound = (_maxTheoreticalWph * 1.03).ceil();
+  final validValues = wphs
+      .where((value) => value != null && value >= 0 && value <= upperBound)
+      .cast<int>()
+      .toList();
+  if (validValues.isEmpty || validValues.every((value) => value == 0)) {
+    return 0;
+  }
+
+  // A zero snapshot must not become the baseline when positive observations
+  // exist; it represents an inactive or incomplete measurement instead.
+  final values = <int>[];
+  final segments = <List<int>>[];
+  var segment = <int>[];
+  for (final value in wphs) {
+    if (value == null || value <= 0 || value > upperBound) {
+      if (segment.isNotEmpty) segments.add(segment);
+      segment = <int>[];
+      continue;
+    }
+    values.add(value);
+    segment.add(value);
+  }
+  if (segment.isNotEmpty) segments.add(segment);
+
+  var bestSegment = <int>[];
+  for (final candidate in segments) {
+    final stable = _findStableSegment(candidate, upperBound);
+    if (stable.length > bestSegment.length ||
+        (stable.length == bestSegment.length &&
+            _median(stable) < _median(bestSegment))) {
+      bestSegment = stable;
+    }
+  }
+  final passive = _median(bestSegment.isEmpty ? values : bestSegment);
+  return passive.round().clamp(0, upperBound);
+}
+
+List<int> _findStableSegment(List<int> values, int upperBound) {
+  var bestStart = 0;
+  var bestLength = 0;
+  var bestMedian = double.infinity;
+  for (var start = 0; start < values.length; start++) {
+    var minimum = values[start];
+    var maximum = values[start];
+    var end = start;
+    while (end + 1 < values.length) {
+      final next = values[end + 1];
+      final nextMinimum = minimum < next ? minimum : next;
+      final nextMaximum = maximum > next ? maximum : next;
+      final tolerance = (nextMaximum * 0.03).ceil().clamp(2, upperBound);
+      if (nextMaximum - nextMinimum > tolerance) break;
+      minimum = nextMinimum;
+      maximum = nextMaximum;
+      end++;
+    }
+
+    final length = end - start + 1;
+    final median = _median(values.sublist(start, end + 1));
+    if (length > bestLength || (length == bestLength && median < bestMedian)) {
+      bestStart = start;
+      bestLength = length;
+      bestMedian = median;
+    }
+  }
+
+  return values.sublist(bestStart, bestStart + bestLength);
+}
+
+double _median(List<int> values) {
+  final sorted = [...values]..sort();
+  final middle = sorted.length ~/ 2;
+  if (sorted.length.isOdd) return sorted[middle].toDouble();
+  return (sorted[middle - 1] + sorted[middle]) / 2;
 }
