@@ -249,11 +249,11 @@ abstract class AppLocalizations {
   /// **'城堡'**
   String get unitNameCastle;
 
-  /// 内置卡片 id=2 的默认名；英文取 Town Archer 的简写
+  /// 内置卡片 id=2 的默认名
   ///
   /// In zh, this message translates to:
   /// **'城弓'**
-  String get unitNameCastleBow;
+  String get unitNameTownArcher;
 
   /// No description provided for @unitNameGeneric.
   ///
@@ -267,11 +267,11 @@ abstract class AppLocalizations {
   /// **'城堡名称'**
   String get nameLabelCastle;
 
-  /// No description provided for @nameLabelCastleBow.
+  /// No description provided for @nameLabelTownArcher.
   ///
   /// In zh, this message translates to:
   /// **'城弓名称'**
-  String get nameLabelCastleBow;
+  String get nameLabelTownArcher;
 
   /// No description provided for @nameLabelGeneric.
   ///
@@ -1692,23 +1692,23 @@ abstract class AppLocalizations {
   /// **'其他'**
   String get tabIncomeOther;
 
-  /// 右侧显示 (额外殖民地/波数 ×1000)，输入框带 prefixText 'Lv.'（已是英文，不收）。　位置：lib/view/page/function/income/colony_tab.dart:51
+  /// 通天塔等级 / 无限殖民地等级
   ///
   /// In zh, this message translates to:
-  /// **'殖民地等级'**
-  String get labelColonyLevel;
+  /// **'通天塔等级'**
+  String get labelInfiniteColonyLevel;
 
-  /// C = 冷却（store 字段 icCooldown），G = 金币（icGold）。字母后缀是游戏内的叫法，英文保留同字母；若嫌含糊可写 Extra colony (cooldown)。　位置：lib/view/page/function/income/colony_tab.dart:85
+  /// 金 + 蓝 Colony Cooldown Skill LV +1
   ///
   /// In zh, this message translates to:
   /// **'额外殖民地C'**
-  String get labelExtraColonyC;
+  String get labelExtraColonyCooldownSkill;
 
-  /// 位置：lib/view/page/function/income/colony_tab.dart:101
+  /// 金 + 蓝 Colony Gold Skill LV +1
   ///
   /// In zh, this message translates to:
   /// **'额外殖民地G'**
-  String get labelExtraColonyG;
+  String get labelExtraColonyGoldSkill;
 
   /// 装备项（equipWheel），行右侧是开关。　位置：lib/view/page/function/income/colony_tab.dart:117
   ///
@@ -2465,6 +2465,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'总收入'**
   String get incomeTotal;
+
+  /// No description provided for @tooltipInfiniteColonyRatio.
+  ///
+  /// In zh, this message translates to:
+  /// **'殖波比'**
+  String get tooltipInfiniteColonyRatio;
 }
 
 class _AppLocalizationsDelegate

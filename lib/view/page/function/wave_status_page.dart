@@ -192,7 +192,7 @@ class WaveStatusPage extends ConsumerWidget {
           ],
         ),
         trailing: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.45),
+          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.35),
           child: _TrailingDropdown<T>(
             buttonKey: dropdownKey,
             value: value,

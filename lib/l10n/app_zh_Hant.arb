@@ -26,10 +26,10 @@
   "metricOneOverRatio": "1/比例",
   "metricRatio": "比例",
   "unitNameCastle": "城堡",
-  "unitNameCastleBow": "城弓",
+  "unitNameTownArcher": "城弓",
   "unitNameGeneric": "單位 {id}",
   "nameLabelCastle": "城堡名稱",
-  "nameLabelCastleBow": "城弓名稱",
+  "nameLabelTownArcher": "城弓名稱",
   "nameLabelGeneric": "名稱",
   "labelLevel": "等級",
   "tooltipActions": "操作",
@@ -265,9 +265,9 @@
   "tabIncomeColony": "殖民地",
   "tabIncomeWave": "推波",
   "tabIncomeOther": "其他",
-  "labelColonyLevel": "殖民地等級",
-  "labelExtraColonyC": "額外殖民地C",
-  "labelExtraColonyG": "額外殖民地G",
+  "labelInfiniteColonyLevel": "通天塔等級",
+  "labelExtraColonyCooldownSkill": "額外殖民地C",
+  "labelExtraColonyGoldSkill": "額外殖民地G",
   "labelWheel": "車輪",
   "labelWhip": "鞭子",
   "labelGabAverageBonus": "金掛平均收益",
@@ -393,5 +393,6 @@
   "labelStart": "開始",
   "labelEnd": "結束",
   "labelRemaining": "剩餘",
-  "incomeTotal": "總收入"
+  "incomeTotal": "總收入",
+  "tooltipInfiniteColonyRatio": "殖波比"
 }

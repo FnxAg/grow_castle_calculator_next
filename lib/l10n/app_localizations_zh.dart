@@ -93,7 +93,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unitNameCastle => '城堡';
 
   @override
-  String get unitNameCastleBow => '城弓';
+  String get unitNameTownArcher => '城弓';
 
   @override
   String unitNameGeneric(int id) {
@@ -104,7 +104,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get nameLabelCastle => '城堡名称';
 
   @override
-  String get nameLabelCastleBow => '城弓名称';
+  String get nameLabelTownArcher => '城弓名称';
 
   @override
   String get nameLabelGeneric => '名称';
@@ -922,13 +922,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tabIncomeOther => '其他';
 
   @override
-  String get labelColonyLevel => '殖民地等级';
+  String get labelInfiniteColonyLevel => '通天塔等级';
 
   @override
-  String get labelExtraColonyC => '额外殖民地C';
+  String get labelExtraColonyCooldownSkill => '额外殖民地C';
 
   @override
-  String get labelExtraColonyG => '额外殖民地G';
+  String get labelExtraColonyGoldSkill => '额外殖民地G';
 
   @override
   String get labelWheel => '车轮';
@@ -1368,6 +1368,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get incomeTotal => '总收入';
+
+  @override
+  String get tooltipInfiniteColonyRatio => '殖波比';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1458,7 +1461,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get unitNameCastle => '城堡';
 
   @override
-  String get unitNameCastleBow => '城弓';
+  String get unitNameTownArcher => '城弓';
 
   @override
   String unitNameGeneric(int id) {
@@ -1469,7 +1472,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get nameLabelCastle => '城堡名稱';
 
   @override
-  String get nameLabelCastleBow => '城弓名稱';
+  String get nameLabelTownArcher => '城弓名稱';
 
   @override
   String get nameLabelGeneric => '名稱';
@@ -2287,13 +2290,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tabIncomeOther => '其他';
 
   @override
-  String get labelColonyLevel => '殖民地等級';
+  String get labelInfiniteColonyLevel => '通天塔等級';
 
   @override
-  String get labelExtraColonyC => '額外殖民地C';
+  String get labelExtraColonyCooldownSkill => '額外殖民地C';
 
   @override
-  String get labelExtraColonyG => '額外殖民地G';
+  String get labelExtraColonyGoldSkill => '額外殖民地G';
 
   @override
   String get labelWheel => '車輪';
@@ -2733,4 +2736,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get incomeTotal => '總收入';
+
+  @override
+  String get tooltipInfiniteColonyRatio => '殖波比';
 }

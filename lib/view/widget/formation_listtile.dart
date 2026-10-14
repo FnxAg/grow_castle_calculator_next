@@ -123,8 +123,8 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
     final totalGold = ref.watch(currentUserTotalGoldProvider);
     final wave = ref.watch(currentUserWaveProvider);
     final share = applied && totalGold > 0 ? gold / totalGold * 100 : 0.0;
-    final oneOverRatio = applied && wave > 0 && level > 0 ? level / wave : 0.0;
-    final ratio = oneOverRatio > 0 ? 1 / oneOverRatio : 0.0;
+    final oneOverRatio = level / wave;
+    final ratio = 1 / oneOverRatio;
     final nameStyle = TextStyle(
       fontWeight: FontWeight.w600,
       decoration: applied ? null : TextDecoration.lineThrough,
@@ -146,7 +146,7 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                       : widget.id == 1
                       ? l10n.unitNameCastle
                       : widget.id == 2
-                      ? l10n.unitNameCastleBow
+                      ? l10n.unitNameTownArcher
                       : l10n.unitNameGeneric(widget.id),
                   overflow: TextOverflow.ellipsis,
                   style: nameStyle,
@@ -206,8 +206,8 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
     final digits = value.abs() < 0.0001
         ? 6
         : value.abs() < 0.01
-        ? 4
-        : 2;
+        ? 5
+        : 3;
     return value.format(fractionDigits: digits);
   }
 
@@ -221,7 +221,7 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
       labelText: widget.id == 1
           ? l10n.nameLabelCastle
           : widget.id == 2
-          ? l10n.nameLabelCastleBow
+          ? l10n.nameLabelTownArcher
           : l10n.nameLabelGeneric,
       keyboardType: TextInputType.text,
     );

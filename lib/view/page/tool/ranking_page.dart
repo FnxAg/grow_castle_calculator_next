@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
@@ -11,7 +12,7 @@ import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 工具 tab 下的三类排行榜
+/// 排行榜
 enum RankingKind {
   player(icon: Icons.eco, crossIcon: Icons.all_inclusive),
   guild(icon: Icons.flag_circle, crossIcon: null),
@@ -24,8 +25,6 @@ enum RankingKind {
   final IconData? crossIcon;
 }
 
-/// [RankingKind] 的本地化名称：枚举是 const，取不到 l10n，故按 kind 解析。
-/// 榜单列表以外的页面（工具页入口、趋势页标题、名次弹窗）也走这里。
 String rankingKindLabel(AppLocalizations l10n, RankingKind kind) =>
     switch (kind) {
       RankingKind.player => l10n.rankingKindPlayer,
@@ -66,7 +65,6 @@ class _RankingChartPageState extends State<RankingChartPage> {
       RankingKind.hell => RankingCache.hellRanking(),
     };
     if (!mounted) return;
-    // 取 l10n 必须在 await 之后：initState 里同步取 Localizations 会断言失败
     final l10n = AppLocalizations.of(context);
     setState(() {
       _loading = false;
@@ -286,8 +284,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
     );
   }
 
-  /// 轴标签：中文用 万/亿/万亿，英文用 K/M/B（[english] 由调用点按语言传入）。
-  /// 万以下的数值保留原来的取整 + 千位分隔符写法。
+  /// 轴标签
   String _formatAxisValue(
     double value, {
     required bool english,
@@ -362,7 +359,6 @@ class _RankingPageState extends State<RankingPage> {
     ).wait;
 
     if (!mounted) return;
-    // 取 l10n 必须在 await 之后：initState 里同步取 Localizations 会断言失败
     final l10n = AppLocalizations.of(context);
 
     String? refreshFailure;
@@ -490,6 +486,13 @@ class _RankingPageState extends State<RankingPage> {
               RankingKind.hell => RankingCache.hellSeasonNotifier,
             },
           ),
+          isDesktop
+              ? IconButton(
+                  icon: const Icon(Icons.cloud_sync),
+                  tooltip: l10n.tooltipFetchData,
+                  onPressed: () => _load(force: true),
+                )
+              : const SizedBox.shrink(),
           IconButton(
             icon: const Icon(Icons.show_chart),
             tooltip: l10n.tooltipViewScoreTrend,

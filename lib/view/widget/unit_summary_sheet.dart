@@ -301,8 +301,8 @@ class _UnitSummaryRow extends StatelessWidget {
     final totalGold = data.totalGold;
 
     final share = applied && totalGold > 0 ? gold / totalGold * 100 : 0.0;
-    final oneOverRatio = applied && wave > 0 && level > 0 ? level / wave : 0.0;
-    final ratio = oneOverRatio > 0 ? 1 / oneOverRatio : 0.0;
+    final oneOverRatio = level / wave;
+    final ratio = 1 / oneOverRatio;
 
     final colors = theme.colorScheme;
     final title = name.isNotEmpty
@@ -310,7 +310,7 @@ class _UnitSummaryRow extends StatelessWidget {
         : id == 1
         ? l10n.unitNameCastle
         : id == 2
-        ? l10n.unitNameCastleBow
+        ? l10n.unitNameTownArcher
         : l10n.unitNameGeneric(id);
 
     return Opacity(
@@ -386,8 +386,8 @@ class _UnitSummaryRow extends StatelessWidget {
     final digits = v.abs() < 0.0001
         ? 6
         : v.abs() < 0.01
-        ? 4
-        : 2;
+        ? 5
+        : 3;
     return v.format(fractionDigits: digits);
   }
 }

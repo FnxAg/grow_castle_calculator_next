@@ -362,6 +362,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
         ),
         bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
         actions: [
+          SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
           isDesktop
               ? IconButton(
                   onPressed: _refresh,
@@ -375,7 +376,6 @@ class _GuildPageState extends ConsumerState<GuildPage> {
                         ),
                 )
               : SizedBox.shrink(),
-          SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
         ],
       ),
       body: body,

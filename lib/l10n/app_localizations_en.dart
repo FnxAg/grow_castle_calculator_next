@@ -94,7 +94,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get unitNameCastle => 'Castle';
 
   @override
-  String get unitNameCastleBow => 'TA';
+  String get unitNameTownArcher => 'TA';
 
   @override
   String unitNameGeneric(int id) {
@@ -105,7 +105,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nameLabelCastle => 'Castle name';
 
   @override
-  String get nameLabelCastleBow => 'TA name';
+  String get nameLabelTownArcher => 'TA name';
 
   @override
   String get nameLabelGeneric => 'Name';
@@ -150,25 +150,25 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageEnglish => 'English';
 
   @override
-  String get itemSourceDragon1 => 'Green';
+  String get itemSourceDragon1 => 'Green Dragon';
 
   @override
-  String get itemSourceDragon2 => 'Black';
+  String get itemSourceDragon2 => 'Black Dragon';
 
   @override
-  String get itemSourceDragon3 => 'Red';
+  String get itemSourceDragon3 => 'Red Dragon';
 
   @override
   String get itemSourceDragon4 => 'Sin';
 
   @override
-  String get itemSourceDragon5 => 'Legendary';
+  String get itemSourceDragon5 => 'Legendary Dragon';
 
   @override
-  String get itemSourceDragon6 => 'Bone';
+  String get itemSourceDragon6 => 'Bone Dragon';
 
   @override
-  String get itemSourceDragon7 => 'Ancient';
+  String get itemSourceDragon7 => 'Ancient Dragon';
 
   @override
   String get webdavAuthFailed => 'Incorrect username or password (HTTP 401)';
@@ -997,13 +997,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tabIncomeOther => 'Other';
 
   @override
-  String get labelColonyLevel => 'Colony level';
+  String get labelInfiniteColonyLevel => 'Infinite Colony level';
 
   @override
-  String get labelExtraColonyC => 'Extra colony C';
+  String get labelExtraColonyCooldownSkill => 'Extra Colony Cooldown Skill +';
 
   @override
-  String get labelExtraColonyG => 'Extra colony G';
+  String get labelExtraColonyGoldSkill => 'Extra Colony Gold Skill +';
 
   @override
   String get labelWheel => 'Iron Wheel';
@@ -1473,4 +1473,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get incomeTotal => 'Total income';
+
+  @override
+  String get tooltipInfiniteColonyRatio => 'IC ratio';
 }

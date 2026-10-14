@@ -51,7 +51,7 @@ class _ColonyTabState extends ConsumerState<ColonyTab> {
       ListTile(
         title: Row(
           children: [
-            Text(l10n.labelColonyLevel),
+            Text(l10n.labelInfiniteColonyLevel),
             const Spacer(),
             Builder(
               builder: (context) {
@@ -61,7 +61,10 @@ class _ColonyTabState extends ConsumerState<ColonyTab> {
                 final value = wave > 0
                     ? (infiniteColony / wave * 1000).format()
                     : '0';
-                return Text(value, style: style);
+                return Tooltip(
+                  message: l10n.tooltipInfiniteColonyRatio,
+                  child: Text(value, style: style),
+                );
               },
             ),
           ],
@@ -81,7 +84,7 @@ class _ColonyTabState extends ConsumerState<ColonyTab> {
         ),
       ),
       ListTile(
-        title: Text(l10n.labelExtraColonyC),
+        title: Text(l10n.labelExtraColonyCooldownSkill),
         trailing: SizedBox(
           width: 80,
           child: SelectAllTextField(
@@ -97,7 +100,7 @@ class _ColonyTabState extends ConsumerState<ColonyTab> {
         ),
       ),
       ListTile(
-        title: Text(l10n.labelExtraColonyG),
+        title: Text(l10n.labelExtraColonyGoldSkill),
         trailing: SizedBox(
           width: 80,
           child: SelectAllTextField(

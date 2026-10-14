@@ -66,9 +66,9 @@
   "metricOneOverRatio": "1/比例",
   "metricRatio": "比例",
   "unitNameCastle": "城堡",
-  "unitNameCastleBow": "城弓",
-  "@unitNameCastleBow": {
-    "description": "内置卡片 id=2 的默认名；英文取 Town Archer 的简写"
+  "unitNameTownArcher": "城弓",
+  "@unitNameTownArcher": {
+    "description": "内置卡片 id=2 的默认名"
   },
   "unitNameGeneric": "单位 {id}",
   "@unitNameGeneric": {
@@ -79,7 +79,7 @@
     }
   },
   "nameLabelCastle": "城堡名称",
-  "nameLabelCastleBow": "城弓名称",
+  "nameLabelTownArcher": "城弓名称",
   "nameLabelGeneric": "名称",
   "labelLevel": "等级",
   "tooltipActions": "操作",
@@ -1205,17 +1205,17 @@
   "@tabIncomeOther": {
     "description": "income_summary_bar.dart:43 同词条，建议复用。　位置：lib/view/page/function/income_page.dart:91"
   },
-  "labelColonyLevel": "殖民地等级",
-  "@labelColonyLevel": {
-    "description": "右侧显示 (额外殖民地/波数 ×1000)，输入框带 prefixText 'Lv.'（已是英文，不收）。　位置：lib/view/page/function/income/colony_tab.dart:51"
+  "labelInfiniteColonyLevel": "通天塔等级",
+  "@labelInfiniteColonyLevel": {
+    "description": "通天塔等级 / 无限殖民地等级"
   },
-  "labelExtraColonyC": "额外殖民地C",
-  "@labelExtraColonyC": {
-    "description": "C = 冷却（store 字段 icCooldown），G = 金币（icGold）。字母后缀是游戏内的叫法，英文保留同字母；若嫌含糊可写 Extra colony (cooldown)。　位置：lib/view/page/function/income/colony_tab.dart:85"
+  "labelExtraColonyCooldownSkill": "额外殖民地C",
+  "@labelExtraColonyCooldownSkill": {
+    "description": "金 + 蓝 Colony Cooldown Skill LV +1"
   },
-  "labelExtraColonyG": "额外殖民地G",
-  "@labelExtraColonyG": {
-    "description": "位置：lib/view/page/function/income/colony_tab.dart:101"
+  "labelExtraColonyGoldSkill": "额外殖民地G",
+  "@labelExtraColonyGoldSkill": {
+    "description": "金 + 蓝 Colony Gold Skill LV +1"
   },
   "labelWheel": "车轮",
   "@labelWheel": {
@@ -1869,5 +1869,6 @@
   "incomeTotal": "总收入",
   "@incomeTotal": {
     "description": "术语表：总收入 total income。同理已有的 totalGold（总金币）是另一指标，勿混用。　位置：lib/view/widget/income_summary_bar.dart:53"
-  }
+  },
+  "tooltipInfiniteColonyRatio": "殖波比"
 }
