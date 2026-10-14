@@ -201,7 +201,7 @@ class _SettingPageState extends State<SettingPage> {
     required IconData leading,
     required String title,
     required T current,
-    required List<(T, String, IconData?)> options,
+    required List<(T, String, Widget?)> options,
     required ValueChanged<T> onSelected,
   }) {
     final l10n = AppLocalizations.of(context);
@@ -228,7 +228,7 @@ class _SettingPageState extends State<SettingPage> {
                   for (final (value, label, icon) in options)
                     RadioListTile<T>(
                       value: value,
-                      secondary: icon == null ? null : Icon(icon),
+                      secondary: icon,
                       title: Text(label),
                     ),
                 ],
@@ -275,9 +275,9 @@ class _SettingPageState extends State<SettingPage> {
               title: l10n.settingsThemeMode,
               current: mode,
               options: [
-                (ThemeMode.system, l10n.themeSystem, Icons.brightness_auto),
-                (ThemeMode.light, l10n.themeLight, Icons.light_mode),
-                (ThemeMode.dark, l10n.themeDark, Icons.dark_mode),
+                (ThemeMode.system, l10n.themeSystem, Icon(Icons.brightness_auto)),
+                (ThemeMode.light, l10n.themeLight, Icon(Icons.light_mode)),
+                (ThemeMode.dark, l10n.themeDark, Icon(Icons.dark_mode)),
               ],
               onSelected: appSettingsStore.setThemeMode,
             ),
@@ -292,11 +292,11 @@ class _SettingPageState extends State<SettingPage> {
                 (
                   AppLanguage.system,
                   l10n.languageSystem,
-                  Icons.brightness_auto,
+                  Text("System"),
                 ),
-                (AppLanguage.zhHans, l10n.languageChinese, null),
-                (AppLanguage.zhHant, l10n.languageTraditionalChinese, null),
-                (AppLanguage.en, l10n.languageEnglish, null),
+                (AppLanguage.zhHans, l10n.languageChinese, Text("zh_CN")),
+                (AppLanguage.zhHant, l10n.languageTraditionalChinese, Text("zh_TW")),
+                (AppLanguage.en, l10n.languageEnglish, Text("en_US")),
               ],
               onSelected: appSettingsStore.setLanguage,
             ),
@@ -332,7 +332,7 @@ class _SettingPageState extends State<SettingPage> {
                         curve: Curves.linearToEaseOut,
                         child: SizedBox(
                           child: !enabled
-                              ? const SizedBox(height: 0)
+                              ? const SizedBox.shrink()
                               : ListTile(
                                   leading: const Icon(Icons.link),
                                   title: Text(l10n.labelApiUrl),
@@ -381,7 +381,7 @@ class _SettingPageState extends State<SettingPage> {
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.linearToEaseOut,
                         child: !enabled
-                            ? const SizedBox(height: 0)
+                            ? const SizedBox.shrink()
                             : ListTile(
                                 leading: const Icon(Icons.network_check),
                                 title: Text(l10n.settingsQueryConcurrency),
@@ -427,7 +427,7 @@ class _SettingPageState extends State<SettingPage> {
                         duration: const Duration(milliseconds: 200),
                         curve: Curves.linearToEaseOut,
                         child: !enabled
-                            ? const SizedBox(height: 0)
+                            ? const SizedBox.shrink()
                             : ListTile(
                                 enabled: enabled,
                                 leading: const Icon(Icons.timer_outlined),
