@@ -149,25 +149,25 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageEnglish => 'English';
 
   @override
-  String get itemSourceDragon1 => '一龙';
+  String get itemSourceDragon1 => '一龙（绿龙）';
 
   @override
-  String get itemSourceDragon2 => '二龙';
+  String get itemSourceDragon2 => '二龙（黑龙）';
 
   @override
-  String get itemSourceDragon3 => '三龙';
+  String get itemSourceDragon3 => '三龙（红龙）';
 
   @override
-  String get itemSourceDragon4 => '四龙';
+  String get itemSourceDragon4 => '四龙（罪恶龙）';
 
   @override
-  String get itemSourceDragon5 => '五龙';
+  String get itemSourceDragon5 => '五龙（传说龙）';
 
   @override
-  String get itemSourceDragon6 => '六龙';
+  String get itemSourceDragon6 => '六龙（骨龙）';
 
   @override
-  String get itemSourceDragon7 => '七龙';
+  String get itemSourceDragon7 => '七龙（远古龙）';
 
   @override
   String get webdavAuthFailed => '账号或密码错误（HTTP 401）';
@@ -1517,25 +1517,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get languageEnglish => 'English';
 
   @override
-  String get itemSourceDragon1 => '一龍';
+  String get itemSourceDragon1 => '一龍（綠龍）';
 
   @override
-  String get itemSourceDragon2 => '二龍';
+  String get itemSourceDragon2 => '二龍（黑龍）';
 
   @override
-  String get itemSourceDragon3 => '三龍';
+  String get itemSourceDragon3 => '三龍（紅龍）';
 
   @override
-  String get itemSourceDragon4 => '四龍';
+  String get itemSourceDragon4 => '四龍（罪惡龍）';
 
   @override
-  String get itemSourceDragon5 => '五龍';
+  String get itemSourceDragon5 => '五龍（傳說龍）';
 
   @override
-  String get itemSourceDragon6 => '六龍';
+  String get itemSourceDragon6 => '六龍（骨龍）';
 
   @override
-  String get itemSourceDragon7 => '七龍';
+  String get itemSourceDragon7 => '七龍（遠古龍）';
 
   @override
   String get webdavAuthFailed => '帳號或密碼錯誤（HTTP 401）';
