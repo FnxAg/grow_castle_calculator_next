@@ -8,6 +8,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
@@ -304,6 +305,149 @@ class _HomePageState extends ConsumerState<HomePage> {
       fontSize: 11.0,
       fontWeight: FontWeight.w600,
     );
+    // 波数
+    final waveCard = SummaryCard(
+      children: <Widget>[
+        SummaryRow(
+          title: Text(l10n.totalWave),
+          leadingIcon: Icons.emoji_events,
+          trailing: SummaryRowValueText(text: wave.format()),
+        ),
+        SummaryRow(
+          title: Text(l10n.seasonWave),
+          leadingIcon: Icons.eco,
+          trailing: SummaryRowValueText(text: seasonWave.format()),
+        ),
+        if (_playerRank != null ||
+            _playerGapPrev != null ||
+            _playerGapNext != null)
+          RankPillRow(
+            rank: _playerRank,
+            gapPrev: _playerGapPrev,
+            gapNext: _playerGapNext,
+          ),
+      ],
+    );
+    // 经济
+    final economyCard = SummaryCard(
+      children: <Widget>[
+        SummaryRow(
+          leadingIcon: Icons.monetization_on,
+          title: Text(l10n.totalGold),
+          trailing: SummaryRowValueText(
+            text: totalGold.formatCompact(
+              fractionDigits: 2,
+              english: english,
+              traditional: traditional,
+            ),
+          ),
+        ),
+        SummaryRow(
+          leadingIcon: Icons.star,
+          title: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [Text(l10n.goldPower)],
+          ),
+          trailing: SummaryRowValueText(
+            text:
+                '${gp.format(fractionDigits: 3)}'
+                ' · '
+                '${gpCn.format(fractionDigits: 3)}',
+          ),
+        ),
+        SummaryRow(
+          leadingIcon: Icons.auto_graph,
+          title: Text(l10n.income),
+          trailing: Row(
+            children: [
+              PillChip(
+                text: Text(
+                  '${gabBonus.toStringAsFixed(2)}%',
+                  style: chipTextStyle,
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              SummaryRowValueText(
+                text: dailyIncome.formatCompact(
+                  fractionDigits: 2,
+                  english: english,
+                  traditional: traditional,
+                ),
+              ),
+            ],
+          ),
+        ),
+        SummaryRow(
+          leadingIcon: Icons.flag,
+          title: Text(l10n.infiniteColony),
+          trailing: Row(
+            children: [
+              PillChip(
+                text: Text(
+                  (infiniteColony * 1000 / wave).toStringAsFixed(2),
+                  style: chipTextStyle,
+                ),
+              ),
+              const SizedBox(width: 8.0),
+              SummaryRowValueText(text: 'Lv.${infiniteColony.format()}'),
+            ],
+          ),
+        ),
+      ],
+    );
+    // 公会
+    final guildCard = SummaryCard(
+      children: <Widget>[
+        SummaryRow(
+          leadingIcon: Icons.flag_circle,
+          title: Text(l10n.guildTotalScore),
+          trailing: SummaryRowValueText(text: guildTotalScore?.format() ?? '—'),
+        ),
+        if (_guildRank != null ||
+            _guildGapPrev != null ||
+            _guildGapNext != null)
+          RankPillRow(
+            rank: _guildRank,
+            gapPrev: _guildGapPrev,
+            gapNext: _guildGapNext,
+          ),
+      ],
+    );
+    // 无尽
+    final hellCard = SummaryCard(
+      children: <Widget>[
+        SummaryRow(
+          leadingIcon: Icons.all_inclusive,
+          title: Text(l10n.hellModeScore),
+          trailing: SummaryRowValueText(text: _hellScore?.format() ?? '—'),
+        ),
+        if (_hellRank != null || _hellGapPrev != null || _hellGapNext != null)
+          RankPillRow(
+            rank: _hellRank,
+            gapPrev: _hellGapPrev,
+            gapNext: _hellGapNext,
+          ),
+      ],
+    );
+    // 快捷入口
+    final quickAccess = <Widget>[
+      SectionHeader(l10n.sectionQuickAccess),
+      ListTile(
+        leading: const Icon(Icons.view_compact),
+        title: Text(l10n.tabCheckCurrentUserWph),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => PlayerDetailPage(
+                playerName: ref.read(currentUsernameProvider),
+              ),
+            ),
+          );
+        },
+      ),
+    ];
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -329,156 +473,47 @@ class _HomePageState extends ConsumerState<HomePage> {
             ),
         ],
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          // 波数
-          SummaryCard(
-            children: <Widget>[
-              SummaryRow(
-                title: Text(l10n.totalWave),
-                leadingIcon: Icons.emoji_events,
-                trailing: SummaryRowValueText(text: wave.format()),
-              ),
-              SummaryRow(
-                title: Text(l10n.seasonWave),
-                leadingIcon: Icons.eco,
-                trailing: SummaryRowValueText(text: seasonWave.format()),
-              ),
-              if (_playerRank != null ||
-                  _playerGapPrev != null ||
-                  _playerGapNext != null)
-                RankPillRow(
-                  rank: _playerRank,
-                  gapPrev: _playerGapPrev,
-                  gapNext: _playerGapNext,
-                ),
-            ],
-          ),
-          // 经济
-          SummaryCard(
-            children: <Widget>[
-              SummaryRow(
-                leadingIcon: Icons.monetization_on,
-                title: Text(l10n.totalGold),
-                trailing: SummaryRowValueText(
-                  text: totalGold.formatCompact(
-                    fractionDigits: 2,
-                    english: english,
-                    traditional: traditional,
+      body: LayoutBuilder(
+        builder: (context, constraints) {
+          const padding = EdgeInsets.all(16.0);
+          // 窄屏
+          if (constraints.maxWidth < Breakpoints.wideBody) {
+            return ListView(
+              padding: padding,
+              children: [
+                waveCard,
+                economyCard,
+                guildCard,
+                hellCard,
+                ...quickAccess,
+              ],
+            );
+          }
+          // 宽屏
+          return ListView(
+            padding: padding,
+            children: [
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [waveCard, economyCard],
+                    ),
                   ),
-                ),
-              ),
-              SummaryRow(
-                leadingIcon: Icons.star,
-                title: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [Text(l10n.goldPower)],
-                ),
-                trailing: SummaryRowValueText(
-                  text:
-                      '${gp.format(fractionDigits: 3)}'
-                      ' · '
-                      '${gpCn.format(fractionDigits: 3)}',
-                ),
-              ),
-              SummaryRow(
-                leadingIcon: Icons.auto_graph,
-                title: Text(l10n.income),
-                trailing: Row(
-                  children: [
-                    PillChip(
-                      text: Text(
-                        '${gabBonus.toStringAsFixed(2)}%',
-                        style: chipTextStyle,
-                      ),
+                  const SizedBox(width: 16.0),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [guildCard, hellCard, ...quickAccess],
                     ),
-                    const SizedBox(width: 8.0),
-                    SummaryRowValueText(
-                      text: dailyIncome.formatCompact(
-                        fractionDigits: 2,
-                        english: english,
-                        traditional: traditional,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              SummaryRow(
-                leadingIcon: Icons.flag,
-                title: Text(l10n.infiniteColony),
-                trailing: Row(
-                  children: [
-                    PillChip(
-                      text: Text(
-                        (infiniteColony * 1000 / wave).toStringAsFixed(2),
-                        style: chipTextStyle,
-                      ),
-                    ),
-                    const SizedBox(width: 8.0),
-                    SummaryRowValueText(text: 'Lv.${infiniteColony.format()}'),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          // 公会
-          SummaryCard(
-            children: <Widget>[
-              SummaryRow(
-                leadingIcon: Icons.flag_circle,
-                title: Text(l10n.guildTotalScore),
-                trailing: SummaryRowValueText(
-                  text: guildTotalScore?.format() ?? '—',
-                ),
-              ),
-              if (_guildRank != null ||
-                  _guildGapPrev != null ||
-                  _guildGapNext != null)
-                RankPillRow(
-                  rank: _guildRank,
-                  gapPrev: _guildGapPrev,
-                  gapNext: _guildGapNext,
-                ),
-            ],
-          ),
-          // 无尽
-          SummaryCard(
-            children: <Widget>[
-              SummaryRow(
-                leadingIcon: Icons.all_inclusive,
-                title: Text(l10n.hellModeScore),
-                trailing: SummaryRowValueText(
-                  text: _hellScore?.format() ?? '—',
-                ),
-              ),
-              if (_hellRank != null ||
-                  _hellGapPrev != null ||
-                  _hellGapNext != null)
-                RankPillRow(
-                  rank: _hellRank,
-                  gapPrev: _hellGapPrev,
-                  gapNext: _hellGapNext,
-                ),
-            ],
-          ),
-          SectionHeader(l10n.sectionQuickAccess),
-          ListTile(
-            leading: const Icon(Icons.view_compact),
-            title: Text(l10n.tabCheckCurrentUserWph),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => PlayerDetailPage(
-                    playerName: ref.read(currentUsernameProvider),
                   ),
-                ),
-              );
-            },
-          ),
-        ],
+                ],
+              ),
+            ],
+          );
+        },
       ),
     );
   }

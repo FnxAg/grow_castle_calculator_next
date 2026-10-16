@@ -333,7 +333,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
       body = LayoutBuilder(
         builder: (context, constraints) {
           _lastBodyWidth = constraints.maxWidth;
-          final wide = _lastBodyWidth >= Breakpoints.masterDetailMinWidth;
+          final wide = _lastBodyWidth >= Breakpoints.wideBody;
           final list = _buildMemberList(wide: wide);
           if (!wide) return list;
           return Row(
@@ -342,7 +342,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
               Expanded(child: list),
               const SizedBox(width: 12),
               SizedBox(
-                width: Breakpoints.detailPaneWidth,
+                width: Breakpoints.detailPaneWidthFor(_lastBodyWidth),
                 child: _buildDetailPane(),
               ),
             ],
@@ -440,7 +440,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
   /// 打开成员详情：宽屏选中并在右侧面板展示，窄屏 push 全屏
   void _openMember(GuildMember member) {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (_lastBodyWidth >= Breakpoints.masterDetailMinWidth) {
+    if (_lastBodyWidth >= Breakpoints.wideBody) {
       setState(() => _selectedMember = member.name);
       return;
     }

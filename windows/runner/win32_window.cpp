@@ -25,7 +25,7 @@ constexpr const wchar_t kWindowClassName[] = L"FLUTTER_RUNNER_WIN32_WINDOW";
 /// Keep this file ASCII-only: the runner is built with /WX, and MSVC warns
 /// C4819 (treated as an error) when a non-ASCII byte cannot be represented in
 /// the active code page (e.g. 936 on Chinese Windows).
-constexpr int kMinWindowWidth = 800;
+constexpr int kMinWindowWidth = 400;
 constexpr int kMinWindowHeight = 600;
 
 /// Registry key for app theme preference.

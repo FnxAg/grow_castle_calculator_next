@@ -171,7 +171,7 @@ class _TrackCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final trackInfo = [
-      PillChip(icon: Icons.emoji_events, text: Text('${record.wave}')),
+      PillChip(icon: Icons.emoji_events, text: Text(record.wave.format())),
       PillChip(
         icon: Icons.monetization_on,
         text: Text(

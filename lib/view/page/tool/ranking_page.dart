@@ -162,7 +162,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
 
     return LayoutBuilder(
       builder: (context, constraints) {
-        if (constraints.maxWidth < Breakpoints.expanded) {
+        if (constraints.maxWidth < Breakpoints.wideBody) {
           return ListView(
             padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
             children: [
@@ -563,7 +563,7 @@ class _RankingPageState extends State<RankingPage> {
         _lastBodyWidth = constraints.maxWidth;
         final wide =
             widget.kind != RankingKind.guild &&
-            _lastBodyWidth >= Breakpoints.masterDetailMinWidth;
+            _lastBodyWidth >= Breakpoints.wideBody;
         final list = _buildList(wide: wide);
         if (!wide) return list;
         return Row(
@@ -572,7 +572,7 @@ class _RankingPageState extends State<RankingPage> {
             Expanded(child: list),
             const SizedBox(width: 12),
             SizedBox(
-              width: Breakpoints.detailPaneWidth,
+              width: Breakpoints.detailPaneWidthFor(_lastBodyWidth),
               child: _buildDetailPane(),
             ),
           ],
@@ -584,7 +584,7 @@ class _RankingPageState extends State<RankingPage> {
   void _openRow(_RankRow row) {
     FocusManager.instance.primaryFocus?.unfocus();
     if (widget.kind != RankingKind.guild &&
-        _lastBodyWidth >= Breakpoints.masterDetailMinWidth) {
+        _lastBodyWidth >= Breakpoints.wideBody) {
       setState(() => _selectedName = row.name);
       return;
     }
