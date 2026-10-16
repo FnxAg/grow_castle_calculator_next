@@ -36,7 +36,7 @@ class RankPillRow extends StatelessWidget {
                       english: english,
                       traditional: traditional,
                     )
-                  : gapPrev!.toString(),
+                  : gapPrev!.format(),
               style: chipTextStyle,
             ),
           ),
