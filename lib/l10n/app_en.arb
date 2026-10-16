@@ -395,5 +395,12 @@
   "labelRemaining": "Remaining",
   "incomeTotal": "Total income",
   "highlightRules": "Highlight Rules",
-  "tooltipInfiniteColonyRatio": "IC ratio"
+  "tooltipInfiniteColonyRatio": "IC ratio",
+  "tabHome": "Home",
+  "income": "Income",
+  "wavePushIncome": "Wave push income",
+  "infiniteColony": "Infinite Colony",
+  "guildTotalScore": "Guild total score",
+  "sectionQuickAccess": "Quick Access",
+  "tabCheckCurrentUserWph": "Check WPH"
 }

@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/core/service/last_online_cache.dart'
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
@@ -189,13 +190,13 @@ class _GuildPageState extends ConsumerState<GuildPage> {
       _firstLoading = false;
 
       _playerRankByName = {};
-      if (players is SeasonQueryResult<PlayerRankInfo>) {
+      if (players is SeasonQueryResult<RankInfo>) {
         for (final p in players.items) {
           _playerRankByName[p.name.toLowerCase()] = p.rank;
         }
       }
       _hellRankByName = {};
-      if (hell is SeasonQueryResult<HellRankInfo>) {
+      if (hell is SeasonQueryResult<RankInfo>) {
         for (final h in hell.items) {
           _hellRankByName[h.name.toLowerCase()] = h.rank;
         }
@@ -236,23 +237,22 @@ class _GuildPageState extends ConsumerState<GuildPage> {
       _guildRank = null;
       _guildGapPrev = null;
       _guildGapNext = null;
-      if (guilds is SeasonQueryResult<GuildInfo>) {
-        final items = guilds.items;
-        for (var i = 0; i < items.length; i++) {
-          final g = items[i];
+      if (guilds is SeasonQueryResult<RankInfo>) {
+        for (final g in guilds.items) {
           if (g.name.toLowerCase() == guild.toLowerCase()) {
             _guildRank = g.rank;
-            // 上一名
-            if (i > 0) _guildGapPrev = items[i - 1].score - g.score;
-            // 下一名
-            if (i < items.length - 1) {
-              _guildGapNext = g.score - items[i + 1].score;
-            }
+            // 上一名/下一名分差（解析榜单时已算好）
+            _guildGapPrev = g.gapPrev;
+            _guildGapNext = g.gapNext;
             break;
           }
         }
       }
     });
+
+    if (membersLoaded && widget.guildName == null) {
+      ref.read(guildTotalScoreProvider.notifier).publishFromMembers(_members);
+    }
 
     // 本地副本
     final failure = refreshFailure;
@@ -485,7 +485,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
     );
   }
 
-  /// 成员列表，按赛季波数从大到小展示，当前用户高亮；
+  /// 成员列表，按赛季波数从大到小展示，当前用户高亮
   Widget _buildMemberList({required bool wide}) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;

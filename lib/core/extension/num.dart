@@ -1,11 +1,19 @@
 extension IntNumFormat on int {
   /// 千位分隔符格式化
   String format() => _thousands(toString());
+
+  String formatCompact({
+    int fractionDigits = 2,
+    bool english = false,
+    bool traditional = false,
+  }) => (toDouble()).formatCompact(
+    fractionDigits: fractionDigits,
+    english: english,
+    traditional: traditional,
+  );
 }
 
 extension DoubleNumFormat on double {
-  /// 千位分隔符格式化
-  /// [fractionDigits] 小数位数，默认为 2
   String format({int fractionDigits = 2}) {
     if (isNaN || isInfinite) return toString();
     final text = this == roundToDouble()

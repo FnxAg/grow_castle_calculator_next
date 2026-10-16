@@ -15,24 +15,19 @@ import 'api.dart';
 class LastOnlineCache {
   LastOnlineCache._();
 
-  /// 缓存有效期（与公开榜单一致）
   static const Duration ttl = Duration(minutes: 15);
 
-  /// 同时进行的网络查询上限（设置页可调，每次发放任务时动态读取）
   static int get _maxConcurrent =>
       Stores.appSettingsStore.lastOnlineConcurrencyNotifier.value;
 
   static final Map<String, _Entry> _entries = {};
 
-  /// 进行中的拉取（玩家名 → Future）：同名并发调用复用同一请求
   static final Map<String, Future<String?>> _inflight = {};
-
-  // ── 有界并发队列 ──────────────────────────────────────────────
 
   static final List<Future<void> Function()> _queue = [];
   static int _running = 0;
 
-  /// 将 [task] 入队，保证并发不超过 [_maxConcurrent]，按入队顺序发出
+  /// 请求队列
   static Future<T> _runQueued<T>(Future<T> Function() task) {
     final completer = Completer<T>();
     _queue.add(() async {
@@ -57,8 +52,6 @@ class LastOnlineCache {
     }
   }
 
-  /// 同步读取：返回格式化后的展示串（'' = 封禁/无数据），未缓存返回 null。
-  /// 过期条目也返回（页面先展示旧值，fetch 后台刷新）。
   static String? cached(String name) {
     final entry = _entries[name];
     if (entry == null) return null;
@@ -67,9 +60,6 @@ class LastOnlineCache {
     return PlayerApiService.formatLastOnline(queryDate, DateTime.now());
   }
 
-  /// 异步获取：TTL 内新鲜缓存直接返回 null（页面已展示或此前失败，无需刷新）；
-  /// 过期/未命中/[force] 排队请求，成功返回新值，失败（QueryError）返回 null
-  /// 并记录负缓存。
   static Future<String?> fetch(String name, {bool force = false}) {
     final entry = _entries[name];
     final now = DateTime.now();
@@ -81,15 +71,12 @@ class LastOnlineCache {
     final future = _runQueued(() async {
       final result = await PlayerApiService.query(name);
       if (result is PlayerQueryResult) {
-        // 封禁成员（queryDate 为空）同样入缓存：TTL 内不重复查询。
-        // fetchedAt 记查询完成时刻（队列等待时间不计入 TTL）
         _entries[name] = _Entry(result.queryDate, DateTime.now());
         return PlayerApiService.formatLastOnline(
           result.queryDate,
           DateTime.now(),
         );
       }
-      // QueryError 也记录查询完成时间，避免页面重建后重复请求同一玩家。
       _entries[name] = _Entry(null, DateTime.now());
       return null;
     });
@@ -102,7 +89,7 @@ class LastOnlineCache {
 class _Entry {
   const _Entry(this.queryDate, this.fetchedAt);
 
-  /// 原始"上次在线"日期串（'' = 封禁/无数据，null = 查询失败）
+  /// '' = 封禁/无数据，null = 查询失败
   final String? queryDate;
   final DateTime fetchedAt;
 }

@@ -70,6 +70,11 @@ final currentUserGpCnProvider = Provider<double>(
   (ref) => ref.watch(usersProvider.select((s) => s.currentUser.gpCN)),
 );
 
+/// 当前用户通天塔等级
+final currentUserInfiniteColonyProvider = Provider<int>(
+  (ref) => ref.watch(usersProvider.select((s) => s.currentUser.infiniteColony)),
+);
+
 // 单字段
 
 final applyFlagProvider = Provider.family<bool, int>(

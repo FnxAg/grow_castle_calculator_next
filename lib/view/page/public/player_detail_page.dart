@@ -166,7 +166,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
         _error = _errorMessage(l10n, result);
       }
       final lowerName = widget.playerName.toLowerCase();
-      if (players is SeasonQueryResult<PlayerRankInfo>) {
+      if (players is SeasonQueryResult<RankInfo>) {
         for (final player in players.items) {
           if (player.name.toLowerCase() == lowerName) {
             _playerRank = player.rank;
@@ -174,7 +174,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
           }
         }
       }
-      if (hell is SeasonQueryResult<HellRankInfo>) {
+      if (hell is SeasonQueryResult<RankInfo>) {
         for (final player in hell.items) {
           if (player.name.toLowerCase() == lowerName) {
             _hellScore = player.score;

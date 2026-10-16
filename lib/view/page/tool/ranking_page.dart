@@ -73,15 +73,15 @@ class _RankingChartPageState extends State<RankingChartPage> {
         return;
       }
       _rows = switch (widget.kind) {
-        RankingKind.player when result is SeasonQueryResult<PlayerRankInfo> =>
+        RankingKind.player when result is SeasonQueryResult<RankInfo> =>
           result.items
               .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
               .toList(),
-        RankingKind.guild when result is SeasonQueryResult<GuildInfo> =>
+        RankingKind.guild when result is SeasonQueryResult<RankInfo> =>
           result.items
               .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
               .toList(),
-        RankingKind.hell when result is SeasonQueryResult<HellRankInfo> =>
+        RankingKind.hell when result is SeasonQueryResult<RankInfo> =>
           result.items
               .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
               .toList(),
@@ -218,7 +218,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
         leftTitles: AxisTitles(
           sideTitles: SideTitles(
             showTitles: true,
-            reservedSize: 42.0,
+            reservedSize: 48.0,
             getTitlesWidget: (value, meta) {
               if (value <= chartMinY || value >= chartMaxY) {
                 return const SizedBox.shrink();
@@ -230,6 +230,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
                   traditional: traditional,
                 ),
                 style: const TextStyle(fontSize: 10.0),
+                textAlign: .right,
               );
             },
           ),
@@ -312,11 +313,19 @@ class RankingPage extends StatefulWidget {
 
 /// 归一化后的榜单行
 class _RankRow {
-  const _RankRow({required this.rank, required this.name, required this.score});
+  const _RankRow({
+    required this.rank,
+    required this.name,
+    required this.score,
+    this.gapPrev,
+    this.gapNext,
+  });
 
   final int rank;
   final String name;
   final int score;
+  final int? gapPrev;
+  final int? gapNext;
 }
 
 class _RankingPageState extends State<RankingPage> {
@@ -367,17 +376,41 @@ class _RankingPageState extends State<RankingPage> {
       _error = null;
 
       final rows = switch (widget.kind) {
-        RankingKind.player when result is SeasonQueryResult<PlayerRankInfo> =>
+        RankingKind.player when result is SeasonQueryResult<RankInfo> =>
           result.items
-              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .map(
+                (e) => _RankRow(
+                  rank: e.rank,
+                  name: e.name,
+                  score: e.score,
+                  gapPrev: e.gapPrev,
+                  gapNext: e.gapNext,
+                ),
+              )
               .toList(),
-        RankingKind.guild when result is SeasonQueryResult<GuildInfo> =>
+        RankingKind.guild when result is SeasonQueryResult<RankInfo> =>
           result.items
-              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .map(
+                (e) => _RankRow(
+                  rank: e.rank,
+                  name: e.name,
+                  score: e.score,
+                  gapPrev: e.gapPrev,
+                  gapNext: e.gapNext,
+                ),
+              )
               .toList(),
-        RankingKind.hell when result is SeasonQueryResult<HellRankInfo> =>
+        RankingKind.hell when result is SeasonQueryResult<RankInfo> =>
           result.items
-              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
+              .map(
+                (e) => _RankRow(
+                  rank: e.rank,
+                  name: e.name,
+                  score: e.score,
+                  gapPrev: e.gapPrev,
+                  gapNext: e.gapNext,
+                ),
+              )
               .toList(),
         _ => const <_RankRow>[],
       };
@@ -394,10 +427,10 @@ class _RankingPageState extends State<RankingPage> {
 
       // 交叉榜单索引
       final crossRanks = switch (widget.kind) {
-        RankingKind.player when cross is SeasonQueryResult<HellRankInfo> => {
+        RankingKind.player when cross is SeasonQueryResult<RankInfo> => {
           for (final e in cross.items) e.name.toLowerCase(): e.rank,
         },
-        RankingKind.hell when cross is SeasonQueryResult<PlayerRankInfo> => {
+        RankingKind.hell when cross is SeasonQueryResult<RankInfo> => {
           for (final e in cross.items) e.name.toLowerCase(): e.rank,
         },
         _ => null,
@@ -631,6 +664,12 @@ class _RankingPageState extends State<RankingPage> {
   /// 榜单列表
   Widget _buildList({required bool wide}) {
     final scheme = Theme.of(context).colorScheme;
+    final english = !context.isChineseLocale;
+    final traditional = context.isTraditionalChineseLocale;
+    const pillChipStyle = TextStyle(
+      fontSize: 11.0,
+      fontWeight: FontWeight.w600,
+    );
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
       child: ListView.builder(
@@ -662,23 +701,40 @@ class _RankingPageState extends State<RankingPage> {
                   PillChip(
                     text: Text(
                       '#$crossRank',
-                      style: const TextStyle(
-                        fontSize: 11.0,
-                        fontWeight: FontWeight.w600,
-                      ),
+                      style: pillChipStyle,
                     ),
                     icon: widget.kind.crossIcon!,
                   ),
                 ],
               ],
             ),
-            trailing: Text(
-              row.score.format(),
-              style: TextStyle(
-                fontSize: 14.0,
-                fontWeight: FontWeight.bold,
-                color: scheme.primary,
-              ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                if (row.gapPrev != null) ...[
+                  PillChip(
+                    text: Text(
+                      row.gapPrev! >= 10000000
+                          ? row.gapPrev!.formatCompact(
+                              english: english,
+                              traditional: traditional,
+                            )
+                          : row.gapPrev!.format(),
+                      style: pillChipStyle,
+                    ),
+                    icon: Icons.arrow_upward_outlined,
+                  ),
+                  const SizedBox(width: 8.0),
+                ],
+                Text(
+                  row.score.format(),
+                  style: TextStyle(
+                    fontSize: 14.0,
+                    fontWeight: FontWeight.bold,
+                    color: scheme.primary,
+                  ),
+                ),
+              ],
             ),
           );
         },

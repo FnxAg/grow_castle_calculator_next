@@ -1,46 +1,16 @@
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
-import 'package:material_ui/material_ui.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 阵容页底部汇总条
 class FormationSummaryBar extends ConsumerWidget {
-  const FormationSummaryBar({
-    super.key,
-    required this.querying,
-    required this.playerRank,
-    required this.playerGapPrev,
-    required this.playerGapNext,
-    required this.hellRank,
-    required this.guildRank,
-    required this.onQuery,
-  });
-
-  /// 联网查询进行中
-  final bool querying;
-
-  /// 玩家赛季榜排名
-  final int? playerRank;
-
-  /// 与上一名/下一名的分数差距
-  final int? playerGapPrev;
-  final int? playerGapNext;
-
-  /// 无尽榜排名
-  final int? hellRank;
-
-  /// 所属公会在公会榜上的排名
-  final int? guildRank;
-
-  /// 联网查询按钮回调
-  final VoidCallback onQuery;
+  const FormationSummaryBar({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
@@ -68,18 +38,6 @@ class FormationSummaryBar extends ConsumerWidget {
                       onSave: ref.users.setUserWave,
                     );
                   },
-                ),
-              if (isMobile && !isDefaultUser)
-                _SmallIconButton(
-                  icon: querying
-                      ? const SizedBox(
-                          width: 14.0,
-                          height: 14.0,
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        )
-                      : const Icon(Icons.cloud_sync),
-                  tooltip: l10n.tooltipFetchData,
-                  onPressed: querying ? null : onQuery,
                 ),
             ],
             trailing: SummaryRowValueText(
@@ -109,21 +67,6 @@ class FormationSummaryBar extends ConsumerWidget {
             trailing: SummaryRowValueText(
               text: ref.watch(currentUserSeasonWaveProvider).format(),
             ),
-          ),
-          // 排名行
-          AnimatedSize(
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeOutCubic,
-            alignment: Alignment.topCenter,
-            child: (playerRank != null || hellRank != null || guildRank != null)
-                ? _RankIntro(
-                    playerRank: playerRank,
-                    playerGapPrev: playerGapPrev,
-                    playerGapNext: playerGapNext,
-                    hellRank: hellRank,
-                    guildRank: guildRank,
-                  )
-                : const SizedBox(width: double.infinity),
           ),
           SummaryRow(
             leadingIcon: Icons.monetization_on,
@@ -228,147 +171,6 @@ class _WaveEditDialogState extends State<_WaveEditDialog> {
             Navigator.of(context).pop();
           },
           child: Text(AppLocalizations.of(context).actionSave),
-        ),
-      ],
-    );
-  }
-}
-
-class _RankIntro extends StatelessWidget {
-  const _RankIntro({
-    required this.playerRank,
-    required this.playerGapPrev,
-    required this.playerGapNext,
-    required this.hellRank,
-    required this.guildRank,
-  });
-
-  final int? playerRank;
-  final int? playerGapPrev;
-  final int? playerGapNext;
-  final int? hellRank;
-  final int? guildRank;
-
-  static bool _played = false;
-
-  @override
-  Widget build(BuildContext context) {
-    final row = _RankRow(
-      playerRank: playerRank,
-      playerGapPrev: playerGapPrev,
-      playerGapNext: playerGapNext,
-      hellRank: hellRank,
-      guildRank: guildRank,
-    );
-    if (_played) return row;
-    _played = true;
-    return TweenAnimationBuilder<double>(
-      tween: Tween(begin: 0.0, end: 1.0),
-      duration: const Duration(milliseconds: 350),
-      curve: Curves.easeOutCubic,
-      builder: (context, value, child) => Opacity(
-        opacity: value,
-        child: Transform.translate(
-          offset: Offset(0, 8 * (1 - value)),
-          child: child,
-        ),
-      ),
-      child: row,
-    );
-  }
-}
-
-/// 排名胶囊行
-class _RankRow extends StatelessWidget {
-  const _RankRow({
-    required this.playerRank,
-    required this.playerGapPrev,
-    required this.playerGapNext,
-    required this.hellRank,
-    required this.guildRank,
-  });
-
-  final int? playerRank;
-  final int? playerGapPrev;
-  final int? playerGapNext;
-  final int? hellRank;
-  final int? guildRank;
-
-  @override
-  Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
-    const chipTextStyle = TextStyle(
-      fontSize: 11.0,
-      fontWeight: FontWeight.w600,
-    );
-    final chips = <(Widget, double)>[
-      if (playerGapPrev != null)
-        (
-          PillChip(
-            backgroundColor: Colors.red,
-            foreground: Colors.white,
-            icon: Icons.arrow_upward,
-            text: Text(playerGapPrev!.format(), style: chipTextStyle),
-          ),
-          4.0,
-        ),
-      if (playerRank != null)
-        (
-          PillChip(
-            text: Text('#$playerRank', style: chipTextStyle),
-            icon: Icons.eco,
-          ),
-          4.0,
-        ),
-      if (playerGapNext != null)
-        (
-          PillChip(
-            backgroundColor: Colors.green,
-            foreground: Colors.white,
-            icon: Icons.arrow_downward,
-            text: Text(playerGapNext!.format(), style: chipTextStyle),
-          ),
-          8.0,
-        ),
-      if (hellRank != null)
-        (
-          PillChip(
-            text: Text('#$hellRank', style: chipTextStyle),
-            icon: Icons.all_inclusive,
-          ),
-          8.0,
-        ),
-      if (guildRank != null)
-        (
-          PillChip(
-            text: Text('#$guildRank', style: chipTextStyle),
-            icon: Icons.flag_circle,
-          ),
-          8.0,
-        ),
-    ];
-    return Row(
-      children: [
-        Icon(Icons.leaderboard, size: 20.0, color: colorScheme.primary),
-        const SizedBox(width: 8.0),
-        Text(AppLocalizations.of(context).ranking),
-        Expanded(
-          child: Align(
-            alignment: Alignment.centerRight,
-            child: SingleChildScrollView(
-              scrollDirection: Axis.horizontal,
-              reverse: true,
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  for (var i = 0; i < chips.length; i++) ...[
-                    chips[i].$1,
-                    if (i < chips.length - 1) SizedBox(width: chips[i].$2),
-                  ],
-                ],
-              ),
-            ),
-          ),
         ),
       ],
     );

@@ -1371,6 +1371,27 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tooltipInfiniteColonyRatio => '殖波比';
+
+  @override
+  String get tabHome => '首页';
+
+  @override
+  String get income => '收入';
+
+  @override
+  String get wavePushIncome => '推波收益';
+
+  @override
+  String get infiniteColony => '通天塔';
+
+  @override
+  String get guildTotalScore => '公会总分';
+
+  @override
+  String get sectionQuickAccess => '快捷入口';
+
+  @override
+  String get tabCheckCurrentUserWph => '查询波速';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2739,4 +2760,25 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tooltipInfiniteColonyRatio => '殖波比';
+
+  @override
+  String get tabHome => '首頁';
+
+  @override
+  String get income => '收入';
+
+  @override
+  String get wavePushIncome => '推波收益';
+
+  @override
+  String get infiniteColony => '通天塔';
+
+  @override
+  String get guildTotalScore => '公會總分';
+
+  @override
+  String get sectionQuickAccess => '快捷入口';
+
+  @override
+  String get tabCheckCurrentUserWph => '查詢波速';
 }

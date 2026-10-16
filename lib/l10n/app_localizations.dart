@@ -2471,6 +2471,48 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'殖波比'**
   String get tooltipInfiniteColonyRatio;
+
+  /// No description provided for @tabHome.
+  ///
+  /// In zh, this message translates to:
+  /// **'首页'**
+  String get tabHome;
+
+  /// No description provided for @income.
+  ///
+  /// In zh, this message translates to:
+  /// **'收入'**
+  String get income;
+
+  /// No description provided for @wavePushIncome.
+  ///
+  /// In zh, this message translates to:
+  /// **'推波收益'**
+  String get wavePushIncome;
+
+  /// No description provided for @infiniteColony.
+  ///
+  /// In zh, this message translates to:
+  /// **'通天塔'**
+  String get infiniteColony;
+
+  /// No description provided for @guildTotalScore.
+  ///
+  /// In zh, this message translates to:
+  /// **'公会总分'**
+  String get guildTotalScore;
+
+  /// No description provided for @sectionQuickAccess.
+  ///
+  /// In zh, this message translates to:
+  /// **'快捷入口'**
+  String get sectionQuickAccess;
+
+  /// No description provided for @tabCheckCurrentUserWph.
+  ///
+  /// In zh, this message translates to:
+  /// **'查询波速'**
+  String get tabCheckCurrentUserWph;
 }
 
 class _AppLocalizationsDelegate

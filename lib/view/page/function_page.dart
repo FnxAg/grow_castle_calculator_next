@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
+import 'package:grow_castle_calculator_next/view/page/formation_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
 import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income_page.dart';
@@ -36,6 +37,16 @@ class FunctionPage extends ConsumerWidget {
       ),
       body: ListView(
         children: [
+          ListTile(
+            leading: const Icon(Icons.castle),
+            title: Text(l10n.tabFormation),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const FormationCalcPage()),
+              );
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.bolt),
             title: Text(l10n.waveStatus),
@@ -73,7 +84,7 @@ class FunctionPage extends ConsumerWidget {
             },
           ),
           ListTile(
-            leading: const Icon(Icons.monetization_on),
+            leading: const Icon(Icons.auto_graph),
             title: Row(
               children: [
                 Expanded(

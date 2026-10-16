@@ -1476,4 +1476,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tooltipInfiniteColonyRatio => 'IC ratio';
+
+  @override
+  String get tabHome => 'Home';
+
+  @override
+  String get income => 'Income';
+
+  @override
+  String get wavePushIncome => 'Wave push income';
+
+  @override
+  String get infiniteColony => 'Infinite Colony';
+
+  @override
+  String get guildTotalScore => 'Guild total score';
+
+  @override
+  String get sectionQuickAccess => 'Quick Access';
+
+  @override
+  String get tabCheckCurrentUserWph => 'Check WPH';
 }

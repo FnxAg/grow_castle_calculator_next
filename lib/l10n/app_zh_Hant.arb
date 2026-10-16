@@ -394,5 +394,12 @@
   "labelEnd": "結束",
   "labelRemaining": "剩餘",
   "incomeTotal": "總收入",
-  "tooltipInfiniteColonyRatio": "殖波比"
+  "tooltipInfiniteColonyRatio": "殖波比",
+  "tabHome": "首頁",
+  "income": "收入",
+  "wavePushIncome": "推波收益",
+  "infiniteColony": "通天塔",
+  "guildTotalScore": "公會總分",
+  "sectionQuickAccess": "快捷入口",
+  "tabCheckCurrentUserWph": "查詢波速"
 }

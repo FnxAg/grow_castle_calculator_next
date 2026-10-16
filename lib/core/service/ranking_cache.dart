@@ -2,22 +2,12 @@ import 'package:flutter/foundation.dart';
 
 import 'api.dart';
 
-/// 排行榜/公会数据的会话级缓存。
-///
-/// - 公会成员详情：命中缓存直接返回，**不自动刷新**（由用户手动刷新；
-///   手动刷新失败时保留旧缓存）；
-/// - 三个公开榜单（玩家赛季 / 无尽 / 公会前 300）：首次访问抓取并缓存，
-///   TTL（[ttl]）过期后先返回旧数据、同时后台静默刷新——榜单是共享数据、
-///   变化慢，不值得让用户等待，也避免高频请求；用户手动刷新（force）时
-///   忽略缓存强制重新抓取，失败保留旧缓存。
+/// 排行榜/公会数据缓存
 class RankingCache {
   RankingCache._();
 
-  /// 公开榜单缓存有效期
   static const Duration ttl = Duration(minutes: 15);
 
-  /// 各榜单的赛季区间：个人与公会同源（5 天一赛季），无尽独立（一周一赛季），
-  /// 抓取成功时分别更新；供 AppBar 赛季进度指示等 UI 监听。
   static final ValueNotifier<SeasonRange?> playerSeasonNotifier =
       ValueNotifier<SeasonRange?>(null);
   static final ValueNotifier<SeasonRange?> guildSeasonNotifier =
@@ -25,14 +15,8 @@ class RankingCache {
   static final ValueNotifier<SeasonRange?> hellSeasonNotifier =
       ValueNotifier<SeasonRange?>(null);
 
-  // ── 公会成员详情（无 TTL，手动刷新）──────────────────────────────
-
   static final Map<String, SeasonQueryResult<GuildMember>> _guildDetails = {};
 
-  /// 获取公会成员列表：命中缓存直接返回；[force] 为 true（用户手动刷新）
-  /// 时忽略缓存重新请求，成功后覆盖缓存，失败保留旧缓存。
-  /// 并发调用同一公会时复用同一个请求（[_inflight] 去重，与榜单一致）：
-  /// 启动时首页预热与公会页首拉几乎同时发生，无去重会发出重复请求。
   static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */> guildDetail(
     String guildName, {
     bool force = false,
@@ -47,7 +31,6 @@ class RankingCache {
       final result = await future;
       if (result is SeasonQueryResult<GuildMember>) {
         _guildDetails[guildName] = result;
-        // 公会成员数据与公会榜单同赛季（个人/公会 5 天赛季）
         guildSeasonNotifier.value = result.season;
       }
       return result;
@@ -56,18 +39,14 @@ class RankingCache {
     }
   }
 
-  // ── 公开榜单（TTL 过期自动刷新）───────────────────────────────────
-
-  static SeasonQueryResult<GuildInfo>? _guilds;
+  static SeasonQueryResult<RankInfo>? _guilds;
   static DateTime? _guildsAt;
-  static SeasonQueryResult<PlayerRankInfo>? _players;
+  static SeasonQueryResult<RankInfo>? _players;
   static DateTime? _playersAt;
-  static SeasonQueryResult<HellRankInfo>? _hell;
+  static SeasonQueryResult<RankInfo>? _hell;
   static DateTime? _hellAt;
 
-  /// 公会前 300 榜单（返回 [SeasonQueryResult] 或 [QueryError]）；
-  /// [force] 为 true（用户手动刷新）时忽略缓存重新请求，失败保留旧缓存。
-  static Future<Object> guildRanking({bool force = false}) => _cachedList<GuildInfo>(
+  static Future<Object> guildRanking({bool force = false}) => _cachedList<RankInfo>(
         'guilds',
         () => _guilds,
         (v) {
@@ -80,9 +59,7 @@ class RankingCache {
         force: force,
       );
 
-  /// 玩家赛季波前 300 榜单；
-  /// [force] 为 true（用户手动刷新）时忽略缓存重新请求，失败保留旧缓存。
-  static Future<Object> playerRanking({bool force = false}) => _cachedList<PlayerRankInfo>(
+  static Future<Object> playerRanking({bool force = false}) => _cachedList<RankInfo>(
         'players',
         () => _players,
         (v) {
@@ -95,9 +72,7 @@ class RankingCache {
         force: force,
       );
 
-  /// 玩家无尽模式前 300 榜单；
-  /// [force] 为 true（用户手动刷新）时忽略缓存重新请求，失败保留旧缓存。
-  static Future<Object> hellRanking({bool force = false}) => _cachedList<HellRankInfo>(
+  static Future<Object> hellRanking({bool force = false}) => _cachedList<RankInfo>(
         'hell',
         () => _hell,
         (v) {
@@ -110,14 +85,9 @@ class RankingCache {
         force: force,
       );
 
-  /// 正在进行的抓取（key → Future），并发调用同一榜单时复用同一个请求
+  /// 正在进行的抓取
   static final Map<String, Future<Object>> _inflight = {};
 
-  /// 通用榜单缓存逻辑：
-  /// 命中且在 TTL 内 → 直接返回；
-  /// 命中但已过期 → 先返回旧数据，同时后台静默刷新；
-  /// 未命中或 [force] → 同步请求，成功后缓存（force 失败保留旧缓存）；
-  /// 无论哪种情况，同一榜单的并发调用共享同一个请求（[_inflight] 去重）。
   static Future<Object /* SeasonQueryResult<T> | QueryError */> _cachedList<T>(
     String key,
     SeasonQueryResult<T>? Function() read,
@@ -128,12 +98,11 @@ class RankingCache {
     bool force = false,
   }) async {
     final cached = read();
-    // 命中缓存且未强制刷新：TTL 内直接返回，过期则后台刷新后仍先给旧数据
+    // 命中缓存且未强制刷新
     if (cached != null && !force) {
       final at = readAt();
       if (at == null || DateTime.now().difference(at) > ttl) {
-        // TTL 过期：后台静默刷新，界面先拿旧数据，不空转；
-        // 已有刷新进行中则直接跳过，避免并发重复请求
+        // TTL 过期
         final inflight = _inflight[key];
         if (inflight == null) {
           final future = fetch();
@@ -148,7 +117,6 @@ class RankingCache {
       }
       return cached;
     }
-    // 未命中或强制刷新：并发调用时复用同一个请求，避免重复抓取
     final inflight = _inflight[key];
     if (inflight != null) return inflight;
     final future = fetch();

@@ -36,44 +36,22 @@ class PlayerQueryResult {
   });
 }
 
-/// Result of a successful guild list query.
-class GuildInfo {
+class RankInfo {
   final int rank;
   final String name;
   final int score;
+  final int? gapPrev;
+  final int? gapNext;
 
-  const GuildInfo({
+  const RankInfo({
     required this.rank,
     required this.name,
     required this.score,
+    this.gapPrev,
+    this.gapNext,
   });
 }
 
-/// A player on the season leaderboard.
-class PlayerRankInfo {
-  final int rank;
-  final String name;
-  final int score;
-
-  const PlayerRankInfo({
-    required this.rank,
-    required this.name,
-    required this.score,
-  });
-}
-
-/// A player on the hell-mode leaderboard.
-class HellRankInfo {
-  final int rank;
-  final String name;
-  final int score;
-
-  const HellRankInfo({
-    required this.rank,
-    required this.name,
-    required this.score,
-  });
-}
 
 /// A member of a guild.
 class GuildMember {
@@ -192,7 +170,6 @@ class PlayerApiService {
         return const NameNotFound();
       }
 
-      // 响应体已由 ApiClient 按 UTF-8 解码为文本。
       final decoded = json.decode(response.data ?? '');
       if (decoded is! Map<String, dynamic>) {
         return const NameNotFound();
@@ -240,9 +217,9 @@ class PlayerApiService {
 
   /// Fetches the player leaderboard for the current season.
   ///
-  /// Returns a [SeasonQueryResult] of [PlayerRankInfo] on success,
+  /// Returns a [SeasonQueryResult] of [RankInfo] on success,
   /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<PlayerRankInfo> | QueryError */>
+  static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
   queryPlayerRanking() async {
     final uri = Uri.parse(_buildPlayerRankingUrl());
 
@@ -273,20 +250,8 @@ class PlayerApiService {
         return const NetworkError('Missing player list');
       }
 
-      final players = <PlayerRankInfo>[];
-      for (final item in list) {
-        if (item is! Map<String, dynamic>) continue;
-        players.add(
-          PlayerRankInfo(
-            rank: _parseInt(item['rank']),
-            name: (item['name'] as String?) ?? '',
-            score: _parseInt(item['score']),
-          ),
-        );
-      }
-
       return SeasonQueryResult(
-        items: players,
+        items: _parseRankList(list),
         season: _parseSeason(result['date']),
       );
     } on TimeoutException {
@@ -298,9 +263,9 @@ class PlayerApiService {
 
   /// Fetches the hell-mode leaderboard for the current season.
   ///
-  /// Returns a [SeasonQueryResult] of [HellRankInfo] on success,
+  /// Returns a [SeasonQueryResult] of [RankInfo] on success,
   /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<HellRankInfo> | QueryError */>
+  static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
   queryHellRanking() async {
     final uri = Uri.parse(_buildHellRankingUrl());
 
@@ -331,20 +296,8 @@ class PlayerApiService {
         return const NetworkError('Missing player list');
       }
 
-      final players = <HellRankInfo>[];
-      for (final item in list) {
-        if (item is! Map<String, dynamic>) continue;
-        players.add(
-          HellRankInfo(
-            rank: _parseInt(item['rank']),
-            name: (item['name'] as String?) ?? '',
-            score: _parseInt(item['score']),
-          ),
-        );
-      }
-
       return SeasonQueryResult(
-        items: players,
+        items: _parseRankList(list),
         season: _parseSeason(result['date']),
       );
     } on TimeoutException {
@@ -356,9 +309,9 @@ class PlayerApiService {
 
   /// Fetches the guild leaderboard for the current season.
   ///
-  /// Returns a [SeasonQueryResult] of [GuildInfo] on success,
+  /// Returns a [SeasonQueryResult] of [RankInfo] on success,
   /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<GuildInfo> | QueryError */>
+  static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
   queryGuildRanking() async {
     final uri = Uri.parse(_buildGuildsUrl());
 
@@ -389,20 +342,8 @@ class PlayerApiService {
         return const NetworkError('Missing guild list');
       }
 
-      final guilds = <GuildInfo>[];
-      for (final item in list) {
-        if (item is! Map<String, dynamic>) continue;
-        guilds.add(
-          GuildInfo(
-            rank: _parseInt(item['rank']),
-            name: (item['name'] as String?) ?? '',
-            score: _parseInt(item['score']),
-          ),
-        );
-      }
-
       return SeasonQueryResult(
-        items: guilds,
+        items: _parseRankList(list),
         season: _parseSeason(result['date']),
       );
     } on TimeoutException {
@@ -581,6 +522,37 @@ class PlayerApiService {
     if (value is String) return int.tryParse(value) ?? 0;
     if (value is double) return value.toInt();
     return 0;
+  }
+
+  /// 解析榜单列表并计算相邻名次差值
+  static List<RankInfo> _parseRankList(List<dynamic> list) {
+    final items = <RankInfo>[
+      for (final item in list)
+        if (item is Map<String, dynamic>)
+          RankInfo(
+            rank: _parseInt(item['rank']),
+            name: (item['name'] as String?) ?? '',
+            score: _parseInt(item['score']),
+          ),
+    ];
+    // 接口不保证顺序，按分数降序（同分再按名次升序）确定相邻关系
+    items.sort(
+      (a, b) => a.score != b.score
+          ? b.score.compareTo(a.score)
+          : a.rank.compareTo(b.rank),
+    );
+    return <RankInfo>[
+      for (var i = 0; i < items.length; i++)
+        RankInfo(
+          rank: items[i].rank,
+          name: items[i].name,
+          score: items[i].score,
+          gapPrev: i > 0 ? items[i - 1].score - items[i].score : null,
+          gapNext: i < items.length - 1
+              ? items[i].score - items[i + 1].score
+              : null,
+        ),
+    ];
   }
 
   /// 解析 result.date

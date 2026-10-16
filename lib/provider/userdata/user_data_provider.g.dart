@@ -8,18 +8,12 @@ part of 'user_data_provider.dart';
 
 // GENERATED CODE - DO NOT MODIFY BY HAND
 // ignore_for_file: type=lint, type=warning
-/// Hive 网关。
-///
-/// 必须 keepAlive：它被 [Users] 用 `ref.read` 读取（不建立依赖边），
-/// auto-dispose 的 provider 会在 [Users.build] 返回后立刻被销毁。
+/// Hive 网关
 
 @ProviderFor(userDataRepository)
 final userDataRepositoryProvider = UserDataRepositoryProvider._();
 
-/// Hive 网关。
-///
-/// 必须 keepAlive：它被 [Users] 用 `ref.read` 读取（不建立依赖边），
-/// auto-dispose 的 provider 会在 [Users.build] 返回后立刻被销毁。
+/// Hive 网关
 
 final class UserDataRepositoryProvider
     extends
@@ -29,10 +23,7 @@ final class UserDataRepositoryProvider
           UserDataRepository
         >
     with $Provider<UserDataRepository> {
-  /// Hive 网关。
-  ///
-  /// 必须 keepAlive：它被 [Users] 用 `ref.read` 读取（不建立依赖边），
-  /// auto-dispose 的 provider 会在 [Users.build] 返回后立刻被销毁。
+  /// Hive 网关
   UserDataRepositoryProvider._()
     : super(
         from: null,
@@ -70,26 +61,14 @@ final class UserDataRepositoryProvider
 String _$userDataRepositoryHash() =>
     r'9e113205072e90b9bcef1d1ad358f9d9b1a18287';
 
-/// 用户数据状态容器。
-///
-/// 方法名与旧 `InfoStore` 保持一致，视图层可以把 `store.setXxx` 的 tear-off
-/// 直接换成 `ref.users.setXxx`（`Notifier` 实例在 provider 生命周期内被保留，
-/// keepAlive 保证该生命周期等于容器）。
+/// 用户数据状态容器
 
 @ProviderFor(Users)
 final usersProvider = UsersProvider._();
 
-/// 用户数据状态容器。
-///
-/// 方法名与旧 `InfoStore` 保持一致，视图层可以把 `store.setXxx` 的 tear-off
-/// 直接换成 `ref.users.setXxx`（`Notifier` 实例在 provider 生命周期内被保留，
-/// keepAlive 保证该生命周期等于容器）。
+/// 用户数据状态容器
 final class UsersProvider extends $NotifierProvider<Users, UsersState> {
-  /// 用户数据状态容器。
-  ///
-  /// 方法名与旧 `InfoStore` 保持一致，视图层可以把 `store.setXxx` 的 tear-off
-  /// 直接换成 `ref.users.setXxx`（`Notifier` 实例在 provider 生命周期内被保留，
-  /// keepAlive 保证该生命周期等于容器）。
+  /// 用户数据状态容器
   UsersProvider._()
     : super(
         from: null,
@@ -117,13 +96,9 @@ final class UsersProvider extends $NotifierProvider<Users, UsersState> {
   }
 }
 
-String _$usersHash() => r'4d7d6ac57ee7c32d27d90e5ca1780af19aea0ea3';
+String _$usersHash() => r'e3b88b96c7e802af09d0ee83c7f9f2f7e396559b';
 
-/// 用户数据状态容器。
-///
-/// 方法名与旧 `InfoStore` 保持一致，视图层可以把 `store.setXxx` 的 tear-off
-/// 直接换成 `ref.users.setXxx`（`Notifier` 实例在 provider 生命周期内被保留，
-/// keepAlive 保证该生命周期等于容器）。
+/// 用户数据状态容器
 
 abstract class _$Users extends $Notifier<UsersState> {
   UsersState build();
@@ -143,23 +118,14 @@ abstract class _$Users extends $Notifier<UsersState> {
   }
 }
 
-/// 数据整体替换计数。
-///
-/// 不可约：它存在的意义就是"值没变但世界变了"——云恢复/本地导入后用户名
-/// 可能没变，靠 `select` 无法产生通知。
+/// 数据整体替换计数
 
 @ProviderFor(DataVersion)
 final dataVersionProvider = DataVersionProvider._();
 
-/// 数据整体替换计数。
-///
-/// 不可约：它存在的意义就是"值没变但世界变了"——云恢复/本地导入后用户名
-/// 可能没变，靠 `select` 无法产生通知。
+/// 数据整体替换计数
 final class DataVersionProvider extends $NotifierProvider<DataVersion, int> {
-  /// 数据整体替换计数。
-  ///
-  /// 不可约：它存在的意义就是"值没变但世界变了"——云恢复/本地导入后用户名
-  /// 可能没变，靠 `select` 无法产生通知。
+  /// 数据整体替换计数
   DataVersionProvider._()
     : super(
         from: null,
@@ -189,10 +155,7 @@ final class DataVersionProvider extends $NotifierProvider<DataVersion, int> {
 
 String _$dataVersionHash() => r'9c3dfdcbd8ef7cf72d3e636a0d28633842c381dc';
 
-/// 数据整体替换计数。
-///
-/// 不可约：它存在的意义就是"值没变但世界变了"——云恢复/本地导入后用户名
-/// 可能没变，靠 `select` 无法产生通知。
+/// 数据整体替换计数
 
 abstract class _$DataVersion extends $Notifier<int> {
   int build();
@@ -212,21 +175,15 @@ abstract class _$DataVersion extends $Notifier<int> {
   }
 }
 
-/// 各用户「上次在线」展示串（仅内存，不持久化）。
-///
-/// 语义与旧 `InfoStore._lastOnline` 一致：删除用户也不清除该用户 id 的条目。
+/// 各用户「上次在线」展示串
 
 @ProviderFor(LastOnlineByUser)
 final lastOnlineByUserProvider = LastOnlineByUserProvider._();
 
-/// 各用户「上次在线」展示串（仅内存，不持久化）。
-///
-/// 语义与旧 `InfoStore._lastOnline` 一致：删除用户也不清除该用户 id 的条目。
+/// 各用户「上次在线」展示串
 final class LastOnlineByUserProvider
     extends $NotifierProvider<LastOnlineByUser, Map<int, String>> {
-  /// 各用户「上次在线」展示串（仅内存，不持久化）。
-  ///
-  /// 语义与旧 `InfoStore._lastOnline` 一致：删除用户也不清除该用户 id 的条目。
+  /// 各用户「上次在线」展示串
   LastOnlineByUserProvider._()
     : super(
         from: null,
@@ -256,9 +213,7 @@ final class LastOnlineByUserProvider
 
 String _$lastOnlineByUserHash() => r'e7658b5354753ba2064966d795847ecc020cd020';
 
-/// 各用户「上次在线」展示串（仅内存，不持久化）。
-///
-/// 语义与旧 `InfoStore._lastOnline` 一致：删除用户也不清除该用户 id 的条目。
+/// 各用户「上次在线」展示串
 
 abstract class _$LastOnlineByUser extends $Notifier<Map<int, String>> {
   Map<int, String> build();
