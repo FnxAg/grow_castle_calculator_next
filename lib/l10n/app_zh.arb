@@ -955,5 +955,13 @@
   "infiniteColony": "通天塔",
   "guildTotalScore": "公会总分",
   "sectionQuickAccess": "快捷入口",
-  "tabCheckCurrentUserWph": "查询波速"
+  "tabCheckCurrentUserWph": "查询波速",
+  "toolWiki": "游戏百科",
+  "wikiULine": "U装备词条",
+  "wikiLineEnglishName": "英文名",
+  "wikiLineRange": "数值范围",
+  "wikiLineTypes": "装备类型",
+  "wikiLineDescription": "介绍",
+  "wikiNoEntry": "暂无介绍",
+  "wikiAdaptedUnits": "适配单位"
 }

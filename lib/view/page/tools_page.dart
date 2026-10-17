@@ -1,6 +1,7 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/best_line_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/wiki_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/ranking_page.dart';
 import 'package:material_ui/material_ui.dart';
@@ -65,6 +66,19 @@ class ToolsPage extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (context) => const BestLineCalcPage(),
+                ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.menu_book),
+            title: Text(l10n.toolWiki),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const WikiPage(),
                 ),
               );
             },

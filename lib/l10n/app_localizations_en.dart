@@ -1497,4 +1497,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tabCheckCurrentUserWph => 'Check WPH';
+
+  @override
+  String get toolWiki => 'Game Wiki';
+
+  @override
+  String get wikiULine => 'U-line';
+
+  @override
+  String get wikiLineEnglishName => 'English name';
+
+  @override
+  String get wikiLineRange => 'Value range';
+
+  @override
+  String get wikiLineTypes => 'Available on';
+
+  @override
+  String get wikiLineDescription => 'Description';
+
+  @override
+  String get wikiNoEntry => 'No description yet';
+
+  @override
+  String get wikiAdaptedUnits => 'Adapted units';
 }

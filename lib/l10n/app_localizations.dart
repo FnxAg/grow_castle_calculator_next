@@ -2513,6 +2513,54 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'查询波速'**
   String get tabCheckCurrentUserWph;
+
+  /// No description provided for @toolWiki.
+  ///
+  /// In zh, this message translates to:
+  /// **'游戏百科'**
+  String get toolWiki;
+
+  /// No description provided for @wikiULine.
+  ///
+  /// In zh, this message translates to:
+  /// **'U装备词条'**
+  String get wikiULine;
+
+  /// No description provided for @wikiLineEnglishName.
+  ///
+  /// In zh, this message translates to:
+  /// **'英文名'**
+  String get wikiLineEnglishName;
+
+  /// No description provided for @wikiLineRange.
+  ///
+  /// In zh, this message translates to:
+  /// **'数值范围'**
+  String get wikiLineRange;
+
+  /// No description provided for @wikiLineTypes.
+  ///
+  /// In zh, this message translates to:
+  /// **'装备类型'**
+  String get wikiLineTypes;
+
+  /// No description provided for @wikiLineDescription.
+  ///
+  /// In zh, this message translates to:
+  /// **'介绍'**
+  String get wikiLineDescription;
+
+  /// No description provided for @wikiNoEntry.
+  ///
+  /// In zh, this message translates to:
+  /// **'暂无介绍'**
+  String get wikiNoEntry;
+
+  /// No description provided for @wikiAdaptedUnits.
+  ///
+  /// In zh, this message translates to:
+  /// **'适配单位'**
+  String get wikiAdaptedUnits;
 }
 
 class _AppLocalizationsDelegate

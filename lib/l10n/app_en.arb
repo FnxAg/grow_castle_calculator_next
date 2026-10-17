@@ -402,5 +402,13 @@
   "infiniteColony": "Infinite Colony",
   "guildTotalScore": "Guild total score",
   "sectionQuickAccess": "Quick Access",
-  "tabCheckCurrentUserWph": "Check WPH"
+  "tabCheckCurrentUserWph": "Check WPH",
+  "toolWiki": "Game Wiki",
+  "wikiULine": "U-line",
+  "wikiLineEnglishName": "English name",
+  "wikiLineRange": "Value range",
+  "wikiLineTypes": "Available on",
+  "wikiLineDescription": "Description",
+  "wikiNoEntry": "No description yet",
+  "wikiAdaptedUnits": "Adapted units"
 }

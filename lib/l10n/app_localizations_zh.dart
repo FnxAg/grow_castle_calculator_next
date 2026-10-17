@@ -1392,6 +1392,30 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tabCheckCurrentUserWph => '查询波速';
+
+  @override
+  String get toolWiki => '游戏百科';
+
+  @override
+  String get wikiULine => 'U装备词条';
+
+  @override
+  String get wikiLineEnglishName => '英文名';
+
+  @override
+  String get wikiLineRange => '数值范围';
+
+  @override
+  String get wikiLineTypes => '装备类型';
+
+  @override
+  String get wikiLineDescription => '介绍';
+
+  @override
+  String get wikiNoEntry => '暂无介绍';
+
+  @override
+  String get wikiAdaptedUnits => '适配单位';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2781,4 +2805,28 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tabCheckCurrentUserWph => '查詢波速';
+
+  @override
+  String get toolWiki => '遊戲百科';
+
+  @override
+  String get wikiULine => 'U裝備詞條';
+
+  @override
+  String get wikiLineEnglishName => '英文名';
+
+  @override
+  String get wikiLineRange => '數值範圍';
+
+  @override
+  String get wikiLineTypes => '裝備類型';
+
+  @override
+  String get wikiLineDescription => '介紹';
+
+  @override
+  String get wikiNoEntry => '暫無介紹';
+
+  @override
+  String get wikiAdaptedUnits => '適配單位';
 }

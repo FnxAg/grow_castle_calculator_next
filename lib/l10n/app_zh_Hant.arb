@@ -401,5 +401,13 @@
   "infiniteColony": "通天塔",
   "guildTotalScore": "公會總分",
   "sectionQuickAccess": "快捷入口",
-  "tabCheckCurrentUserWph": "查詢波速"
+  "tabCheckCurrentUserWph": "查詢波速",
+  "toolWiki": "遊戲百科",
+  "wikiULine": "U裝備詞條",
+  "wikiLineEnglishName": "英文名",
+  "wikiLineRange": "數值範圍",
+  "wikiLineTypes": "裝備類型",
+  "wikiLineDescription": "介紹",
+  "wikiNoEntry": "暫無介紹",
+  "wikiAdaptedUnits": "適配單位"
 }
