@@ -451,7 +451,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
     );
   }
 
-  /// 右侧详情面板：未选中时占位提示，选中后嵌入玩家详情
+  /// 右侧详情面板
   Widget _buildDetailPane() {
     final name = _selectedMember;
     if (name == null) {

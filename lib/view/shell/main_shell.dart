@@ -73,7 +73,6 @@ class _MainShellState extends State<MainShell> {
   Widget build(BuildContext context) {
     final isWide = context.isWideScreen;
     return Scaffold(
-      // 窄屏时 Row 只有一个 Expanded 子级，布局与改造前等价，代码只有一份
       body: Row(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
