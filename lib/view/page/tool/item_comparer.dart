@@ -10,6 +10,7 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
+import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
@@ -305,26 +306,19 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     final item2Result = _computeItemResult(_item2Lines);
     final bool isWide = context.isWideScreen;
 
-    // 窄屏：结果卡片固定在底部；宽屏：移到右侧——与收入/阵容/推波收益
-    // 三页的汇总条同一策略（flex 6:4、Row 不指定 crossAxisAlignment）
+    // 窄屏
     final Widget listExpanded = Expanded(
       flex: isWide ? 6 : 1,
       child: ListView(
-        // 矮窗口兜底切换子树结构时，靠它把滚动位置存回 PageStorage
         key: const PageStorageKey('item_comparer_list'),
-        padding: EdgeInsets.all(16.0),
+        padding: EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
         children: [
-          Card(margin: EdgeInsets.zero, child: _buildPanelCard()),
-          const SizedBox(height: 16),
-          Card(
-            margin: EdgeInsets.zero,
-            child: _buildItemCard(_item1Lines, l10n.labelItemLines(1), 'item1'),
-          ),
-          const SizedBox(height: 16),
-          Card(
-            margin: EdgeInsets.zero,
-            child: _buildItemCard(_item2Lines, l10n.labelItemLines(2), 'item2'),
-          ),
+          SectionHeader(l10n.labelNoItemPanel),
+          SummaryCard(children: _buildPanelCard()),
+          SectionHeader(l10n.labelItemLines(1)),
+          SummaryCard(children: <Widget>[_buildItemCard(_item1Lines, 'item1')]),
+          SectionHeader(l10n.labelItemLines(2)),
+          SummaryCard(children: <Widget>[_buildItemCard(_item2Lines, 'item2')]),
         ],
       ),
     );
@@ -422,8 +416,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ],
       ),
-      // 矮窗兜底包在最外层：minHeight 是「列表 + 结果卡片」整页的最小高度，
-      // 放进分支里只能量到单侧，窄屏下汇总卡片会照样溢出
       body: ShortWindowFallback(
         minHeight: 340,
         child: isWide
@@ -438,38 +430,18 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
   }
 
-  Widget _buildPanelCard() {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        crossAxisAlignment: .start,
-        children: [
-          Text(
-            AppLocalizations.of(context).labelNoItemPanel,
-            style: Theme.of(context).textTheme.titleMedium?.copyWith(
-              color: Theme.of(context).colorScheme.primary,
-              fontWeight: FontWeight.w600,
-            ),
-          ),
-          _panelField('Base Attack', _baseAttackCtrl, isPercent: false),
-          _panelField('Increased Dmg', _increasedDmgCtrl),
-          _panelField('More Dmg', _moreDmgCtrl),
-          _panelField('Critical Chance', _critChanceCtrl),
-          _panelField('Critical Dmg', _critDmgCtrl),
-          _panelField('Attacks Per Second', _baseApsCtrl, isPercent: false),
-          _panelField('Increased Speed', _speedCtrl),
-        ],
-      ),
-    );
+  List<Widget> _buildPanelCard() {
+    return [
+      _panelField('Base Attack', _baseAttackCtrl, isPercent: false),
+      _panelField('Increased Dmg', _increasedDmgCtrl),
+      _panelField('More Dmg', _moreDmgCtrl),
+      _panelField('Critical Chance', _critChanceCtrl),
+      _panelField('Critical Dmg', _critDmgCtrl),
+      _panelField('Attacks Per Second', _baseApsCtrl, isPercent: false),
+      _panelField('Increased Speed', _speedCtrl),
+    ];
   }
 
-  /// 面板字段行：定宽标签列 + 右对齐的定宽输入框。
-  ///
-  /// 标签列必须定宽：各行标签长短不一，不固定就没有公共起点，输入框会跟着
-  /// 标签宽度左右漂。行内也只能有一个弹性空白 —— [Spacer] 本身就是
-  /// `Expanded(flex: 1)`，之前它和包住输入框的 `Expanded` 同时存在，等于把
-  /// 剩余空间对半分；且 `Expanded` 给子级的是紧约束，里面
-  /// `SizedBox(width: 80)` 的宽度被完全覆盖，形同虚设。
   Widget _panelField(
     String label,
     TextEditingController ctrl, {
@@ -489,9 +461,8 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
               style: theme.textTheme.bodyMedium,
             ),
           ),
-          const Spacer(), // 唯一弹性空白：把输入框推到右边缘
+          const Spacer(),
           SizedBox(
-            // 与装备词条行的数值框同宽：整页数值框的左右边缘都对齐
             width: 88.0,
             child: SelectAllTextField(
               controller: ctrl,
@@ -512,30 +483,12 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
   }
 
-  Widget _buildItemCard(List<_LineInput> lines, String title, String listId) {
-    return Padding(
-      padding: const EdgeInsets.all(16.0),
-      child: Column(
-        children: [
-          Row(
-            children: [
-              Text(
-                title,
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  color: Theme.of(context).colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
-              ),
-            ],
-          ),
-          _AnimatedItemLineList(
-            key: ValueKey('$listId-$_lineListGeneration'),
-            lines: lines,
-            onChanged: _onInputChanged,
-            createLine: _createLineInput,
-          ),
-        ],
-      ),
+  Widget _buildItemCard(List<_LineInput> lines, String listId) {
+    return _AnimatedItemLineList(
+      key: ValueKey('$listId-$_lineListGeneration'),
+      lines: lines,
+      onChanged: _onInputChanged,
+      createLine: _createLineInput,
     );
   }
 }
@@ -564,7 +517,6 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
 
   @override
   void dispose() {
-    // 页面或列表被重建时，退场动画可能还没走完；此时统一兜底释放。
     for (final input in _removingInputs) {
       input.dispose();
     }
@@ -604,7 +556,6 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
     });
   }
 
-  /// 构建带入场动画的词条行（itemBuilder 使用）
   Widget _buildAnimatedRow(_LineInput input, Animation<double> animation) {
     final curvedAnimation = CurvedAnimation(
       parent: animation,
@@ -663,13 +614,6 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
   }
 }
 
-/// 删除退场动画期间挂在树上的占位行。
-///
-/// AnimatedList 的 removeItem builder 产物会一直留在树上直到退场动画结束，
-/// 因此不能在动画结束（dismissed）回调里直接释放 controller —— 此刻该行
-/// 组件尚未卸载，若期间发生重建或输入法事件访问到已销毁的 controller，
-/// 会抛出 "A TextEditingController was used after being disposed"。
-/// 这里把释放推迟到本组件真正被卸载时（State.dispose），保证行已离开树。
 class _RemovedLineItem extends StatefulWidget {
   const _RemovedLineItem({
     super.key,
@@ -680,7 +624,6 @@ class _RemovedLineItem extends StatefulWidget {
 
   final _LineInput input;
 
-  /// 退场动画（AnimatedList 传入，播放方向为 1 -> 0）
   final Animation<double> animation;
   final ValueChanged<_LineInput> onRemoved;
 
@@ -720,7 +663,6 @@ class _RemovedLineItemState extends State<_RemovedLineItem> {
 
   @override
   Widget build(BuildContext context) {
-    // 退场期间禁止交互，避免焦点/输入法在释放边界上访问行内容
     return IgnorePointer(
       child: Padding(
         padding: const EdgeInsets.only(top: 8),
