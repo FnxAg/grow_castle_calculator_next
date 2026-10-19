@@ -962,5 +962,6 @@
   "toolSearchUser": "搜索玩家",
   "toolSearchGuild": "搜索公会",
   "sidebarCollapse": "收起侧栏",
-  "sidebarExpand": "展开侧栏"
+  "sidebarExpand": "展开侧栏",
+  "actionResetToDefault": "恢复默认"
 }

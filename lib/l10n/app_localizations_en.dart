@@ -1518,4 +1518,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get sidebarExpand => 'Expand sidebar';
+
+  @override
+  String get actionResetToDefault => 'Reset to default';
 }

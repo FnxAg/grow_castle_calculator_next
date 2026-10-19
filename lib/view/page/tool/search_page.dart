@@ -36,7 +36,13 @@ class _SearchPageState extends State<SearchPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          NameTextField(controller: _controller, labelText: l10n.labelName),
+          NameTextField(
+            controller: _controller,
+            labelText: l10n.labelName,
+            onChanged: (value) {
+              setState(() {});
+            },
+          ),
           const SizedBox(height: 16),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -45,6 +51,9 @@ class _SearchPageState extends State<SearchPage> {
                 child: FilledButton.icon(
                   icon: const Icon(Icons.search),
                   onPressed: () {
+                    if (_controller.text.isEmpty) {
+                      return;
+                    }
                     FocusManager.instance.primaryFocus?.unfocus();
                     Navigator.of(context).push(
                       MaterialPageRoute(
@@ -61,6 +70,9 @@ class _SearchPageState extends State<SearchPage> {
                 child: FilledButton.tonalIcon(
                   icon: const Icon(Icons.search),
                   onPressed: () {
+                    if (_controller.text.isEmpty) {
+                      return;
+                    }
                     FocusManager.instance.primaryFocus?.unfocus();
                     Navigator.of(context).push(
                       MaterialPageRoute(

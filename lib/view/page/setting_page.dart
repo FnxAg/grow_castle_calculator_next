@@ -143,6 +143,17 @@ class _SettingPageState extends State<SettingPage> {
         initialValue: store.apiUrlNotifier.value,
         decoration: InputDecoration(labelText: l10n.labelApiUrl),
         onSubmit: store.setApiUrl,
+        actionButtons: [
+          TextButton(
+            onPressed: () {
+              setState(() {
+                store.setApiUrl(AppSettingsStore.defaultApiUrl);
+              });
+              Navigator.of(context).pop();
+            },
+            child: Text(l10n.actionResetToDefault),
+          ),
+        ],
       ),
     );
   }
@@ -275,7 +286,11 @@ class _SettingPageState extends State<SettingPage> {
               title: l10n.settingsThemeMode,
               current: mode,
               options: [
-                (ThemeMode.system, l10n.themeSystem, Icon(Icons.brightness_auto)),
+                (
+                  ThemeMode.system,
+                  l10n.themeSystem,
+                  Icon(Icons.brightness_auto),
+                ),
                 (ThemeMode.light, l10n.themeLight, Icon(Icons.light_mode)),
                 (ThemeMode.dark, l10n.themeDark, Icon(Icons.dark_mode)),
               ],
@@ -289,13 +304,13 @@ class _SettingPageState extends State<SettingPage> {
               title: l10n.settingsLanguage,
               current: language,
               options: [
-                (
-                  AppLanguage.system,
-                  l10n.languageSystem,
-                  Text("System"),
-                ),
+                (AppLanguage.system, l10n.languageSystem, Text("System")),
                 (AppLanguage.zhHans, l10n.languageChinese, Text("zh-CN")),
-                (AppLanguage.zhHant, l10n.languageTraditionalChinese, Text("zh-TW")),
+                (
+                  AppLanguage.zhHant,
+                  l10n.languageTraditionalChinese,
+                  Text("zh-TW"),
+                ),
                 (AppLanguage.en, l10n.languageEnglish, Text("en")),
               ],
               onSelected: appSettingsStore.setLanguage,

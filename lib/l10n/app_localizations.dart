@@ -2555,6 +2555,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'展开侧栏'**
   String get sidebarExpand;
+
+  /// No description provided for @actionResetToDefault.
+  ///
+  /// In zh, this message translates to:
+  /// **'恢复默认'**
+  String get actionResetToDefault;
 }
 
 class _AppLocalizationsDelegate

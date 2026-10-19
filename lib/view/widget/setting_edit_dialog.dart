@@ -3,11 +3,7 @@ import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
-/// 设置项通用编辑弹窗：聚焦自动全选的输入框 + 取消/保存。
-///
-/// 自 setting_page.dart 私有 _SettingEditDialog 提取，供设置页与
-/// 数据备份页共用。密码等敏感输入传 [obscureText]；再传
-/// [showVisibilityToggle] 时输入框尾部提供明文/密文切换按钮。
+/// 设置项通用编辑弹窗
 class SettingEditDialog extends StatefulWidget {
   const SettingEditDialog({
     super.key,
@@ -19,22 +15,18 @@ class SettingEditDialog extends StatefulWidget {
     this.inputFormatters = const [],
     this.obscureText = false,
     this.showVisibilityToggle = false,
+    this.actionButtons = const [],
   });
 
   final String title;
-
   final String initialValue;
   final TextInputType keyboardType;
   final List<TextInputFormatter> inputFormatters;
   final InputDecoration decoration;
-
-  /// 是否以密码形式输入（内容打点显示）
   final bool obscureText;
-
-  /// 为 true 时在输入框尾部提供明文/密文切换按钮（与 [obscureText] 配合）
   final bool showVisibilityToggle;
-
   final ValueChanged<String> onSubmit;
+  final List<Widget>? actionButtons;
 
   @override
   State<SettingEditDialog> createState() => _SettingEditDialogState();
@@ -42,8 +34,6 @@ class SettingEditDialog extends StatefulWidget {
 
 class _SettingEditDialogState extends State<SettingEditDialog> {
   late final TextEditingController _controller;
-
-  /// 当前是否密文显示（有显隐按钮时随点击切换）
   late bool _obscured;
 
   @override
@@ -89,6 +79,7 @@ class _SettingEditDialogState extends State<SettingEditDialog> {
         decoration: decoration,
       ),
       actions: [
+        if (widget.actionButtons != null) ...widget.actionButtons!,
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.actionCancel),

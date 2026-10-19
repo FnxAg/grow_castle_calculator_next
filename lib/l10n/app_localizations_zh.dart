@@ -1413,6 +1413,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get sidebarExpand => '展开侧栏';
+
+  @override
+  String get actionResetToDefault => '恢复默认';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2823,4 +2826,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get sidebarExpand => '展開側欄';
+
+  @override
+  String get actionResetToDefault => '重設為預設值';
 }

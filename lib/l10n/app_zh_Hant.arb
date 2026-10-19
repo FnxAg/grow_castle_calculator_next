@@ -408,5 +408,6 @@
   "toolSearchUser": "搜尋玩家",
   "toolSearchGuild": "搜尋公會",
   "sidebarCollapse": "收合側欄",
-  "sidebarExpand": "展開側欄"
+  "sidebarExpand": "展開側欄",
+  "actionResetToDefault": "重設為預設值"
 }

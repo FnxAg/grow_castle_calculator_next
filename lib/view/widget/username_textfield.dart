@@ -10,18 +10,14 @@ class NameTextField extends StatelessWidget {
     required this.controller,
     this.labelText,
     this.helperText,
+    this.onChanged,
     this.autofocus = true,
   });
 
   final TextEditingController controller;
-
-  /// 为空时取词条的「用户名」
   final String? labelText;
-
-  /// 为空时取词条的输入约束提示
   final String? helperText;
-
-  /// 弹窗中多个输入框同时使用时，仅第一个保持自动聚焦
+  final ValueChanged<String>? onChanged;
   final bool autofocus;
 
   @override
@@ -33,6 +29,7 @@ class NameTextField extends StatelessWidget {
       maxLength: 14,
       maxLengthEnforcement: MaxLengthEnforcement.enforced,
       autofocus: autofocus,
+      onChanged: onChanged,
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9-_ ]')),
       ],

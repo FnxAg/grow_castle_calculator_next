@@ -409,5 +409,6 @@
   "toolSearchUser": "Search User",
   "toolSearchGuild": "Search Guild",
   "sidebarCollapse": "Collapse sidebar",
-  "sidebarExpand": "Expand sidebar"
+  "sidebarExpand": "Expand sidebar",
+  "actionResetToDefault": "Reset to default"
 }

@@ -22,6 +22,7 @@ class SelectAllTextField extends StatefulWidget {
     this.maxLength,
     this.maxLengthEnforcement,
     this.enabled = true,
+    this.onChanged,
     this.autofocus = false,
   });
 
@@ -36,6 +37,7 @@ class SelectAllTextField extends StatefulWidget {
   final int? maxLength;
   final MaxLengthEnforcement? maxLengthEnforcement;
   final bool enabled;
+  final ValueChanged<String>? onChanged;
   final bool autofocus;
 
   @override
@@ -91,6 +93,7 @@ class _SelectAllTextFieldState extends State<SelectAllTextField> {
       maxLength: widget.maxLength,
       maxLengthEnforcement: widget.maxLengthEnforcement,
       enabled: widget.enabled,
+      onChanged: widget.onChanged,
       autofocus: widget.autofocus,
     );
   }

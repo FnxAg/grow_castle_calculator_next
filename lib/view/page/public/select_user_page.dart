@@ -308,10 +308,7 @@ class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
     final username = _userController.text.trim();
     if (username.isNotEmpty) {
       try {
-        ref.users.createUser(
-          username,
-          guild: _guildController.text.trim(),
-        );
+        ref.users.createUser(username, guild: _guildController.text.trim());
         ref.users.setCurrentUser(username);
       } catch (e) {
         ScaffoldMessenger.of(context)
@@ -324,6 +321,7 @@ class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final bool isSubmitEnabled = _userController.text.trim().isNotEmpty;
     return AlertDialog(
       title: Text(l10n.actionAddUser),
       content: Column(
@@ -332,6 +330,9 @@ class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
           NameTextField(
             controller: _userController,
             labelText: l10n.labelUsername,
+            onChanged: (value) {
+              setState(() {});
+            },
             autofocus: true,
           ),
           const SizedBox(height: 8.0),
@@ -347,7 +348,10 @@ class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.actionCancel),
         ),
-        TextButton(onPressed: _submit, child: Text(l10n.actionAdd)),
+        TextButton(
+          onPressed: isSubmitEnabled ? _submit : null,
+          child: Text(l10n.actionAdd),
+        ),
       ],
     );
   }
@@ -371,7 +375,8 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
     super.initState();
     _userController = TextEditingController(text: widget.username);
     _guildController = TextEditingController(
-      text: ref.read(usersProvider).findByUsername(widget.username)?.guild ?? '',
+      text:
+          ref.read(usersProvider).findByUsername(widget.username)?.guild ?? '',
     );
   }
 
@@ -409,6 +414,11 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final bool isSubmitEnabled =
+        _userController.text.trim().isNotEmpty && 
+        (_userController.text.trim() != widget.username ||  
+        _guildController.text.trim() !=
+            ref.read(usersProvider).findByUsername(widget.username)?.guild);
     return AlertDialog(
       title: Text(l10n.dialogEditUser),
       content: Column(
@@ -417,12 +427,18 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
           NameTextField(
             controller: _userController,
             labelText: l10n.labelUsername,
+            onChanged: (value) {
+              setState(() {});
+            },
             autofocus: true,
           ),
           const SizedBox(height: 8.0),
           NameTextField(
             controller: _guildController,
             labelText: l10n.tabGuild,
+            onChanged: (value) {
+              setState(() {});
+            },
             autofocus: false,
           ),
         ],
@@ -432,7 +448,10 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.actionCancel),
         ),
-        TextButton(onPressed: _submit, child: Text(l10n.actionSave)),
+        TextButton(
+          onPressed: isSubmitEnabled ? _submit : null,
+          child: Text(l10n.actionSave),
+        ),
       ],
     );
   }
