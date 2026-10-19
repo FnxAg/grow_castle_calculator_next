@@ -402,5 +402,9 @@
   "guildTotalScore": "公會總分",
   "sectionQuickAccess": "快捷入口",
   "tabCheckCurrentUserWph": "查詢波速",
-  "labelExpectedValueOfEachLine": "裝備詞條期望值"
+  "labelExpectedValueOfEachLine": "裝備詞條期望值",
+  "toolSearch": "搜尋",
+  "labelName": "名稱",
+  "toolSearchUser": "搜尋玩家",
+  "toolSearchGuild": "搜尋公會"
 }

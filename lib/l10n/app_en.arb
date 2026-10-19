@@ -403,5 +403,9 @@
   "guildTotalScore": "Guild total score",
   "sectionQuickAccess": "Quick Access",
   "tabCheckCurrentUserWph": "Check WPH",
-  "labelExpectedValueOfEachLine": "Expected value of each line"
+  "labelExpectedValueOfEachLine": "Expected value of each line",
+  "toolSearch": "Search",
+  "labelName": "Name",
+  "toolSearchUser": "Search User",
+  "toolSearchGuild": "Search Guild"
 }

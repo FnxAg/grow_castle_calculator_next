@@ -1395,6 +1395,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelExpectedValueOfEachLine => '装备词条期望值';
+
+  @override
+  String get toolSearch => '搜索';
+
+  @override
+  String get labelName => '名称';
+
+  @override
+  String get toolSearchUser => '搜索玩家';
+
+  @override
+  String get toolSearchGuild => '搜索公会';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2787,4 +2799,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get labelExpectedValueOfEachLine => '裝備詞條期望值';
+
+  @override
+  String get toolSearch => '搜尋';
+
+  @override
+  String get labelName => '名稱';
+
+  @override
+  String get toolSearchUser => '搜尋玩家';
+
+  @override
+  String get toolSearchGuild => '搜尋公會';
 }

@@ -328,7 +328,8 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
           Positioned(
             left: 0,
             right: 0,
-            bottom: 0,
+            bottom: _wphHistory == null || _wphHistory!.isEmpty ? null : 0,
+            top: _wphHistory == null || _wphHistory!.isEmpty ? 0 : null,
             child: IgnorePointer(
               ignoring: !_showCard,
               child: SizeTransition(

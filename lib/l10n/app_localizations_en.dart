@@ -1500,4 +1500,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelExpectedValueOfEachLine => 'Expected value of each line';
+
+  @override
+  String get toolSearch => 'Search';
+
+  @override
+  String get labelName => 'Name';
+
+  @override
+  String get toolSearchUser => 'Search User';
+
+  @override
+  String get toolSearchGuild => 'Search Guild';
 }

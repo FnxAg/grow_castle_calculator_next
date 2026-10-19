@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator_next/view/page/tool/best_line_calc_page.d
 import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/ranking_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/search_page.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 工具页
@@ -30,6 +31,19 @@ class ToolsPage extends StatelessWidget {
                 );
               },
             ),
+          ListTile(
+            leading: const Icon(Icons.search),
+            title: Text(l10n.toolSearch),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const SearchPage(),
+                ),
+              );
+            },
+          ),
           ListTile(
             leading: const Icon(Icons.casino_outlined),
             title: Text(l10n.toolDragonSimulator),

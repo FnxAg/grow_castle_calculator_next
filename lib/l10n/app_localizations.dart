@@ -2519,6 +2519,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'装备词条期望值'**
   String get labelExpectedValueOfEachLine;
+
+  /// No description provided for @toolSearch.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索'**
+  String get toolSearch;
+
+  /// No description provided for @labelName.
+  ///
+  /// In zh, this message translates to:
+  /// **'名称'**
+  String get labelName;
+
+  /// No description provided for @toolSearchUser.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索玩家'**
+  String get toolSearchUser;
+
+  /// No description provided for @toolSearchGuild.
+  ///
+  /// In zh, this message translates to:
+  /// **'搜索公会'**
+  String get toolSearchGuild;
 }
 
 class _AppLocalizationsDelegate

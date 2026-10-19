@@ -956,5 +956,9 @@
   "guildTotalScore": "公会总分",
   "sectionQuickAccess": "快捷入口",
   "tabCheckCurrentUserWph": "查询波速",
-  "labelExpectedValueOfEachLine": "装备词条期望值"
+  "labelExpectedValueOfEachLine": "装备词条期望值",
+  "toolSearch": "搜索",
+  "labelName": "名称",
+  "toolSearchUser": "搜索玩家",
+  "toolSearchGuild": "搜索公会"
 }
