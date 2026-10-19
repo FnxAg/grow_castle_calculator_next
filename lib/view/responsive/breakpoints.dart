@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 /// 断点
 abstract final class Breakpoints {
   /// 宽屏起点
-  static const double wide = 840.0;
+  static const double wide = 960.0;
 
   /// 宽屏时 rail 占掉的宽度
   static const double railWidth = 96.0;
