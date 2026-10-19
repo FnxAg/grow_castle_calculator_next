@@ -6,7 +6,7 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/formation_calc_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function/formation_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
 import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income_page.dart';
