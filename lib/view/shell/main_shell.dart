@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/shell/app_sidebar.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
+import 'package:grow_castle_calculator_next/view/shell/shell_animations.dart';
 
 /// app 根外壳
 class MainShell extends StatefulWidget {
@@ -64,7 +65,7 @@ class _MainShellState extends State<MainShell>
     super.initState();
     _switchController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: shellAnimationDuration,
       value: 1.0,
     )..addStatusListener(_onSwitchStatus);
     HardwareKeyboard.instance.addHandler(_handleKey);
@@ -127,16 +128,17 @@ class _MainShellState extends State<MainShell>
     final velocity = details.primaryVelocity ?? 0.0;
     final committed = progress >= 0.25 || velocity * _slideDirection < -300.0;
     _dragCommitting = committed;
+    final total = shellAnimationDuration.inMilliseconds;
     if (committed) {
       if (progress >= 1.0) {
         _commitDrag();
       } else {
-        _animateDragTo(1.0, duration: (300 * (1 - progress)).round());
+        _animateDragTo(1.0, duration: (total * (1 - progress)).round());
       }
     } else if (progress <= 0.0) {
       setState(() => _dragTarget = null);
     } else {
-      _animateDragTo(0.0, duration: (300 * progress).round());
+      _animateDragTo(0.0, duration: (total * progress).round());
     }
   }
 
@@ -149,14 +151,19 @@ class _MainShellState extends State<MainShell>
       setState(() => _dragTarget = null);
       return;
     }
-    _animateDragTo(0.0, duration: (300 * progress).round());
+    _animateDragTo(
+      0.0,
+      duration: (shellAnimationDuration.inMilliseconds * progress).round(),
+    );
   }
 
   void _animateDragTo(double target, {required int duration}) {
     _switchController.animateTo(
       target,
-      duration: Duration(milliseconds: duration.clamp(80, 300)),
-      curve: Curves.easeOutCubic,
+      duration: Duration(
+        milliseconds: duration.clamp(80, shellAnimationDuration.inMilliseconds),
+      ),
+      curve: shellAnimationCurve,
     );
   }
 
@@ -248,8 +255,8 @@ class _MainShellState extends State<MainShell>
         ..value = 0.0
         ..animateTo(
           1.0,
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeOutCubic,
+          duration: shellAnimationDuration,
+          curve: shellAnimationCurve,
         );
     } else {
       _switchController.value = 1.0;
@@ -402,7 +409,7 @@ class _MainShellState extends State<MainShell>
     return NavigationBar(
       selectedIndex: _selectIndex.value,
       height: kBottomNavigationBarHeight * 1.1,
-      animationDuration: const Duration(milliseconds: 250),
+      animationDuration: shellAnimationDuration,
       onDestinationSelected: _selectPage,
       labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
       destinations: [
