@@ -1,3 +1,4 @@
+import 'package:flutter/rendering.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
@@ -9,7 +10,6 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
-import 'package:measure_size/render_object.dart';
 
 /// 玩家详情页
 class PlayerDetailPage extends ConsumerStatefulWidget {
@@ -37,48 +37,52 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
   bool _loading = true;
   String? _error;
   PlayerQueryResult? _result;
-  final ValueNotifier<double> paddingHeight = ValueNotifier<double>(0.0);
-  final ValueNotifier<double> summaryOffset = ValueNotifier<double>(0.0);
 
-  late final AnimationController _snapController;
-  double _snapStart = 0.0;
-  double _snapEnd = 0.0;
+  final ScrollController _scrollController = ScrollController();
+  bool _showCard = true;
 
-  /// 第三方 API 的每赛季每小时波速快照
+  late final AnimationController _cardController;
+  late final CurvedAnimation _cardAnimation;
+
   List<SeasonWphGroup>? _wphHistory;
-
-  /// 玩家赛季榜排名
   int? _playerRank;
-
-  /// 无尽榜分数
   int? _hellScore;
-
-  /// 无尽榜排名
   int? _hellRank;
 
   @override
   void initState() {
     super.initState();
 
-    _snapController =
-        AnimationController(
-          vsync: this,
-          duration: const Duration(milliseconds: 300),
-        )..addListener(() {
-          summaryOffset.value =
-              _snapStart + (_snapEnd - _snapStart) * _snapController.value;
-        });
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1.0,
+    );
+    _cardAnimation = CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeInOut,
+    );
+
+    _scrollController.addListener(_handleScroll);
 
     _load();
+  }
+
+  void _handleScroll() {
+    final direction = _scrollController.position.userScrollDirection;
+    if (direction == ScrollDirection.reverse && _showCard) {
+      _showCard = false;
+      _cardController.reverse();
+    } else if (direction == ScrollDirection.forward && !_showCard) {
+      _showCard = true;
+      _cardController.forward();
+    }
   }
 
   @override
   void didUpdateWidget(covariant PlayerDetailPage oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 主从面板复用同一实例切换玩家,，重置展示状态并重新拉取
     if (oldWidget.playerName != widget.playerName) {
-      paddingHeight.value = 0;
-      summaryOffset.value = 0;
       _wphHistory = null;
       _result = null;
       _load();
@@ -87,43 +91,14 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
 
   @override
   void dispose() {
-    _snapController.dispose();
-    paddingHeight.dispose();
-    summaryOffset.dispose();
+    _scrollController
+      ..removeListener(_handleScroll)
+      ..dispose();
+    _cardAnimation.dispose();
+    _cardController.dispose();
     super.dispose();
   }
 
-  bool _handleScroll(ScrollNotification notification) {
-    if (notification.metrics.axis != Axis.vertical) return false;
-
-    if (notification is ScrollUpdateNotification) {
-      final delta = notification.scrollDelta;
-      final height = paddingHeight.value;
-      if (delta != null && delta != 0.0 && height > 0.0) {
-        _snapController.stop();
-        summaryOffset.value = (summaryOffset.value + delta)
-            .clamp(0.0, height)
-            .toDouble();
-      }
-    } else if (notification is ScrollEndNotification) {
-      _snapSummary();
-    }
-
-    return false;
-  }
-
-  void _snapSummary() {
-    final height = paddingHeight.value;
-    if (height <= 0.0) return;
-
-    _snapStart = summaryOffset.value;
-    _snapEnd = summaryOffset.value >= height / 2.0 ? height : 0.0;
-    _snapController
-      ..reset()
-      ..forward();
-  }
-
-  /// 并行查询
   Future<void> _load() async {
     setState(() {
       _loading = true;
@@ -251,7 +226,6 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     return _buildResult(r);
   }
 
-  /// 查询失败提示 + 重试
   Widget _buildError() {
     final scheme = Theme.of(context).colorScheme;
     return Center(
@@ -309,172 +283,119 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
       r.queryDate,
       DateTime.now(),
     );
+    const chipTextStyle = TextStyle(
+      fontSize: 11.0,
+      fontWeight: FontWeight.w600,
+    );
     return RefreshIndicator(
       onRefresh: _load,
-      child: NotificationListener<ScrollNotification>(
-        onNotification: _handleScroll,
-        child: Stack(
-          children: [
-            Positioned.fill(
-              child: ValueListenableBuilder<double>(
-                valueListenable: paddingHeight,
-                builder: (context, value, child) {
-                  return ValueListenableBuilder<double>(
-                    valueListenable: summaryOffset,
-                    builder: (context, offset, child) {
-                      return ListView(
-                        padding: EdgeInsets.only(
-                          left: 16.0,
-                          // top: isDesktop ? value : (value - offset).clamp(0.0, value),
-                          top: value,
-                          right: 16.0,
-                          bottom: 8.0,
-                        ),
-                        children: <Widget>[
-                          if (_wphHistory != null &&
-                              _wphHistory!.isNotEmpty) ...[
-                            Padding(
-                              padding: const EdgeInsets.only(
-                                top: 12.0,
-                                bottom: 4.0,
-                              ),
-                              child: Text(
-                                l10n.labelWphHistory,
-                                style: Theme.of(context).textTheme.titleSmall
-                                    ?.copyWith(color: scheme.onSurfaceVariant),
-                              ),
-                            ),
-                            for (final group in _wphHistory!) ...[
-                              Padding(
-                                padding: const EdgeInsets.only(top: 8.0),
-                                child: Text(
-                                  l10n.labelSeason(group.season),
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                              ),
-                              Padding(
-                                padding: const EdgeInsets.only(
-                                  top: 8.0,
-                                  bottom: 4.0,
-                                ),
-                                child: _wphGrid(
-                                  group.wphs,
-                                  isCurrentUser
-                                      ? wph
-                                      : _inferPassiveWph(group.wphs),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: ListView(
+              controller: _scrollController,
+              padding: EdgeInsets.all(16.0),
+              children: <Widget>[
+                if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4.0),
+                    child: Text(
+                      l10n.labelWphHistory,
+                      style: Theme.of(context).textTheme.titleSmall
+                          ?.copyWith(color: scheme.onSurfaceVariant),
+                    ),
+                  ),
+                  for (final group in _wphHistory!) ...[
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0),
+                      child: Text(
+                        l10n.labelSeason(group.season),
+                        style: const TextStyle(fontWeight: FontWeight.w600),
+                      ),
+                    ),
+                    Padding(
+                      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
+                      child: _wphGrid(
+                        group.wphs,
+                        isCurrentUser ? wph : _inferPassiveWph(group.wphs),
+                      ),
+                    ),
+                  ],
+                ],
+              ],
             ),
-            ValueListenableBuilder<double>(
-              valueListenable: summaryOffset,
-              builder: (context, offset, child) {
-                final height = paddingHeight.value;
-                final opacity = height <= 0.0
-                    ? 1.0
-                    : (1.0 - offset / height).clamp(0.0, 1.0);
-                const chipTextStyle = TextStyle(
-                  fontSize: 11.0,
-                  fontWeight: FontWeight.w600,
-                );
-                return Positioned(
-                  top: -offset,
-                  left: 0,
-                  right: 0,
-                  child: IgnorePointer(
-                    ignoring: opacity == 0.0,
-                    child: Opacity(
-                      opacity: opacity,
-                      child: MeasureSize(
-                        onChange: (value) {
-                          paddingHeight.value = value.height;
-                          if (summaryOffset.value > value.height) {
-                            summaryOffset.value = value.height;
-                          }
-                        },
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: SummaryCard(
-                            children: <Widget>[
-                              SummaryRow(
-                                leadingIcon: Icons.emoji_events,
-                                title: Text(l10n.totalWave),
-                                trailing: SummaryRowValueText(
-                                  text: r.wave.format(),
+          ),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              ignoring: !_showCard,
+              child: SizeTransition(
+                sizeFactor: _cardAnimation,
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SummaryCard(
+                    children: <Widget>[
+                      SummaryRow(
+                        leadingIcon: Icons.emoji_events,
+                        title: Text(l10n.totalWave),
+                        trailing: SummaryRowValueText(text: r.wave.format()),
+                      ),
+                      SummaryRow(
+                        leadingIcon: Icons.eco,
+                        title: Text(l10n.seasonWave),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            if (_playerRank != null) ...[
+                              PillChip(
+                                text: Text(
+                                  '#$_playerRank',
+                                  style: chipTextStyle,
                                 ),
+                                icon: Icons.eco,
                               ),
-                              SummaryRow(
-                                leadingIcon: Icons.eco,
-                                title: Text(l10n.seasonWave),
-                                trailing: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    if (_playerRank != null) ...[
-                                      PillChip(
-                                        text: Text(
-                                          '#$_playerRank',
-                                          style: chipTextStyle,
-                                        ),
-                                        icon: Icons.eco,
-                                      ),
-                                      const SizedBox(width: 8.0),
-                                    ],
-                                    SummaryRowValueText(
-                                      text: r.seasonalScore.format(),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                              if (_hellScore != null)
-                                SummaryRow(
-                                  leadingIcon: Icons.all_inclusive,
-                                  title: Text(l10n.hellModeScore),
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      if (_hellRank != null) ...[
-                                        PillChip(
-                                          text: Text(
-                                            '#$_hellRank',
-                                            style: chipTextStyle,
-                                          ),
-                                          icon: Icons.all_inclusive,
-                                        ),
-                                        const SizedBox(width: 8.0),
-                                      ],
-                                      SummaryRowValueText(
-                                        text: _hellScore!.format(),
-                                      ),
-                                    ],
+                              const SizedBox(width: 8.0),
+                            ],
+                            SummaryRowValueText(text: r.seasonalScore.format()),
+                          ],
+                        ),
+                      ),
+                      if (_hellScore != null)
+                        SummaryRow(
+                          leadingIcon: Icons.all_inclusive,
+                          title: Text(l10n.hellModeScore),
+                          trailing: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              if (_hellRank != null) ...[
+                                PillChip(
+                                  text: Text(
+                                    '#$_hellRank',
+                                    style: chipTextStyle,
                                   ),
+                                  icon: Icons.all_inclusive,
                                 ),
-                              SummaryRow(
-                                leadingIcon: Icons.schedule,
-                                title: Text(l10n.lastOnline),
-                                trailing: SummaryRowValueText(
-                                  text: '$lastOnline ago',
-                                ),
-                              ),
+                                const SizedBox(width: 8.0),
+                              ],
+                              SummaryRowValueText(text: _hellScore!.format()),
                             ],
                           ),
                         ),
+                      SummaryRow(
+                        leadingIcon: Icons.schedule,
+                        title: Text(l10n.lastOnline),
+                        trailing: SummaryRowValueText(text: '$lastOnline ago'),
                       ),
-                    ),
+                    ],
                   ),
-                );
-              },
+                ),
+              ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

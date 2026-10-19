@@ -21,6 +21,7 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 公会页
@@ -50,43 +51,31 @@ class GuildDetailPage extends StatelessWidget {
   }
 }
 
-class _GuildPageState extends ConsumerState<GuildPage> {
-  final ScrollController _guildScrollController = ScrollController();
-  bool _showGuildSummary = true;
+class _GuildPageState extends ConsumerState<GuildPage>
+    with TickerProviderStateMixin {
+  final ScrollController _scrollController = ScrollController();
+  late final AnimationController _cardController;
+  late final CurvedAnimation _cardAnimation;
+  bool _showCard = true;
 
   bool _firstLoading = true;
   bool _loading = true;
   String? _error;
 
-  /// 公会未配置的引导错误
   bool _emptyGuild = false;
-
   bool _emptyGuildIsDefaultUser = false;
 
-  /// 公会榜单排名
   int? _guildRank;
-
-  /// 公会榜中与上一名/下一名的分数差距
   int? _guildGapPrev;
   int? _guildGapNext;
   List<GuildMember> _members = const [];
 
-  /// 玩家赛季榜索引
   Map<String, int> _playerRankByName = {};
-
-  /// 无尽榜索引
   Map<String, int> _hellRankByName = {};
-
-  /// 成员「上次在线」展示串索引
   Map<String, String> _lastOnlineByLower = {};
-
-  /// 已尝试查询过「上次在线」的玩家
   final Set<String> _lastOnlineAttempted = {};
 
-  /// 分数列宽（像素）
   double _scoreColumnWidth = 0;
-
-  /// "上次在线"时间列宽
   double _timeColumnWidth = 0;
 
   /// 分数列测量/展示样式
@@ -113,7 +102,16 @@ class _GuildPageState extends ConsumerState<GuildPage> {
   @override
   void initState() {
     super.initState();
-    _guildScrollController.addListener(_handleGuildScroll);
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1.0,
+    );
+    _cardAnimation = CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeInOut,
+    );
+    _scrollController.addListener(_handleScroll);
     ref.listenManual(userReloadSignalProvider, (_, _) {
       if (!mounted) return;
       reloadForCurrentUser();
@@ -121,20 +119,24 @@ class _GuildPageState extends ConsumerState<GuildPage> {
     _load();
   }
 
-  void _handleGuildScroll() {
-    final direction = _guildScrollController.position.userScrollDirection;
-    if (direction == ScrollDirection.reverse && _showGuildSummary) {
-      setState(() => _showGuildSummary = false);
-    } else if (direction == ScrollDirection.forward && !_showGuildSummary) {
-      setState(() => _showGuildSummary = true);
+  void _handleScroll() {
+    final direction = _scrollController.position.userScrollDirection;
+    if (direction == ScrollDirection.reverse && _showCard) {
+      _showCard = false;
+      _cardController.reverse();
+    } else if (direction == ScrollDirection.forward && !_showCard) {
+      _showCard = true;
+      _cardController.forward();
     }
   }
 
   @override
   void dispose() {
-    _guildScrollController
-      ..removeListener(_handleGuildScroll)
+    _scrollController
+      ..removeListener(_handleScroll)
       ..dispose();
+    _cardController.dispose();
+    _cardAnimation.dispose();
     super.dispose();
   }
 
@@ -433,11 +435,8 @@ class _GuildPageState extends ConsumerState<GuildPage> {
 
   /// 主从两栏下选中的成员名
   String? _selectedMember;
-
-  /// 最近一次布局的 body 可用宽度（LayoutBuilder 回填，供点击回调判断两栏）
   double _lastBodyWidth = 0;
 
-  /// 打开成员详情：宽屏选中并在右侧面板展示，窄屏 push 全屏
   void _openMember(GuildMember member) {
     FocusManager.instance.primaryFocus?.unfocus();
     if (_lastBodyWidth >= Breakpoints.wideBody) {
@@ -525,14 +524,13 @@ class _GuildPageState extends ConsumerState<GuildPage> {
           4.0,
         ),
     ];
-    return Column(
-      children: [
-        // 公会名 + 公会排名（前 300 内）+ 成员数
-        Expanded(
-          child: RefreshIndicator(
-            onRefresh: _refresh,
+    return RefreshIndicator(
+      onRefresh: _refresh,
+      child: Stack(
+        children: [
+          Positioned.fill(
             child: ListView.builder(
-              controller: _guildScrollController,
+              controller: _scrollController,
               physics: const AlwaysScrollableScrollPhysics(),
               itemCount: _members.length,
               itemBuilder: (context, index) {
@@ -648,41 +646,46 @@ class _GuildPageState extends ConsumerState<GuildPage> {
               },
             ),
           ),
-        ),
-        AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          alignment: Alignment.topCenter,
-          child: _showGuildSummary
-              ? Column(
-                  children: [
-                    const Divider(height: 1.0),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(16.0, 10.0, 24.0, 8.0),
-                      child: Row(
-                        children: [
-                          for (var i = 0; i < chips.length; i++) ...[
-                            chips[i].$1,
-                            if (i < chips.length - 1)
-                              SizedBox(width: chips[i + 1].$2),
-                          ],
-                          const Spacer(),
-                          Text(
-                            l10n.guildMemberCountAndScore(
-                              _members.length,
-                              totalScore.format(),
-                            ),
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(color: scheme.primary),
+          Positioned(
+            left: 0,
+            right: 0,
+            bottom: 0,
+            child: IgnorePointer(
+              ignoring: !_showCard,
+              child: SizeTransition(
+                sizeFactor: _cardAnimation,
+                alignment: Alignment.topCenter,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: SummaryCard(
+                    children: <Widget>[
+                      SummaryRow(
+                        leadingIcon: Icons.group,
+                        title: Text(
+                          l10n.guildMemberCountAndScore(
+                            _members.length,
+                            totalScore.format(),
                           ),
-                        ],
+                        ),
+                        trailing: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            for (var i = 0; i < chips.length; i++) ...[
+                              chips[i].$1,
+                              if (i < chips.length - 1)
+                                SizedBox(width: chips[i + 1].$2),
+                            ],
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
-                )
-              : const SizedBox.shrink(),
-        ),
-      ],
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
