@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
+import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
@@ -239,13 +241,9 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
             ),
           ),
         ],
-        bottom: PreferredSize(
-          preferredSize: const Size.fromHeight(64),
-          child: _buildPresetStrip(context),
-        ),
       ),
       body: ListView.builder(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
         itemCount: ranked.length + 2,
         itemBuilder: (context, index) {
           if (index == 0) {
@@ -263,7 +261,6 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
             title: AnimatedTextSwitcher(
               child: Text(_comboText(l10n, combo), key: ValueKey(combo)),
             ),
-            // title: Text(_comboText(l10n, combo)),
             trailing: AnimatedTextSwitcher(
               child: Text(
                 _gainText(gain),
@@ -282,66 +279,15 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
     );
   }
 
-  // ── AppBar 底部：词条预设数值拖动条 ─────────────────────────
-
-  Widget _buildPresetStrip(BuildContext context) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 4),
-      child: Row(
-        children: [
-          for (final (i, (_, short, min, max)) in presetLines.indexed)
-            Expanded(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Text(
-                    '$short ${_numText(_presetValues[i])}%',
-                    maxLines: 1,
-                    overflow: TextOverflow.fade,
-                    softWrap: false,
-                    style: theme.textTheme.labelSmall?.copyWith(
-                      color: theme.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-                  SizedBox(
-                    height: 44,
-                    child: Slider(
-                      value: _presetValues[i].clamp(min, max),
-                      min: min,
-                      max: max,
-                      onChanged: (v) => setState(() {
-                        _presetValues[i] = (v * 10).round() / 10;
-                        _saveToSessionCache();
-                      }),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-
-  // ── 基础数值输入面板 ───────────────────────────────────────
-
   Widget _buildBasePanel(BuildContext context) {
     final theme = Theme.of(context);
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              AppLocalizations.of(context).labelPanelWithoutItem,
-              style: theme.textTheme.titleMedium?.copyWith(
-                color: theme.colorScheme.primary,
-                fontWeight: FontWeight.w600,
-              ),
-            ),
+    final l10n = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SectionHeader(l10n.labelPanelWithoutItem),
+        SummaryCard(
+          children: <Widget>[
             _baseField('Increased Dmg', _increasedDmgCtrl),
             _baseField('Critical Chance', _critChanceCtrl),
             _baseField('Critical Dmg', _critDmgCtrl),
@@ -363,7 +309,50 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
             ),
           ],
         ),
-      ),
+        // 装备词条期望值
+        SectionHeader(l10n.labelExpectedValueOfEachLine),
+        SummaryCard(
+          children: <Widget>[
+            GridView(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 2,
+                mainAxisExtent: 60,
+              ),
+              children: [
+                for (final (i, (_, short, min, max)) in presetLines.indexed)
+                  Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '$short ${_numText(_presetValues[i])}%',
+                        maxLines: 1,
+                        overflow: TextOverflow.fade,
+                        softWrap: false,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      SizedBox(
+                        height: 44,
+                        child: Slider(
+                          value: _presetValues[i].clamp(min, max),
+                          min: min,
+                          max: max,
+                          onChanged: (v) => setState(() {
+                            _presetValues[i] = (v * 10).round() / 10;
+                            _saveToSessionCache();
+                          }),
+                        ),
+                      ),
+                    ],
+                  ),
+              ],
+            ),
+          ],
+        ),
+      ],
     );
   }
 

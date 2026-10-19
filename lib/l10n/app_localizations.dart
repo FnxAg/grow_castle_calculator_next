@@ -2513,6 +2513,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'查询波速'**
   String get tabCheckCurrentUserWph;
+
+  /// No description provided for @labelExpectedValueOfEachLine.
+  ///
+  /// In zh, this message translates to:
+  /// **'装备词条期望值'**
+  String get labelExpectedValueOfEachLine;
 }
 
 class _AppLocalizationsDelegate

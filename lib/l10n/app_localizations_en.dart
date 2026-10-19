@@ -1497,4 +1497,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tabCheckCurrentUserWph => 'Check WPH';
+
+  @override
+  String get labelExpectedValueOfEachLine => 'Expected value of each line';
 }

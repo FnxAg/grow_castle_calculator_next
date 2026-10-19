@@ -1392,6 +1392,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tabCheckCurrentUserWph => '查询波速';
+
+  @override
+  String get labelExpectedValueOfEachLine => '装备词条期望值';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2781,4 +2784,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tabCheckCurrentUserWph => '查詢波速';
+
+  @override
+  String get labelExpectedValueOfEachLine => '裝備詞條期望值';
 }

@@ -955,5 +955,6 @@
   "infiniteColony": "通天塔",
   "guildTotalScore": "公会总分",
   "sectionQuickAccess": "快捷入口",
-  "tabCheckCurrentUserWph": "查询波速"
+  "tabCheckCurrentUserWph": "查询波速",
+  "labelExpectedValueOfEachLine": "装备词条期望值"
 }

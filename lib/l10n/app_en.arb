@@ -402,5 +402,6 @@
   "infiniteColony": "Infinite Colony",
   "guildTotalScore": "Guild total score",
   "sectionQuickAccess": "Quick Access",
-  "tabCheckCurrentUserWph": "Check WPH"
+  "tabCheckCurrentUserWph": "Check WPH",
+  "labelExpectedValueOfEachLine": "Expected value of each line"
 }
