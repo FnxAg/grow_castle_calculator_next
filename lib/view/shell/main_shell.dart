@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
@@ -23,10 +24,29 @@ class _MainShellState extends State<MainShell>
 
   /// 切换过渡：旧页滑出、新页滑入
   late final AnimationController _switchController;
-  late final CurvedAnimation _switchCurve;
   int _outgoingIndex = 0;
   bool _switching = false;
   int _slideDirection = 1;
+
+  /// 拖动中：目标页与内容区宽度
+  int? _dragTarget;
+  bool _dragging = false;
+  bool _dragCommitting = false;
+  double _dragDistance = 0.0;
+  double _pageWidth = 0.0;
+
+  /// 滑动切 tab 默认只接受触摸/触控笔
+  static const Set<PointerDeviceKind> _swipeDevices = {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.stylus,
+  };
+
+  /// 窄屏允许鼠标拖拽切 tab（宽屏鼠标留给文本选择）
+  static const Set<PointerDeviceKind> _swipeDevicesWithMouse = {
+    PointerDeviceKind.touch,
+    PointerDeviceKind.stylus,
+    PointerDeviceKind.mouse,
+  };
 
   /// 各 tab 首页的 GlobalKey：跨 840 断点时子树形状变化（包/不包内层
   /// Navigator），靠 key 重挂载保住各页 State（输入、滚动位置等）
@@ -47,26 +67,123 @@ class _MainShellState extends State<MainShell>
       duration: const Duration(milliseconds: 300),
       value: 1.0,
     )..addStatusListener(_onSwitchStatus);
-    _switchCurve = CurvedAnimation(
-      parent: _switchController,
-      curve: Curves.easeOutCubic,
-    );
     HardwareKeyboard.instance.addHandler(_handleKey);
   }
 
   @override
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_handleKey);
-    _switchCurve.dispose();
     _switchController.dispose();
     _selectIndex.dispose();
     super.dispose();
   }
 
   void _onSwitchStatus(AnimationStatus status) {
-    if (status == AnimationStatus.completed && _switching) {
+    if (status != AnimationStatus.completed) return;
+    // animateTo 无论方向都以 completed 结束，用 _dragCommitting 区分提交/回弹
+    if (_dragTarget != null && !_dragging) {
+      if (_dragCommitting) {
+        _commitDrag();
+      } else {
+        setState(() => _dragTarget = null);
+      }
+    } else if (_switching) {
       setState(() => _switching = false);
     }
+  }
+
+  /// 拖动开始：若正有切换动画，先就地结束
+  void _onDragStart(DragStartDetails details) {
+    _settleImmediately();
+    _dragging = true;
+    _dragDistance = 0.0;
+  }
+
+  void _onDragUpdate(DragUpdateDetails details) {
+    final dx = details.primaryDelta ?? 0.0;
+    if (dx == 0.0 || _pageWidth <= 0.0) return;
+    final current = _selectIndex.value;
+    if (_dragTarget == null) {
+      final target = dx < 0 ? current + 1 : current - 1;
+      if (target < 0 || target >= mainPages.length) return;
+      _dragTarget = target;
+      _slideDirection = dx < 0 ? 1 : -1;
+      _visited.add(target);
+    }
+    _dragDistance += dx;
+    // 反向拖动时进度退回，但不切换到另一侧
+    final progress = (_dragDistance * -_slideDirection / _pageWidth).clamp(
+      0.0,
+      1.0,
+    );
+    _switchController.value = progress;
+  }
+
+  void _onDragEnd(DragEndDetails details) {
+    _dragging = false;
+    final target = _dragTarget;
+    if (target == null) return;
+    final progress = _switchController.value;
+    final velocity = details.primaryVelocity ?? 0.0;
+    final committed = progress >= 0.25 || velocity * _slideDirection < -300.0;
+    _dragCommitting = committed;
+    if (committed) {
+      if (progress >= 1.0) {
+        _commitDrag();
+      } else {
+        _animateDragTo(1.0, duration: (300 * (1 - progress)).round());
+      }
+    } else if (progress <= 0.0) {
+      setState(() => _dragTarget = null);
+    } else {
+      _animateDragTo(0.0, duration: (300 * progress).round());
+    }
+  }
+
+  void _onDragCancel() {
+    _dragging = false;
+    _dragCommitting = false;
+    if (_dragTarget == null) return;
+    final progress = _switchController.value;
+    if (progress <= 0.0) {
+      setState(() => _dragTarget = null);
+      return;
+    }
+    _animateDragTo(0.0, duration: (300 * progress).round());
+  }
+
+  void _animateDragTo(double target, {required int duration}) {
+    _switchController.animateTo(
+      target,
+      duration: Duration(milliseconds: duration.clamp(80, 300)),
+      curve: Curves.easeOutCubic,
+    );
+  }
+
+  void _commitDrag() {
+    final target = _dragTarget;
+    if (target == null) return;
+    setState(() {
+      _selectIndex.value = target;
+      _dragTarget = null;
+      _dragCommitting = false;
+      _switching = false;
+    });
+    _switchController.value = 1.0;
+  }
+
+  /// 立即结束进行中的切换/拖动，供新的切换操作打断
+  void _settleImmediately() {
+    _dragging = false;
+    if (_dragTarget == null && !_switching) return;
+    _switchController.stop();
+    if (_dragTarget != null && _switchController.value >= 0.5) {
+      _selectIndex.value = _dragTarget!;
+    }
+    _dragTarget = null;
+    _dragCommitting = false;
+    _switching = false;
+    _switchController.value = 1.0;
   }
 
   /// 全局 Esc / Ctrl(⌘)+1..5 处理
@@ -116,6 +233,7 @@ class _MainShellState extends State<MainShell>
   /// 切换页面；再次点击当前 tab 回到该 tab 的根页面
   void _selectPage(int index) {
     FocusManager.instance.primaryFocus?.unfocus();
+    _settleImmediately();
     if (_selectIndex.value == index) {
       _navigatorKeys[index].currentState?.popUntil((route) => route.isFirst);
       return;
@@ -126,7 +244,13 @@ class _MainShellState extends State<MainShell>
     _selectIndex.value = index;
     _switching = !MediaQuery.disableAnimationsOf(context);
     if (_switching) {
-      _switchController.forward(from: 0);
+      _switchController
+        ..value = 0.0
+        ..animateTo(
+          1.0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeOutCubic,
+        );
     } else {
       _switchController.value = 1.0;
     }
@@ -189,12 +313,19 @@ class _MainShellState extends State<MainShell>
 
   /// 访问过的 tab 常驻；切换时旧页滑出、新页滑入
   Widget _buildPages(bool wide, double width) {
-    return ClipRect(
+    _pageWidth = width;
+    final pages = ClipRect(
       child: AnimatedBuilder(
         animation: _switchController,
         builder: (context, _) {
-          final t = _switchCurve.value;
+          final t = _switchController.value;
           final shift = _slideDirection * width;
+          // 拖动时目标页是「新页」，当前页是「旧页」
+          final incoming =
+              _dragTarget ?? (_switching ? _selectIndex.value : null);
+          final outgoing = _dragTarget != null
+              ? _selectIndex.value
+              : (_switching ? _outgoingIndex : null);
           return Stack(
             children: [
               for (var i = 0; i < mainPages.length; i++)
@@ -204,16 +335,19 @@ class _MainShellState extends State<MainShell>
                     child: Offstage(
                       offstage:
                           i != _selectIndex.value &&
-                          !(_switching && i == _outgoingIndex),
+                          i != incoming &&
+                          i != outgoing,
                       child: IgnorePointer(
-                        ignoring: i != _selectIndex.value,
+                        ignoring: i != _selectIndex.value && i != incoming,
                         child: TickerMode(
-                          enabled: i == _selectIndex.value,
+                          enabled: i == _selectIndex.value || i == incoming,
                           child: Transform.translate(
                             offset: Offset(
-                              i == _selectIndex.value
+                              i == incoming
                                   ? (1 - t) * shift
-                                  : -t * shift,
+                                  : i == outgoing
+                                  ? -t * shift
+                                  : 0.0,
                               0,
                             ),
                             child: _buildTab(i, mainPages[i], wide),
@@ -226,6 +360,26 @@ class _MainShellState extends State<MainShell>
           );
         },
       ),
+    );
+    // 宽屏只认触摸/触控笔，鼠标拖拽留给文本选择；窄屏鼠标也可滑动
+    final devices = width < Breakpoints.sidebarRail
+        ? _swipeDevicesWithMouse
+        : _swipeDevices;
+    return RawGestureDetector(
+      gestures: <Type, GestureRecognizerFactory>{
+        HorizontalDragGestureRecognizer:
+            GestureRecognizerFactoryWithHandlers<
+              HorizontalDragGestureRecognizer
+            >(HorizontalDragGestureRecognizer.new, (recognizer) {
+              recognizer
+                ..supportedDevices = devices
+                ..onStart = _onDragStart
+                ..onUpdate = _onDragUpdate
+                ..onEnd = _onDragEnd
+                ..onCancel = _onDragCancel;
+            }),
+      },
+      child: pages,
     );
   }
 
