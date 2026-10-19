@@ -131,7 +131,7 @@ class _GameTrackChartPageState extends ConsumerState<GameTrackChartPage> {
             ),
           );
 
-    if (constraints.maxWidth < Breakpoints.wideBody) {
+    if (constraints.maxWidth < Breakpoints.sideBySide) {
       return ListView(
         children: [?notice, _buildChartGrid(context, fillHeight: false)],
       );

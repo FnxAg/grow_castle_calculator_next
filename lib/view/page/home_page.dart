@@ -477,7 +477,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         builder: (context, constraints) {
           const padding = EdgeInsets.all(16.0);
           // 窄屏
-          if (constraints.maxWidth < Breakpoints.wideBody) {
+          if (constraints.maxWidth < Breakpoints.sideBySide) {
             return ListView(
               padding: padding,
               children: [

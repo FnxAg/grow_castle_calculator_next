@@ -1512,4 +1512,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get toolSearchGuild => 'Search Guild';
+
+  @override
+  String get sidebarCollapse => 'Collapse sidebar';
+
+  @override
+  String get sidebarExpand => 'Expand sidebar';
 }

@@ -30,6 +30,7 @@ class AppSettingsStore {
   static const String _lastOnlineConcurrencyKey = 'lastOnlineConcurrency';
   static const String _gameTrackEnabledKey = 'gameTrackEnabled';
   static const String _gameTrackIntervalMinutesKey = 'gameTrackIntervalMinutes';
+  static const String _sidebarExpandedKey = 'sidebarExpanded';
 
   static const String defaultApiUrl = 'https://fnxag.eu.org/gcapi';
 
@@ -45,6 +46,7 @@ class AppSettingsStore {
   final ValueNotifier<int> lastOnlineConcurrencyNotifier;
   final ValueNotifier<bool> gameTrackEnabledNotifier;
   final ValueNotifier<int> gameTrackIntervalMinutesNotifier;
+  final ValueNotifier<bool> sidebarExpandedNotifier;
 
   AppSettingsStore()
     : _box = Hive.box(_boxName),
@@ -69,6 +71,9 @@ class AppSettingsStore {
       ),
       gameTrackIntervalMinutesNotifier = ValueNotifier<int>(
         _readGameTrackIntervalMinutes(Hive.box(_boxName)),
+      ),
+      sidebarExpandedNotifier = ValueNotifier<bool>(
+        _readSidebarExpanded(Hive.box(_boxName)),
       );
 
   static ThemeMode _readThemeMode(Box box) {
@@ -112,6 +117,7 @@ class AppSettingsStore {
     gameTrackIntervalMinutesNotifier.value = _readGameTrackIntervalMinutes(
       _box,
     );
+    sidebarExpandedNotifier.value = _readSidebarExpanded(_box);
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -205,5 +211,16 @@ class AppSettingsStore {
     if (gameTrackIntervalMinutesNotifier.value == value) return;
     gameTrackIntervalMinutesNotifier.value = value;
     _box.put(_gameTrackIntervalMinutesKey, value);
+  }
+
+  static bool _readSidebarExpanded(Box box) {
+    final raw = box.get(_sidebarExpandedKey);
+    return raw is bool ? raw : true;
+  }
+
+  void setSidebarExpanded(bool expanded) {
+    if (sidebarExpandedNotifier.value == expanded) return;
+    sidebarExpandedNotifier.value = expanded;
+    _box.put(_sidebarExpandedKey, expanded);
   }
 }

@@ -2543,6 +2543,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'搜索公会'**
   String get toolSearchGuild;
+
+  /// No description provided for @sidebarCollapse.
+  ///
+  /// In zh, this message translates to:
+  /// **'收起侧栏'**
+  String get sidebarCollapse;
+
+  /// No description provided for @sidebarExpand.
+  ///
+  /// In zh, this message translates to:
+  /// **'展开侧栏'**
+  String get sidebarExpand;
 }
 
 class _AppLocalizationsDelegate

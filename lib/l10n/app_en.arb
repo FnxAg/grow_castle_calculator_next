@@ -407,5 +407,7 @@
   "toolSearch": "Search",
   "labelName": "Name",
   "toolSearchUser": "Search User",
-  "toolSearchGuild": "Search Guild"
+  "toolSearchGuild": "Search Guild",
+  "sidebarCollapse": "Collapse sidebar",
+  "sidebarExpand": "Expand sidebar"
 }

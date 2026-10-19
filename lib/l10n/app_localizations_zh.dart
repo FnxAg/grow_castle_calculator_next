@@ -1407,6 +1407,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get toolSearchGuild => '搜索公会';
+
+  @override
+  String get sidebarCollapse => '收起侧栏';
+
+  @override
+  String get sidebarExpand => '展开侧栏';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2811,4 +2817,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get toolSearchGuild => '搜尋公會';
+
+  @override
+  String get sidebarCollapse => '收合側欄';
+
+  @override
+  String get sidebarExpand => '展開側欄';
 }

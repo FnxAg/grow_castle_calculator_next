@@ -100,7 +100,7 @@ class _FormationCalcPageState extends ConsumerState<FormationCalcPage> {
 
   @override
   Widget build(BuildContext context) {
-    final isWide = context.isWideScreen;
+    final isWide = context.isWideContent;
     final l10n = AppLocalizations.of(context);
     final cardIds = ref.watch(currentUserCardIdsProvider);
     final List<Widget> actions = <Widget>[

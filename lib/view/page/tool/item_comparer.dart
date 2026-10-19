@@ -304,7 +304,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
     final item1Result = _computeItemResult(_item1Lines);
     final item2Result = _computeItemResult(_item2Lines);
-    final bool isWide = context.isWideScreen;
+    final bool isWide = context.isWideContent;
 
     // 窄屏
     final Widget listExpanded = Expanded(

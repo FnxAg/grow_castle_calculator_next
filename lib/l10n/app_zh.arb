@@ -960,5 +960,7 @@
   "toolSearch": "搜索",
   "labelName": "名称",
   "toolSearchUser": "搜索玩家",
-  "toolSearchGuild": "搜索公会"
+  "toolSearchGuild": "搜索公会",
+  "sidebarCollapse": "收起侧栏",
+  "sidebarExpand": "展开侧栏"
 }

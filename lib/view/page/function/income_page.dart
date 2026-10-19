@@ -32,7 +32,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final bool isWide = context.isWideScreen;
+    final bool isWide = context.isWideContent;
     final Widget expandedIncomeView = Expanded(
       flex: isWide ? 6 : 1,
       child: isMobile

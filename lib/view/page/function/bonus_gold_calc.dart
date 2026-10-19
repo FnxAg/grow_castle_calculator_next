@@ -146,7 +146,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage> {
       ),
       body: Builder(
         builder: (context) {
-          final isWide = context.isWideScreen;
+          final isWide = context.isWideContent;
           final gabCost = _gabCost(wave);
           final safeCost = gabCost > 0 ? gabCost : 0.0;
           final avgIncome = _incomes.isEmpty

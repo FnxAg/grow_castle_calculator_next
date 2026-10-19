@@ -12,10 +12,18 @@ class SearchPage extends StatefulWidget {
 }
 
 class _SearchPageState extends State<SearchPage> {
+  static String _search = '';
   final TextEditingController _controller = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    _controller.text = _search;
+  }
+
+  @override
   void dispose() {
+    _search = _controller.text;
     _controller.dispose();
     super.dispose();
   }
