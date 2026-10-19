@@ -14,11 +14,19 @@ class MainShell extends StatefulWidget {
   State<MainShell> createState() => _MainShellState();
 }
 
-class _MainShellState extends State<MainShell> {
+class _MainShellState extends State<MainShell>
+    with SingleTickerProviderStateMixin {
   final _selectIndex = ValueNotifier(0);
 
   /// 访问过的 tab：首次切到时才建树，之后常驻
   final Set<int> _visited = {0};
+
+  /// 切换过渡：旧页滑出、新页滑入
+  late final AnimationController _switchController;
+  late final CurvedAnimation _switchCurve;
+  int _outgoingIndex = 0;
+  bool _switching = false;
+  int _slideDirection = 1;
 
   /// 各 tab 首页的 GlobalKey：跨 840 断点时子树形状变化（包/不包内层
   /// Navigator），靠 key 重挂载保住各页 State（输入、滚动位置等）
@@ -34,14 +42,31 @@ class _MainShellState extends State<MainShell> {
   @override
   void initState() {
     super.initState();
+    _switchController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1.0,
+    )..addStatusListener(_onSwitchStatus);
+    _switchCurve = CurvedAnimation(
+      parent: _switchController,
+      curve: Curves.easeOutCubic,
+    );
     HardwareKeyboard.instance.addHandler(_handleKey);
   }
 
   @override
   void dispose() {
     HardwareKeyboard.instance.removeHandler(_handleKey);
+    _switchCurve.dispose();
+    _switchController.dispose();
     _selectIndex.dispose();
     super.dispose();
+  }
+
+  void _onSwitchStatus(AnimationStatus status) {
+    if (status == AnimationStatus.completed && _switching) {
+      setState(() => _switching = false);
+    }
   }
 
   /// 全局 Esc / Ctrl(⌘)+1..5 处理
@@ -96,7 +121,15 @@ class _MainShellState extends State<MainShell> {
       return;
     }
     _visited.add(index);
+    _outgoingIndex = _selectIndex.value;
+    _slideDirection = index > _outgoingIndex ? 1 : -1;
     _selectIndex.value = index;
+    _switching = !MediaQuery.disableAnimationsOf(context);
+    if (_switching) {
+      _switchController.forward(from: 0);
+    } else {
+      _switchController.value = 1.0;
+    }
   }
 
   @override
@@ -139,7 +172,7 @@ class _MainShellState extends State<MainShell> {
                     return ShellLayout(
                       mode: mode,
                       contentWidth: constraints.maxWidth,
-                      child: _buildPages(mode.hasSidebar),
+                      child: _buildPages(mode.hasSidebar, constraints.maxWidth),
                     );
                   },
                 ),
@@ -154,24 +187,45 @@ class _MainShellState extends State<MainShell> {
     );
   }
 
-  /// 访问过的 tab 常驻，Offstage + TickerMode 负责隐藏/停表
-  Widget _buildPages(bool wide) {
-    return Stack(
-      children: [
-        for (var i = 0; i < mainPages.length; i++)
-          Positioned.fill(
-            key: ValueKey(i),
-            child: _visited.contains(i)
-                ? Offstage(
-                    offstage: i != _selectIndex.value,
-                    child: TickerMode(
-                      enabled: i == _selectIndex.value,
-                      child: _buildTab(i, mainPages[i], wide),
+  /// 访问过的 tab 常驻；切换时旧页滑出、新页滑入
+  Widget _buildPages(bool wide, double width) {
+    return ClipRect(
+      child: AnimatedBuilder(
+        animation: _switchController,
+        builder: (context, _) {
+          final t = _switchCurve.value;
+          final shift = _slideDirection * width;
+          return Stack(
+            children: [
+              for (var i = 0; i < mainPages.length; i++)
+                if (_visited.contains(i))
+                  Positioned.fill(
+                    key: ValueKey(i),
+                    child: Offstage(
+                      offstage:
+                          i != _selectIndex.value &&
+                          !(_switching && i == _outgoingIndex),
+                      child: IgnorePointer(
+                        ignoring: i != _selectIndex.value,
+                        child: TickerMode(
+                          enabled: i == _selectIndex.value,
+                          child: Transform.translate(
+                            offset: Offset(
+                              i == _selectIndex.value
+                                  ? (1 - t) * shift
+                                  : -t * shift,
+                              0,
+                            ),
+                            child: _buildTab(i, mainPages[i], wide),
+                          ),
+                        ),
+                      ),
                     ),
-                  )
-                : const SizedBox.shrink(),
-          ),
-      ],
+                  ),
+            ],
+          );
+        },
+      ),
     );
   }
 
