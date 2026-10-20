@@ -502,19 +502,19 @@ class _HomePageState extends ConsumerState<HomePage> {
           // 窄屏
           if (constraints.maxWidth < Breakpoints.sideBySide) {
             return ListView(
-              padding: padding,
               children: [
-                waveCard,
-                economyCard,
-                guildCard,
-                hellCard,
+                Padding(
+                  padding: padding,
+                  child: Column(
+                    children: [waveCard, economyCard, guildCard, hellCard],
+                  ),
+                ),
                 ...quickAccess,
               ],
             );
           }
           // 宽屏
           return ListView(
-            padding: padding,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -522,7 +522,19 @@ class _HomePageState extends ConsumerState<HomePage> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [waveCard, economyCard, guildCard, hellCard],
+                      children: [
+                        Padding(
+                          padding: padding,
+                          child: Column(
+                            children: [
+                              waveCard,
+                              economyCard,
+                              guildCard,
+                              hellCard,
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                   const SizedBox(width: 16.0),
