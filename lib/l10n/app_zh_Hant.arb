@@ -17,6 +17,8 @@
   "seasonWave": "賽季波數",
   "totalGold": "總金幣",
   "goldPower": "GP · 指數",
+  "gp": "GP",
+  "gpCN": "指數",
   "ranking": "排名",
   "tooltipEditTotalWave": "修改總波數",
   "tooltipEditSeasonWave": "修改賽季波數",
@@ -409,5 +411,10 @@
   "toolSearchGuild": "搜尋公會",
   "sidebarCollapse": "收合側欄",
   "sidebarExpand": "展開側欄",
-  "actionResetToDefault": "重設為預設值"
+  "actionResetToDefault": "重設為預設值",
+  "toolQuickCalculation": "快速計算",
+  "quickCalcHint": "輸入任意一項並鎖定，填寫其餘項將自動計算",
+  "quickCalcLock": "鎖定該項",
+  "quickCalcUnlock": "解鎖該項",
+  "quickCalcFill": "填入"
 }

@@ -50,6 +50,8 @@
   "seasonWave": "赛季波数",
   "totalGold": "总金币",
   "goldPower": "GP · 指数",
+  "gp": "GP",
+  "gpCN": "指数",
   "ranking": "排名",
   "tooltipEditTotalWave": "修改总波数",
   "tooltipEditSeasonWave": "修改赛季波数",
@@ -963,5 +965,10 @@
   "toolSearchGuild": "搜索公会",
   "sidebarCollapse": "收起侧栏",
   "sidebarExpand": "展开侧栏",
-  "actionResetToDefault": "恢复默认"
+  "actionResetToDefault": "恢复默认",
+  "toolQuickCalculation": "快速计算",
+  "quickCalcHint": "输入任意一项并锁定，填写其余项将自动计算",
+  "quickCalcLock": "锁定该项",
+  "quickCalcUnlock": "解锁该项",
+  "quickCalcFill": "填入"
 }

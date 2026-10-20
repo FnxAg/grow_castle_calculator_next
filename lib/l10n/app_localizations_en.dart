@@ -67,6 +67,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get goldPower => 'GP · (CN. Ver)';
 
   @override
+  String get gp => 'GP';
+
+  @override
+  String get gpCN => 'GP (CN. Ver)';
+
+  @override
   String get ranking => 'Ranking';
 
   @override
@@ -1521,4 +1527,20 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionResetToDefault => 'Reset to default';
+
+  @override
+  String get toolQuickCalculation => 'Quick Calculation';
+
+  @override
+  String get quickCalcHint =>
+      'Enter any value and lock it; the rest are calculated automatically';
+
+  @override
+  String get quickCalcLock => 'Lock this value';
+
+  @override
+  String get quickCalcUnlock => 'Unlock this value';
+
+  @override
+  String get quickCalcFill => 'Fill';
 }

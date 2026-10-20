@@ -66,6 +66,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get goldPower => 'GP · 指数';
 
   @override
+  String get gp => 'GP';
+
+  @override
+  String get gpCN => '指数';
+
+  @override
   String get ranking => '排名';
 
   @override
@@ -1416,6 +1422,21 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get actionResetToDefault => '恢复默认';
+
+  @override
+  String get toolQuickCalculation => '快速计算';
+
+  @override
+  String get quickCalcHint => '输入任意一项并锁定，填写其余项将自动计算';
+
+  @override
+  String get quickCalcLock => '锁定该项';
+
+  @override
+  String get quickCalcUnlock => '解锁该项';
+
+  @override
+  String get quickCalcFill => '填入';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1477,6 +1498,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get goldPower => 'GP · 指數';
+
+  @override
+  String get gp => 'GP';
+
+  @override
+  String get gpCN => '指數';
 
   @override
   String get ranking => '排名';
@@ -2829,4 +2856,19 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get actionResetToDefault => '重設為預設值';
+
+  @override
+  String get toolQuickCalculation => '快速計算';
+
+  @override
+  String get quickCalcHint => '輸入任意一項並鎖定，填寫其餘項將自動計算';
+
+  @override
+  String get quickCalcLock => '鎖定該項';
+
+  @override
+  String get quickCalcUnlock => '解鎖該項';
+
+  @override
+  String get quickCalcFill => '填入';
 }

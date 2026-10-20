@@ -16,6 +16,8 @@
   "seasonWave": "Season Wave",
   "totalGold": "Total Gold",
   "goldPower": "GP · (CN. Ver)",
+  "gp": "GP",
+  "gpCN": "GP (CN. Ver)",
   "ranking": "Ranking",
   "tooltipEditTotalWave": "Edit total wave",
   "tooltipEditSeasonWave": "Edit season wave",
@@ -410,5 +412,10 @@
   "toolSearchGuild": "Search Guild",
   "sidebarCollapse": "Collapse sidebar",
   "sidebarExpand": "Expand sidebar",
-  "actionResetToDefault": "Reset to default"
+  "actionResetToDefault": "Reset to default",
+  "toolQuickCalculation": "Quick Calculation",
+  "quickCalcHint": "Enter any value and lock it; the rest are calculated automatically",
+  "quickCalcLock": "Lock this value",
+  "quickCalcUnlock": "Unlock this value",
+  "quickCalcFill": "Fill"
 }

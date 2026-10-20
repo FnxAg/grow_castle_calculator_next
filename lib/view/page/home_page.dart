@@ -7,7 +7,9 @@ import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
+import 'package:grow_castle_calculator_next/view/page/function/formation_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
@@ -447,6 +449,27 @@ class _HomePageState extends ConsumerState<HomePage> {
           );
         },
       ),
+      ListTile(
+        leading: const Icon(Icons.castle),
+        title: Text(l10n.tabFormation),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const FormationCalcPage()),
+          );
+        },
+      ),
+      ListTile(
+        leading: const Icon(Icons.group),
+        title: Text(l10n.settingsUserManagement),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const SelectUserPage()),
+          );
+        },
+      ),
     ];
     return Scaffold(
       appBar: AppBar(
@@ -499,14 +522,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [waveCard, economyCard],
+                      children: [waveCard, economyCard, guildCard, hellCard],
                     ),
                   ),
                   const SizedBox(width: 16.0),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [guildCard, hellCard, ...quickAccess],
+                      children: [...quickAccess],
                     ),
                   ),
                 ],

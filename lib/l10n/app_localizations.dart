@@ -195,6 +195,18 @@ abstract class AppLocalizations {
   /// **'GP · 指数'**
   String get goldPower;
 
+  /// No description provided for @gp.
+  ///
+  /// In zh, this message translates to:
+  /// **'GP'**
+  String get gp;
+
+  /// No description provided for @gpCN.
+  ///
+  /// In zh, this message translates to:
+  /// **'指数'**
+  String get gpCN;
+
   /// No description provided for @ranking.
   ///
   /// In zh, this message translates to:
@@ -2561,6 +2573,36 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'恢复默认'**
   String get actionResetToDefault;
+
+  /// No description provided for @toolQuickCalculation.
+  ///
+  /// In zh, this message translates to:
+  /// **'快速计算'**
+  String get toolQuickCalculation;
+
+  /// No description provided for @quickCalcHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'输入任意一项并锁定，填写其余项将自动计算'**
+  String get quickCalcHint;
+
+  /// No description provided for @quickCalcLock.
+  ///
+  /// In zh, this message translates to:
+  /// **'锁定该项'**
+  String get quickCalcLock;
+
+  /// No description provided for @quickCalcUnlock.
+  ///
+  /// In zh, this message translates to:
+  /// **'解锁该项'**
+  String get quickCalcUnlock;
+
+  /// No description provided for @quickCalcFill.
+  ///
+  /// In zh, this message translates to:
+  /// **'填入'**
+  String get quickCalcFill;
 }
 
 class _AppLocalizationsDelegate

@@ -13,7 +13,7 @@ class FormationInputField extends StatelessWidget {
   const FormationInputField({
     super.key,
     required this.controller,
-    required this.focusNode,
+    this.focusNode,
     required this.labelText,
     required this.keyboardType,
     this.inputFormatters,
@@ -22,7 +22,7 @@ class FormationInputField extends StatelessWidget {
   });
 
   final TextEditingController controller;
-  final FocusNode focusNode;
+  final FocusNode? focusNode;
   final String labelText;
   final TextInputType keyboardType;
   final List<TextInputFormatter>? inputFormatters;
