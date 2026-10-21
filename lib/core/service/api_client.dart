@@ -22,6 +22,7 @@ class ApiClient {
   static Future<Options?> thirdPartyOptions(
     String baseUrl, {
     required String username,
+    required String guild,
   }) async {
     if (!_isDefaultApiUrl(baseUrl)) {
       return null;
@@ -29,6 +30,7 @@ class ApiClient {
     return Options(
       headers: {
         'User': _headerSafeName(username),
+        'Guild': _headerSafeName(guild),
         'User-Agent': await userAgent(),
       },
     );

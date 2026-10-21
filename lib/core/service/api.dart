@@ -425,6 +425,7 @@ class PlayerApiService {
     String playerName,
     String baseUrl, {
     required String username,
+    required String guild,
   }) async {
     final base = baseUrl.endsWith('/')
         ? baseUrl.substring(0, baseUrl.length - 1)
@@ -437,7 +438,7 @@ class PlayerApiService {
       final response = await ApiClient.get(
         uri,
         // 默认第三方 API 附带 `User`（当前用户）与 UA；自建地址不带
-        options: await ApiClient.thirdPartyOptions(baseUrl, username: username),
+        options: await ApiClient.thirdPartyOptions(baseUrl, username: username, guild: guild),
       ).timeout(_timeout);
       if (response.statusCode == 404) return const <SeasonWphGroup>[];
       if (response.statusCode != 200) {

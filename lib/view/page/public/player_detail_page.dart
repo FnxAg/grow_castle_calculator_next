@@ -116,6 +116,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
               widget.playerName,
               Stores.appSettingsStore.apiUrlNotifier.value,
               username: ref.read(currentUsernameProvider),
+              guild: ref.read(currentUserGuildProvider),
             ),
             RankingCache.playerRanking(),
             RankingCache.hellRanking(),
