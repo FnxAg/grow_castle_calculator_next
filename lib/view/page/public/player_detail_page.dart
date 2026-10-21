@@ -424,17 +424,27 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     final slowWPH = wph * 0.95;
     final passiveWPH = wph * 1.05;
     final skipWhiteWPH = wph * 1.5;
-    final nullColor = Colors.grey;
-    final downColor = Colors.red;
-    final slowColor = Colors.cyan;
-    final passiveColor = Colors.blue;
-    final skipWhiteColor = Colors.green;
-    final skipOrangeColor = Colors.orange;
+    final isLightTheme = schema.brightness == Brightness.light;
+    final nullColor = isLightTheme
+        ? Colors.grey.shade700
+        : Colors.grey.shade300;
+    final downColor = isLightTheme ? Colors.red.shade800 : Colors.red.shade300;
+    final slowColor = isLightTheme
+        ? Colors.cyanAccent.shade700
+        : Colors.cyan.shade300;
+    final passiveColor = isLightTheme
+        ? Colors.blue.shade800
+        : Colors.blue.shade300;
+    final skipWhiteColor = isLightTheme
+        ? Colors.green.shade800
+        : Colors.green.shade300;
+    final skipOrangeColor = isLightTheme
+        ? Colors.deepOrange.shade800
+        : Colors.orange.shade300;
     return LayoutBuilder(
       builder: (context, constraints) {
         const minCell = 48.0;
         const spacing = 6.0;
-        // 每行格子数
         final perRow = ((constraints.maxWidth + spacing) / (minCell + spacing))
             .floor();
         final rows = <List<int?>>[];
@@ -457,7 +467,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                       Expanded(
                         child: Container(
                           height: 28.0,
-                          alignment: Alignment.center,
+                          alignment: rows[r][i] == null ? .center : .centerLeft,
                           decoration: BoxDecoration(
                             color: schema.primaryContainer,
                             borderRadius: BorderRadius.circular(8.0),
@@ -465,8 +475,8 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                           child: Text(
                             rows[r][i]?.toString() ?? '—',
                             style: TextStyle(
-                              fontSize: 12.0,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 13.0,
+                              fontWeight: FontWeight.w700,
                               color: switch (rows[r][i]) {
                                 null => nullColor,
                                 final value when value < 0 => downColor,
