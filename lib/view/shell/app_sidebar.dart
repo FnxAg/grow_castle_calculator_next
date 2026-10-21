@@ -33,7 +33,7 @@ class _AppSidebarState extends State<AppSidebar>
     with SingleTickerProviderStateMixin {
   late final AnimationController _controller = AnimationController(
     vsync: this,
-    duration: shellAnimationDuration,
+    duration: appSideBarAnimationDuration,
     value: widget.expanded ? 1.0 : 0.0,
   );
 
@@ -57,7 +57,7 @@ class _AppSidebarState extends State<AppSidebar>
     return AnimatedBuilder(
       animation: _controller,
       builder: (context, _) {
-        final t = shellAnimationCurve.transform(_controller.value);
+        final t = appSideBarAnimationCurve.transform(_controller.value);
         final width =
             Breakpoints.railWidth +
             (Breakpoints.expandedWidth - Breakpoints.railWidth) * t;

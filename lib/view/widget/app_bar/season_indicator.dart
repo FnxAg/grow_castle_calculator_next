@@ -41,29 +41,26 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    const placeholder = Text('-', style: TextStyle(fontSize: 12.0));
     return ValueListenableBuilder<SeasonRange?>(
       valueListenable: widget.notifier,
       builder: (context, season, _) {
-        if (season == null) return const SizedBox.shrink();
+        if (season == null) {
+          return placeholder;
+        }
         final end = season.end;
-        if (end == null) return const SizedBox.shrink();
-        return IconButton(
-          tooltip: l10n.seasonProgress,
-          icon: Row(
-            children: [
-              Icon(Icons.timer),
-              // const SizedBox(width: 2.0),
-              Text(
-                _label(l10n, season, end),
-                style: TextStyle(
-                  // fontSize: 12.0,
-                  fontWeight: FontWeight.w600,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ),
+        if (end == null) {
+          return placeholder;
+        }
+        return TextButton(
           onPressed: () => _showDetail(season, end),
+          style: TextButton.styleFrom(
+            padding: EdgeInsets.zero,
+            minimumSize: Size.zero,
+            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+            textStyle: const TextStyle(fontSize: 12.0),
+          ),
+          child: Text(_label(l10n, season, end)),
         );
       },
     );

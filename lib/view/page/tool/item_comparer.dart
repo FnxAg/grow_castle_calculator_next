@@ -2,7 +2,7 @@ import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
-import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
+import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';

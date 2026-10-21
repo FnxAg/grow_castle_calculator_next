@@ -1,5 +1,5 @@
-import 'item_generator.dart';
-import 'item_lines.dart';
+import 'package:grow_castle_calculator_next/core/src/item/item_generator.dart';
+import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 
 /// 单个词条的要求：数量 + 数值范围（null 表示不限）
 class LineCondition {

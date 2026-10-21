@@ -29,7 +29,7 @@ class RankPillRow extends StatelessWidget {
           PillChip(
             backgroundColor: Colors.red,
             foreground: Colors.white,
-            icon: Icons.arrow_upward,
+            leading: Icon(Icons.arrow_upward),
             text: Text(
               gapPrev! >= 10000000
                   ? gapPrev!.formatCompact(
@@ -46,7 +46,7 @@ class RankPillRow extends StatelessWidget {
         (
           PillChip(
             text: Text('#$rank', style: chipTextStyle),
-            icon: Icons.eco,
+            leading: Icon(Icons.eco),
           ),
           4.0,
         ),
@@ -55,7 +55,7 @@ class RankPillRow extends StatelessWidget {
           PillChip(
             backgroundColor: Colors.green,
             foreground: Colors.white,
-            icon: Icons.arrow_downward,
+            leading: Icon(Icons.arrow_downward),
             text: Text(
               gapNext! >= 10000000
                   ? gapNext!.formatCompact(

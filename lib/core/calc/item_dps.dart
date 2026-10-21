@@ -1,4 +1,4 @@
-import '../src/item_lines.dart';
+import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 
 /// 装备对比中的一条词条加成（词条类型 + 装备上显示的数值）
 typedef ItemDpsLine = ({ItemLine line, double value});

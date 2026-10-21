@@ -1,6 +1,6 @@
 import 'dart:convert';
 
-import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
+import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 
 /// 装备对比页的一条词条输入（词条类型 + 数值文本）

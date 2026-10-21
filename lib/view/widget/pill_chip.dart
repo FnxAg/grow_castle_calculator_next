@@ -4,7 +4,7 @@ import 'package:material_ui/material_ui.dart';
 ///
 /// - [text]：内容文本（[Text] 类型，样式由调用方控制）；未显式指定颜色时
 ///   使用胶囊前景色；胶囊的内边距与图标大小以文本实际字号为基准自适应缩放；
-/// - [icon]：前置图标，不传则不显示；
+/// - [leading]：前置图标，不传则不显示；
 /// - [backgroundColor]：背景色，默认使用主题 [ColorScheme.primaryContainer]；
 ///   自定义背景色时前景自动按背景亮度取黑白，保证对比度；
 /// - [foreground]：强制指定前景色（图标 + 文本兜底），优先于亮度自动判断，
@@ -13,13 +13,13 @@ class PillChip extends StatelessWidget {
   const PillChip({
     super.key,
     required this.text,
-    this.icon,
+    this.leading,
     this.backgroundColor,
     this.foreground,
   });
 
   final Text text;
-  final IconData? icon;
+  final Widget? leading;
   final Color? backgroundColor;
 
   /// 前景色（图标 + 文本兜底）；未指定时按背景亮度自动取黑白
@@ -53,8 +53,12 @@ class PillChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (icon != null) Icon(icon, size: fontSize * 1.1, color: fg),
-          if (icon != null) SizedBox(width: fontSize * 0.36),
+          if (leading != null && leading is Icon) Icon(
+            (leading as Icon).icon,
+            size: fontSize * 1.1,
+            color: fg,
+          ),  
+          if (leading != null) SizedBox(width: fontSize * 0.36),
           // 前景色作为兜底：调用方 Text 显式指定颜色时优先使用
           DefaultTextStyle(
             style: TextStyle(color: fg),

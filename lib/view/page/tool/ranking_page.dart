@@ -2,14 +2,19 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/guild_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
+import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 排行榜
@@ -508,15 +513,14 @@ class _RankingPageState extends State<RankingPage> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text(rankingKindLabel(l10n, widget.kind)),
+        title: Column(
+          crossAxisAlignment: .start,
+          children: [
+            Text(rankingKindLabel(l10n, widget.kind)),
+            _AppBarInfo(kind: widget.kind),
+          ],
+        ),
         actions: [
-          SeasonIndicator(
-            notifier: switch (widget.kind) {
-              RankingKind.player => RankingCache.playerSeasonNotifier,
-              RankingKind.guild => RankingCache.guildSeasonNotifier,
-              RankingKind.hell => RankingCache.hellSeasonNotifier,
-            },
-          ),
           isDesktop
               ? IconButton(
                   icon: const Icon(Icons.cloud_sync),
@@ -676,6 +680,11 @@ class _RankingPageState extends State<RankingPage> {
           final crossRank = widget.kind.crossIcon == null
               ? null
               : _crossRanks[row.name.toLowerCase()];
+          final reward = switch (widget.kind) {
+            RankingKind.player => getRedCrystalFromPlayerRank(row.rank),
+            RankingKind.hell => getRedCrystalFromHellModeRank(row.rank),
+            RankingKind.guild => getItemBoxFromGuildRank(row.rank),
+          };
           return ListTile(
             selected: wide && row.name == _selectedName,
             // 点击进入详情页或右侧面板
@@ -692,13 +701,24 @@ class _RankingPageState extends State<RankingPage> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(row.name, style: const TextStyle(fontSize: 14.0)),
-                if (crossRank != null) ...[
-                  const SizedBox(height: 2.0),
-                  PillChip(
-                    text: Text('#$crossRank', style: pillChipStyle),
-                    icon: widget.kind.crossIcon!,
-                  ),
-                ],
+                Row(
+                  children: [
+                    if (reward != 0) ...[
+                      const SizedBox(height: 2.0),
+                      PillChip(
+                        text: Text('$reward', style: pillChipStyle),
+                        leading: CrystalIcon(size: 12.0, color: scheme.primary),
+                      ),
+                    ],
+                    if (crossRank != null) ...[
+                      const SizedBox(height: 2.0),
+                      PillChip(
+                        text: Text('#$crossRank', style: pillChipStyle),
+                        leading: Icon(widget.kind.crossIcon!),
+                      ),
+                    ],
+                  ],
+                ),
               ],
             ),
             trailing: Row(
@@ -715,7 +735,7 @@ class _RankingPageState extends State<RankingPage> {
                           : row.gapPrev!.format(),
                       style: pillChipStyle,
                     ),
-                    icon: Icons.arrow_upward_outlined,
+                    leading: Icon(Icons.arrow_upward_outlined),
                   ),
                   const SizedBox(width: 8.0),
                 ],
@@ -733,5 +753,25 @@ class _RankingPageState extends State<RankingPage> {
         },
       ),
     );
+  }
+}
+
+class _AppBarInfo extends StatelessWidget {
+  const _AppBarInfo({required this.kind});
+
+  final RankingKind kind;
+
+  @override
+  Widget build(BuildContext context) {
+    final List<Widget> segments = <Widget>[
+      SeasonIndicator(
+        notifier: switch (kind) {
+          RankingKind.player => RankingCache.playerSeasonNotifier,
+          RankingKind.guild => RankingCache.guildSeasonNotifier,
+          RankingKind.hell => RankingCache.hellSeasonNotifier,
+        },
+      ),
+    ];
+    return AppBarInfo(children: segments);
   }
 }

@@ -20,7 +20,7 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_gui
 import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/season_indicator.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -363,7 +363,6 @@ class _GuildPageState extends ConsumerState<GuildPage>
         ),
         bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
         actions: [
-          SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
           isDesktop
               ? IconButton(
                   onPressed: _refresh,
@@ -498,7 +497,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
           PillChip(
             backgroundColor: Colors.red,
             foreground: Colors.white,
-            icon: Icons.arrow_upward,
+            leading: Icon(Icons.arrow_upward),
             text: Text(_guildGapPrev!.format(), style: chipTextStyle),
           ),
           8.0,
@@ -507,7 +506,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
         (
           PillChip(
             text: Text('#$_guildRank', style: chipTextStyle),
-            icon: Icons.flag_circle,
+            leading: Icon(Icons.flag_circle),
           ),
           4.0,
         ),
@@ -516,7 +515,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
           PillChip(
             backgroundColor: Colors.green,
             foreground: Colors.white,
-            icon: Icons.arrow_downward,
+            leading: Icon(Icons.arrow_downward),
             text: Text(_guildGapNext!.format(), style: chipTextStyle),
           ),
           4.0,
@@ -582,7 +581,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                icon: Icons.eco,
+                                leading: Icon(Icons.eco),
                               ),
                             if (hellRank != null)
                               PillChip(
@@ -593,7 +592,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
                                     fontWeight: FontWeight.w600,
                                   ),
                                 ),
-                                icon: Icons.all_inclusive,
+                                leading: Icon(Icons.all_inclusive),
                               ),
                           ],
                         ),
@@ -697,6 +696,7 @@ class _AppBarInfo extends StatelessWidget {
       CurrentUser(),
       LastOnline(),
       CurrentUserGuild(),
+      SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
     ];
     return AppBarInfo(children: segments);
   }

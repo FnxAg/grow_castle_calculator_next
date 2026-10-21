@@ -1,13 +1,12 @@
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
+import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
+import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
-
-import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
-import 'package:grow_castle_calculator_next/core/src/item_lines.dart';
-import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 
 /// 词条数量搭配：(Damage, Critical Chance, Critical Damage, Attack Speed) 各几条。
 ///

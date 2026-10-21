@@ -348,16 +348,23 @@ class _MainShellState extends State<MainShell>
                         ignoring: i != _selectIndex.value && i != incoming,
                         child: TickerMode(
                           enabled: i == _selectIndex.value || i == incoming,
-                          child: Transform.translate(
-                            offset: Offset(
-                              i == incoming
-                                  ? (1 - t) * shift
-                                  : i == outgoing
-                                  ? -t * shift
-                                  : 0.0,
-                              0,
+                          child: Opacity(
+                            opacity: i == incoming
+                                ? t
+                                : i == outgoing
+                                ? 1.0 - t
+                                : 1.0,
+                            child: Transform.translate(
+                              offset: Offset(
+                                i == incoming
+                                    ? (1 - t) * shift
+                                    : i == outgoing
+                                    ? -t * shift
+                                    : 0.0,
+                                0,
+                              ),
+                              child: _buildTab(i, mainPages[i], wide),
                             ),
-                            child: _buildTab(i, mainPages[i], wide),
                           ),
                         ),
                       ),
