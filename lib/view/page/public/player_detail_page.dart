@@ -64,11 +64,9 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     );
     _cardAnimation = CurvedAnimation(
       parent: _cardController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeInOutCubic,
     );
-
     _scrollController.addListener(_handleScroll);
-
     _load();
   }
 

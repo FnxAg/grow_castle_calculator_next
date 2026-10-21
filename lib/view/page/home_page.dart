@@ -37,8 +37,12 @@ class HomePage extends ConsumerStatefulWidget {
   ConsumerState<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends ConsumerState<HomePage> {
+class _HomePageState extends ConsumerState<HomePage>
+    with TickerProviderStateMixin {
   static final Set<String> _autoQueriedUsers = {};
+
+  late final AnimationController _cardController;
+  late final CurvedAnimation _cardAnimation;
 
   /// 最近一次查询到的排名快照
   static (
@@ -77,11 +81,27 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 0,
+    );
+    _cardAnimation = CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeInOutCubic,
+    );
     ref.listenManual(userReloadSignalProvider, (_, _) {
       if (!mounted) return;
       reloadForCurrentUser();
     });
     _loadCurrentUser();
+  }
+
+  @override
+  void dispose() {
+    _cardAnimation.dispose();
+    _cardController.dispose();
+    super.dispose();
   }
 
   /// 切换用户
@@ -205,6 +225,9 @@ class _HomePageState extends ConsumerState<HomePage> {
         _hellScore,
         _guildScore,
       );
+      if (mounted) {
+        _cardController.forward();
+      }
     });
   }
 
@@ -554,7 +577,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                       economyCard,
                       guildCard,
                       hellCard,
-                      if (crystalReward > 0 || boxReward > 0) rewardCard,
+                      SizeTransition(
+                        sizeFactor: _cardAnimation,
+                        alignment: .bottomCenter,
+                        child: rewardCard,
+                      ),
                     ],
                   ),
                 ),
@@ -580,8 +607,11 @@ class _HomePageState extends ConsumerState<HomePage> {
                               economyCard,
                               guildCard,
                               hellCard,
-                              if (crystalReward > 0 || boxReward > 0)
-                                rewardCard,
+                              SizeTransition(
+                                sizeFactor: _cardAnimation,
+                                alignment: .bottomCenter,
+                                child: rewardCard,
+                              ),
                             ],
                           ),
                         ),

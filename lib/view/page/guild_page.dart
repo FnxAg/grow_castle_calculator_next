@@ -114,7 +114,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
     );
     _cardAnimation = CurvedAnimation(
       parent: _cardController,
-      curve: Curves.easeInOut,
+      curve: Curves.easeInOutCubic,
     );
     _scrollController.addListener(_handleScroll);
     ref.listenManual(userReloadSignalProvider, (_, _) {
