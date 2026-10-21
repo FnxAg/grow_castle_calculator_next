@@ -61,7 +61,7 @@ class RankPillRow extends StatelessWidget {
             foreground: Colors.white,
             leading: Icon(Icons.arrow_upward, size: PillChip.leadingIconSize),
             text: Text(
-              gapPrev! >= 10000000
+              rankingKind == .hell
                   ? gapPrev!.formatCompact(
                       english: english,
                       traditional: traditional,
@@ -81,7 +81,7 @@ class RankPillRow extends StatelessWidget {
             foreground: Colors.white,
             leading: Icon(Icons.arrow_downward, size: PillChip.leadingIconSize),
             text: Text(
-              gapNext! >= 10000000
+              rankingKind == .hell
                   ? gapNext!.formatCompact(
                       english: english,
                       traditional: traditional,
