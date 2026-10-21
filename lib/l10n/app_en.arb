@@ -417,5 +417,6 @@
   "quickCalcHint": "Enter any value and lock it; the rest are calculated automatically",
   "quickCalcLock": "Lock this value",
   "quickCalcUnlock": "Unlock this value",
-  "quickCalcFill": "Fill"
+  "quickCalcFill": "Fill",
+  "reward": "Reward"
 }

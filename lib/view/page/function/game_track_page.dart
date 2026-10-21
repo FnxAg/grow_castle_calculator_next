@@ -8,7 +8,7 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function/track/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
 class GameTrackPage extends ConsumerStatefulWidget {

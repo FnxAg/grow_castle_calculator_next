@@ -3,7 +3,8 @@ import 'package:grow_castle_calculator_next/view/page/tool/best_line_calc_page.d
 import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/quick_calculation_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/ranking_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/search_page.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -52,9 +53,7 @@ class ToolsPage extends StatelessWidget {
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const SearchPage(),
-                ),
+                MaterialPageRoute(builder: (context) => const SearchPage()),
               );
             },
           ),

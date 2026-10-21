@@ -2,6 +2,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/guild_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
+import 'package:grow_castle_calculator_next/icon/box.dart';
+import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
@@ -10,14 +15,16 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function/formation_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/rank_pill_row.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/rank_pill_row.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
@@ -290,6 +297,7 @@ class _HomePageState extends ConsumerState<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
@@ -303,27 +311,28 @@ class _HomePageState extends ConsumerState<HomePage> {
     final gabBonus = ref.watch(currentUserGabBonusProvider);
     final infiniteColony = ref.watch(currentUserInfiniteColonyProvider);
     final guildTotalScore = ref.watch(guildTotalScoreProvider);
-    const chipTextStyle = TextStyle(
-      fontSize: 11.0,
-      fontWeight: FontWeight.w600,
-    );
+    final crystalReward =
+        getRedCrystalFromPlayerRank(_playerRank ?? 0) +
+        getRedCrystalFromHellModeRank(_hellRank ?? 0);
+    final boxReward = getItemBoxFromGuildRank(_guildRank ?? 0);
     // 波数
     final waveCard = SummaryCard(
       children: <Widget>[
         SummaryRow(
           title: Text(l10n.totalWave),
-          leadingIcon: Icons.emoji_events,
+          leading: Icon(Icons.emoji_events),
           trailing: SummaryRowValueText(text: wave.format()),
         ),
         SummaryRow(
           title: Text(l10n.seasonWave),
-          leadingIcon: Icons.eco,
+          leading: Icon(Icons.eco),
           trailing: SummaryRowValueText(text: seasonWave.format()),
         ),
         if (_playerRank != null ||
             _playerGapPrev != null ||
             _playerGapNext != null)
           RankPillRow(
+            rankingKind: RankingKind.player,
             rank: _playerRank,
             gapPrev: _playerGapPrev,
             gapNext: _playerGapNext,
@@ -334,7 +343,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final economyCard = SummaryCard(
       children: <Widget>[
         SummaryRow(
-          leadingIcon: Icons.monetization_on,
+          leading: Icon(Icons.monetization_on),
           title: Text(l10n.totalGold),
           trailing: SummaryRowValueText(
             text: totalGold.formatCompact(
@@ -345,7 +354,7 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
         SummaryRow(
-          leadingIcon: Icons.star,
+          leading: Icon(Icons.star),
           title: Row(
             mainAxisSize: MainAxisSize.min,
             children: [Text(l10n.goldPower)],
@@ -358,14 +367,14 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
         SummaryRow(
-          leadingIcon: Icons.auto_graph,
+          leading: Icon(Icons.auto_graph),
           title: Text(l10n.income),
           trailing: Row(
             children: [
               PillChip(
                 text: Text(
                   '${gabBonus.toStringAsFixed(2)}%',
-                  style: chipTextStyle,
+                  style: PillChip.textStyle,
                 ),
               ),
               const SizedBox(width: 8.0),
@@ -380,14 +389,14 @@ class _HomePageState extends ConsumerState<HomePage> {
           ),
         ),
         SummaryRow(
-          leadingIcon: Icons.flag,
+          leading: Icon(Icons.flag),
           title: Text(l10n.infiniteColony),
           trailing: Row(
             children: [
               PillChip(
                 text: Text(
                   (infiniteColony * 1000 / wave).toStringAsFixed(2),
-                  style: chipTextStyle,
+                  style: PillChip.textStyle,
                 ),
               ),
               const SizedBox(width: 8.0),
@@ -401,7 +410,7 @@ class _HomePageState extends ConsumerState<HomePage> {
     final guildCard = SummaryCard(
       children: <Widget>[
         SummaryRow(
-          leadingIcon: Icons.flag_circle,
+          leading: Icon(Icons.flag_circle),
           title: Text(l10n.guildTotalScore),
           trailing: SummaryRowValueText(text: guildTotalScore?.format() ?? '—'),
         ),
@@ -409,6 +418,7 @@ class _HomePageState extends ConsumerState<HomePage> {
             _guildGapPrev != null ||
             _guildGapNext != null)
           RankPillRow(
+            rankingKind: RankingKind.guild,
             rank: _guildRank,
             gapPrev: _guildGapPrev,
             gapNext: _guildGapNext,
@@ -419,16 +429,49 @@ class _HomePageState extends ConsumerState<HomePage> {
     final hellCard = SummaryCard(
       children: <Widget>[
         SummaryRow(
-          leadingIcon: Icons.all_inclusive,
+          leading: Icon(Icons.all_inclusive),
           title: Text(l10n.hellModeScore),
           trailing: SummaryRowValueText(text: _hellScore?.format() ?? '—'),
         ),
         if (_hellRank != null || _hellGapPrev != null || _hellGapNext != null)
           RankPillRow(
+            rankingKind: RankingKind.hell,
             rank: _hellRank,
             gapPrev: _hellGapPrev,
             gapNext: _hellGapNext,
           ),
+      ],
+    );
+    // 奖励
+    final rewardCard = SummaryCard(
+      children: <Widget>[
+        SummaryRow(
+          leading: BoxIcon(
+            size: SummaryRow.leadingIconSize,
+            color: scheme.primary,
+          ),
+          title: Text(l10n.reward),
+          trailing: SubtitlePillWrap(
+            children: [
+              if (boxReward > 0)
+                PillChip(
+                  text: Text('$boxReward', style: PillChip.textStyle),
+                  leading: BoxIcon(
+                    size: PillChip.leadingIconSize,
+                    color: scheme.primary,
+                  ),
+                ),
+              if (crystalReward > 0)
+                PillChip(
+                  text: Text('$crystalReward', style: PillChip.textStyle),
+                  leading: CrystalIcon(
+                    size: PillChip.leadingIconSize,
+                    color: scheme.primary,
+                  ),
+                ),
+            ],
+          ),
+        ),
       ],
     );
     // 快捷入口
@@ -506,7 +549,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                 Padding(
                   padding: padding,
                   child: Column(
-                    children: [waveCard, economyCard, guildCard, hellCard],
+                    children: [
+                      waveCard,
+                      economyCard,
+                      guildCard,
+                      hellCard,
+                      if (crystalReward > 0 || boxReward > 0) rewardCard,
+                    ],
                   ),
                 ),
                 ...quickAccess,
@@ -531,6 +580,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                               economyCard,
                               guildCard,
                               hellCard,
+                              if (crystalReward > 0 || boxReward > 0)
+                                rewardCard,
                             ],
                           ),
                         ),

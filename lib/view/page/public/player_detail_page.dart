@@ -1,4 +1,8 @@
 import 'package:flutter/rendering.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
+import 'package:grow_castle_calculator_next/icon/box.dart';
+import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
@@ -8,7 +12,7 @@ import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 
 /// 玩家详情页
@@ -276,16 +280,15 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final wph = ref.watch(theoreticalWphProvider);
+    final reward =
+        getRedCrystalFromPlayerRank(_playerRank ?? 0) +
+        getRedCrystalFromHellModeRank(_hellRank ?? 0);
     final isCurrentUser =
         widget.playerName.toLowerCase() ==
         ref.watch(currentUsernameProvider).toLowerCase();
     final lastOnline = PlayerApiService.formatLastOnline(
       r.queryDate,
       DateTime.now(),
-    );
-    const chipTextStyle = TextStyle(
-      fontSize: 11.0,
-      fontWeight: FontWeight.w600,
     );
     return RefreshIndicator(
       onRefresh: _load,
@@ -340,12 +343,12 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                   child: SummaryCard(
                     children: <Widget>[
                       SummaryRow(
-                        leadingIcon: Icons.emoji_events,
+                        leading: Icon(Icons.emoji_events),
                         title: Text(l10n.totalWave),
                         trailing: SummaryRowValueText(text: r.wave.format()),
                       ),
                       SummaryRow(
-                        leadingIcon: Icons.eco,
+                        leading: Icon(Icons.eco),
                         title: Text(l10n.seasonWave),
                         trailing: Row(
                           mainAxisSize: MainAxisSize.min,
@@ -354,7 +357,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                               PillChip(
                                 text: Text(
                                   '#$_playerRank',
-                                  style: chipTextStyle,
+                                  style: PillChip.textStyle,
                                 ),
                                 leading: const Icon(Icons.eco),
                               ),
@@ -366,7 +369,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                       ),
                       if (_hellScore != null)
                         SummaryRow(
-                          leadingIcon: Icons.all_inclusive,
+                          leading: Icon(Icons.all_inclusive),
                           title: Text(l10n.hellModeScore),
                           trailing: Row(
                             mainAxisSize: MainAxisSize.min,
@@ -375,7 +378,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                                 PillChip(
                                   text: Text(
                                     '#$_hellRank',
-                                    style: chipTextStyle,
+                                    style: PillChip.textStyle,
                                   ),
                                   leading: const Icon(Icons.all_inclusive),
                                 ),
@@ -385,8 +388,23 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                             ],
                           ),
                         ),
+                      if (reward > 0)
+                        SummaryRow(
+                          leading: BoxIcon(
+                            size: SummaryRow.leadingIconSize,
+                            color: scheme.primary,
+                          ),
+                          title: Text(l10n.reward),
+                          trailing: PillChip(
+                            leading: CrystalIcon(
+                              size: PillChip.leadingIconSize,
+                              color: scheme.primary,
+                            ),
+                            text: Text('$reward', style: PillChip.textStyle),
+                          ),
+                        ),
                       SummaryRow(
-                        leadingIcon: Icons.schedule,
+                        leading: Icon(Icons.schedule),
                         title: Text(l10n.lastOnline),
                         trailing: SummaryRowValueText(text: '$lastOnline ago'),
                       ),

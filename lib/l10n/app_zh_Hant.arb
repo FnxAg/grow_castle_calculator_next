@@ -416,5 +416,6 @@
   "quickCalcHint": "輸入任意一項並鎖定，填寫其餘項將自動計算",
   "quickCalcLock": "鎖定該項",
   "quickCalcUnlock": "解鎖該項",
-  "quickCalcFill": "填入"
+  "quickCalcFill": "填入",
+  "reward": "獎勵"
 }

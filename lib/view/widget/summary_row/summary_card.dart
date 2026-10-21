@@ -21,23 +21,30 @@ class SummaryCard extends StatelessWidget {
 class SummaryRow extends StatelessWidget {
   const SummaryRow({
     super.key,
-    required this.leadingIcon,
+    required this.leading,
     required this.title,
     this.actions = const [],
     required this.trailing,
   });
 
-  final IconData leadingIcon;
+  final Widget leading;
   final Widget title;
   final List<Widget> actions;
   final Widget trailing;
 
+  /// 图标大小：20.0
+  static const leadingIconSize = 20.0;
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final icon = leading is Icon ? (leading as Icon).icon : null;
+    final Widget leadingWidget = icon == null
+        ? leading
+        : Icon(icon, size: SummaryRow.leadingIconSize, color: colorScheme.primary);
     return Row(
       children: [
-        Icon(leadingIcon, size: 20.0, color: colorScheme.primary),
+        leadingWidget,
         const SizedBox(width: 8.0),
         title,
         const SizedBox(width: 8.0),

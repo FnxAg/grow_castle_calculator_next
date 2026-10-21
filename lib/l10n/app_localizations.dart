@@ -2603,6 +2603,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'填入'**
   String get quickCalcFill;
+
+  /// No description provided for @reward.
+  ///
+  /// In zh, this message translates to:
+  /// **'奖励'**
+  String get reward;
 }
 
 class _AppLocalizationsDelegate

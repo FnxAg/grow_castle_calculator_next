@@ -5,30 +5,20 @@ import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/guild_rank.dart';
 import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
 import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
+import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:material_ui/material_ui.dart';
-
-/// 排行榜
-enum RankingKind {
-  player(icon: Icons.eco, crossIcon: Icons.all_inclusive),
-  guild(icon: Icons.flag_circle, crossIcon: null),
-  hell(icon: Icons.all_inclusive, crossIcon: Icons.eco);
-
-  const RankingKind({required this.icon, this.crossIcon});
-
-  final IconData icon;
-
-  final IconData? crossIcon;
-}
 
 String rankingKindLabel(AppLocalizations l10n, RankingKind kind) =>
     switch (kind) {
@@ -685,6 +675,11 @@ class _RankingPageState extends State<RankingPage> {
             RankingKind.hell => getRedCrystalFromHellModeRank(row.rank),
             RankingKind.guild => getItemBoxFromGuildRank(row.rank),
           };
+          final rewardIcon = switch (widget.kind) {
+            RankingKind.player ||
+            RankingKind.hell => CrystalIcon(size: 12.0, color: scheme.primary),
+            RankingKind.guild => BoxIcon(size: 12.0, color: scheme.primary),
+          };
           return ListTile(
             selected: wide && row.name == _selectedName,
             // 点击进入详情页或右侧面板
@@ -697,30 +692,25 @@ class _RankingPageState extends State<RankingPage> {
                 style: const TextStyle(fontSize: 12.0),
               ),
             ),
-            title: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(row.name, style: const TextStyle(fontSize: 14.0)),
-                Row(
-                  children: [
-                    if (reward != 0) ...[
-                      const SizedBox(height: 2.0),
-                      PillChip(
-                        text: Text('$reward', style: pillChipStyle),
-                        leading: CrystalIcon(size: 12.0, color: scheme.primary),
-                      ),
+            title: Text(row.name, style: const TextStyle(fontSize: 14.0)),
+            subtitle: (reward != 0 || crossRank != null)
+                ? SubtitlePillWrap(
+                    children: [
+                      if (reward != 0) ...[
+                        PillChip(
+                          text: Text('$reward', style: pillChipStyle),
+                          leading: rewardIcon,
+                        ),
+                      ],
+                      if (crossRank != null) ...[
+                        PillChip(
+                          text: Text('#$crossRank', style: pillChipStyle),
+                          leading: Icon(widget.kind.crossIcon!),
+                        ),
+                      ],
                     ],
-                    if (crossRank != null) ...[
-                      const SizedBox(height: 2.0),
-                      PillChip(
-                        text: Text('#$crossRank', style: pillChipStyle),
-                        leading: Icon(widget.kind.crossIcon!),
-                      ),
-                    ],
-                  ],
-                ),
-              ],
-            ),
+                  )
+                : null,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

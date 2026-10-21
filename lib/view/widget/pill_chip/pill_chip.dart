@@ -25,20 +25,31 @@ class PillChip extends StatelessWidget {
   /// 前景色（图标 + 文本兜底）；未指定时按背景亮度自动取黑白
   final Color? foreground;
 
+  /// 前置图标大小：12.0
+  static const leadingIconSize = 12.0;
+
+  /// 文本样式：字号 11.0，半粗体
+  static const textStyle = TextStyle(fontSize: 11.0, fontWeight: FontWeight.w600);
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final Color bg = backgroundColor ?? scheme.primaryContainer;
-    final Color fg = foreground ??
+    final Color fg =
+        foreground ??
         (backgroundColor == null
             ? scheme.onPrimaryContainer
             : ThemeData.estimateBrightnessForColor(bg) == Brightness.dark
-                ? Colors.white
-                : Colors.black87);
+            ? Colors.white
+            : Colors.black87);
 
     // 以文本实际字号为基准：内边距、图标大小、间距随内容自适应缩放
     final double fontSize =
         DefaultTextStyle.of(context).style.merge(text.style).fontSize ?? 14.0;
+    final icon = leading is Icon ? (leading as Icon).icon : null;
+    final Widget? leadingWidget = icon == null
+        ? leading
+        : Icon(icon, size: fontSize * 1.1, color: fg);
 
     return Container(
       padding: EdgeInsets.symmetric(
@@ -53,12 +64,10 @@ class PillChip extends StatelessWidget {
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (leading != null && leading is Icon) Icon(
-            (leading as Icon).icon,
-            size: fontSize * 1.1,
-            color: fg,
-          ),  
-          if (leading != null) SizedBox(width: fontSize * 0.36),
+          if (leadingWidget != null) ...[
+            leadingWidget,
+            SizedBox(width: fontSize * 0.36),
+          ],
           // 前景色作为兜底：调用方 Text 显式指定颜色时优先使用
           DefaultTextStyle(
             style: TextStyle(color: fg),

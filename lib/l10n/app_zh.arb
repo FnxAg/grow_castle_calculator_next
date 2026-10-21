@@ -970,5 +970,6 @@
   "quickCalcHint": "输入任意一项并锁定，填写其余项将自动计算",
   "quickCalcLock": "锁定该项",
   "quickCalcUnlock": "解锁该项",
-  "quickCalcFill": "填入"
+  "quickCalcFill": "填入",
+  "reward": "奖励"
 }

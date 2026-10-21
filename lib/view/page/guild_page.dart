@@ -4,7 +4,12 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/last_online_cache.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/guild_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/icon/box.dart';
+import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
@@ -19,8 +24,9 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dar
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -29,7 +35,6 @@ class GuildPage extends ConsumerStatefulWidget {
   const GuildPage({super.key, this.guildName, this.userHeader = true});
 
   final String? guildName;
-
   final bool userHeader;
 
   @override
@@ -487,40 +492,38 @@ class _GuildPageState extends ConsumerState<GuildPage>
     final scheme = Theme.of(context).colorScheme;
     final currentUser = ref.read(currentUsernameProvider);
     final totalScore = _members.fold<int>(0, (sum, m) => sum + m.score);
-    const chipTextStyle = TextStyle(
-      fontSize: 11.0,
-      fontWeight: FontWeight.w600,
-    );
-    final chips = <(Widget, double)>[
-      if (_guildGapPrev != null)
-        (
+    final guildReward = getItemBoxFromGuildRank(_guildRank ?? 0);
+    final chips = SubtitlePillWrap(
+      children: [
+        if (guildReward != 0)
+          PillChip(
+            text: Text('$guildReward', style: PillChip.textStyle),
+            leading: BoxIcon(
+              size: PillChip.leadingIconSize,
+              color: scheme.primary,
+            ),
+          ),
+        if (_guildGapPrev != null)
           PillChip(
             backgroundColor: Colors.red,
             foreground: Colors.white,
             leading: Icon(Icons.arrow_upward),
-            text: Text(_guildGapPrev!.format(), style: chipTextStyle),
+            text: Text(_guildGapPrev!.format(), style: PillChip.textStyle),
           ),
-          8.0,
-        ),
-      if (_guildRank != null)
-        (
+        if (_guildRank != null)
           PillChip(
-            text: Text('#$_guildRank', style: chipTextStyle),
+            text: Text('#$_guildRank', style: PillChip.textStyle),
             leading: Icon(Icons.flag_circle),
           ),
-          4.0,
-        ),
-      if (_guildGapNext != null)
-        (
+        if (_guildGapNext != null)
           PillChip(
             backgroundColor: Colors.green,
             foreground: Colors.white,
             leading: Icon(Icons.arrow_downward),
-            text: Text(_guildGapNext!.format(), style: chipTextStyle),
+            text: Text(_guildGapNext!.format(), style: PillChip.textStyle),
           ),
-          4.0,
-        ),
-    ];
+      ],
+    );
     return RefreshIndicator(
       onRefresh: _refresh,
       child: Stack(
@@ -536,6 +539,9 @@ class _GuildPageState extends ConsumerState<GuildPage>
                 final isSelf = lowerName == currentUser.toLowerCase();
                 final seasonRank = _playerRankByName[lowerName];
                 final hellRank = _hellRankByName[lowerName];
+                final reward =
+                    getRedCrystalFromPlayerRank(seasonRank ?? 0) +
+                    getRedCrystalFromHellModeRank(hellRank ?? 0);
                 final lastOnline = _lastOnlineByLower[lowerName];
                 return ListTile(
                   selected: wide && member.name == _selectedMember,
@@ -555,31 +561,32 @@ class _GuildPageState extends ConsumerState<GuildPage>
                       ),
                     ),
                   ),
-                  title: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        member.name,
-                        style: TextStyle(
-                          fontWeight: isSelf ? FontWeight.bold : null,
-                          color: isSelf ? scheme.primary : null,
-                        ),
-                      ),
-                      // 个人赛季榜 / 无尽榜排名胶囊
-                      if (seasonRank != null || hellRank != null) ...[
-                        const SizedBox(height: 2.0),
-                        Wrap(
-                          spacing: 4.0,
-                          runSpacing: 2.0,
+                  title: Text(
+                    member.name,
+                    style: TextStyle(
+                      fontWeight: isSelf ? FontWeight.bold : null,
+                      color: isSelf ? scheme.primary : null,
+                    ),
+                  ),
+                  subtitle: (seasonRank != null || hellRank != null)
+                      ? SubtitlePillWrap(
                           children: [
+                            if (reward != 0)
+                              PillChip(
+                                text: Text(
+                                  '$reward',
+                                  style: PillChip.textStyle,
+                                ),
+                                leading: CrystalIcon(
+                                  size: 12.0,
+                                  color: scheme.primary,
+                                ),
+                              ),
                             if (seasonRank != null)
                               PillChip(
                                 text: Text(
                                   '#$seasonRank',
-                                  style: const TextStyle(
-                                    fontSize: 11.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: PillChip.textStyle,
                                 ),
                                 leading: Icon(Icons.eco),
                               ),
@@ -587,18 +594,13 @@ class _GuildPageState extends ConsumerState<GuildPage>
                               PillChip(
                                 text: Text(
                                   '#$hellRank',
-                                  style: const TextStyle(
-                                    fontSize: 11.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: PillChip.textStyle,
                                 ),
                                 leading: Icon(Icons.all_inclusive),
                               ),
                           ],
-                        ),
-                      ],
-                    ],
-                  ),
+                        )
+                      : null,
                   trailing: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
@@ -657,23 +659,14 @@ class _GuildPageState extends ConsumerState<GuildPage>
                   child: SummaryCard(
                     children: <Widget>[
                       SummaryRow(
-                        leadingIcon: Icons.group,
+                        leading: Icon(Icons.group),
                         title: Text(
                           l10n.guildMemberCountAndScore(
                             _members.length,
                             totalScore.format(),
                           ),
                         ),
-                        trailing: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            for (var i = 0; i < chips.length; i++) ...[
-                              chips[i].$1,
-                              if (i < chips.length - 1)
-                                SizedBox(width: chips[i + 1].$2),
-                            ],
-                          ],
-                        ),
+                        trailing: chips,
                       ),
                     ],
                   ),

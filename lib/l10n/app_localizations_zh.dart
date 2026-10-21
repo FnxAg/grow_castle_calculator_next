@@ -1437,6 +1437,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get quickCalcFill => '填入';
+
+  @override
+  String get reward => '奖励';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2871,4 +2874,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get quickCalcFill => '填入';
+
+  @override
+  String get reward => '獎勵';
 }

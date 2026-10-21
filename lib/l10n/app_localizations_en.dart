@@ -1543,4 +1543,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get quickCalcFill => 'Fill';
+
+  @override
+  String get reward => 'Reward';
 }

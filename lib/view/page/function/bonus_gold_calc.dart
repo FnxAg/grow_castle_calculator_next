@@ -206,17 +206,17 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage> {
       child: SummaryCard(
         children: <Widget>[
           SummaryRow(
-            leadingIcon: Icons.money,
+            leading: Icon(Icons.money),
             title: Text(l10n.labelGabCost),
             trailing: SummaryRowValueText(text: gabCost.format()),
           ),
           SummaryRow(
-            leadingIcon: Icons.monetization_on,
+            leading: Icon(Icons.monetization_on),
             title: Text(l10n.labelAverageIncome),
             trailing: SummaryRowValueText(text: avgIncome.format()),
           ),
           SummaryRow(
-            leadingIcon: Icons.percent,
+            leading: Icon(Icons.percent),
             title: Text(l10n.labelPercent),
             trailing: SummaryRowValueText(
               text: '${percent.format(fractionDigits: 2)}%',

@@ -21,7 +21,7 @@ class FormationSummaryBar extends ConsumerWidget {
       child: SummaryCard(
         children: <Widget>[
           SummaryRow(
-            leadingIcon: Icons.emoji_events,
+            leading: Icon(Icons.emoji_events),
             title: Text(l10n.totalWave),
             actions: [
               if (isDefaultUser)
@@ -45,7 +45,7 @@ class FormationSummaryBar extends ConsumerWidget {
             ),
           ),
           SummaryRow(
-            leadingIcon: Icons.eco,
+            leading: Icon(Icons.eco),
             title: Text(l10n.seasonWave),
             actions: [
               if (isDefaultUser)
@@ -69,7 +69,7 @@ class FormationSummaryBar extends ConsumerWidget {
             ),
           ),
           SummaryRow(
-            leadingIcon: Icons.monetization_on,
+            leading: Icon(Icons.monetization_on),
             title: Text(l10n.totalGold),
             trailing: SummaryRowValueText(
               text: ref
@@ -82,7 +82,7 @@ class FormationSummaryBar extends ConsumerWidget {
             ),
           ),
           SummaryRow(
-            leadingIcon: Icons.star,
+            leading: Icon(Icons.star),
             title: Row(
               mainAxisSize: MainAxisSize.min,
               children: [Text(l10n.goldPower)],

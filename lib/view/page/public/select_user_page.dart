@@ -7,7 +7,8 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 import 'package:material_ui/material_ui.dart';
@@ -30,7 +31,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage> {
     final List<String> userList = state.usernames;
     final String currentUsername = state.currentUser.username;
     final l10n = AppLocalizations.of(context);
-
+    final scheme = Theme.of(context).colorScheme;
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.settingsUserManagement),
@@ -55,76 +56,43 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage> {
           return GestureDetector(
             onSecondaryTapUp: (_) => _showUnitSummary(username),
             child: ListTile(
-              title: Row(
+              title: Wrap(
+                spacing: 8.0,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        Wrap(
-                          spacing: 8.0,
-                          crossAxisAlignment: WrapCrossAlignment.center,
-                          children: [
-                            Text(username),
-                            if (guild.isNotEmpty)
-                              PillChip(
-                                text: Text(
-                                  guild,
-                                  style: const TextStyle(
-                                    fontSize: 11.0,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                leading: Icon(Icons.flag_circle),
-                              ),
-                          ],
-                        ),
-                        Row(
-                          children: [
-                            PillChip(
-                              text: Text(
-                                (user?.wave ?? 1).format(),
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.color,
-                                ),
-                              ),
-                              leading: Icon(Icons.emoji_events),
-                            ),
-                            const SizedBox(width: 1.0),
-                            PillChip(
-                              text: Text(
-                                (user?.totalGold ?? 0.0).formatCompact(
-                                  fractionDigits: 2,
-                                  english: !context.isChineseLocale,
-                                  traditional:
-                                      context.isTraditionalChineseLocale,
-                                ),
-                                style: TextStyle(
-                                  fontSize: 12.0,
-                                  color: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
-                                      ?.color,
-                                ),
-                              ),
-                              leading: Icon(Icons.monetization_on),
-                            ),
-                          ],
-                        ),
-                      ],
+                  Text(username),
+                  if (guild.isNotEmpty)
+                    PillChip(
+                      text: Text(guild, style: PillChip.textStyle),
+                      leading: Icon(Icons.flag_circle),
                     ),
+                ],
+              ),
+              subtitle: SubtitlePillWrap(
+                children: [
+                  PillChip(
+                    text: Text(
+                      (user?.wave ?? 1).format(),
+                      style: PillChip.textStyle,
+                    ),
+                    leading: Icon(Icons.emoji_events),
+                  ),
+                  PillChip(
+                    text: Text(
+                      (user?.totalGold ?? 0.0).formatCompact(
+                        fractionDigits: 2,
+                        english: !context.isChineseLocale,
+                        traditional: context.isTraditionalChineseLocale,
+                      ),
+                      style: PillChip.textStyle,
+                    ),
+                    leading: Icon(Icons.monetization_on),
                   ),
                 ],
               ),
               leading: currentUsername == username
-                  ? const Icon(Icons.check, color: Colors.green)
+                  ? Icon(Icons.check, color: scheme.primary)
                   : const SizedBox(width: 24.0),
-              // 编辑态显示编辑/删除按钮
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -162,20 +130,18 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage> {
                       },
                     ),
                   ],
-                  isDesktop
-                      ? IconButton(
-                          icon: const Icon(Icons.info_outline, size: 20),
-                          tooltip: l10n.tooltipDetails,
-                          onPressed: () => _showUnitSummary(username),
-                        )
-                      : const SizedBox.shrink(),
+                  if (isDesktop)
+                    IconButton(
+                      icon: const Icon(Icons.info_outline, size: 20),
+                      tooltip: l10n.tooltipDetails,
+                      onPressed: () => _showUnitSummary(username),
+                    ),
                 ],
               ),
               onTap: () {
                 ref.users.setCurrentUser(username);
                 Navigator.pop(context);
               },
-              // 长按查看该用户的单位汇总
               onLongPress: () => _showUnitSummary(username),
             ),
           );
@@ -415,10 +381,10 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final bool isSubmitEnabled =
-        _userController.text.trim().isNotEmpty && 
-        (_userController.text.trim() != widget.username ||  
-        _guildController.text.trim() !=
-            ref.read(usersProvider).findByUsername(widget.username)?.guild);
+        _userController.text.trim().isNotEmpty &&
+        (_userController.text.trim() != widget.username ||
+            _guildController.text.trim() !=
+                ref.read(usersProvider).findByUsername(widget.username)?.guild);
     return AlertDialog(
       title: Text(l10n.dialogEditUser),
       content: Column(

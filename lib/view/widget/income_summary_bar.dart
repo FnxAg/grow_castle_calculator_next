@@ -21,7 +21,7 @@ class IncomeSummaryBar extends ConsumerWidget {
       child: SummaryCard(
         children: <Widget>[
           SummaryRow(
-            leadingIcon: Icons.terrain,
+            leading: Icon(Icons.terrain),
             title: Text(l10n.tabIncomeColony),
             trailing: SummaryRowValueText(
               text: income.colony.formatCompact(
@@ -32,7 +32,7 @@ class IncomeSummaryBar extends ConsumerWidget {
             ),
           ),
           SummaryRow(
-            leadingIcon: Icons.bolt,
+            leading: Icon(Icons.bolt),
             title: Text(l10n.tabIncomeWave),
             trailing: SummaryRowValueText(
               text: income.autoBattle.formatCompact(
@@ -43,7 +43,7 @@ class IncomeSummaryBar extends ConsumerWidget {
             ),
           ),
           SummaryRow(
-            leadingIcon: Icons.park,
+            leading: Icon(Icons.park),
             title: Text(l10n.tabIncomeOther),
             trailing: SummaryRowValueText(
               text: income.other.formatCompact(
@@ -54,7 +54,7 @@ class IncomeSummaryBar extends ConsumerWidget {
             ),
           ),
           SummaryRow(
-            leadingIcon: Icons.monetization_on_outlined,
+            leading: Icon(Icons.monetization_on_outlined),
             title: Text(l10n.incomeTotal),
             trailing: SummaryRowValueText(
               text: income.total.formatCompact(
