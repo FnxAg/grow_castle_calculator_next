@@ -73,7 +73,12 @@ class RankPillRow extends StatelessWidget {
         if (rank != null)
           PillChip(
             text: Text('#$rank', style: PillChip.textStyle),
-            leading: Icon(Icons.eco, size: PillChip.leadingIconSize),
+            leading: Icon(switch (rankingKind) {
+              .player => Icons.eco,
+              .guild => Icons.flag_circle,
+              .hell => Icons.all_inclusive,
+              _ => null,
+            }, size: PillChip.leadingIconSize),
           ),
         if (gapNext != null)
           PillChip(
