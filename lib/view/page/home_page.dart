@@ -500,21 +500,22 @@ class _HomePageState extends ConsumerState<HomePage>
     // 快捷入口
     final quickAccess = <Widget>[
       SectionHeader(l10n.sectionQuickAccess),
-      ListTile(
-        leading: const Icon(Icons.view_compact),
-        title: Text(l10n.tabCheckCurrentUserWph),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) => PlayerDetailPage(
-                playerName: ref.read(currentUsernameProvider),
+      if (!isDefaultUser)
+        ListTile(
+          leading: const Icon(Icons.view_compact),
+          title: Text(l10n.tabCheckCurrentUserWph),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => PlayerDetailPage(
+                  playerName: ref.read(currentUsernameProvider),
+                ),
               ),
-            ),
-          );
-        },
-      ),
+            );
+          },
+        ),
       ListTile(
         leading: const Icon(Icons.castle),
         title: Text(l10n.tabFormation),
