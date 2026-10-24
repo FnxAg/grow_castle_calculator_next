@@ -563,15 +563,15 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
       reverseCurve: Curves.easeInCubic,
     );
     final offset = Tween<Offset>(
-      begin: const Offset(0.12, 0),
+      begin: const Offset(0, -0.12),
       end: Offset.zero,
     ).animate(curvedAnimation);
 
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: SizeTransition(
-        sizeFactor: curvedAnimation,
-        alignment: const Alignment(-1.0, -1.0),
+    return SizeTransition(
+      sizeFactor: curvedAnimation,
+      alignment: const Alignment(-1.0, -1.0),
+      child: Padding(
+        padding: const EdgeInsets.only(top: 8),
         child: FadeTransition(
           opacity: curvedAnimation,
           child: SlideTransition(
@@ -639,7 +639,7 @@ class _RemovedLineItemState extends State<_RemovedLineItem> {
   );
   late final Animation<Offset> _offset = Tween<Offset>(
     begin: Offset.zero,
-    end: const Offset(0.12, 0),
+    end: const Offset(0, -0.12),
   ).animate(_curved);
 
   @override
@@ -664,11 +664,11 @@ class _RemovedLineItemState extends State<_RemovedLineItem> {
   @override
   Widget build(BuildContext context) {
     return IgnorePointer(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 8),
-        child: SizeTransition(
-          sizeFactor: _curved,
-          alignment: const Alignment(-1.0, -1.0),
+      child: SizeTransition(
+        sizeFactor: _curved,
+        alignment: const Alignment(-1.0, -1.0),
+        child: Padding(
+          padding: const EdgeInsets.only(top: 8),
           child: FadeTransition(
             opacity: _curved,
             child: SlideTransition(
