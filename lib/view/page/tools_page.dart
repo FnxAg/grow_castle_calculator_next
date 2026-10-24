@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/view/page/tool/quick_calculation_pag
 import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/search_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/skill_tree_page.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 工具页
@@ -96,6 +97,19 @@ class ToolsPage extends StatelessWidget {
               );
             },
           ),
+          ListTile(
+            leading: const Icon(Icons.account_tree),
+            title: Text(l10n.tabTools),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              FocusManager.instance.primaryFocus?.unfocus();
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => SkillTreePage(),
+                ),
+              );
+            },
+          )
         ],
       ),
     );
