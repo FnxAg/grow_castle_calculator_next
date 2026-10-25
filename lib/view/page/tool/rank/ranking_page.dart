@@ -730,7 +730,13 @@ class _RankingPageState extends State<RankingPage> {
                   const SizedBox(width: 8.0),
                 ],
                 Text(
-                  row.score.format(),
+                  switch (widget.kind) {
+                    RankingKind.hell => row.score.formatCompact(
+                        english: english,
+                        traditional: traditional,
+                      ),
+                    _ => row.score.format(),
+                  },
                   style: TextStyle(
                     fontSize: 14.0,
                     fontWeight: FontWeight.bold,
