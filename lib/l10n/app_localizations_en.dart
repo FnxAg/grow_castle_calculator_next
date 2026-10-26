@@ -177,6 +177,27 @@ class AppLocalizationsEn extends AppLocalizations {
   String get itemSourceDragon7 => 'Ancient Dragon';
 
   @override
+  String get itemSourceDragon1Easteregg => 'Green Dragon';
+
+  @override
+  String get itemSourceDragon2Easteregg => 'Black Dragon';
+
+  @override
+  String get itemSourceDragon3Easteregg => 'Red Dragon';
+
+  @override
+  String get itemSourceDragon4Easteregg => 'Sin';
+
+  @override
+  String get itemSourceDragon5Easteregg => 'Legendary Dragon';
+
+  @override
+  String get itemSourceDragon6Easteregg => 'Bone Dragon';
+
+  @override
+  String get itemSourceDragon7Easteregg => 'Ancient Dragon';
+
+  @override
   String get webdavAuthFailed => 'Incorrect username or password (HTTP 401)';
 
   @override

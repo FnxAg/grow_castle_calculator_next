@@ -411,6 +411,48 @@ abstract class AppLocalizations {
   /// **'七龙（远古龙）'**
   String get itemSourceDragon7;
 
+  /// No description provided for @itemSourceDragon1Easteregg.
+  ///
+  /// In zh, this message translates to:
+  /// **'苍虬'**
+  String get itemSourceDragon1Easteregg;
+
+  /// No description provided for @itemSourceDragon2Easteregg.
+  ///
+  /// In zh, this message translates to:
+  /// **'玄螭'**
+  String get itemSourceDragon2Easteregg;
+
+  /// No description provided for @itemSourceDragon3Easteregg.
+  ///
+  /// In zh, this message translates to:
+  /// **'赤螭'**
+  String get itemSourceDragon3Easteregg;
+
+  /// No description provided for @itemSourceDragon4Easteregg.
+  ///
+  /// In zh, this message translates to:
+  /// **'正弦函数'**
+  String get itemSourceDragon4Easteregg;
+
+  /// No description provided for @itemSourceDragon5Easteregg.
+  ///
+  /// In zh, this message translates to:
+  /// **'绛霄赤蜃'**
+  String get itemSourceDragon5Easteregg;
+
+  /// No description provided for @itemSourceDragon6Easteregg.
+  ///
+  /// In zh, this message translates to:
+  /// **'漆骨巨蛟'**
+  String get itemSourceDragon6Easteregg;
+
+  /// No description provided for @itemSourceDragon7Easteregg.
+  ///
+  /// In zh, this message translates to:
+  /// **'黯霜灰烬'**
+  String get itemSourceDragon7Easteregg;
+
   /// No description provided for @webdavAuthFailed.
   ///
   /// In zh, this message translates to:

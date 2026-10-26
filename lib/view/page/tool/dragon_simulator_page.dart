@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/core/src/item/item_generator.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/tool/item_rule_edit_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 import 'package:material_ui/material_ui.dart';
@@ -26,16 +27,32 @@ String _dropRatesText(ItemSource source, double bonus) => source
     .map((e) => '${e.key.name} ${(e.value * 100).toStringAsFixed(1)}%')
     .join(' / ');
 
-String _sourceLabel(AppLocalizations l10n, ItemSource source) =>
-    switch (source) {
-      ItemSource.dragon1 => l10n.itemSourceDragon1,
-      ItemSource.dragon2 => l10n.itemSourceDragon2,
-      ItemSource.dragon3 => l10n.itemSourceDragon3,
-      ItemSource.dragon4 => l10n.itemSourceDragon4,
-      ItemSource.dragon5 => l10n.itemSourceDragon5,
-      ItemSource.dragon6 => l10n.itemSourceDragon6,
-      ItemSource.dragon7 => l10n.itemSourceDragon7,
+String _sourceLabel(
+  AppLocalizations l10n,
+  ItemSource source, {
+  bool easterEgg = false,
+}) {
+  if (easterEgg) {
+    return switch (source) {
+      ItemSource.dragon1 => l10n.itemSourceDragon1Easteregg,
+      ItemSource.dragon2 => l10n.itemSourceDragon2Easteregg,
+      ItemSource.dragon3 => l10n.itemSourceDragon3Easteregg,
+      ItemSource.dragon4 => l10n.itemSourceDragon4Easteregg,
+      ItemSource.dragon5 => l10n.itemSourceDragon5Easteregg,
+      ItemSource.dragon6 => l10n.itemSourceDragon6Easteregg,
+      ItemSource.dragon7 => l10n.itemSourceDragon7Easteregg,
     };
+  }
+  return switch (source) {
+    ItemSource.dragon1 => l10n.itemSourceDragon1,
+    ItemSource.dragon2 => l10n.itemSourceDragon2,
+    ItemSource.dragon3 => l10n.itemSourceDragon3,
+    ItemSource.dragon4 => l10n.itemSourceDragon4,
+    ItemSource.dragon5 => l10n.itemSourceDragon5,
+    ItemSource.dragon6 => l10n.itemSourceDragon6,
+    ItemSource.dragon7 => l10n.itemSourceDragon7,
+  };
+}
 
 Future<Map<String, dynamic>> _rollBatch(Map<String, dynamic> args) async {
   final generator = ItemGenerator(random: Random());
@@ -127,6 +144,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   int _rollRunId = 0;
   int _rollCount = 0;
   String? _rollResult;
+  bool _showEasterEggNames = false;
 
   @override
   void initState() {
@@ -206,6 +224,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final l10n = AppLocalizations.of(context);
+    final showEasterEggNames = context.isChineseLocale && _showEasterEggNames;
     final levelCount = <ItemLevel, int>{};
     for (final item in _items) {
       levelCount.update(item.level, (c) => c + 1, ifAbsent: () => 1);
@@ -226,6 +245,10 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                 ),
               );
             },
+            onLongPress: context.isChineseLocale
+                ? () =>
+                      setState(() => _showEasterEggNames = !_showEasterEggNames)
+                : null,
           ),
         ],
       ),
@@ -253,7 +276,11 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
                               Text(
-                                _sourceLabel(l10n, source),
+                                _sourceLabel(
+                                  l10n,
+                                  source,
+                                  easterEgg: showEasterEggNames,
+                                ),
                                 overflow: TextOverflow.ellipsis,
                               ),
                               Text(
