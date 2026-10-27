@@ -49,27 +49,20 @@ class _MainShellState extends State<MainShell>
     PointerDeviceKind.mouse,
   };
 
-  /// 各 tab 首页的 GlobalKey：保证页面内容在外壳形态变化时保持同一身份
-  /// （输入、滚动位置等状态不因重新布局丢失）
+  /// 各 tab 首页的 GlobalKey：跨 840 断点时子树形状变化（包/不包内层
+  /// Navigator），靠 key 重挂载保住各页 State（输入、滚动位置等）
   final List<GlobalKey> _tabKeys = [
     for (var i = 0; i < mainPages.length; i++) GlobalKey(),
   ];
 
-  /// 各 tab 内层 Navigator 的 key：定位当前 tab 的导航栈
+  /// 各 tab 内层 Navigator 的 key（仅宽屏挂载）：Esc 返回时定位当前 tab 的栈
   final List<GlobalKey<NavigatorState>> _navigatorKeys = [
     for (var i = 0; i < mainPages.length; i++) GlobalKey<NavigatorState>(),
   ];
 
-  late final List<_TabNavigatorObserver> _navigatorObservers;
-  bool _routeChangeScheduled = false;
-
   @override
   void initState() {
     super.initState();
-    _navigatorObservers = [
-      for (var i = 0; i < mainPages.length; i++)
-        _TabNavigatorObserver(() => _onTabRouteChanged(i)),
-    ];
     _switchController = AnimationController(
       vsync: this,
       duration: shellAnimationDuration,
@@ -211,7 +204,9 @@ class _MainShellState extends State<MainShell>
         root.maybePop();
         return true;
       }
-      final nav = _navigatorKeys[_selectIndex.value].currentState;
+      final nav = context.hasSidebar
+          ? _navigatorKeys[_selectIndex.value].currentState
+          : null;
       if (nav != null && nav.canPop()) {
         nav.pop();
       }
@@ -268,21 +263,6 @@ class _MainShellState extends State<MainShell>
     }
   }
 
-  void _onTabRouteChanged(int index) {
-    if (_routeChangeScheduled) return;
-    _routeChangeScheduled = true;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _routeChangeScheduled = false;
-      if (!mounted || index != _selectIndex.value) return;
-      setState(() {});
-    });
-  }
-
-  bool _shouldShowBottomBar(ShellMode mode) {
-    if (mode != ShellMode.compact) return false;
-    return !(_navigatorKeys[_selectIndex.value].currentState?.canPop() ?? false);
-  }
-
   @override
   Widget build(BuildContext context) {
     final appSettings = Stores.appSettingsStore;
@@ -323,14 +303,14 @@ class _MainShellState extends State<MainShell>
                     return ShellLayout(
                       mode: mode,
                       contentWidth: constraints.maxWidth,
-                      child: _buildPages(constraints.maxWidth),
+                      child: _buildPages(mode.hasSidebar, constraints.maxWidth),
                     );
                   },
                 ),
               ),
             ],
           ),
-          bottomNavigationBar: _shouldShowBottomBar(mode)
+          bottomNavigationBar: mode == ShellMode.compact
               ? _buildBottomBar()
               : null,
         );
@@ -339,7 +319,7 @@ class _MainShellState extends State<MainShell>
   }
 
   /// 访问过的 tab 常驻；切换时旧页滑出、新页滑入
-  Widget _buildPages(double width) {
+  Widget _buildPages(bool wide, double width) {
     _pageWidth = width;
     final pages = ClipRect(
       child: AnimatedBuilder(
@@ -383,7 +363,7 @@ class _MainShellState extends State<MainShell>
                                     : 0.0,
                                 0,
                               ),
-                              child: _buildTab(i, mainPages[i]),
+                              child: _buildTab(i, mainPages[i], wide),
                             ),
                           ),
                         ),
@@ -417,18 +397,14 @@ class _MainShellState extends State<MainShell>
     );
   }
 
-  /// 每个 tab 始终保留自己的 Navigator。
-  ///
-  /// 如果只在宽屏创建 Navigator，窗口跨过侧栏断点时会把页面从普通
-  /// 子树切换成全新的 Navigator 子树，当前子页面和路由栈都会丢失。
-  Widget _buildTab(int index, MainPageEntry page) {
+  Widget _buildTab(int index, MainPageEntry page, bool wide) {
     final content = KeyedSubtree(
       key: _tabKeys[index],
       child: page.builder(context),
     );
+    if (!wide) return content;
     return Navigator(
       key: _navigatorKeys[index],
-      observers: [_navigatorObservers[index]],
       onGenerateRoute: (settings) =>
           MaterialPageRoute(settings: settings, builder: (_) => content),
     );
@@ -448,31 +424,5 @@ class _MainShellState extends State<MainShell>
           NavigationDestination(icon: Icon(page.icon), label: page.title(l10n)),
       ],
     );
-  }
-}
-
-class _TabNavigatorObserver extends NavigatorObserver {
-  _TabNavigatorObserver(this.onRouteChanged);
-
-  final VoidCallback onRouteChanged;
-
-  @override
-  void didPush(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    onRouteChanged();
-  }
-
-  @override
-  void didPop(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    onRouteChanged();
-  }
-
-  @override
-  void didRemove(Route<dynamic> route, Route<dynamic>? previousRoute) {
-    onRouteChanged();
-  }
-
-  @override
-  void didReplace({Route<dynamic>? newRoute, Route<dynamic>? oldRoute}) {
-    onRouteChanged();
   }
 }
