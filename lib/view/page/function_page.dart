@@ -10,6 +10,7 @@ import 'package:grow_castle_calculator_next/view/page/function/formation_calc_pa
 import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
 import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/income_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function/income_trend_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/wave_status_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
@@ -126,6 +127,16 @@ class FunctionPage extends ConsumerWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const GameTrackPage()),
+              );
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.trending_up),
+            title: Text(l10n.incomeTrend),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const IncomeTrendPage()),
               );
             },
           ),

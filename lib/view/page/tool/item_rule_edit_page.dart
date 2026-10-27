@@ -425,7 +425,6 @@ class _RuleFormPageState extends State<_RuleFormPage> {
               children: [
                 TextField(
                   controller: _hintController,
-                  // 不指定 border：与页内其它输入框一致走默认的底部横线
                   decoration: InputDecoration(
                     labelText: l10n.labelHintText,
                     hintText: l10n.hintRuleHintExample,

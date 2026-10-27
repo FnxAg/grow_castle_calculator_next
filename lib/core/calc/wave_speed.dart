@@ -1,10 +1,6 @@
-/// 跳波状态计算：每小时跳波数（WPH）与各项加成。
-///
-/// 数值与公式沿用旧项目 grow_castle_calculator 的 wave_speed_query_provider，
-/// 纯函数无 Flutter 依赖，便于测试与复用。
 library;
 
-/// 基础速度（无任何加成时每小时的跳波数）
+/// 基础速度
 const double baseSpeed = 74;
 
 /// 时挂（TAB）额外跳波数
@@ -22,10 +18,6 @@ const double hornRatio = 1.104;
 /// 30%角倍率
 const double goldenHornRatio = 1.365;
 
-/// 每小时跳波数（WPH）。
-///
-/// [gameSpeed] 与 [chronoBonus] 为对应常量列表的下标；
-/// [isGoldAutoBattle] 为 true（金挂 GAB）时无 TAB 额外跳波。
 double getWph({
   required int devilHornSkip,
   required bool isGoldAutoBattle,
@@ -41,11 +33,6 @@ double getWph({
       (equipGoldenHorn ? goldenHornRatio : 1);
 }
 
-/// 真实每小时跳波数（RWPH）。
-///
-/// 不含恶魔号角跳波（devilHornSkip）与 TAB 额外跳波，
-/// 仅由游戏速度、闹钟与双角倍率决定；[getWph] 在此基础上额外计入
-/// 号角跳波数与时挂加成。
 double getRwph({
   required int gameSpeed,
   required int chronoBonus,

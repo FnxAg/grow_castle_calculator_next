@@ -25,8 +25,6 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage> {
 
   @override
   Widget build(BuildContext context) {
-    // 整体 watch：用户列表与每个用户的波数/总金币都从这里渲染，
-    // 增删改切之后本页自动重建，不再需要子对话框回调 setState
     final state = ref.watch(usersProvider);
     final List<String> userList = state.usernames;
     final String currentUsername = state.currentUser.username;
@@ -52,7 +50,6 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage> {
           final String username = userList[index];
           final user = state.findByUsername(username);
           final String guild = user?.guild ?? '';
-          // 桌面端右键也可打开单位汇总，同时保留触屏长按入口
           return GestureDetector(
             onSecondaryTapUp: (_) => _showUnitSummary(username),
             child: ListTile(

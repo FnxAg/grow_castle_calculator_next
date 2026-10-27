@@ -978,5 +978,9 @@
   "quickCalcLock": "锁定该项",
   "quickCalcUnlock": "解锁该项",
   "quickCalcFill": "填入",
-  "reward": "奖励"
+  "reward": "奖励",
+  "incomeTrend": "经济趋势预测",
+  "incomeTrendNow": "当前数据",
+  "incomeTrendEnd": "结束数据",
+  "dataDisclaimer": "数据仅供参考"
 }

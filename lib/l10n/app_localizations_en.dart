@@ -1567,4 +1567,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get reward => 'Reward';
+
+  @override
+  String get incomeTrend => 'Income Trend Prediction';
+
+  @override
+  String get incomeTrendNow => 'Now';
+
+  @override
+  String get incomeTrendEnd => 'End';
+
+  @override
+  String get dataDisclaimer => 'Data is for reference only';
 }

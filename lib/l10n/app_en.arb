@@ -425,5 +425,9 @@
   "quickCalcLock": "Lock this value",
   "quickCalcUnlock": "Unlock this value",
   "quickCalcFill": "Fill",
-  "reward": "Reward"
+  "reward": "Reward",
+  "incomeTrend": "Income Trend Prediction",
+  "incomeTrendNow": "Now",
+  "incomeTrendEnd": "End",
+  "dataDisclaimer": "Data is for reference only"
 }

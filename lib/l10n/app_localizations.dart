@@ -2651,6 +2651,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'奖励'**
   String get reward;
+
+  /// No description provided for @incomeTrend.
+  ///
+  /// In zh, this message translates to:
+  /// **'经济趋势预测'**
+  String get incomeTrend;
+
+  /// No description provided for @incomeTrendNow.
+  ///
+  /// In zh, this message translates to:
+  /// **'当前数据'**
+  String get incomeTrendNow;
+
+  /// No description provided for @incomeTrendEnd.
+  ///
+  /// In zh, this message translates to:
+  /// **'结束数据'**
+  String get incomeTrendEnd;
+
+  /// No description provided for @dataDisclaimer.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据仅供参考'**
+  String get dataDisclaimer;
 }
 
 class _AppLocalizationsDelegate

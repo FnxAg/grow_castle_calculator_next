@@ -424,5 +424,9 @@
   "quickCalcLock": "鎖定該項",
   "quickCalcUnlock": "解鎖該項",
   "quickCalcFill": "填入",
-  "reward": "獎勵"
+  "reward": "獎勵",
+  "incomeTrend": "經濟趨勢預測",
+  "incomeTrendNow": "當前數據",
+  "incomeTrendEnd": "結束數據",
+  "dataDisclaimer": "資料僅供參考"
 }

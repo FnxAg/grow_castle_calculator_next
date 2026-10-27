@@ -1461,6 +1461,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reward => '奖励';
+
+  @override
+  String get incomeTrend => '经济趋势预测';
+
+  @override
+  String get incomeTrendNow => '当前数据';
+
+  @override
+  String get incomeTrendEnd => '结束数据';
+
+  @override
+  String get dataDisclaimer => '数据仅供参考';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2919,4 +2931,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get reward => '獎勵';
+
+  @override
+  String get incomeTrend => '經濟趨勢預測';
+
+  @override
+  String get incomeTrendNow => '當前數據';
+
+  @override
+  String get incomeTrendEnd => '結束數據';
+
+  @override
+  String get dataDisclaimer => '資料僅供參考';
 }

@@ -44,8 +44,7 @@ class UsersState {
 
   UserData get currentUser => users[currentUserId]!;
 
-  List<String> get usernames =>
-      [for (final u in users.values) u.username];
+  List<String> get usernames => [for (final u in users.values) u.username];
 
   /// 用户名/公会名归一化
   static String normalize(String s) => s.trim().toLowerCase();
@@ -90,8 +89,7 @@ class UsersState {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(_usersHash(users), currentUserId, nextUserId);
+  int get hashCode => Object.hash(_usersHash(users), currentUserId, nextUserId);
 
   /// 用户表比较
   static bool _sameUsers(Map<int, UserData> a, Map<int, UserData> b) {
@@ -106,8 +104,8 @@ class UsersState {
   }
 
   static int _usersHash(Map<int, UserData> users) => Object.hashAllUnordered(
-        users.entries.map((e) => Object.hash(e.key, e.value)),
-      );
+    users.entries.map((e) => Object.hash(e.key, e.value)),
+  );
 }
 
 /// 用户数据状态容器
@@ -210,10 +208,8 @@ class Users extends _$Users {
     }
     return u.copyWith(
       totalGold: totalGold,
-      gp: u.wave > 0
-          ? totalGold / (0.5 * (310 + u.wave * 310) * u.wave) * 100
-          : 0.0,
-      gpCN: u.wave > 0 ? (totalGold / (u.wave * u.wave)) : 0.0,
+      gp: u.wave > 0 ? calcGp(gold: totalGold, wave: u.wave) : 0.0,
+      gpCN: u.wave > 0 ? calcGpCN(gold: totalGold, wave: u.wave) : 0.0,
     );
   }
 
@@ -427,8 +423,9 @@ class Users extends _$Users {
   /// 添加新条目（id 自动取当前最大 id + 1）
   void addNewCard() {
     final u = state.currentUser;
-    final newId =
-        u.cardIds.isEmpty ? 1 : u.cardIds.reduce((a, b) => a > b ? a : b) + 1;
+    final newId = u.cardIds.isEmpty
+        ? 1
+        : u.cardIds.reduce((a, b) => a > b ? a : b) + 1;
     final updated = u.copyWith(
       cardIds: [...u.cardIds, newId],
       applyFlags: {...u.applyFlags, newId: true},
@@ -441,7 +438,10 @@ class Users extends _$Users {
   int getCurrentUserWave() => state.currentUser.wave;
 
   void setUserWave(int wave) {
-    _setCurrentUser(_recalc(state.currentUser.copyWith(wave: wave)), immediate: true);
+    _setCurrentUser(
+      _recalc(state.currentUser.copyWith(wave: wave)),
+      immediate: true,
+    );
   }
 
   int getCurrentUserSeasonWave() => state.currentUser.seasonWave;
@@ -636,7 +636,7 @@ class Users extends _$Users {
     _saveDebounce = null;
     var users = state.users;
     if (!users.containsKey(0)) {
-      final defaultUser = UserData(username: 'default');
+      final defaultUser = UserData(username: 'Default User');
       users = {...users, 0: defaultUser};
       ref.read(userDataRepositoryProvider).writeUser(0, defaultUser);
     }
@@ -714,8 +714,10 @@ class Users extends _$Users {
   Future<Object /* PlayerQueryResult | QueryError */> syncCurrentUser() async {
     final result = await PlayerApiService.query(state.currentUser.username);
     if (result is PlayerQueryResult) {
-      final lastOnline =
-          PlayerApiService.formatLastOnline(result.queryDate, DateTime.now());
+      final lastOnline = PlayerApiService.formatLastOnline(
+        result.queryDate,
+        DateTime.now(),
+      );
       if (result.wave == 0 && result.queryDate.isEmpty) {
         // 封禁检测
         setLastOnline('Banned');
@@ -750,24 +752,22 @@ class Users extends _$Users {
     if (!trackStore.canRecord(state.currentUserId, now, interval)) return;
 
     final units = u.cardIds
-        .map(
-          (id) {
-            final customName = u.textValues[id]?.trim() ?? '';
-            // final name = customName.isNotEmpty
-            //     ? customName
-            //     : id == 1
-            //         ? '城堡'
-            //         : id == 2
-            //             ? '城弓'
-            //             : '单位$id';
-            final name = customName.isNotEmpty ? customName : '$id.';
-            return GameTrackUnit(
-              name: name,
-              level: int.tryParse(u.numberValues[id] ?? '') ?? 0,
-              enabled: u.applyFlags[id] ?? true,
-            );
-          },
-        )
+        .map((id) {
+          final customName = u.textValues[id]?.trim() ?? '';
+          // final name = customName.isNotEmpty
+          //     ? customName
+          //     : id == 1
+          //         ? '城堡'
+          //         : id == 2
+          //             ? '城弓'
+          //             : '单位$id';
+          final name = customName.isNotEmpty ? customName : '$id.';
+          return GameTrackUnit(
+            name: name,
+            level: int.tryParse(u.numberValues[id] ?? '') ?? 0,
+            enabled: u.applyFlags[id] ?? true,
+          );
+        })
         .toList(growable: false);
     await trackStore.addRecord(
       state.currentUserId,
@@ -787,7 +787,7 @@ class Users extends _$Users {
 
   /// 当前用户每日收入分项
   ({double colony, double autoBattle, double other, double total})
-      getCurrentUserDailyIncomeBreakdown() {
+  getCurrentUserDailyIncomeBreakdown() {
     final u = state.currentUser;
     return getDailyIncomeBreakdown(
       wave: u.wave,
