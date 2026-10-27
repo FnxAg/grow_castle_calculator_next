@@ -146,12 +146,12 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
                       ],
                     ),
                   ),
-                  // if (isDesktop)
-                  IconButton(
-                    icon: const Icon(Icons.info_outline, size: 20),
-                    tooltip: l10n.tooltipDetails,
-                    onPressed: () => _showUnitSummary(username),
-                  ),
+                  if (isDesktop)
+                    IconButton(
+                      icon: const Icon(Icons.info_outline, size: 20),
+                      tooltip: l10n.tooltipDetails,
+                      onPressed: () => _showUnitSummary(username),
+                    ),
                 ],
               ),
               onTap: () {
