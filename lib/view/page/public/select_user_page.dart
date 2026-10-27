@@ -20,8 +20,28 @@ class SelectUserPage extends ConsumerStatefulWidget {
   ConsumerState<SelectUserPage> createState() => _SelectUserPageState();
 }
 
-class _SelectUserPageState extends ConsumerState<SelectUserPage> {
+class _SelectUserPageState extends ConsumerState<SelectUserPage>
+    with SingleTickerProviderStateMixin {
   bool _settingState = false;
+  late final AnimationController _ctrl;
+  late final CurvedAnimation _animation;
+
+  @override
+  void initState() {
+    super.initState();
+    _ctrl = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1.0,
+    );
+    _animation = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOutCubic);
+  }
+
+  @override
+  void dispose() {
+    _ctrl.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,10 +55,18 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage> {
         title: Text(l10n.settingsUserManagement),
         actions: [
           IconButton(
-            icon: Icon(!_settingState ? Icons.edit : Icons.edit_off),
+            icon: AnimatedIcon(
+              icon: AnimatedIcons.close_menu,
+              progress: _animation,
+            ),
             onPressed: () {
               setState(() {
                 _settingState = !_settingState;
+                if (_settingState) {
+                  _ctrl.reverse();
+                } else {
+                  _ctrl.forward();
+                }
               });
             },
           ),
@@ -93,46 +121,37 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage> {
               trailing: Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
-                  if (_settingState && state.findId(username) != 0) ...[
-                    IconButton(
-                      icon: const Icon(Icons.edit),
-                      onPressed: switch (state.findId(username)) {
-                        0 => () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.snackDefaultUserNoRename),
-                            ),
-                          );
-                        },
-                        _ => () => _renameDialog(username),
-                      },
+                  SizeTransition(
+                    sizeFactor: ReverseAnimation(_animation),
+                    axis: Axis.horizontal,
+                    child: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        if (state.findId(username) != 0) ...[
+                          IconButton(
+                            icon: const Icon(Icons.edit),
+                            onPressed: () => _renameDialog(username),
+                          ),
+                          IconButton(
+                            icon: const Icon(Icons.delete, color: Colors.red),
+                            onPressed: () {
+                              showDialog<void>(
+                                context: context,
+                                builder: (context) =>
+                                    _DeleteUserDialog(userId: username),
+                              );
+                            },
+                          ),
+                        ],
+                      ],
                     ),
-                    IconButton(
-                      icon: const Icon(Icons.delete, color: Colors.red),
-                      onPressed: switch (state.findId(username)) {
-                        0 => () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text(l10n.snackDefaultUserNoDelete),
-                            ),
-                          );
-                        },
-                        _ => () {
-                          showDialog<void>(
-                            context: context,
-                            builder: (context) =>
-                                _DeleteUserDialog(userId: username),
-                          );
-                        },
-                      },
-                    ),
-                  ],
-                  if (isDesktop)
-                    IconButton(
-                      icon: const Icon(Icons.info_outline, size: 20),
-                      tooltip: l10n.tooltipDetails,
-                      onPressed: () => _showUnitSummary(username),
-                    ),
+                  ),
+                  // if (isDesktop)
+                  IconButton(
+                    icon: const Icon(Icons.info_outline, size: 20),
+                    tooltip: l10n.tooltipDetails,
+                    onPressed: () => _showUnitSummary(username),
+                  ),
                 ],
               ),
               onTap: () {
