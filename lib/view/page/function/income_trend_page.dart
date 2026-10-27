@@ -293,7 +293,12 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
             ],
           ),
           const SizedBox(height: 8),
-          Center(child: Text(l10n.dataDisclaimer)),
+          Center(
+            child: Text(
+              l10n.dataDisclaimer,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
+          ),
         ],
       ),
     );

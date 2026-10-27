@@ -61,24 +61,6 @@ class WaveStatusPage extends ConsumerWidget {
           crossAxisAlignment: .start,
           children: [Text(l10n.waveStatus), _AppBarInfo()],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (context) => AlertDialog(
-                title: Text(l10n.sectionInfo),
-                content: Text(l10n.dialogWaveStatusDisclaimer),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    child: Text(l10n.actionClose),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
       ),
       body: ListView(
         children: [
@@ -140,6 +122,13 @@ class WaveStatusPage extends ConsumerWidget {
             entries: _autoBattleEntries(l10n),
             infoContent: Text(l10n.infoAutoBattleTab),
             onChanged: ref.users.setCurrentUserIsGoldAutoBattle,
+          ),
+          const SizedBox(height: 8),
+          Center(
+            child: Text(
+              l10n.dataDisclaimer,
+              style: Theme.of(context).textTheme.bodySmall,
+            ),
           ),
         ],
       ),
