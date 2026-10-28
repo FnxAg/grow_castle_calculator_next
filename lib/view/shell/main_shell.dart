@@ -204,7 +204,7 @@ class _MainShellState extends State<MainShell>
         root.maybePop();
         return true;
       }
-      final nav = context.hasSidebar
+      final nav = (isDesktopPlatform() || context.hasSidebar)
           ? _navigatorKeys[_selectIndex.value].currentState
           : null;
       if (nav != null && nav.canPop()) {
@@ -273,11 +273,12 @@ class _MainShellState extends State<MainShell>
       ]),
       builder: (context, _) {
         final width = MediaQuery.sizeOf(context).width;
+        final desktop = isDesktopPlatform();
         final mode = width >= Breakpoints.sidebarExpanded
             ? (appSettings.sidebarExpandedNotifier.value
                   ? ShellMode.expanded
                   : ShellMode.rail)
-            : width >= Breakpoints.sidebarRail
+            : desktop || width >= Breakpoints.sidebarRail
             ? ShellMode.rail
             : ShellMode.compact;
         return Scaffold(

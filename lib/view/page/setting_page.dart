@@ -444,7 +444,16 @@ class _SettingPageState extends State<SettingPage> {
             onTap: _checking ? null : _checkUpdate,
           ),
           ListTile(
-            leading: const Icon(Icons.info),
+            // leading: const Icon(Icons.info),
+            leading: Hero(
+              tag: 'app_icon',
+              child: Image.asset(
+                'assets/images/app_icon.png',
+                width: 24,
+                height: 24,
+                fit: BoxFit.cover,
+              ),
+            ),
             title: Text(l10n.settingsAbout),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {

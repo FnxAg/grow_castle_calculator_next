@@ -152,8 +152,8 @@ class _AboutPageState extends State<AboutPage> {
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
       child: Column(
         children: [
-          ClipRRect(
-            borderRadius: BorderRadius.circular(24),
+          Hero(
+            tag: 'app_icon',
             child: Image.asset(
               'assets/images/app_icon.png',
               width: 88,
