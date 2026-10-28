@@ -19,7 +19,7 @@ class MyApp extends ConsumerStatefulWidget {
 }
 
 class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
-  Color defaultColor = Colors.blue;
+  static const Color defaultColor = Colors.blue;
 
   /// 简繁判定
   static Locale _resolveLocale(

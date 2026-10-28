@@ -76,6 +76,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     final badColor = Colors.red;
 
     final timeSelector = Wrap(
+      alignment: .center,
       spacing: 8,
       runSpacing: 4,
       children: _trendMinutesOptions.map((minutes) {

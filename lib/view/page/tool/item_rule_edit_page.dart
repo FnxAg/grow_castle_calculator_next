@@ -444,6 +444,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                 ),
                 const SizedBox(height: 8),
                 Wrap(
+                  alignment: .center,
                   spacing: 8,
                   runSpacing: 4,
                   children: [

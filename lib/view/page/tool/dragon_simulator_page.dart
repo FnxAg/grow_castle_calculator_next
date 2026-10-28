@@ -460,6 +460,7 @@ class _ItemCard extends StatelessWidget {
     final rule = this.rule;
     final highlight = rule != null;
     return Card(
+      elevation: 3.0,
       margin: const EdgeInsets.only(bottom: 8),
       // 命中特殊规则时整体高亮
       color: highlight ? theme.colorScheme.primaryContainer : null,
