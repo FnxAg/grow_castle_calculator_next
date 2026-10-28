@@ -138,7 +138,12 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
               child: child!,
             );
             if (isDesktopPlatform()) {
-              content = Overlay.wrap(child: SelectionArea(child: content));
+              content = Overlay.wrap(
+                child: SelectionArea(
+                  key: ValueKey(appSettings.languageNotifier.value),
+                  child: content,
+                ),
+              );
             }
             return content;
           },

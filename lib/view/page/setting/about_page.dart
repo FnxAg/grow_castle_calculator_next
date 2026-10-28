@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
@@ -143,10 +142,10 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 
-  /// 头部：应用图标 + 名称 + 版本号 + 标语
   Widget _buildHeader(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
+    final l10n = AppLocalizations.of(context);
     final info = _packageInfo;
     return Padding(
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
@@ -154,11 +153,19 @@ class _AboutPageState extends State<AboutPage> {
         children: [
           Hero(
             tag: 'app_icon',
-            child: Image.asset(
-              'assets/images/app_icon.png',
-              width: 88,
-              height: 88,
-              fit: BoxFit.cover,
+            child: GestureDetector(
+              onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text(l10n.fromDev),
+                  backgroundColor: scheme.primary,
+                ),
+              ),
+              child: Image.asset(
+                'assets/images/app_icon.png',
+                width: 88,
+                height: 88,
+                fit: BoxFit.cover,
+              ),
             ),
           ),
           Text(
@@ -186,7 +193,6 @@ class _AboutPageState extends State<AboutPage> {
     );
   }
 
-  /// 底部：作者署名与提示
   Widget _buildFooter(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
@@ -194,22 +200,21 @@ class _AboutPageState extends State<AboutPage> {
       padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
       child: Column(
         children: [
-          Text.rich(
-            TextSpan(
-              children: [
-                const TextSpan(text: 'GCC Next · by '),
-                TextSpan(
-                  text: 'FnxAg',
-                  style: const TextStyle(color: Colors.blueAccent),
-                  recognizer: TapGestureRecognizer()
-                    ..onTap = () {
-                      _launchUrl('https://github.com/FnxAg');
-                    },
-                ),
-              ],
-            ),
-            style: textTheme.bodySmall?.copyWith(
-              color: scheme.onSurfaceVariant,
+          GestureDetector(
+            onTap: () => _launchUrl('https://github.com/FnxAg'),
+            child: Text.rich(
+              TextSpan(
+                children: [
+                  const TextSpan(text: 'GCC Next · by '),
+                  TextSpan(
+                    text: 'FnxAg',
+                    style: const TextStyle(color: Colors.blueAccent),
+                  ),
+                ],
+              ),
+              style: textTheme.bodySmall?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ),
           // const SizedBox(height: 4),

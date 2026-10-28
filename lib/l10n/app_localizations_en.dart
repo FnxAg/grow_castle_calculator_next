@@ -1585,4 +1585,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataDisclaimer => 'Data is for reference only';
+
+  @override
+  String get fromDev => 'Welcome to join POC!';
 }

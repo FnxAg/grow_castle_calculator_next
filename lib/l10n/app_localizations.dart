@@ -2687,6 +2687,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'数据仅供参考'**
   String get dataDisclaimer;
+
+  /// No description provided for @fromDev.
+  ///
+  /// In zh, this message translates to:
+  /// **'欢迎加入 POC 谢谢喵！'**
+  String get fromDev;
 }
 
 class _AppLocalizationsDelegate

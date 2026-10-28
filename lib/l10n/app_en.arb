@@ -431,5 +431,6 @@
   "incomeTrend": "Income Trend Prediction",
   "incomeTrendNow": "Now",
   "incomeTrendEnd": "End",
-  "dataDisclaimer": "Data is for reference only"
+  "dataDisclaimer": "Data is for reference only",
+  "fromDev": "Welcome to join POC!"
 }

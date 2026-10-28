@@ -1479,6 +1479,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dataDisclaimer => '数据仅供参考';
+
+  @override
+  String get fromDev => '欢迎加入 POC 谢谢喵！';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2955,4 +2958,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get dataDisclaimer => '資料僅供參考';
+
+  @override
+  String get fromDev => '歡迎加入 POC 謝謝喵！';
 }

@@ -430,5 +430,6 @@
   "incomeTrend": "經濟趨勢預測",
   "incomeTrendNow": "當前數據",
   "incomeTrendEnd": "結束數據",
-  "dataDisclaimer": "資料僅供參考"
+  "dataDisclaimer": "資料僅供參考",
+  "fromDev": "歡迎加入 POC 謝謝喵！"
 }

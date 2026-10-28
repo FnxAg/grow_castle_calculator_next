@@ -984,5 +984,6 @@
   "incomeTrend": "经济趋势预测",
   "incomeTrendNow": "当前数据",
   "incomeTrendEnd": "结束数据",
-  "dataDisclaimer": "数据仅供参考"
+  "dataDisclaimer": "数据仅供参考",
+  "fromDev": "欢迎加入 POC 谢谢喵！"
 }
