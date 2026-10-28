@@ -197,6 +197,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get itemSourceDragon7Easteregg => '黯霜灰烬';
 
   @override
+  String get eastereggDragonName => 'v1.51.8：“正弦函数”';
+
+  @override
   String get webdavAuthFailed => '账号或密码错误（HTTP 401）';
 
   @override
@@ -1665,6 +1668,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get itemSourceDragon7Easteregg => '黯霜灰燼';
+
+  @override
+  String get eastereggDragonName => 'v1.51.8：“正弦函式”';
 
   @override
   String get webdavAuthFailed => '帳號或密碼錯誤（HTTP 401）';

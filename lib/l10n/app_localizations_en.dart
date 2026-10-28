@@ -198,6 +198,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get itemSourceDragon7Easteregg => 'Ancient Dragon';
 
   @override
+  String get eastereggDragonName => 'v1.51.8: “正弦函数”';
+
+  @override
   String get webdavAuthFailed => 'Incorrect username or password (HTTP 401)';
 
   @override

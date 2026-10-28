@@ -223,6 +223,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
     final showEasterEggNames = context.isChineseLocale && _showEasterEggNames;
     final levelCount = <ItemLevel, int>{};
@@ -245,10 +246,6 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                 ),
               );
             },
-            onLongPress: context.isChineseLocale
-                ? () =>
-                      setState(() => _showEasterEggNames = !_showEasterEggNames)
-                : null,
           ),
         ],
       ),
@@ -261,41 +258,63 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  DropdownButtonFormField<ItemSource>(
-                    initialValue: _source,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: l10n.labelItemSource,
-                      isDense: true,
-                    ),
-                    items: [
-                      for (final source in ItemSource.values)
-                        DropdownMenuItem(
-                          value: source,
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                _sourceLabel(
-                                  l10n,
-                                  source,
-                                  easterEgg: showEasterEggNames,
+                  GestureDetector(
+                    onLongPress: context.isChineseLocale
+                        ? () {
+                            setState(
+                              () => _showEasterEggNames = !_showEasterEggNames,
+                            );
+                            if (_showEasterEggNames) {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                SnackBar(
+                                  content: Text(
+                                    l10n.eastereggDragonName,
+                                    style: TextStyle(color: scheme.onPrimary),
+                                  ),
+                                  duration: const Duration(seconds: 5),
+                                  showCloseIcon: true,
+                                  backgroundColor: scheme.primary,
                                 ),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              Text(
-                                _dropRatesText(source, _bonus),
-                                style: theme.textTheme.bodySmall?.copyWith(
-                                  color: theme.colorScheme.onSurfaceVariant,
+                              );
+                            }
+                          }
+                        : null,
+                    child: DropdownButtonFormField<ItemSource>(
+                      initialValue: _source,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.labelItemSource,
+                        isDense: true,
+                      ),
+                      items: [
+                        for (final source in ItemSource.values)
+                          DropdownMenuItem(
+                            value: source,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  _sourceLabel(
+                                    l10n,
+                                    source,
+                                    easterEgg: showEasterEggNames,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                                Text(
+                                  _dropRatesText(source, _bonus),
+                                  style: theme.textTheme.bodySmall?.copyWith(
+                                    color: theme.colorScheme.onSurfaceVariant,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
-                    ],
-                    onChanged: (source) {
-                      if (source != null) setState(() => _source = source);
-                    },
+                      ],
+                      onChanged: (source) {
+                        if (source != null) setState(() => _source = source);
+                      },
+                    ),
                   ),
                   const SizedBox(height: 12),
                   DropdownButtonFormField<int>(
@@ -397,7 +416,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                 valueListenable: Stores.itemRuleStore.rulesNotifier,
                 builder: (context, rules, _) {
                   // 命中规则（如白cd + 红cd + 加强）的装备置顶，
-                  // 其余按装备等级从高到低排列：E > L > S > A > B
+                  // 其余按装备等级从高到低排列：U > E > L > S > A > B
                   final items = [..._items]
                     ..sort((a, b) {
                       final pinnedA = matchRule(a, rules)?.pinToTop ?? false;

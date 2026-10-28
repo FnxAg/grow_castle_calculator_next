@@ -60,6 +60,7 @@
   "itemSourceDragon5Easteregg": "絳霄赤蜃",
   "itemSourceDragon6Easteregg": "漆骨巨蛟",
   "itemSourceDragon7Easteregg": "黯霜灰燼",
+  "eastereggDragonName": "v1.51.8：“正弦函式”",
   "webdavAuthFailed": "帳號或密碼錯誤（HTTP 401）",
   "webdavForbidden": "沒有存取權限（HTTP 403）",
   "webdavNoBackupFile": "雲端還沒有備份檔案",

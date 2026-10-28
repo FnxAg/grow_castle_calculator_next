@@ -113,6 +113,16 @@ class FunctionPage extends ConsumerWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.trending_up),
+            title: Text(l10n.incomeTrend),
+            trailing: const Icon(Icons.chevron_right),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (context) => const IncomeTrendPage()),
+              );
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.timeline),
             title: Row(
               children: [
@@ -127,16 +137,6 @@ class FunctionPage extends ConsumerWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const GameTrackPage()),
-              );
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.trending_up),
-            title: Text(l10n.incomeTrend),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const IncomeTrendPage()),
               );
             },
           ),

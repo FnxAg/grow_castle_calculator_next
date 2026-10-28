@@ -59,6 +59,7 @@
   "itemSourceDragon5Easteregg": "Legendary Dragon",
   "itemSourceDragon6Easteregg": "Bone Dragon",
   "itemSourceDragon7Easteregg": "Ancient Dragon",
+  "eastereggDragonName": "v1.51.8: “正弦函数”",
   "webdavAuthFailed": "Incorrect username or password (HTTP 401)",
   "webdavForbidden": "No access permission (HTTP 403)",
   "webdavNoBackupFile": "There is no backup file in the cloud yet",

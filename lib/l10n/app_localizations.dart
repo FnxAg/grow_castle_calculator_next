@@ -453,6 +453,12 @@ abstract class AppLocalizations {
   /// **'黯霜灰烬'**
   String get itemSourceDragon7Easteregg;
 
+  /// No description provided for @eastereggDragonName.
+  ///
+  /// In zh, this message translates to:
+  /// **'v1.51.8：“正弦函数”'**
+  String get eastereggDragonName;
+
   /// No description provided for @webdavAuthFailed.
   ///
   /// In zh, this message translates to:
