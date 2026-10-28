@@ -46,27 +46,42 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     final afterTime = _trendMinutesOptions[_selectedOptionIndex];
     final user = ref.watch(currentUserProvider);
     final startWave = user.wave;
+    final gabBonus = user.gabBonus;
+    final gabTime = user.gabTime;
+    final tabTime = user.tabTime;
     final wph = ref.watch(theoreticalWphProvider);
     final rwph = ref.watch(theoreticalRwphProvider);
-    final passedWave = afterTime / 60 * wph;
+    final passedWave = afterTime / 60 * wph * (gabTime + tabTime) / 24;
     final endWave = startWave + passedWave.toInt();
-    final gabBonus = user.gabBonus;
     final startWaveGabCost = gabCost(startWave);
     final endWaveGabCost = gabCost(endWave);
     final startWaveTotalGold = user.totalGold;
     final income = ref.watch(dailyIncomeProvider);
-    final waveIncome =
+    final gabIncome =
         (startWaveGabCost + endWaveGabCost) /
         2 *
         gabBonus /
         100 *
         rwph *
-        (afterTime / 60);
-    final colonyIncome = income.colony * (afterTime / 1440);
+        (afterTime / 60) *
+        (gabTime / 24);
+    final tabIncome =
+        (startWaveGabCost + endWaveGabCost) /
+        2 *
+        (100 + gabBonus) /
+        100 *
+        rwph *
+        (afterTime / 60) *
+        (tabTime / 24);
+    final waveIncome = gabIncome + tabIncome;
+    final colonyIncome =
+        income.colony * (afterTime / 1440) * (gabTime + tabTime) / 24;
     final otherIncome =
         income.other *
         (1 + (endWave - startWave) / startWave) *
-        (afterTime / 1440);
+        (afterTime / 1440) *
+        (gabTime + tabTime) /
+        24;
     final totalIncome = colonyIncome + otherIncome + waveIncome;
     final endWaveTotalGold = startWaveTotalGold + totalIncome;
     final startGp = user.gp;
