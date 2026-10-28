@@ -320,6 +320,9 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String get settingsEnabled => '启用';
+
+  @override
   String get settingsThirdPartyApi => '第三方 API';
 
   @override
@@ -1791,6 +1794,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String snackCannotOpenLink(String url) {
     return '無法開啟連結：$url';
   }
+
+  @override
+  String get settingsEnabled => '啟用';
 
   @override
   String get settingsThirdPartyApi => '第三方 API';

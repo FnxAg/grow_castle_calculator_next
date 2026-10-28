@@ -667,6 +667,12 @@ abstract class AppLocalizations {
   /// **'无法打开链接：{url}'**
   String snackCannotOpenLink(String url);
 
+  /// No description provided for @settingsEnabled.
+  ///
+  /// In zh, this message translates to:
+  /// **'启用'**
+  String get settingsEnabled;
+
   /// No description provided for @settingsThirdPartyApi.
   ///
   /// In zh, this message translates to:

@@ -330,6 +330,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get settingsEnabled => 'Enabled';
+
+  @override
   String get settingsThirdPartyApi => 'Third-party API';
 
   @override

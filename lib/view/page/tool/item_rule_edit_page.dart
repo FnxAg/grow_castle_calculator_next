@@ -42,7 +42,7 @@ String? _valueRangeHelperText(ItemLine line, {required bool isMin}) {
   final (min, max) = range;
   return isMin
       ? '${min.format(fractionDigits: 1)} ≤ value ≤ ${max.format()}'
-      : '${min.format(fractionDigits: 1)} < value ≤ ${max.format()}';
+      : '${min.format(fractionDigits: 1)} ≤ value ≤ ${max.format()}';
 }
 
 /// 高亮规则管理页：查看、新增、编辑、删除用户自定义高亮规则
@@ -483,60 +483,54 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                     (l) => l.color == color,
                   ))
                     Padding(
-                      padding: const EdgeInsets.only(left: 8, right: 16),
+                      padding: const EdgeInsets.only(left: 16, right: 16),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Row(
-                            children: [
-                              Checkbox(
-                                value: _counts.containsKey(line),
-                                // 白色词条合计 3 条时禁止勾选红色词条
-                                onChanged:
-                                    line.color == LineColor.red &&
-                                        _whiteSum >= 3
-                                    ? null
-                                    : (checked) =>
-                                          _toggleLine(line, checked ?? false),
-                              ),
-                              Expanded(
-                                child: Text(
-                                  line.label,
-                                  style: const TextStyle(fontSize: 13),
-                                ),
-                              ),
-                              // 白词条可同时出现两条
-                              if (_counts.containsKey(line) &&
-                                  line.color == LineColor.white)
-                                SegmentedButton<int>(
-                                  segments: [
-                                    ButtonSegment(
-                                      value: 1,
-                                      label: Text(l10n.labelLineCount(1)),
-                                    ),
-                                    ButtonSegment(
-                                      value: 2,
-                                      label: Text(l10n.labelLineCount(2)),
-                                    ),
-                                  ],
-                                  selected: {_counts[line] ?? 1},
-                                  showSelectedIcon: false,
-                                  style: const ButtonStyle(
-                                    visualDensity: VisualDensity.compact,
-                                  ),
-                                  onSelectionChanged: (s) =>
-                                      _setWhiteCount(line, s.first),
-                                ),
-                            ],
+                          CheckboxListTile(
+                            contentPadding: EdgeInsets.zero,
+                            title: Row(
+                              mainAxisAlignment: .spaceBetween,
+                              children: [
+                                Text(line.label),
+                                _counts.containsKey(line) && line.color == LineColor.white
+                                    ? Padding(
+                                        padding: const EdgeInsets.only(left: 8),
+                                        child: SegmentedButton<int>(
+                                          segments: [
+                                            ButtonSegment(
+                                              value: 1,
+                                              label: Text(l10n.labelLineCount(1)),
+                                            ),
+                                            ButtonSegment(
+                                              value: 2,
+                                              label: Text(l10n.labelLineCount(2)),
+                                            ),
+                                          ],
+                                          selected: {_counts[line] ?? 1},
+                                          showSelectedIcon: false,
+                                          style: const ButtonStyle(
+                                            visualDensity: VisualDensity.compact,
+                                          ),
+                                          onSelectionChanged: (s) =>
+                                              _setWhiteCount(line, s.first),
+                                        ),
+                                      )
+                                    : const SizedBox.shrink(),
+                              ],
+                            ),
+                            value: _counts.containsKey(line),
+                            // 白色词条合计 3 条时禁止勾选红色词条
+                            onChanged:
+                                line.color == LineColor.red && _whiteSum >= 3
+                                ? null
+                                : (checked) =>
+                                      _toggleLine(line, checked ?? false),
                           ),
                           // 数值范围
                           if (_counts.containsKey(line) && _hasValueRange(line))
                             Padding(
-                              padding: const EdgeInsets.only(
-                                left: 48,
-                                right: 8,
-                                bottom: 8,
-                              ),
+                              padding: const EdgeInsets.all(8.0),
                               child: Row(
                                 children: [
                                   Expanded(

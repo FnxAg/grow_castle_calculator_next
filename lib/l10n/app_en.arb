@@ -93,6 +93,7 @@
   "labelChangelog": "Changelog:",
   "actionOpenReleasePage": "Open release page",
   "snackCannotOpenLink": "Couldn't open link: {url}",
+  "settingsEnabled": "Enabled",
   "settingsThirdPartyApi": "Third-party API",
   "labelApiUrl": "Third-party API URL",
   "settingsQueryConcurrency": "Query concurrency",

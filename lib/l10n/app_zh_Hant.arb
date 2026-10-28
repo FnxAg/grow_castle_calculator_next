@@ -95,6 +95,7 @@
   "labelChangelog": "更新日誌：",
   "actionOpenReleasePage": "開啟發布頁",
   "snackCannotOpenLink": "無法開啟連結：{url}",
+  "settingsEnabled": "啟用",
   "settingsThirdPartyApi": "第三方 API",
   "labelApiUrl": "API 位址",
   "settingsQueryConcurrency": "查詢並行數",

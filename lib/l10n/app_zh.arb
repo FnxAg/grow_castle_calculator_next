@@ -176,6 +176,7 @@
       }
     }
   },
+  "settingsEnabled": "启用",
   "settingsThirdPartyApi": "第三方 API",
   "labelApiUrl": "API 地址",
   "settingsQueryConcurrency": "查询并发数",

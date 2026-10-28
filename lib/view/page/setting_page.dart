@@ -316,118 +316,85 @@ class _SettingPageState extends State<SettingPage> {
               onSelected: appSettingsStore.setLanguage,
             ),
           ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
+          ExpansionTile(
+            leading: const Icon(Icons.api),
+            title: Text(l10n.settingsThirdPartyApi),
+            subtitle: Text(l10n.settingsThirdPartyApiSubtitle),
+            childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.thirdPartyApiEnabledNotifier,
                 builder: (context, enabled, _) {
-                  return ListTile(
-                    leading: const Icon(Icons.api),
-                    title: Text(l10n.settingsThirdPartyApi),
-                    subtitle: Text(l10n.settingsThirdPartyApiSubtitle),
-                    onTap: () =>
-                        appSettingsStore.setThirdPartyApiEnabled(!enabled),
-                    trailing: Switch(
-                      value: enabled,
-                      onChanged: appSettingsStore.setThirdPartyApiEnabled,
-                    ),
+                  return SwitchListTile(
+                    value: enabled,
+                    onChanged: appSettingsStore.setThirdPartyApiEnabled,
+                    title: Text(l10n.settingsEnabled),
                   );
                 },
               ),
               ValueListenableBuilder<String>(
                 valueListenable: appSettingsStore.apiUrlNotifier,
                 builder: (context, url, _) {
-                  return ValueListenableBuilder<bool>(
-                    valueListenable:
-                        appSettingsStore.thirdPartyApiEnabledNotifier,
-                    builder: (context, enabled, child) {
-                      return AnimatedSize(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.linearToEaseOut,
-                        child: SizedBox(
-                          child: !enabled
-                              ? const SizedBox.shrink()
-                              : ListTile(
-                                  leading: const Icon(Icons.link),
-                                  title: Text(l10n.labelApiUrl),
-                                  subtitle: Text(url),
-                                  onTap: () => _showApiUrlDialog(
-                                    context,
-                                    appSettingsStore,
-                                  ),
-                                ),
-                        ),
-                      );
-                    },
+                  return ListTile(
+                    title: Text(l10n.labelApiUrl),
+                    subtitle: Text(url),
+                    onTap: () => _showApiUrlDialog(context, appSettingsStore),
                   );
                 },
               ),
             ],
           ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
+          ExpansionTile(
+            leading: const Icon(Icons.schedule),
+            title: Text(l10n.settingsAutoLastOnline),
+            subtitle: Text(l10n.settingsAutoLastOnlineSubtitle),
+            childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
                 builder: (context, enabled, _) {
-                  return ListTile(
-                    onTap: () {
-                      appSettingsStore.setAutoLastOnlineEnabled(!enabled);
-                    },
-                    leading: const Icon(Icons.schedule),
-                    title: Text(l10n.settingsAutoLastOnline),
-                    subtitle: Text(l10n.settingsAutoLastOnlineSubtitle),
-                    trailing: Switch(
-                      value: enabled,
-                      onChanged: appSettingsStore.setAutoLastOnlineEnabled,
-                    ),
+                  return SwitchListTile(
+                    value: enabled,
+                    onChanged: appSettingsStore.setAutoLastOnlineEnabled,
+                    title: Text(l10n.settingsEnabled),
                   );
                 },
               ),
               ValueListenableBuilder<int>(
                 valueListenable: appSettingsStore.lastOnlineConcurrencyNotifier,
                 builder: (context, concurrency, _) {
-                  return ValueListenableBuilder<bool>(
-                    valueListenable:
-                        appSettingsStore.autoLastOnlineEnabledNotifier,
-                    builder: (context, enabled, child) {
-                      return AnimatedSize(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.linearToEaseOut,
-                        child: !enabled
-                            ? const SizedBox.shrink()
-                            : ListTile(
-                                leading: const Icon(Icons.network_check),
-                                title: Text(l10n.settingsQueryConcurrency),
-                                subtitle: Text('$concurrency'),
-                                onTap: () => _showConcurrencyDialog(
-                                  context,
-                                  appSettingsStore,
-                                ),
-                              ),
-                      );
-                    },
+                  return ListTile(
+                    title: Text(l10n.settingsQueryConcurrency),
+                    subtitle: Text('$concurrency'),
+                    onTap: () =>
+                        _showConcurrencyDialog(context, appSettingsStore),
                   );
                 },
               ),
             ],
           ),
-          Column(
-            mainAxisSize: MainAxisSize.min,
+          ExpansionTile(
+            leading: const Icon(Icons.timeline),
+            title: Text(l10n.settingsGameTrack),
+            subtitle: Text(l10n.settingsGameTrackSubtitle),
+            childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.gameTrackEnabledNotifier,
                 builder: (context, enabled, _) {
-                  return ListTile(
-                    leading: const Icon(Icons.timeline),
-                    title: Text(l10n.settingsGameTrack),
-                    subtitle: Text(l10n.settingsGameTrackSubtitle),
-                    onTap: () => appSettingsStore.setGameTrackEnabled(!enabled),
-                    trailing: Switch(
-                      value: enabled,
-                      onChanged: appSettingsStore.setGameTrackEnabled,
-                    ),
+                  return SwitchListTile(
+                    value: enabled,
+                    onChanged: appSettingsStore.setGameTrackEnabled,
+                    title: Text(l10n.settingsEnabled),
                   );
                 },
               ),
@@ -435,28 +402,13 @@ class _SettingPageState extends State<SettingPage> {
                 valueListenable:
                     appSettingsStore.gameTrackIntervalMinutesNotifier,
                 builder: (context, minutes, _) {
-                  return ValueListenableBuilder<bool>(
-                    valueListenable: appSettingsStore.gameTrackEnabledNotifier,
-                    builder: (context, enabled, _) {
-                      return AnimatedSize(
-                        duration: const Duration(milliseconds: 200),
-                        curve: Curves.linearToEaseOut,
-                        child: !enabled
-                            ? const SizedBox.shrink()
-                            : ListTile(
-                                enabled: enabled,
-                                leading: const Icon(Icons.timer_outlined),
-                                title: Text(l10n.settingsGameTrackMinInterval),
-                                subtitle: Text(
-                                  l10n.settingsGameTrackIntervalValue(minutes),
-                                ),
-                                onTap: () => _showGameTrackIntervalDialog(
-                                  context,
-                                  appSettingsStore,
-                                ),
-                              ),
-                      );
-                    },
+                  return ListTile(
+                    title: Text(l10n.settingsGameTrackMinInterval),
+                    subtitle: Text(
+                      l10n.settingsGameTrackIntervalValue(minutes),
+                    ),
+                    onTap: () =>
+                        _showGameTrackIntervalDialog(context, appSettingsStore),
                   );
                 },
               ),
