@@ -1,4 +1,3 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
@@ -42,13 +41,6 @@ class WaveStatusPage extends ConsumerWidget {
     (false, l10n.optionAutoBattleTime),
   ];
 
-  static final _gameSpeedKey = GlobalKey();
-  static final _chronoKey = GlobalKey();
-  static final _hornKey = GlobalKey();
-  static final _goldenHornKey = GlobalKey();
-  static final _devilHornKey = GlobalKey();
-  static final _autoBattleKey = GlobalKey();
-
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
@@ -65,63 +57,130 @@ class WaveStatusPage extends ConsumerWidget {
       body: ListView(
         children: [
           Padding(
-            padding: const EdgeInsets.all(12),
+            padding: const EdgeInsets.all(16),
             child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
           ),
           // 游戏速度：gameSpeed
-          _settingTile<int>(
-            context,
-            label: l10n.labelGameSpeed,
-            dropdownKey: _gameSpeedKey,
-            value: user.gameSpeed,
-            entries: _gameSpeedEntries(l10n),
-            onChanged: ref.users.setCurrentUserGameSpeed,
+          ExpansionTile(
+            title: Text(l10n.labelGameSpeed),
+            subtitle: Text(
+              _gameSpeedEntries(l10n)
+                  .firstWhere((entry) => entry.$1 == user.gameSpeed)
+                  .$2,
+            ),
+            childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            children: [
+              RadioGroup<int>(
+                groupValue: user.gameSpeed,
+                onChanged: (value) {
+                  if (value != null) {
+                    ref.users.setCurrentUserGameSpeed(value);
+                  }
+                },
+                child: Column(
+                  children: [
+                    for (final (value, label) in _gameSpeedEntries(l10n))
+                      RadioListTile<int>(title: Text(label), value: value),
+                  ],
+                ),
+              ),
+            ],
           ),
           // 闹钟转职：chronoClass
-          _settingTile<int>(
-            context,
-            label: l10n.labelChronoType,
-            dropdownKey: _chronoKey,
-            value: user.chronoClass,
-            entries: _chronoEntries(l10n),
-            onChanged: ref.users.setCurrentUserChronoClass,
+          ExpansionTile(
+            title: Text(l10n.labelChronoType),
+            subtitle: Text(
+              _chronoEntries(l10n)
+                  .firstWhere((entry) => entry.$1 == user.chronoClass)
+                  .$2,
+            ),
+            childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            children: [
+              RadioGroup<int>(
+                groupValue: user.chronoClass,
+                onChanged: (value) {
+                  if (value != null) {
+                    ref.users.setCurrentUserChronoClass(value);
+                  }
+                },
+                child: Column(
+                  children: [
+                    for (final (value, label) in _chronoEntries(l10n))
+                      RadioListTile<int>(title: Text(label), value: value),
+                  ],
+                ),
+              ),
+            ],
           ),
           // 10%角：horn
-          _settingTile<bool>(
-            context,
-            label: l10n.labelHorn10,
-            dropdownKey: _hornKey,
+          SwitchListTile(
+            title: Text(l10n.labelHorn10),
+            subtitle: Text(
+              _equipEntries(l10n)
+                  .firstWhere((entry) => entry.$1 == user.horn)
+                  .$2,
+            ),
             value: user.horn,
-            entries: _equipEntries(l10n),
-            onChanged: ref.users.setCurrentUserHorn,
+            onChanged: (value) => ref.users.setCurrentUserHorn(value),
           ),
           // 30%角：goldenHorn
-          _settingTile<bool>(
-            context,
-            label: l10n.labelHorn30,
-            dropdownKey: _goldenHornKey,
+          SwitchListTile(
+            title: Text(l10n.labelHorn30),
+            subtitle: Text(
+              _equipEntries(l10n)
+                  .firstWhere((entry) => entry.$1 == user.goldenHorn)
+                  .$2,
+            ),
             value: user.goldenHorn,
-            entries: _equipEntries(l10n),
-            onChanged: ref.users.setCurrentUserGoldenHorn,
+            onChanged: (value) => ref.users.setCurrentUserGoldenHorn(value),
           ),
           // 恶魔号角跳波数：devilHornSkip
-          _settingTile<int>(
-            context,
-            label: l10n.labelDevilHornSkip,
-            dropdownKey: _devilHornKey,
-            value: user.devilHornSkip,
-            entries: _devilHornEntries(l10n),
-            onChanged: ref.users.setCurrentUserDevilHornSkip,
+          ExpansionTile(
+            title: Text(l10n.labelDevilHornSkip),
+            subtitle: Text(
+              _devilHornEntries(l10n)
+                  .firstWhere((entry) => entry.$1 == user.devilHornSkip)
+                  .$2,
+            ),
+            childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+            ),
+            children: [
+              RadioGroup<int>(
+                groupValue: user.devilHornSkip,
+                onChanged: (value) {
+                  if (value != null) {
+                    ref.users.setCurrentUserDevilHornSkip(value);
+                  }
+                },
+                child: Column(
+                  children: [
+                    for (final (value, label) in _devilHornEntries(l10n))
+                      RadioListTile<int>(title: Text(label), value: value),
+                  ],
+                ),
+              ),
+            ],
           ),
           // 挂机类型：isGoldAutoBattle
-          _settingTile<bool>(
-            context,
-            label: l10n.labelAutoBattleType,
-            dropdownKey: _autoBattleKey,
-            value: user.isGoldAutoBattle,
-            entries: _autoBattleEntries(l10n),
-            infoContent: Text(l10n.infoAutoBattleTab),
-            onChanged: ref.users.setCurrentUserIsGoldAutoBattle,
+          SwitchListTile(
+            title: Text(l10n.labelAutoBattleType),
+            // subtitle: Text(l10n.infoAutoBattleTab),
+            subtitle: Text(
+              _autoBattleEntries(l10n)
+                  .firstWhere((entry) => entry.$1 == user.isGoldAutoBattle)
+                  .$2,
+            ),
+            value: !user.isGoldAutoBattle,
+            onChanged: (value) =>
+                ref.users.setCurrentUserIsGoldAutoBattle(!value),
           ),
           const SizedBox(height: 8),
           Center(
@@ -130,78 +189,10 @@ class WaveStatusPage extends ConsumerWidget {
               style: Theme.of(context).textTheme.bodySmall,
             ),
           ),
+          const SizedBox(height: 16),
         ],
       ),
     );
-  }
-
-  Widget _settingTile<T>(
-    BuildContext context, {
-    required String label,
-    required GlobalKey dropdownKey,
-    required T value,
-    required List<(T, String)> entries,
-    Widget? infoContent,
-    required ValueChanged<T> onChanged,
-  }) {
-    return LayoutBuilder(
-      builder: (context, constraints) => ListTile(
-        onTap: () => _openDropdown(dropdownKey),
-        title: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Flexible(child: Text(label, overflow: TextOverflow.ellipsis)),
-            if (infoContent != null) ...[
-              const SizedBox(width: 4),
-              GestureDetector(
-                onTap: () {
-                  showDialog<void>(
-                    context: context,
-                    builder: (BuildContext context) => AlertDialog(
-                      title: Text(label),
-                      content: infoContent,
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.of(context).pop(),
-                          child: Text(
-                            AppLocalizations.of(context).actionCancel,
-                          ),
-                        ),
-                      ],
-                    ),
-                  );
-                },
-                child: Icon(
-                  Icons.info_outline,
-                  size: 18,
-                  color: Theme.of(context).colorScheme.onSurfaceVariant,
-                ),
-              ),
-            ],
-          ],
-        ),
-        trailing: ConstrainedBox(
-          constraints: BoxConstraints(maxWidth: constraints.maxWidth * 0.35),
-          child: _TrailingDropdown<T>(
-            buttonKey: dropdownKey,
-            value: value,
-            entries: entries,
-            onChanged: onChanged,
-          ),
-        ),
-      ),
-    );
-  }
-
-  static void _openDropdown(GlobalKey key) {
-    final context = key.currentContext;
-    if (context == null) return;
-    final box = context.findRenderObject() as RenderBox?;
-    if (box == null || !box.attached) return;
-    final center = box.localToGlobal(box.size.center(Offset.zero));
-    GestureBinding.instance
-      ..handlePointerEvent(PointerDownEvent(position: center))
-      ..handlePointerEvent(PointerUpEvent(position: center));
   }
 }
 
@@ -287,53 +278,6 @@ class _HeroMetric extends StatelessWidget {
           ),
         ),
       ],
-    );
-  }
-}
-
-class _TrailingDropdown<T> extends StatelessWidget {
-  const _TrailingDropdown({
-    required this.buttonKey,
-    required this.value,
-    required this.entries,
-    required this.onChanged,
-  });
-
-  final GlobalKey buttonKey;
-  final T value;
-  final List<(T, String)> entries;
-  final ValueChanged<T> onChanged;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    return DropdownButtonHideUnderline(
-      child: DropdownButton<T>(
-        key: buttonKey,
-        value: value,
-        isDense: true,
-        isExpanded: true,
-        alignment: AlignmentDirectional.centerEnd,
-        borderRadius: BorderRadius.circular(8),
-        style: theme.textTheme.bodyMedium?.copyWith(
-          color: theme.colorScheme.onSurface,
-        ),
-        icon: Icon(
-          Icons.arrow_drop_down,
-          size: 22,
-          color: theme.colorScheme.onSurfaceVariant,
-        ),
-        items: [
-          for (final (v, label) in entries)
-            DropdownMenuItem<T>(
-              value: v,
-              child: Text(label, overflow: TextOverflow.ellipsis),
-            ),
-        ],
-        onChanged: (v) {
-          if (v != null) onChanged(v);
-        },
-      ),
     );
   }
 }
