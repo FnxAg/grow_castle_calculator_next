@@ -186,7 +186,6 @@ class _AppBarInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Widget> segments = [
       AppBarItem.currentUser(),
-      AppBarItem.currentUserTotalGold(),
       AppBarItem.currentUserDailyIncome(),
     ];
     return AppBarInfo(children: segments);

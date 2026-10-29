@@ -52,10 +52,9 @@ abstract class AppBarItem extends ConsumerWidget {
   static Widget currentUserLastOnline() => Consumer(
     builder: (context, ref, child) {
       final lastOnline = ref.watch(currentUserLastOnlineProvider);
-      if (lastOnline.isEmpty) return Text('-', style: textStyle);
       return AnimatedTextSwitcher(
         child: Text(
-          '$lastOnline ago',
+          lastOnline.isEmpty ? '-' : '$lastOnline ago',
           style: textStyle,
           key: ValueKey(lastOnline),
         ),
@@ -66,13 +65,16 @@ abstract class AppBarItem extends ConsumerWidget {
   static Widget currentUserDailyIncome() => Consumer(
     builder: (context, ref, child) {
       final dailyIncome = ref.watch(dailyIncomeProvider).total;
-      return Text(
-        dailyIncome.formatCompact(
-          fractionDigits: 2,
-          english: !context.isChineseLocale,
-          traditional: context.isTraditionalChineseLocale,
+      return AnimatedTextSwitcher(
+        child: Text(
+          dailyIncome.formatCompact(
+            fractionDigits: 2,
+            english: !context.isChineseLocale,
+            traditional: context.isTraditionalChineseLocale,
+          ),
+          style: textStyle,
+          key: ValueKey(dailyIncome),
         ),
-        style: textStyle,
       );
     },
   );
