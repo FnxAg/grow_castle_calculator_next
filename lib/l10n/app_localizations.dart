@@ -1797,7 +1797,7 @@ abstract class AppLocalizations {
   /// No description provided for @labelDailyGabTime.
   ///
   /// In zh, this message translates to:
-  /// **'每日金挂时间'**
+  /// **'每日金挂/破挂时间'**
   String get labelDailyGabTime;
 
   /// No description provided for @labelDailyTabTime.
@@ -2697,7 +2697,7 @@ abstract class AppLocalizations {
   /// No description provided for @labelGabBonusNote.
   ///
   /// In zh, this message translates to:
-  /// **'破挂请点击「FAB」按钮，金挂收益将被视为 0%'**
+  /// **'破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%'**
   String get labelGabBonusNote;
 }
 

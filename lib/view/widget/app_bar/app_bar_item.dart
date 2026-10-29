@@ -63,6 +63,20 @@ abstract class AppBarItem extends ConsumerWidget {
     },
   );
 
+  static Widget currentUserDailyIncome() => Consumer(
+    builder: (context, ref, child) {
+      final dailyIncome = ref.watch(dailyIncomeProvider).total;
+      return Text(
+        dailyIncome.formatCompact(
+          fractionDigits: 2,
+          english: !context.isChineseLocale,
+          traditional: context.isTraditionalChineseLocale,
+        ),
+        style: textStyle,
+      );
+    },
+  );
+
   static Widget seasonIndicator(ValueListenable<SeasonRange?> notifier) =>
       SeasonIndicator(notifier: notifier);
 }

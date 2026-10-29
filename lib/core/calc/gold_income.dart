@@ -47,7 +47,8 @@ getDailyIncomeBreakdown({
       3600 /
       secondsPerWave /
       secondsPerCart;
-  final colonyGoldPerDay = goldPerCart * cartsPerHour * 24;
+  final colonyGoldPerDay =
+      goldPerCart * cartsPerHour * (tabTime + gabTime);
 
   final adGold = w0 * 2160;
   final gabCost = 456.0 * w0 - 29264;

@@ -620,7 +620,7 @@
   "labelWheel": "车轮",
   "labelWhip": "鞭子",
   "labelGabAverageBonus": "金挂平均收益",
-  "labelDailyGabTime": "每日金挂时间",
+  "labelDailyGabTime": "每日金挂/破挂时间",
   "labelDailyTabTime": "每日时挂时间",
   "labelSeasonColony": "赛季殖民地",
   "labelGoldenTree": "金币大树",
@@ -986,5 +986,5 @@
   "incomeTrendEnd": "结束数据",
   "dataDisclaimer": "数据仅供参考",
   "fromDev": "欢迎加入 POC 谢谢喵！",
-  "labelGabBonusNote": "破挂请点击「FAB」按钮，金挂收益将被视为 0%"
+  "labelGabBonusNote": "破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%"
 }

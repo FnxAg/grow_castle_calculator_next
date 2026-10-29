@@ -282,7 +282,7 @@
   "labelWheel": "Iron Wheel",
   "labelWhip": "Whip",
   "labelGabAverageBonus": "GAB average bonus",
-  "labelDailyGabTime": "Daily GAB time",
+  "labelDailyGabTime": "Daily GAB / FAB time",
   "labelDailyTabTime": "Daily TAB time",
   "labelSeasonColony": "Season colony",
   "labelGoldenTree": "Golden tree",
@@ -433,5 +433,5 @@
   "incomeTrendEnd": "End",
   "dataDisclaimer": "Data is for reference only",
   "fromDev": "Welcome to join POC!",
-  "labelGabBonusNote": "If you break the GAB, click the \"FAB\" button, and the gold bonus will be considered 0%"
+  "labelGabBonusNote": "If you are FAB player, click the \"FAB\" button and save it, and the GAB bonus will be considered 0%"
 }

@@ -21,10 +21,10 @@ class IncomeSummaryBar extends ConsumerWidget {
       child: SummaryCard(
         children: <Widget>[
           SummaryRow(
-            leading: Icon(Icons.terrain),
-            title: Text(l10n.tabIncomeColony),
+            leading: Icon(Icons.bolt),
+            title: Text(l10n.tabIncomeWave),
             trailing: SummaryRowValueText(
-              text: income.colony.formatCompact(
+              text: income.autoBattle.formatCompact(
                 fractionDigits: 2,
                 english: english,
                 traditional: traditional,
@@ -32,10 +32,10 @@ class IncomeSummaryBar extends ConsumerWidget {
             ),
           ),
           SummaryRow(
-            leading: Icon(Icons.bolt),
-            title: Text(l10n.tabIncomeWave),
+            leading: Icon(Icons.terrain),
+            title: Text(l10n.tabIncomeColony),
             trailing: SummaryRowValueText(
-              text: income.autoBattle.formatCompact(
+              text: income.colony.formatCompact(
                 fractionDigits: 2,
                 english: english,
                 traditional: traditional,

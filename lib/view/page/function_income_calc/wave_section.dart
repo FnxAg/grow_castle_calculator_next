@@ -12,8 +12,6 @@ class WaveSection extends StatelessWidget {
       mainAxisSize: MainAxisSize.min,
       children: [
         IncomeEditTile(field: IncomeField.gabBonus),
-        IncomeEditTile(field: IncomeField.gabTime),
-        IncomeEditTile(field: IncomeField.tabTime),
       ],
     );
   }

@@ -1,3 +1,5 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -22,21 +24,78 @@ class BonusGoldCalcPage extends ConsumerStatefulWidget {
   ConsumerState<BonusGoldCalcPage> createState() => _BonusGoldCalcPageState();
 }
 
-class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage> {
+class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
+    with SingleTickerProviderStateMixin {
   /// 会话缓存
   static final Map<int, List<int>> _incomesByUser = {};
 
   /// 当前用户的样本列表
   late List<int> _incomes;
 
+  late final AnimationController _cardController;
+  late final CurvedAnimation _cardAnimation;
+  bool _showCard = true;
+
   @override
   void initState() {
     super.initState();
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1.0,
+    );
+    _cardAnimation = CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeInOutCubic,
+    );
     ref.listenManual(userReloadSignalProvider, (_, _) {
       if (!mounted) return;
       reloadForCurrentUser();
     });
     _loadIncomes();
+  }
+
+  @override
+  void dispose() {
+    _cardAnimation.dispose();
+    _cardController.dispose();
+    super.dispose();
+  }
+
+  /// 根据滑动方向显示/隐藏底部汇总卡片。
+  ///
+  /// 用 [UserScrollNotification] 而不是监听滚动位置：内容不足一屏时
+  /// 滚动位置不会变化，但手势方向仍会上报。
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is UserScrollNotification) {
+      switch (notification.direction) {
+        case ScrollDirection.reverse:
+          _setCardVisible(false);
+        case ScrollDirection.forward:
+          _setCardVisible(true);
+        case ScrollDirection.idle:
+          break;
+      }
+    }
+    return false;
+  }
+
+  /// 鼠标滚轮/触控板不会产生 [UserScrollNotification]，
+  /// 用原始滚动事件兜底（内容不足一屏时同样有效）。
+  void _onPointerSignal(PointerSignalEvent event) {
+    if (event is PointerScrollEvent && event.scrollDelta.dy != 0.0) {
+      _setCardVisible(event.scrollDelta.dy < 0.0);
+    }
+  }
+
+  void _setCardVisible(bool visible) {
+    if (_showCard == visible) return;
+    setState(() => _showCard = visible);
+    if (visible) {
+      _cardController.forward();
+    } else {
+      _cardController.reverse();
+    }
   }
 
   void reloadForCurrentUser() {
@@ -156,41 +215,74 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage> {
             final percent = _incomes.isEmpty
                 ? 0.0
                 : _sampleRate(avgIncome, safeCost);
-            final Widget bodyView = Expanded(
-              flex: isWide ? 6 : 1,
-              child: _incomes.isEmpty
-                  ? Center(
-                      child: Text(
-                        l10n.emptyIncomeSamples,
-                        style: const TextStyle(color: Colors.grey),
+            final Widget list = _incomes.isEmpty
+                ? CustomScrollView(
+                    // 空列表也接受拖动，卡片才能响应手势
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    slivers: [
+                      SliverFillRemaining(
+                        hasScrollBody: false,
+                        child: Center(
+                          child: Text(
+                            l10n.emptyIncomeSamples,
+                            style: const TextStyle(color: Colors.grey),
+                          ),
+                        ),
                       ),
-                    )
-                  : ListView.builder(
-                      itemCount: _incomes.length,
-                      itemBuilder: (context, index) {
-                        final income = _incomes[index];
-                        return _IncomeTile(
-                          index: index,
-                          income: income,
-                          rate: _sampleRate(income, safeCost),
-                          onRemove: () => _removeIncome(index),
-                        );
-                      },
-                    ),
-            );
+                    ],
+                  )
+                : ListView.builder(
+                    physics: const AlwaysScrollableScrollPhysics(),
+                    itemCount: _incomes.length,
+                    itemBuilder: (context, index) {
+                      final income = _incomes[index];
+                      return _IncomeTile(
+                        index: index,
+                        income: income,
+                        rate: _sampleRate(income, safeCost),
+                        onRemove: () => _removeIncome(index),
+                      );
+                    },
+                  );
             final Widget summary = _buildSummaryCard(
               gabCost: gabCost,
               avgIncome: avgIncome,
               percent: percent,
             );
-            return isWide
-                ? Row(
-                    children: [
-                      bodyView,
-                      Expanded(flex: 4, child: summary),
-                    ],
-                  )
-                : Column(children: [bodyView, summary]);
+            if (isWide) {
+              return Row(
+                children: [
+                  Expanded(flex: 6, child: list),
+                  Expanded(flex: 4, child: summary),
+                ],
+              );
+            }
+            return Listener(
+              onPointerSignal: _onPointerSignal,
+              child: Stack(
+                children: [
+                  Positioned.fill(
+                    child: NotificationListener<UserScrollNotification>(
+                      onNotification: _onScrollNotification,
+                      child: list,
+                    ),
+                  ),
+                  Positioned(
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    child: IgnorePointer(
+                      ignoring: !_showCard,
+                      child: SizeTransition(
+                        sizeFactor: _cardAnimation,
+                        alignment: Alignment.topCenter,
+                        child: summary,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            );
           },
         ),
       ),

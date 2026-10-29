@@ -1,3 +1,4 @@
+import 'package:flutter/gestures.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -56,7 +57,6 @@ class GuildDetailPage extends StatelessWidget {
 
 class _GuildPageState extends ConsumerState<GuildPage>
     with TickerProviderStateMixin {
-  final ScrollController _scrollController = ScrollController();
   late final AnimationController _cardController;
   late final CurvedAnimation _cardAnimation;
   bool _showCard = true;
@@ -114,7 +114,6 @@ class _GuildPageState extends ConsumerState<GuildPage>
       parent: _cardController,
       curve: Curves.easeInOutCubic,
     );
-    _scrollController.addListener(_handleScroll);
     ref.listenManual(userReloadSignalProvider, (_, _) {
       if (!mounted) return;
       reloadForCurrentUser();
@@ -122,22 +121,40 @@ class _GuildPageState extends ConsumerState<GuildPage>
     _load();
   }
 
-  void _handleScroll() {
-    final direction = _scrollController.position.userScrollDirection;
-    if (direction == ScrollDirection.reverse && _showCard) {
-      _showCard = false;
-      _cardController.reverse();
-    } else if (direction == ScrollDirection.forward && !_showCard) {
-      _showCard = true;
+  /// 手势滑动
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is UserScrollNotification) {
+      switch (notification.direction) {
+        case ScrollDirection.reverse:
+          _setCardVisible(false);
+        case ScrollDirection.forward:
+          _setCardVisible(true);
+        case ScrollDirection.idle:
+          break;
+      }
+    }
+    return false;
+  }
+
+  /// 鼠标滚轮/触控板滚动
+  void _onPointerSignal(PointerSignalEvent event) {
+    if (event is PointerScrollEvent && event.scrollDelta.dy != 0.0) {
+      _setCardVisible(event.scrollDelta.dy < 0.0);
+    }
+  }
+
+  void _setCardVisible(bool visible) {
+    if (_showCard == visible) return;
+    setState(() => _showCard = visible);
+    if (visible) {
       _cardController.forward();
+    } else {
+      _cardController.reverse();
     }
   }
 
   @override
   void dispose() {
-    _scrollController
-      ..removeListener(_handleScroll)
-      ..dispose();
     _cardController.dispose();
     _cardAnimation.dispose();
     super.dispose();
@@ -524,150 +541,156 @@ class _GuildPageState extends ConsumerState<GuildPage>
     );
     return RefreshIndicator(
       onRefresh: _refresh,
-      child: Stack(
-        children: [
-          Positioned.fill(
-            child: ListView.builder(
-              controller: _scrollController,
-              physics: const AlwaysScrollableScrollPhysics(),
-              itemCount: _members.length,
-              itemBuilder: (context, index) {
-                final member = _members[index];
-                final lowerName = member.name.toLowerCase();
-                final isSelf = lowerName == currentUser.toLowerCase();
-                final seasonRank = _playerRankByName[lowerName];
-                final hellRank = _hellRankByName[lowerName];
-                final reward =
-                    getRedCrystalFromPlayerRank(seasonRank ?? 0) +
-                    getRedCrystalFromHellModeRank(hellRank ?? 0);
-                final lastOnline = _lastOnlineByLower[lowerName];
-                return ListTile(
-                  selected: wide && member.name == _selectedMember,
-                  // 点击成员进入玩家详情页，宽屏下改为右侧面板展示
-                  onTap: () => _openMember(member),
-                  leading: CircleAvatar(
-                    radius: 14.0,
-                    backgroundColor: isSelf
-                        ? scheme.primaryContainer
-                        : scheme.surfaceContainerHighest,
-                    child: Text(
-                      '${index + 1}',
-                      style: TextStyle(
-                        fontSize: 12.0,
-                        fontWeight: FontWeight.bold,
-                        color: isSelf ? scheme.onPrimaryContainer : null,
+      child: Listener(
+        onPointerSignal: _onPointerSignal,
+        child: NotificationListener<UserScrollNotification>(
+          onNotification: _onScrollNotification,
+          child: Stack(
+            children: [
+              Positioned.fill(
+                child: ListView.builder(
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  itemCount: _members.length,
+                  itemBuilder: (context, index) {
+                    final member = _members[index];
+                    final lowerName = member.name.toLowerCase();
+                    final isSelf = lowerName == currentUser.toLowerCase();
+                    final seasonRank = _playerRankByName[lowerName];
+                    final hellRank = _hellRankByName[lowerName];
+                    final reward =
+                        getRedCrystalFromPlayerRank(seasonRank ?? 0) +
+                        getRedCrystalFromHellModeRank(hellRank ?? 0);
+                    final lastOnline = _lastOnlineByLower[lowerName];
+                    return ListTile(
+                      selected: wide && member.name == _selectedMember,
+                      // 点击成员进入玩家详情页，宽屏下改为右侧面板展示
+                      onTap: () => _openMember(member),
+                      leading: CircleAvatar(
+                        radius: 14.0,
+                        backgroundColor: isSelf
+                            ? scheme.primaryContainer
+                            : scheme.surfaceContainerHighest,
+                        child: Text(
+                          '${index + 1}',
+                          style: TextStyle(
+                            fontSize: 12.0,
+                            fontWeight: FontWeight.bold,
+                            color: isSelf ? scheme.onPrimaryContainer : null,
+                          ),
+                        ),
                       ),
-                    ),
-                  ),
-                  title: Text(
-                    member.name,
-                    style: TextStyle(
-                      fontWeight: isSelf ? FontWeight.bold : null,
-                      color: isSelf ? scheme.primary : null,
-                    ),
-                  ),
-                  subtitle: (seasonRank != null || hellRank != null)
-                      ? SubtitlePillWrap(
-                          children: [
-                            if (reward != 0)
-                              PillChip(
-                                text: Text(
-                                  '$reward',
-                                  style: PillChip.textStyle,
-                                ),
-                                leading: CrystalIcon(
-                                  size: 12.0,
-                                  color: scheme.primary,
-                                ),
-                              ),
-                            if (seasonRank != null)
-                              PillChip(
-                                text: Text(
-                                  '#$seasonRank',
-                                  style: PillChip.textStyle,
-                                ),
-                                leading: Icon(Icons.eco),
-                              ),
-                            if (hellRank != null)
-                              PillChip(
-                                text: Text(
-                                  '#$hellRank',
-                                  style: PillChip.textStyle,
-                                ),
-                                leading: Icon(Icons.all_inclusive),
-                              ),
-                          ],
-                        )
-                      : null,
-                  trailing: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      SizedBox(
-                        width: _timeColumnWidth,
-                        child: Align(
-                          alignment: Alignment.centerRight,
-                          child: AnimatedTextSwitcher(
-                            alignment: .centerRight,
-                            child: (lastOnline == null || lastOnline.isEmpty)
-                                ? const SizedBox(width: 0)
-                                : Text(
-                                    lastOnline,
-                                    key: ValueKey(lastOnline),
-                                    style: _timeStyle.copyWith(
-                                      color: scheme.onSurfaceVariant,
+                      title: Text(
+                        member.name,
+                        style: TextStyle(
+                          fontWeight: isSelf ? FontWeight.bold : null,
+                          color: isSelf ? scheme.primary : null,
+                        ),
+                      ),
+                      subtitle: (seasonRank != null || hellRank != null)
+                          ? SubtitlePillWrap(
+                              children: [
+                                if (reward != 0)
+                                  PillChip(
+                                    text: Text(
+                                      '$reward',
+                                      style: PillChip.textStyle,
                                     ),
-                                    maxLines: 1,
+                                    leading: CrystalIcon(
+                                      size: 12.0,
+                                      color: scheme.primary,
+                                    ),
                                   ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 6.0),
-                      SizedBox(
-                        width: _scoreColumnWidth,
-                        child: AnimatedTextSwitcher(
-                          alignment: .centerRight,
-                          child: Text(
-                            member.score.format(),
-                            key: ValueKey(member.score),
-                            textAlign: TextAlign.right,
-                            style: _scoreStyle.copyWith(
-                              color: isSelf ? scheme.primary : null,
+                                if (seasonRank != null)
+                                  PillChip(
+                                    text: Text(
+                                      '#$seasonRank',
+                                      style: PillChip.textStyle,
+                                    ),
+                                    leading: Icon(Icons.eco),
+                                  ),
+                                if (hellRank != null)
+                                  PillChip(
+                                    text: Text(
+                                      '#$hellRank',
+                                      style: PillChip.textStyle,
+                                    ),
+                                    leading: Icon(Icons.all_inclusive),
+                                  ),
+                              ],
+                            )
+                          : null,
+                      trailing: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          SizedBox(
+                            width: _timeColumnWidth,
+                            child: Align(
+                              alignment: Alignment.centerRight,
+                              child: AnimatedTextSwitcher(
+                                alignment: .centerRight,
+                                child:
+                                    (lastOnline == null || lastOnline.isEmpty)
+                                    ? const SizedBox(width: 0)
+                                    : Text(
+                                        lastOnline,
+                                        key: ValueKey(lastOnline),
+                                        style: _timeStyle.copyWith(
+                                          color: scheme.onSurfaceVariant,
+                                        ),
+                                        maxLines: 1,
+                                      ),
+                              ),
                             ),
-                            maxLines: 1,
                           ),
-                        ),
+                          const SizedBox(width: 6.0),
+                          SizedBox(
+                            width: _scoreColumnWidth,
+                            child: AnimatedTextSwitcher(
+                              alignment: .centerRight,
+                              child: Text(
+                                member.score.format(),
+                                key: ValueKey(member.score),
+                                textAlign: TextAlign.right,
+                                style: _scoreStyle.copyWith(
+                                  color: isSelf ? scheme.primary : null,
+                                ),
+                                maxLines: 1,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          ),
-          Positioned(
-            left: 0,
-            right: 0,
-            bottom: 0,
-            child: IgnorePointer(
-              ignoring: !_showCard,
-              child: SizeTransition(
-                sizeFactor: _cardAnimation,
-                alignment: Alignment.topCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(8.0),
-                  child: SummaryCard(
-                    children: <Widget>[
-                      SummaryRow(
-                        leading: Icon(Icons.eco),
-                        title: Text(totalScore.format()),
-                        trailing: chips,
+                    );
+                  },
+                ),
+              ),
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: IgnorePointer(
+                  ignoring: !_showCard,
+                  child: SizeTransition(
+                    sizeFactor: _cardAnimation,
+                    alignment: Alignment.topCenter,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: SummaryCard(
+                        children: <Widget>[
+                          SummaryRow(
+                            leading: Icon(Icons.eco),
+                            title: Text(totalScore.format()),
+                            trailing: chips,
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
               ),
-            ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }

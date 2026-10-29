@@ -973,7 +973,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelGabAverageBonus => '金挂平均收益';
 
   @override
-  String get labelDailyGabTime => '每日金挂时间';
+  String get labelDailyGabTime => '每日金挂/破挂时间';
 
   @override
   String get labelDailyTabTime => '每日时挂时间';
@@ -1484,7 +1484,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get fromDev => '欢迎加入 POC 谢谢喵！';
 
   @override
-  String get labelGabBonusNote => '破挂请点击「FAB」按钮，金挂收益将被视为 0%';
+  String get labelGabBonusNote => '破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2455,7 +2455,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get labelGabAverageBonus => '金掛平均收益';
 
   @override
-  String get labelDailyGabTime => '每日金掛時間';
+  String get labelDailyGabTime => '每日金掛/破掛時間';
 
   @override
   String get labelDailyTabTime => '每日時掛時間';
@@ -2966,5 +2966,5 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get fromDev => '歡迎加入 POC 謝謝喵！';
 
   @override
-  String get labelGabBonusNote => '破掛請點擊「FAB」按鈕，金掛收益將被視為 0%';
+  String get labelGabBonusNote => '破掛請點擊「FAB」按鈕后保存，金掛收益將被視為 0%';
 }

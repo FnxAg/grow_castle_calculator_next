@@ -1048,7 +1048,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelGabAverageBonus => 'GAB average bonus';
 
   @override
-  String get labelDailyGabTime => 'Daily GAB time';
+  String get labelDailyGabTime => 'Daily GAB / FAB time';
 
   @override
   String get labelDailyTabTime => 'Daily TAB time';
@@ -1591,5 +1591,5 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelGabBonusNote =>
-      'If you break the GAB, click the \"FAB\" button, and the gold bonus will be considered 0%';
+      'If you are FAB player, click the \"FAB\" button and save it, and the GAB bonus will be considered 0%';
 }

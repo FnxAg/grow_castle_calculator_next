@@ -1,3 +1,5 @@
+import 'package:flutter/gestures.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -96,7 +98,8 @@ class _LineInput {
   }
 }
 
-class _ItemComparerPageState extends State<ItemComparerPage> {
+class _ItemComparerPageState extends State<ItemComparerPage>
+    with SingleTickerProviderStateMixin {
   final _baseAttackCtrl = TextEditingController();
   final _increasedDmgCtrl = TextEditingController();
   final _moreDmgCtrl = TextEditingController();
@@ -115,6 +118,10 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   bool _restoring = false;
 
+  late final AnimationController _cardController;
+  late final CurvedAnimation _cardAnimation;
+  bool _showCard = true;
+
   List<TextEditingController> get _panelCtrls => [
     _baseAttackCtrl,
     _increasedDmgCtrl,
@@ -128,6 +135,15 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   @override
   void initState() {
     super.initState();
+    _cardController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 300),
+      value: 1.0,
+    );
+    _cardAnimation = CurvedAnimation(
+      parent: _cardController,
+      curve: Curves.easeInOutCubic,
+    );
     // 数据恢复/导入后从 store 重新回填输入（结构可能与旧输入不一致）
     BackupService.instance.dataRestoredNotifier.addListener(_onDataRestored);
     _restoring = true;
@@ -149,7 +165,41 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     for (final input in [..._item1Lines, ..._item2Lines]) {
       input.dispose();
     }
+    _cardAnimation.dispose();
+    _cardController.dispose();
     super.dispose();
+  }
+
+  /// 手势滑动
+  bool _onScrollNotification(ScrollNotification notification) {
+    if (notification is UserScrollNotification) {
+      switch (notification.direction) {
+        case ScrollDirection.reverse:
+          _setCardVisible(false);
+        case ScrollDirection.forward:
+          _setCardVisible(true);
+        case ScrollDirection.idle:
+          break;
+      }
+    }
+    return false;
+  }
+
+  /// 鼠标滚轮/触控板滚动
+  void _onPointerSignal(PointerSignalEvent event) {
+    if (event is PointerScrollEvent && event.scrollDelta.dy != 0.0) {
+      _setCardVisible(event.scrollDelta.dy < 0.0);
+    }
+  }
+
+  void _setCardVisible(bool visible) {
+    if (_showCard == visible) return;
+    setState(() => _showCard = visible);
+    if (visible) {
+      _cardController.forward();
+    } else {
+      _cardController.reverse();
+    }
   }
 
   /// 数据恢复/导入完成：整页输入按新 store 数据重建
@@ -306,21 +356,19 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     final item2Result = _computeItemResult(_item2Lines);
     final bool isWide = context.isWideContent;
 
-    // 窄屏
-    final Widget listExpanded = Expanded(
-      flex: isWide ? 6 : 1,
-      child: ListView(
-        key: const PageStorageKey('item_comparer_list'),
-        padding: EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
-        children: [
-          SectionHeader(l10n.labelNoItemPanel),
-          SummaryCard(children: _buildPanelCard()),
-          SectionHeader(l10n.labelItemLines(1)),
-          SummaryCard(children: <Widget>[_buildItemCard(_item1Lines, 'item1')]),
-          SectionHeader(l10n.labelItemLines(2)),
-          SummaryCard(children: <Widget>[_buildItemCard(_item2Lines, 'item2')]),
-        ],
-      ),
+    final Widget list = ListView(
+      key: const PageStorageKey('item_comparer_list'),
+      // 内容不足一屏时也接受拖动，卡片才能响应手势
+      physics: const AlwaysScrollableScrollPhysics(),
+      padding: EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+      children: [
+        SectionHeader(l10n.labelNoItemPanel),
+        SummaryCard(children: _buildPanelCard()),
+        SectionHeader(l10n.labelItemLines(1)),
+        SummaryCard(children: <Widget>[_buildItemCard(_item1Lines, 'item1')]),
+        SectionHeader(l10n.labelItemLines(2)),
+        SummaryCard(children: <Widget>[_buildItemCard(_item2Lines, 'item2')]),
+      ],
     );
     final Widget summaryView = Padding(
       padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
@@ -423,11 +471,36 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           child: isWide
               ? Row(
                   children: [
-                    listExpanded,
+                    Expanded(flex: 6, child: list),
                     Expanded(flex: 4, child: summaryView),
                   ],
                 )
-              : Column(children: [listExpanded, summaryView]),
+              : Listener(
+                  onPointerSignal: _onPointerSignal,
+                  child: Stack(
+                    children: [
+                      Positioned.fill(
+                        child: NotificationListener<UserScrollNotification>(
+                          onNotification: _onScrollNotification,
+                          child: list,
+                        ),
+                      ),
+                      Positioned(
+                        left: 0,
+                        right: 0,
+                        bottom: 0,
+                        child: IgnorePointer(
+                          ignoring: !_showCard,
+                          child: SizeTransition(
+                            sizeFactor: _cardAnimation,
+                            alignment: Alignment.topCenter,
+                            child: summaryView,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
         ),
       ),
     );
