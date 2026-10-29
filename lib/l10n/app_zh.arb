@@ -985,5 +985,6 @@
   "incomeTrendNow": "当前数据",
   "incomeTrendEnd": "结束数据",
   "dataDisclaimer": "数据仅供参考",
-  "fromDev": "欢迎加入 POC 谢谢喵！"
+  "fromDev": "欢迎加入 POC 谢谢喵！",
+  "labelGabBonusNote": "破挂请点击「FAB」按钮，金挂收益将被视为 0%"
 }

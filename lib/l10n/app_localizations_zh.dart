@@ -1482,6 +1482,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get fromDev => '欢迎加入 POC 谢谢喵！';
+
+  @override
+  String get labelGabBonusNote => '破挂请点击「FAB」按钮，金挂收益将被视为 0%';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2961,4 +2964,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get fromDev => '歡迎加入 POC 謝謝喵！';
+
+  @override
+  String get labelGabBonusNote => '破掛請點擊「FAB」按鈕，金掛收益將被視為 0%';
 }

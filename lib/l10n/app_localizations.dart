@@ -2693,6 +2693,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'欢迎加入 POC 谢谢喵！'**
   String get fromDev;
+
+  /// No description provided for @labelGabBonusNote.
+  ///
+  /// In zh, this message translates to:
+  /// **'破挂请点击「FAB」按钮，金挂收益将被视为 0%'**
+  String get labelGabBonusNote;
 }
 
 class _AppLocalizationsDelegate

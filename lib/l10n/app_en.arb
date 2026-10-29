@@ -432,5 +432,6 @@
   "incomeTrendNow": "Now",
   "incomeTrendEnd": "End",
   "dataDisclaimer": "Data is for reference only",
-  "fromDev": "Welcome to join POC!"
+  "fromDev": "Welcome to join POC!",
+  "labelGabBonusNote": "If you break the GAB, click the \"FAB\" button, and the gold bonus will be considered 0%"
 }

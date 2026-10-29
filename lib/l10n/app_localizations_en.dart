@@ -1588,4 +1588,8 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get fromDev => 'Welcome to join POC!';
+
+  @override
+  String get labelGabBonusNote =>
+      'If you break the GAB, click the \"FAB\" button, and the gold bonus will be considered 0%';
 }
