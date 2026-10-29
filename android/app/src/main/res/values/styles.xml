@@ -9,6 +9,8 @@
         <item name="android:windowFullscreen">false</item>
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>
         <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+        <!-- 首帧之前也关闭系统导航栏对比度蒙层，避免深色主题下闪白色横条 -->
+        <item name="android:enforceNavigationBarContrast">false</item>
     </style>
     <!-- Theme applied to the Android Window as soon as the process has started.
          This theme determines the color of the Android Window while your
@@ -18,5 +20,7 @@
          This Theme is only used starting with V2 of Flutter's Android embedding. -->
     <style name="NormalTheme" parent="@android:style/Theme.Light.NoTitleBar">
         <item name="android:windowBackground">?android:colorBackground</item>
+        <!-- 导航栏颜色由 Flutter 按应用内主题设置，这里只关闭系统的对比度蒙层 -->
+        <item name="android:enforceNavigationBarContrast">false</item>
     </style>
 </resources>

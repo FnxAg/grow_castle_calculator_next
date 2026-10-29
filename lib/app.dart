@@ -1,5 +1,6 @@
 import 'dart:io';
 
+import 'package:flutter/services.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
@@ -145,10 +146,42 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
                 ),
               );
             }
-            return content;
+            if (!Platform.isAndroid) {
+              return content;
+            }
+            // Flutter 按“顶部注解管状态栏、底部注解管导航栏”合并样式，
+            // AppBar 自带的注解负责状态栏，这里只接管导航栏。
+            return AnnotatedRegion<SystemUiOverlayStyle>(
+              value: _navigationBarStyle(Theme.of(context)),
+              child: content,
+            );
           },
         );
       },
     );
   }
+}
+
+/// Android 系统导航栏样式跟随应用内主题，而不是系统主题。
+///
+/// 三键导航时系统会按自己的深浅状态给导航栏铺对比度底色，应用内切到深色
+/// 而系统仍是浅色时就会出现白色横条。这里显式声明导航栏的样式：
+///
+/// - [SystemUiOverlayStyle.systemNavigationBarColor] 在 Android 15 以下生效；
+///   Android 15+ 强制 edge-to-edge，颜色被系统忽略，导航栏透明。
+/// - [SystemUiOverlayStyle.systemNavigationBarContrastEnforced] 关闭系统对比度
+///   蒙层（API 29+），它跟随系统而不是应用主题。
+/// - [SystemUiOverlayStyle.systemNavigationBarIconBrightness] 决定导航按钮的明暗。
+SystemUiOverlayStyle _navigationBarStyle(ThemeData theme) {
+  final bool isDark = theme.brightness == Brightness.dark;
+  // 与 Material 3 NavigationBar 的默认底色一致，动态取色时也能跟随。
+  final Color color = theme.colorScheme.surfaceContainer;
+  return SystemUiOverlayStyle(
+    systemNavigationBarColor: color,
+    systemNavigationBarDividerColor: color,
+    systemNavigationBarIconBrightness: isDark
+        ? Brightness.light
+        : Brightness.dark,
+    systemNavigationBarContrastEnforced: false,
+  );
 }
