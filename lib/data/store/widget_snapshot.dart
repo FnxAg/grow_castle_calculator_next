@@ -1,4 +1,3 @@
-import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -21,6 +20,9 @@ abstract final class WidgetSnapshot {
 
   /// 上一次写入的完整 JSON 文本；内容未变时跳过写盘
   static String? _lastJson;
+
+  /// 串行化写盘：切换用户时可能连续触发，避免并发截断同一文件
+  static Future<void> _writeQueue = Future<void>.value();
 
   /// 记录当前用户快照。参数均为展示字段：`lastOnline` 为空字符串表示未查询过；
   /// [isDefault] 为默认用户标记（userId == 0），原生侧据此显示引导态而非联网抓取。
@@ -45,7 +47,7 @@ abstract final class WidgetSnapshot {
         return;
       }
       _lastJson = json;
-      unawaited(_doWrite(json));
+      _writeQueue = _writeQueue.then((_) => _doWrite(json));
     } catch (e) {
       debugPrint('WidgetSnapshot.write failed: $e');
     }

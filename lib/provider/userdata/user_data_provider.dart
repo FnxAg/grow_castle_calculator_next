@@ -142,14 +142,14 @@ class Users extends _$Users {
   }
 
   /// 立即落盘并取消待执行的延迟保存
-  void flush() {
+  void flush({bool meta = true, bool widgetSnapshot = true}) {
     _saveDebounce?.cancel();
     _saveDebounce = null;
-    _persistNow();
+    _persistNow(meta: meta, widgetSnapshot: widgetSnapshot);
   }
 
   /// 把当前用户写盘 + 落 meta + 同步桌面小组件快照
-  void _persistNow() {
+  void _persistNow({bool meta = true, bool widgetSnapshot = true}) {
     final s = state;
     final user = s.users[s.currentUserId];
     if (user == null) {
@@ -157,8 +157,8 @@ class Users extends _$Users {
     }
     final repo = ref.read(userDataRepositoryProvider);
     repo.writeUser(s.currentUserId, user);
-    _persistMeta();
-    _writeWidgetSnapshot();
+    if (meta) _persistMeta();
+    if (widgetSnapshot) _writeWidgetSnapshot();
   }
 
   void _persistMeta() {
@@ -657,8 +657,8 @@ class Users extends _$Users {
     if (userId == state.currentUserId) {
       return;
     }
-    // 切换前立即落盘，确保当前用户最近输入不丢失
-    flush();
+    // 切换前先落盘当前用户；meta 与小组件快照只写切换后的新用户，避免重复写盘
+    flush(meta: false, widgetSnapshot: false);
     state = state.copyWith(currentUserId: userId);
     _persistMeta();
     _writeWidgetSnapshot();
@@ -712,7 +712,11 @@ class Users extends _$Users {
 
   /// 联网同步当前用户
   Future<Object /* PlayerQueryResult | QueryError */> syncCurrentUser() async {
-    final result = await PlayerApiService.query(state.currentUser.username);
+    final userId = state.currentUserId;
+    final username = state.currentUser.username;
+    final result = await PlayerApiService.query(username);
+    // 查询期间已切换用户，结果不能写到新用户身上
+    if (state.currentUserId != userId) return result;
     if (result is PlayerQueryResult) {
       final lastOnline = PlayerApiService.formatLastOnline(
         result.queryDate,

@@ -657,15 +657,8 @@ class _GuildPageState extends ConsumerState<GuildPage>
                   child: SummaryCard(
                     children: <Widget>[
                       SummaryRow(
-                        // leading: Icon(Icons.group),
-                        leading: Icon(Icons.waves),
-                        title: Text(
-                          // l10n.guildMemberCountAndScore(
-                          //   _members.length,
-                          //   totalScore.format(),
-                          // ),
-                          totalScore.format(),
-                        ),
+                        leading: Icon(Icons.eco),
+                        title: Text(totalScore.format()),
                         trailing: chips,
                       ),
                     ],

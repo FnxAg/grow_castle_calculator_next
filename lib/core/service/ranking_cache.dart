@@ -39,6 +39,11 @@ class RankingCache {
     }
   }
 
+  /// 同步读取内存中的榜单（可能已过期），未加载时为 null
+  static SeasonQueryResult<RankInfo>? get cachedPlayerRanking => _players;
+  static SeasonQueryResult<RankInfo>? get cachedHellRanking => _hell;
+  static SeasonQueryResult<RankInfo>? get cachedGuildRanking => _guilds;
+
   static SeasonQueryResult<RankInfo>? _guilds;
   static DateTime? _guildsAt;
   static SeasonQueryResult<RankInfo>? _players;

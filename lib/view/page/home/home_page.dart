@@ -42,23 +42,6 @@ class _HomePageState extends ConsumerState<HomePage>
   late final AnimationController _cardController;
   late final CurvedAnimation _cardAnimation;
 
-  /// 最近一次查询到的排名快照
-  static (
-    int userId,
-    int? playerRank,
-    int? playerGapPrev,
-    int? playerGapNext,
-    int? hellRank,
-    int? hellGapPrev,
-    int? hellGapNext,
-    int? guildRank,
-    int? guildGapPrev,
-    int? guildGapNext,
-    int? hellScore,
-    int? guildScore,
-  )?
-  _rankCache;
-
   static const Duration _queryCooldown = Duration(seconds: 5);
   DateTime? _lastQueryAt;
   bool _querying = false;
@@ -74,7 +57,8 @@ class _HomePageState extends ConsumerState<HomePage>
   int? _guildGapPrev;
   int? _guildGapNext;
   int? _hellScore;
-  int? _guildScore;
+  int _crystalReward = 0;
+  int _boxReward = 0;
 
   @override
   void initState() {
@@ -90,7 +74,7 @@ class _HomePageState extends ConsumerState<HomePage>
     );
     ref.listenManual(userReloadSignalProvider, (_, _) {
       if (!mounted) return;
-      reloadForCurrentUser();
+      _loadCurrentUser();
     });
     _loadCurrentUser();
   }
@@ -102,61 +86,130 @@ class _HomePageState extends ConsumerState<HomePage>
     super.dispose();
   }
 
-  /// 切换用户
-  void reloadForCurrentUser() {
-    setState(() {
-      _playerRank = null;
-      _playerGapPrev = null;
-      _playerGapNext = null;
-      _hellRank = null;
-      _hellGapPrev = null;
-      _hellGapNext = null;
-      _guildRank = null;
-      _guildGapPrev = null;
-      _guildGapNext = null;
-      _hellScore = null;
-      _guildScore = null;
-      _lastQueryAt = null;
-    });
-    _loadCurrentUser();
-  }
-
   /// 按当前用户初始化页面状态，挂载时、以及切换用户后调用
   void _loadCurrentUser() {
     final userId = ref.read(currentUserIdProvider);
-    if (userId != 0) {
-      final cache = _rankCache;
-      final username = ref.read(currentUsernameProvider);
-      if (cache != null && cache.$1 == userId) {
-        _playerRank = cache.$2;
-        _playerGapPrev = cache.$3;
-        _playerGapNext = cache.$4;
-        _hellRank = cache.$5;
-        _hellGapPrev = cache.$6;
-        _hellGapNext = cache.$7;
-        _guildRank = cache.$8;
-        _guildGapPrev = cache.$9;
-        _guildGapNext = cache.$10;
-        _hellScore = cache.$11;
-        _guildScore = cache.$12;
-      }
-      // 从榜单 TTL 缓存重新推导排名
-      _loadRanks();
-      // 应用启动时静默查询当前用户波数
-      if (_autoQueriedUsers.add(username)) {
-        _performQuery(silent: true);
-      }
+    final username = ref.read(currentUsernameProvider);
+    final guild = ref.read(currentUserProvider).guild;
+    // 榜单大多已在内存里，先同步算出新用户的数据，避免卡片收起再展开
+    if (userId == 0 || !_applyCachedRanks(username, guild)) {
+      _clearRanks();
+    }
+    _syncRewardCard(animate: false);
+    if (userId == 0) {
+      // 默认用户不查榜单，清理可能残留的加载态
+      _loadingRanks = false;
+      return;
+    }
+    // 从榜单 TTL 缓存重新推导排名
+    _loadRanks();
+    // 应用启动时静默查询当前用户波数
+    if (_autoQueriedUsers.add(username)) {
+      _performQuery(silent: true);
+    }
+  }
+
+  /// 用内存中的榜单同步计算排名；数据不全时返回 false
+  bool _applyCachedRanks(String username, String guild) {
+    final players = RankingCache.cachedPlayerRanking;
+    final hell = RankingCache.cachedHellRanking;
+    final guilds = RankingCache.cachedGuildRanking;
+    if (players == null ||
+        hell == null ||
+        (guild.isNotEmpty && guilds == null)) {
+      return false;
+    }
+    _applyRanks(username, guild, players, hell, guilds);
+    return true;
+  }
+
+  /// 按榜单结果更新排名、名次差与奖励
+  void _applyRanks(
+    String username,
+    String guild,
+    Object? players,
+    Object? hell,
+    Object? guilds,
+  ) {
+    final lower = username.toLowerCase();
+    final guildLower = guild.toLowerCase();
+    _playerRank = null;
+    _playerGapPrev = null;
+    _playerGapNext = null;
+    if (players is SeasonQueryResult<RankInfo>) {
+      final found = _findRank(players.items, lower);
+      _playerRank = found?.rank;
+      _playerGapPrev = found?.gapPrev;
+      _playerGapNext = found?.gapNext;
+    }
+    _hellRank = null;
+    _hellGapPrev = null;
+    _hellGapNext = null;
+    _hellScore = null;
+    if (hell is SeasonQueryResult<RankInfo>) {
+      final found = _findRank(hell.items, lower);
+      _hellRank = found?.rank;
+      _hellGapPrev = found?.gapPrev;
+      _hellGapNext = found?.gapNext;
+      _hellScore = found?.score;
+    }
+    _guildRank = null;
+    _guildGapPrev = null;
+    _guildGapNext = null;
+    if (guilds is SeasonQueryResult<RankInfo>) {
+      final found = _findRank(guilds.items, guildLower);
+      _guildRank = found?.rank;
+      _guildGapPrev = found?.gapPrev;
+      _guildGapNext = found?.gapNext;
+    }
+    _crystalReward =
+        getRedCrystalFromPlayerRank(_playerRank ?? 0) +
+        getRedCrystalFromHellModeRank(_hellRank ?? 0);
+    _boxReward = getItemBoxFromGuildRank(_guildRank ?? 0);
+  }
+
+  /// 清空排名，避免展示上一个用户的数据
+  void _clearRanks() {
+    _playerRank = null;
+    _playerGapPrev = null;
+    _playerGapNext = null;
+    _hellRank = null;
+    _hellGapPrev = null;
+    _hellGapNext = null;
+    _guildRank = null;
+    _guildGapPrev = null;
+    _guildGapNext = null;
+    _hellScore = null;
+    _crystalReward = 0;
+    _boxReward = 0;
+  }
+
+  /// 奖励卡高度跟随奖励是否可见；[animate] 为 false 时直接到位
+  void _syncRewardCard({required bool animate}) {
+    final target = (_crystalReward > 0 || _boxReward > 0) ? 1.0 : 0.0;
+    if (_cardController.value == target) return;
+    if (!animate) {
+      _cardController.value = target;
+    } else if (target == 1.0) {
+      _cardController.forward();
+    } else {
+      _cardController.reverse();
     }
   }
 
   /// 获取排名
   Future<void> _loadRanks({bool force = false}) async {
     final userId = ref.read(currentUserIdProvider);
-    final currentUser = ref.read(currentUsernameProvider);
-    final lower = currentUser.toLowerCase();
+    final username = ref.read(currentUsernameProvider);
     final guild = ref.read(currentUserProvider).guild;
-    final guildLower = guild.toLowerCase();
-    setState(() => _loadingRanks = true);
+    // 榜单已缓存时只是后台刷新，不显示进度条，避免切换时 AppBar 高度跳动
+    final cached =
+        RankingCache.cachedPlayerRanking != null &&
+        RankingCache.cachedHellRanking != null &&
+        (guild.isEmpty || RankingCache.cachedGuildRanking != null);
+    if ((force || !cached) && !_loadingRanks) {
+      setState(() => _loadingRanks = true);
+    }
     final (players, hell, guilds) = await (
       RankingCache.playerRanking(force: force),
       RankingCache.hellRanking(force: force),
@@ -168,6 +221,7 @@ class _HomePageState extends ConsumerState<HomePage>
       // 公会详情不参与排名展示，但成员总分要回填给首页的公会卡
       RankingCache.guildDetail(guild, force: force).then((detail) {
         if (!mounted) return;
+        if (ref.read(currentUserIdProvider) != userId) return;
         if (detail is SeasonQueryResult<GuildMember>) {
           ref
               .read(guildTotalScoreProvider.notifier)
@@ -176,57 +230,13 @@ class _HomePageState extends ConsumerState<HomePage>
       });
     }
     if (!mounted) return;
+    // 加载期间已切到其他用户，结果作废
+    if (ref.read(currentUserIdProvider) != userId) return;
     setState(() {
       _loadingRanks = false;
-      _playerRank = null;
-      _playerGapPrev = null;
-      _playerGapNext = null;
-      if (players is SeasonQueryResult<RankInfo>) {
-        final found = _findRank(players.items, lower);
-        _playerRank = found?.rank;
-        _playerGapPrev = found?.gapPrev;
-        _playerGapNext = found?.gapNext;
-      }
-      _hellRank = null;
-      _hellGapPrev = null;
-      _hellGapNext = null;
-      _hellScore = null;
-      if (hell is SeasonQueryResult<RankInfo>) {
-        final found = _findRank(hell.items, lower);
-        _hellRank = found?.rank;
-        _hellGapPrev = found?.gapPrev;
-        _hellGapNext = found?.gapNext;
-        _hellScore = found?.score;
-      }
-      _guildRank = null;
-      _guildGapPrev = null;
-      _guildGapNext = null;
-      _guildScore = null;
-      if (guilds is SeasonQueryResult<RankInfo>) {
-        final found = _findRank(guilds.items, guildLower);
-        _guildRank = found?.rank;
-        _guildGapPrev = found?.gapPrev;
-        _guildGapNext = found?.gapNext;
-        _guildScore = found?.score;
-      }
-      _rankCache = (
-        userId,
-        _playerRank,
-        _playerGapPrev,
-        _playerGapNext,
-        _hellRank,
-        _hellGapPrev,
-        _hellGapNext,
-        _guildRank,
-        _guildGapPrev,
-        _guildGapNext,
-        _hellScore,
-        _guildScore,
-      );
-      if (mounted) {
-        _cardController.forward();
-      }
+      _applyRanks(username, guild, players, hell, guilds);
     });
+    _syncRewardCard(animate: true);
   }
 
   /// 在榜单中按名字（不区分大小写）取当前用户/公会的那一条
@@ -255,53 +265,59 @@ class _HomePageState extends ConsumerState<HomePage>
 
   /// 执行查询
   Future<void> _performQuery({bool silent = false}) async {
-    setState(() => _querying = true);
+    if (!silent) setState(() => _querying = true);
+    try {
+      final name = ref.read(currentUsernameProvider);
+      final result = await ref.read(usersProvider.notifier).syncCurrentUser();
 
-    final name = ref.read(currentUsernameProvider);
-    final result = await ref.read(usersProvider.notifier).syncCurrentUser();
+      if (!mounted) return;
+      // 查询期间已切换用户，结果与当前页面无关
+      if (ref.read(currentUsernameProvider) != name) return;
 
-    if (!mounted) return;
-
-    if (result is PlayerQueryResult) {
-      if (result.wave == 0 && result.queryDate.isEmpty) {
+      if (result is PlayerQueryResult) {
+        if (result.wave == 0 && result.queryDate.isEmpty) {
+          if (!silent) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(
+                  AppLocalizations.of(context).snackUserBanned(name),
+                ),
+              ),
+            );
+          }
+          return;
+        }
+        await _loadRanks(force: !silent);
+        if (!mounted) return;
         if (!silent) {
+          final l10n = AppLocalizations.of(context);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(AppLocalizations.of(context).snackUserBanned(name)),
+              content: Text(
+                l10n.snackQuerySuccess(
+                  name,
+                  result.wave.format(),
+                  result.seasonalScore.format(),
+                ),
+              ),
             ),
           );
         }
-        return;
-      }
-      await _loadRanks(force: !silent);
-      if (!mounted) return;
-      if (!silent) {
-        final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.snackQuerySuccess(
-                name,
-                result.wave.format(),
-                result.seasonalScore.format(),
+      } else if (result is QueryError) {
+        if (!silent) {
+          final l10n = AppLocalizations.of(context);
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                l10n.snackQueryFailed(_queryErrorMessage(l10n, name, result)),
               ),
             ),
-          ),
-        );
+          );
+        }
       }
-    } else if (result is QueryError) {
-      if (!silent) {
-        final l10n = AppLocalizations.of(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.snackQueryFailed(_queryErrorMessage(l10n, name, result)),
-            ),
-          ),
-        );
-      }
+    } finally {
+      if (!silent && mounted) setState(() => _querying = false);
     }
-    setState(() => _querying = false);
   }
 
   String _queryErrorMessage(
@@ -332,10 +348,6 @@ class _HomePageState extends ConsumerState<HomePage>
     final gabBonus = ref.watch(currentUserGabBonusProvider);
     final infiniteColony = ref.watch(currentUserInfiniteColonyProvider);
     final guildTotalScore = ref.watch(guildTotalScoreProvider);
-    final crystalReward =
-        getRedCrystalFromPlayerRank(_playerRank ?? 0) +
-        getRedCrystalFromHellModeRank(_hellRank ?? 0);
-    final boxReward = getItemBoxFromGuildRank(_guildRank ?? 0);
     // 波数
     final waveCard = SummaryCard(
       children: <Widget>[
@@ -474,17 +486,17 @@ class _HomePageState extends ConsumerState<HomePage>
           title: Text(l10n.reward),
           trailing: SubtitlePillWrap(
             children: [
-              if (boxReward > 0)
+              if (_boxReward > 0)
                 PillChip(
-                  text: Text('$boxReward', style: PillChip.textStyle),
+                  text: Text('$_boxReward', style: PillChip.textStyle),
                   leading: BoxIcon(
                     size: PillChip.leadingIconSize,
                     color: scheme.primary,
                   ),
                 ),
-              if (crystalReward > 0)
+              if (_crystalReward > 0)
                 PillChip(
-                  text: Text('$crystalReward', style: PillChip.textStyle),
+                  text: Text('$_crystalReward', style: PillChip.textStyle),
                   leading: CrystalIcon(
                     size: PillChip.leadingIconSize,
                     color: scheme.primary,
