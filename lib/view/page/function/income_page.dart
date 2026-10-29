@@ -88,16 +88,19 @@ class _IncomePageState extends ConsumerState<IncomePage> {
                 )
               : null,
         ),
-        body: KeyedSubtree(
-          key: ValueKey(ref.watch(userReloadSignalProvider)),
-          child: !isWide
-              ? Column(children: [expandedIncomeView, IncomeSummaryBar()])
-              : Row(
-                  children: [
-                    expandedIncomeView,
-                    Expanded(flex: 4, child: IncomeSummaryBar()),
-                  ],
-                ),
+        body: SafeArea(
+          top: false,
+          child: KeyedSubtree(
+            key: ValueKey(ref.watch(userReloadSignalProvider)),
+            child: !isWide
+                ? Column(children: [expandedIncomeView, IncomeSummaryBar()])
+                : Row(
+                    children: [
+                      expandedIncomeView,
+                      Expanded(flex: 4, child: IncomeSummaryBar()),
+                    ],
+                  ),
+          ),
         ),
       ),
     );

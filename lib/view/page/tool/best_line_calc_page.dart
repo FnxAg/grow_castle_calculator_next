@@ -241,39 +241,42 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
           ),
         ],
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
-        itemCount: ranked.length + 2,
-        itemBuilder: (context, index) {
-          if (index == 0) {
-            return _buildBasePanel(context);
-          }
-          if (index == 1) {
-            return _buildListHeader(context, ranked.length);
-          }
-          final (_, combo, gain) = ranked[index - 2];
-          final best = index == 2;
-          return ListTile(
-            dense: true,
-            contentPadding: const EdgeInsets.symmetric(horizontal: 8),
-            selected: best,
-            title: AnimatedTextSwitcher(
-              child: Text(_comboText(l10n, combo), key: ValueKey(combo)),
-            ),
-            trailing: AnimatedTextSwitcher(
-              child: Text(
-                _gainText(gain),
-                key: ValueKey(gain),
-                style: best
-                    ? TextStyle(
-                        color: scheme.primary,
-                        fontWeight: FontWeight.bold,
-                      )
-                    : null,
+      body: SafeArea(
+        top: false,
+        child: ListView.builder(
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          itemCount: ranked.length + 2,
+          itemBuilder: (context, index) {
+            if (index == 0) {
+              return _buildBasePanel(context);
+            }
+            if (index == 1) {
+              return _buildListHeader(context, ranked.length);
+            }
+            final (_, combo, gain) = ranked[index - 2];
+            final best = index == 2;
+            return ListTile(
+              dense: true,
+              contentPadding: const EdgeInsets.symmetric(horizontal: 8),
+              selected: best,
+              title: AnimatedTextSwitcher(
+                child: Text(_comboText(l10n, combo), key: ValueKey(combo)),
               ),
-            ),
-          );
-        },
+              trailing: AnimatedTextSwitcher(
+                child: Text(
+                  _gainText(gain),
+                  key: ValueKey(gain),
+                  style: best
+                      ? TextStyle(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.bold,
+                        )
+                      : null,
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }

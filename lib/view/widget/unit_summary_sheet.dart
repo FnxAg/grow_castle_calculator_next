@@ -60,64 +60,73 @@ class _UnitSummarySheet extends StatelessWidget {
       color: theme.colorScheme.surface,
       clipBehavior: Clip.antiAlias,
       borderRadius: const BorderRadius.vertical(top: Radius.circular(24.0)),
-      child: Column(
-        children: [
-          const SizedBox(height: 10.0),
-          Container(
-            width: 36.0,
-            height: 4.0,
-            decoration: BoxDecoration(
-              color: theme.colorScheme.onSurfaceVariant.withValues(alpha: 0.35),
-              borderRadius: BorderRadius.circular(4.0),
+      // showModalBottomSheet(useSafeArea: true) 不含底部安全区，这里补上
+      child: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            const SizedBox(height: 10.0),
+            Container(
+              width: 36.0,
+              height: 4.0,
+              decoration: BoxDecoration(
+                color: theme.colorScheme.onSurfaceVariant.withValues(
+                  alpha: 0.35,
+                ),
+                borderRadius: BorderRadius.circular(4.0),
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 12.0),
-            child: Row(
-              children: [
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        l10n.tooltipDetails,
-                        style: theme.textTheme.titleLarge,
-                      ),
-                      const SizedBox(height: 3.0),
-                      Text(
-                        username,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: theme.colorScheme.onSurfaceVariant,
+            Padding(
+              padding: const EdgeInsets.fromLTRB(20.0, 16.0, 20.0, 12.0),
+              child: Row(
+                children: [
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          l10n.tooltipDetails,
+                          style: theme.textTheme.titleLarge,
                         ),
-                      ),
-                    ],
+                        const SizedBox(height: 3.0),
+                        Text(
+                          username,
+                          overflow: TextOverflow.ellipsis,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: theme.colorScheme.onSurfaceVariant,
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                _StatusPill(
-                  label: l10n.unitEnabledCount(enabledCount, cardIds.length),
-                  icon: Icons.check_circle_outline,
-                ),
-              ],
+                  _StatusPill(
+                    label: l10n.unitEnabledCount(enabledCount, cardIds.length),
+                    icon: Icons.check_circle_outline,
+                  ),
+                ],
+              ),
             ),
-          ),
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20.0),
-            child: _OverviewPanel(data: data),
-          ),
-          const SizedBox(height: 8.0),
-          const Divider(height: 1.0),
-          Expanded(
-            child: ListView.separated(
-              controller: scrollController,
-              padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 20.0),
-              itemCount: cardIds.length,
-              separatorBuilder: (_, _) => const SizedBox(height: 8.0),
-              itemBuilder: (context, index) =>
-                  _UnitSummaryRow(id: cardIds[index], index: index, data: data),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
+              child: _OverviewPanel(data: data),
             ),
-          ),
-        ],
+            const SizedBox(height: 8.0),
+            const Divider(height: 1.0),
+            Expanded(
+              child: ListView.separated(
+                controller: scrollController,
+                padding: const EdgeInsets.fromLTRB(20.0, 8.0, 20.0, 20.0),
+                itemCount: cardIds.length,
+                separatorBuilder: (_, _) => const SizedBox(height: 8.0),
+                itemBuilder: (context, index) => _UnitSummaryRow(
+                  id: cardIds[index],
+                  index: index,
+                  data: data,
+                ),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }

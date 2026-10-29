@@ -416,16 +416,19 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ],
       ),
-      body: ShortWindowFallback(
-        minHeight: 340,
-        child: isWide
-            ? Row(
-                children: [
-                  listExpanded,
-                  Expanded(flex: 4, child: summaryView),
-                ],
-              )
-            : Column(children: [listExpanded, summaryView]),
+      body: SafeArea(
+        top: false,
+        child: ShortWindowFallback(
+          minHeight: 340,
+          child: isWide
+              ? Row(
+                  children: [
+                    listExpanded,
+                    Expanded(flex: 4, child: summaryView),
+                  ],
+                )
+              : Column(children: [listExpanded, summaryView]),
+        ),
       ),
     );
   }

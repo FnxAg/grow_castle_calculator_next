@@ -186,7 +186,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                 )
               : null,
         ),
-        body: body,
+        body: SafeArea(top: false, child: body),
       );
     }
     return Column(

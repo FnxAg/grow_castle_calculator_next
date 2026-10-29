@@ -61,18 +61,21 @@ class ItemRuleEditPage extends StatelessWidget {
         icon: const Icon(Icons.add),
         label: Text(l10n.actionAddRule),
       ),
-      body: ValueListenableBuilder<List<UserHighlightRule>>(
-        valueListenable: Stores.itemRuleStore.rulesNotifier,
-        builder: (context, rules, _) {
-          if (rules.isEmpty) {
-            return Center(child: Text(l10n.emptyItemRuleHint));
-          }
-          return ListView.builder(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
-            itemCount: rules.length,
-            itemBuilder: (context, index) => _RuleCard(rule: rules[index]),
-          );
-        },
+      body: SafeArea(
+        top: false,
+        child: ValueListenableBuilder<List<UserHighlightRule>>(
+          valueListenable: Stores.itemRuleStore.rulesNotifier,
+          builder: (context, rules, _) {
+            if (rules.isEmpty) {
+              return Center(child: Text(l10n.emptyItemRuleHint));
+            }
+            return ListView.builder(
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+              itemCount: rules.length,
+              itemBuilder: (context, index) => _RuleCard(rule: rules[index]),
+            );
+          },
+        ),
       ),
     );
   }
@@ -417,193 +420,207 @@ class _RuleFormPageState extends State<_RuleFormPage> {
         ),
         actions: [TextButton(onPressed: _save, child: Text(l10n.actionSave))],
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              children: [
-                TextField(
-                  controller: _hintController,
-                  decoration: InputDecoration(
-                    labelText: l10n.labelHintText,
-                    hintText: l10n.hintRuleHintExample,
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  TextField(
+                    controller: _hintController,
+                    decoration: InputDecoration(
+                      labelText: l10n.labelHintText,
+                      hintText: l10n.hintRuleHintExample,
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                SwitchListTile(
-                  contentPadding: EdgeInsets.zero,
-                  title: Text(l10n.labelPinToTop),
-                  value: _pinToTop,
-                  onChanged: (v) => setState(() => _pinToTop = v),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  l10n.labelSelectItemTypes,
-                  style: Theme.of(context).textTheme.labelLarge,
-                ),
-                const SizedBox(height: 8),
-                Wrap(
-                  alignment: .center,
-                  spacing: 8,
-                  runSpacing: 4,
-                  children: [
-                    for (final type in ItemType.values)
-                      FilterChip(
-                        label: Text(_typeLabel(l10n, type)),
-                        visualDensity: VisualDensity.compact,
-                        selected: _selectedTypes.contains(type),
-                        onSelected: (selected) => setState(() {
-                          if (selected) {
-                            _selectedTypes.add(type);
-                          } else {
-                            _selectedTypes.remove(type);
-                          }
-                        }),
-                      ),
-                  ],
-                ),
-              ],
+                  const SizedBox(height: 8),
+                  SwitchListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(l10n.labelPinToTop),
+                    value: _pinToTop,
+                    onChanged: (v) => setState(() => _pinToTop = v),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    l10n.labelSelectItemTypes,
+                    style: Theme.of(context).textTheme.labelLarge,
+                  ),
+                  const SizedBox(height: 8),
+                  Wrap(
+                    alignment: .center,
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      for (final type in ItemType.values)
+                        FilterChip(
+                          label: Text(_typeLabel(l10n, type)),
+                          visualDensity: VisualDensity.compact,
+                          selected: _selectedTypes.contains(type),
+                          onSelected: (selected) => setState(() {
+                            if (selected) {
+                              _selectedTypes.add(type);
+                            } else {
+                              _selectedTypes.remove(type);
+                            }
+                          }),
+                        ),
+                    ],
+                  ),
+                ],
+              ),
             ),
-          ),
-          const Divider(height: 1),
-          // 词条多选
-          Expanded(
-            child: ListView(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-                  child: Text(
-                    l10n.helpRuleForm,
-                    style: Theme.of(context).textTheme.bodySmall,
+            const Divider(height: 1),
+            // 词条多选
+            Expanded(
+              child: ListView(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+                    child: Text(
+                      l10n.helpRuleForm,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
                   ),
-                ),
-                for (final color in LineColor.values) ...[
-                  _sectionHeader(l10n, color),
-                  for (final line in ItemLine.values.where(
-                    (l) => l.color == color,
-                  ))
-                    Padding(
-                      padding: const EdgeInsets.only(left: 16, right: 16),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          CheckboxListTile(
-                            contentPadding: EdgeInsets.zero,
-                            title: Row(
-                              mainAxisAlignment: .spaceBetween,
-                              children: [
-                                Text(line.label),
-                                _counts.containsKey(line) && line.color == LineColor.white
-                                    ? Padding(
-                                        padding: const EdgeInsets.only(left: 8),
-                                        child: SegmentedButton<int>(
-                                          segments: [
-                                            ButtonSegment(
-                                              value: 1,
-                                              label: Text(l10n.labelLineCount(1)),
-                                            ),
-                                            ButtonSegment(
-                                              value: 2,
-                                              label: Text(l10n.labelLineCount(2)),
-                                            ),
-                                          ],
-                                          selected: {_counts[line] ?? 1},
-                                          showSelectedIcon: false,
-                                          style: const ButtonStyle(
-                                            visualDensity: VisualDensity.compact,
-                                          ),
-                                          onSelectionChanged: (s) =>
-                                              _setWhiteCount(line, s.first),
-                                        ),
-                                      )
-                                    : const SizedBox.shrink(),
-                              ],
-                            ),
-                            value: _counts.containsKey(line),
-                            // 白色词条合计 3 条时禁止勾选红色词条
-                            onChanged:
-                                line.color == LineColor.red && _whiteSum >= 3
-                                ? null
-                                : (checked) =>
-                                      _toggleLine(line, checked ?? false),
-                          ),
-                          // 数值范围
-                          if (_counts.containsKey(line) && _hasValueRange(line))
-                            Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: Row(
+                  for (final color in LineColor.values) ...[
+                    _sectionHeader(l10n, color),
+                    for (final line in ItemLine.values.where(
+                      (l) => l.color == color,
+                    ))
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            CheckboxListTile(
+                              contentPadding: EdgeInsets.zero,
+                              title: Row(
+                                mainAxisAlignment: .spaceBetween,
                                 children: [
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _minControllers[line],
-                                      textAlign: TextAlign.center,
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                            decimal: true,
+                                  Text(line.label),
+                                  _counts.containsKey(line) &&
+                                          line.color == LineColor.white
+                                      ? Padding(
+                                          padding: const EdgeInsets.only(
+                                            left: 8,
                                           ),
-                                      // 只允许数字与一个小数点
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(
-                                          RegExp(r'^\d*\.?\d*$'),
-                                        ),
-                                      ],
-                                      // 下限校验允许等于词条最小值，但必须小于最大值。
-                                      decoration: InputDecoration(
-                                        helperText: _valueRangeHelperText(
-                                          line,
-                                          isMin: true,
-                                        ),
-                                        suffixText:
-                                            line.numType == LineNumType.percent
-                                            ? '%'
-                                            : null,
-                                      ),
-                                    ),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  const Text(
-                                    ' ≤ target ≤ ',
-                                    style: TextStyle(fontSize: 16),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: TextField(
-                                      controller: _maxControllers[line],
-                                      textAlign: TextAlign.center,
-                                      keyboardType:
-                                          const TextInputType.numberWithOptions(
-                                            decimal: true,
+                                          child: SegmentedButton<int>(
+                                            segments: [
+                                              ButtonSegment(
+                                                value: 1,
+                                                label: Text(
+                                                  l10n.labelLineCount(1),
+                                                ),
+                                              ),
+                                              ButtonSegment(
+                                                value: 2,
+                                                label: Text(
+                                                  l10n.labelLineCount(2),
+                                                ),
+                                              ),
+                                            ],
+                                            selected: {_counts[line] ?? 1},
+                                            showSelectedIcon: false,
+                                            style: const ButtonStyle(
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                            ),
+                                            onSelectionChanged: (s) =>
+                                                _setWhiteCount(line, s.first),
                                           ),
-                                      inputFormatters: [
-                                        FilteringTextInputFormatter.allow(
-                                          RegExp(r'^\d*\.?\d*$'),
-                                        ),
-                                      ],
-                                      decoration: InputDecoration(
-                                        helperText: _valueRangeHelperText(
-                                          line,
-                                          isMin: false,
-                                        ),
-                                        suffixText:
-                                            line.numType == LineNumType.percent
-                                            ? '%'
-                                            : null,
-                                        // isDense: true,
-                                      ),
-                                    ),
-                                  ),
+                                        )
+                                      : const SizedBox.shrink(),
                                 ],
                               ),
+                              value: _counts.containsKey(line),
+                              // 白色词条合计 3 条时禁止勾选红色词条
+                              onChanged:
+                                  line.color == LineColor.red && _whiteSum >= 3
+                                  ? null
+                                  : (checked) =>
+                                        _toggleLine(line, checked ?? false),
                             ),
-                        ],
+                            // 数值范围
+                            if (_counts.containsKey(line) &&
+                                _hasValueRange(line))
+                              Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: Row(
+                                  children: [
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _minControllers[line],
+                                        textAlign: TextAlign.center,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                            ),
+                                        // 只允许数字与一个小数点
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(r'^\d*\.?\d*$'),
+                                          ),
+                                        ],
+                                        // 下限校验允许等于词条最小值，但必须小于最大值。
+                                        decoration: InputDecoration(
+                                          helperText: _valueRangeHelperText(
+                                            line,
+                                            isMin: true,
+                                          ),
+                                          suffixText:
+                                              line.numType ==
+                                                  LineNumType.percent
+                                              ? '%'
+                                              : null,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text(
+                                      ' ≤ target ≤ ',
+                                      style: TextStyle(fontSize: 16),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: TextField(
+                                        controller: _maxControllers[line],
+                                        textAlign: TextAlign.center,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                            ),
+                                        inputFormatters: [
+                                          FilteringTextInputFormatter.allow(
+                                            RegExp(r'^\d*\.?\d*$'),
+                                          ),
+                                        ],
+                                        decoration: InputDecoration(
+                                          helperText: _valueRangeHelperText(
+                                            line,
+                                            isMin: false,
+                                          ),
+                                          suffixText:
+                                              line.numType ==
+                                                  LineNumType.percent
+                                              ? '%'
+                                              : null,
+                                          // isDense: true,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                          ],
+                        ),
                       ),
-                    ),
+                  ],
                 ],
-              ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }

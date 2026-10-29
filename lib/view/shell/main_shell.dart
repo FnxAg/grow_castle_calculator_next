@@ -282,34 +282,41 @@ class _MainShellState extends State<MainShell>
             ? ShellMode.rail
             : ShellMode.compact;
         return Scaffold(
-          body: Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              if (mode.hasSidebar) ...[
-                AppSidebar(
-                  expanded: mode == ShellMode.expanded,
-                  selectedIndex: _selectIndex.value,
-                  pages: mainPages,
-                  onSelected: _selectPage,
-                  canToggleExpanded: width >= Breakpoints.sidebarExpanded,
-                  onToggleExpanded: () => appSettings.setSidebarExpanded(
-                    mode != ShellMode.expanded,
+          // 宽屏没有底部栏时 body 不会自动避让系统导航栏；compact 下外层已清 0
+          body: SafeArea(
+            top: false,
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                if (mode.hasSidebar) ...[
+                  AppSidebar(
+                    expanded: mode == ShellMode.expanded,
+                    selectedIndex: _selectIndex.value,
+                    pages: mainPages,
+                    onSelected: _selectPage,
+                    canToggleExpanded: width >= Breakpoints.sidebarExpanded,
+                    onToggleExpanded: () => appSettings.setSidebarExpanded(
+                      mode != ShellMode.expanded,
+                    ),
+                  ),
+                  const VerticalDivider(width: 0.3, thickness: 1),
+                ],
+                Expanded(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return ShellLayout(
+                        mode: mode,
+                        contentWidth: constraints.maxWidth,
+                        child: _buildPages(
+                          mode.hasSidebar,
+                          constraints.maxWidth,
+                        ),
+                      );
+                    },
                   ),
                 ),
-                const VerticalDivider(width: 0.3, thickness: 1),
               ],
-              Expanded(
-                child: LayoutBuilder(
-                  builder: (context, constraints) {
-                    return ShellLayout(
-                      mode: mode,
-                      contentWidth: constraints.maxWidth,
-                      child: _buildPages(mode.hasSidebar, constraints.maxWidth),
-                    );
-                  },
-                ),
-              ),
-            ],
+            ),
           ),
           bottomNavigationBar: mode == ShellMode.compact
               ? _buildBottomBar()
@@ -404,10 +411,15 @@ class _MainShellState extends State<MainShell>
       child: page.builder(context),
     );
     if (!wide) return content;
-    return Navigator(
-      key: _navigatorKeys[index],
-      onGenerateRoute: (settings) =>
-          MaterialPageRoute(settings: settings, builder: (_) => content),
+    // 系统返回键先走内层 Navigator，弹空时自动交还外层
+    return NavigatorPopHandler(
+      enabled: index == _selectIndex.value,
+      onPopWithResult: (_) => _navigatorKeys[index].currentState?.maybePop(),
+      child: Navigator(
+        key: _navigatorKeys[index],
+        onGenerateRoute: (settings) =>
+            MaterialPageRoute(settings: settings, builder: (_) => content),
+      ),
     );
   }
 

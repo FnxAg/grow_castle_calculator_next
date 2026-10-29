@@ -72,96 +72,99 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
           ),
         ],
       ),
-      body: ListView.builder(
-        itemCount: userList.length,
-        itemBuilder: (ctx, index) {
-          final String username = userList[index];
-          final user = state.findByUsername(username);
-          final String guild = user?.guild ?? '';
-          return GestureDetector(
-            onSecondaryTapUp: (_) => _showUnitSummary(username),
-            child: ListTile(
-              title: Wrap(
-                spacing: 8.0,
-                crossAxisAlignment: WrapCrossAlignment.center,
-                children: [
-                  Text(username),
-                  if (guild.isNotEmpty)
-                    PillChip(
-                      text: Text(guild, style: PillChip.textStyle),
-                      leading: Icon(Icons.flag_circle),
-                    ),
-                ],
-              ),
-              subtitle: SubtitlePillWrap(
-                children: [
-                  PillChip(
-                    text: Text(
-                      (user?.wave ?? 1).format(),
-                      style: PillChip.textStyle,
-                    ),
-                    leading: Icon(Icons.emoji_events),
-                  ),
-                  PillChip(
-                    text: Text(
-                      (user?.totalGold ?? 0.0).formatCompact(
-                        fractionDigits: 2,
-                        english: !context.isChineseLocale,
-                        traditional: context.isTraditionalChineseLocale,
+      body: SafeArea(
+        top: false,
+        child: ListView.builder(
+          itemCount: userList.length,
+          itemBuilder: (ctx, index) {
+            final String username = userList[index];
+            final user = state.findByUsername(username);
+            final String guild = user?.guild ?? '';
+            return GestureDetector(
+              onSecondaryTapUp: (_) => _showUnitSummary(username),
+              child: ListTile(
+                title: Wrap(
+                  spacing: 8.0,
+                  crossAxisAlignment: WrapCrossAlignment.center,
+                  children: [
+                    Text(username),
+                    if (guild.isNotEmpty)
+                      PillChip(
+                        text: Text(guild, style: PillChip.textStyle),
+                        leading: Icon(Icons.flag_circle),
                       ),
-                      style: PillChip.textStyle,
+                  ],
+                ),
+                subtitle: SubtitlePillWrap(
+                  children: [
+                    PillChip(
+                      text: Text(
+                        (user?.wave ?? 1).format(),
+                        style: PillChip.textStyle,
+                      ),
+                      leading: Icon(Icons.emoji_events),
                     ),
-                    leading: Icon(Icons.monetization_on),
-                  ),
-                ],
-              ),
-              leading: currentUsername == username
-                  ? Icon(Icons.check, color: scheme.primary)
-                  : const SizedBox(width: 24.0),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  SizeTransition(
-                    sizeFactor: ReverseAnimation(_animation),
-                    axis: Axis.horizontal,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        if (state.findId(username) != 0) ...[
-                          IconButton(
-                            icon: const Icon(Icons.edit),
-                            onPressed: () => _renameDialog(username),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.delete, color: Colors.red),
-                            onPressed: () {
-                              showDialog<void>(
-                                context: context,
-                                builder: (context) =>
-                                    _DeleteUserDialog(userId: username),
-                              );
-                            },
-                          ),
+                    PillChip(
+                      text: Text(
+                        (user?.totalGold ?? 0.0).formatCompact(
+                          fractionDigits: 2,
+                          english: !context.isChineseLocale,
+                          traditional: context.isTraditionalChineseLocale,
+                        ),
+                        style: PillChip.textStyle,
+                      ),
+                      leading: Icon(Icons.monetization_on),
+                    ),
+                  ],
+                ),
+                leading: currentUsername == username
+                    ? Icon(Icons.check, color: scheme.primary)
+                    : const SizedBox(width: 24.0),
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    SizeTransition(
+                      sizeFactor: ReverseAnimation(_animation),
+                      axis: Axis.horizontal,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          if (state.findId(username) != 0) ...[
+                            IconButton(
+                              icon: const Icon(Icons.edit),
+                              onPressed: () => _renameDialog(username),
+                            ),
+                            IconButton(
+                              icon: const Icon(Icons.delete, color: Colors.red),
+                              onPressed: () {
+                                showDialog<void>(
+                                  context: context,
+                                  builder: (context) =>
+                                      _DeleteUserDialog(userId: username),
+                                );
+                              },
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
-                  ),
-                  if (isDesktop)
-                    IconButton(
-                      icon: const Icon(Icons.info_outline, size: 20),
-                      tooltip: l10n.tooltipDetails,
-                      onPressed: () => _showUnitSummary(username),
-                    ),
-                ],
+                    if (isDesktop)
+                      IconButton(
+                        icon: const Icon(Icons.info_outline, size: 20),
+                        tooltip: l10n.tooltipDetails,
+                        onPressed: () => _showUnitSummary(username),
+                      ),
+                  ],
+                ),
+                onTap: () {
+                  ref.users.setCurrentUser(username);
+                  Navigator.pop(context);
+                },
+                onLongPress: () => _showUnitSummary(username),
               ),
-              onTap: () {
-                ref.users.setCurrentUser(username);
-                Navigator.pop(context);
-              },
-              onLongPress: () => _showUnitSummary(username),
-            ),
-          );
-        },
+            );
+          },
+        ),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: _addUserDialog,

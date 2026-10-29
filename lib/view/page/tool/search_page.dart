@@ -33,60 +33,63 @@ class _SearchPageState extends State<SearchPage> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.toolSearch)),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          NameTextField(
-            controller: _controller,
-            labelText: l10n.labelName,
-            onChanged: (value) {
-              setState(() {});
-            },
-          ),
-          const SizedBox(height: 16),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              Expanded(
-                child: FilledButton.icon(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    if (_controller.text.isEmpty) {
-                      return;
-                    }
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            PlayerDetailPage(playerName: _controller.text),
-                      ),
-                    );
-                  },
-                  label: Text(l10n.toolSearchUser),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            NameTextField(
+              controller: _controller,
+              labelText: l10n.labelName,
+              onChanged: (value) {
+                setState(() {});
+              },
+            ),
+            const SizedBox(height: 16),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+              children: [
+                Expanded(
+                  child: FilledButton.icon(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      if (_controller.text.isEmpty) {
+                        return;
+                      }
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              PlayerDetailPage(playerName: _controller.text),
+                        ),
+                      );
+                    },
+                    label: Text(l10n.toolSearchUser),
+                  ),
                 ),
-              ),
-              const SizedBox(width: 8),
-              Expanded(
-                child: FilledButton.tonalIcon(
-                  icon: const Icon(Icons.search),
-                  onPressed: () {
-                    if (_controller.text.isEmpty) {
-                      return;
-                    }
-                    FocusManager.instance.primaryFocus?.unfocus();
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) =>
-                            GuildDetailPage(guildName: _controller.text),
-                      ),
-                    );
-                  },
-                  label: Text(l10n.toolSearchGuild),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: FilledButton.tonalIcon(
+                    icon: const Icon(Icons.search),
+                    onPressed: () {
+                      if (_controller.text.isEmpty) {
+                        return;
+                      }
+                      FocusManager.instance.primaryFocus?.unfocus();
+                      Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (context) =>
+                              GuildDetailPage(guildName: _controller.text),
+                        ),
+                      );
+                    },
+                    label: Text(l10n.toolSearchGuild),
+                  ),
                 ),
-              ),
-            ],
-          ),
-        ],
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }

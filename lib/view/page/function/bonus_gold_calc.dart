@@ -144,53 +144,56 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage> {
           ),
         ],
       ),
-      body: Builder(
-        builder: (context) {
-          final isWide = context.isWideContent;
-          final gabCost = _gabCost(wave);
-          final safeCost = gabCost > 0 ? gabCost : 0.0;
-          final avgIncome = _incomes.isEmpty
-              ? 0.0
-              : _incomes.reduce((a, b) => a + b) / _incomes.length;
-          final percent = _incomes.isEmpty
-              ? 0.0
-              : _sampleRate(avgIncome, safeCost);
-          final Widget bodyView = Expanded(
-            flex: isWide ? 6 : 1,
-            child: _incomes.isEmpty
-                ? Center(
-                    child: Text(
-                      l10n.emptyIncomeSamples,
-                      style: const TextStyle(color: Colors.grey),
+      body: SafeArea(
+        top: false,
+        child: Builder(
+          builder: (context) {
+            final isWide = context.isWideContent;
+            final gabCost = _gabCost(wave);
+            final safeCost = gabCost > 0 ? gabCost : 0.0;
+            final avgIncome = _incomes.isEmpty
+                ? 0.0
+                : _incomes.reduce((a, b) => a + b) / _incomes.length;
+            final percent = _incomes.isEmpty
+                ? 0.0
+                : _sampleRate(avgIncome, safeCost);
+            final Widget bodyView = Expanded(
+              flex: isWide ? 6 : 1,
+              child: _incomes.isEmpty
+                  ? Center(
+                      child: Text(
+                        l10n.emptyIncomeSamples,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    )
+                  : ListView.builder(
+                      itemCount: _incomes.length,
+                      itemBuilder: (context, index) {
+                        final income = _incomes[index];
+                        return _IncomeTile(
+                          index: index,
+                          income: income,
+                          rate: _sampleRate(income, safeCost),
+                          onRemove: () => _removeIncome(index),
+                        );
+                      },
                     ),
+            );
+            final Widget summary = _buildSummaryCard(
+              gabCost: gabCost,
+              avgIncome: avgIncome,
+              percent: percent,
+            );
+            return isWide
+                ? Row(
+                    children: [
+                      bodyView,
+                      Expanded(flex: 4, child: summary),
+                    ],
                   )
-                : ListView.builder(
-                    itemCount: _incomes.length,
-                    itemBuilder: (context, index) {
-                      final income = _incomes[index];
-                      return _IncomeTile(
-                        index: index,
-                        income: income,
-                        rate: _sampleRate(income, safeCost),
-                        onRemove: () => _removeIncome(index),
-                      );
-                    },
-                  ),
-          );
-          final Widget summary = _buildSummaryCard(
-            gabCost: gabCost,
-            avgIncome: avgIncome,
-            percent: percent,
-          );
-          return isWide
-              ? Row(
-                  children: [
-                    bodyView,
-                    Expanded(flex: 4, child: summary),
-                  ],
-                )
-              : Column(children: [bodyView, summary]);
-        },
+                : Column(children: [bodyView, summary]);
+          },
+        ),
       ),
     );
   }

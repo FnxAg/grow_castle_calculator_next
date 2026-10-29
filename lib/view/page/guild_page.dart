@@ -383,7 +383,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
               : SizedBox.shrink(),
         ],
       ),
-      body: body,
+      body: SafeArea(top: false, child: body),
     );
   }
 

@@ -51,74 +51,75 @@ class _BackupPageState extends State<BackupPage> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsDataBackup)),
-      body: ListView(
-        children: [
-          SectionHeader(l10n.sectionWebdavBackup),
-          // 服务器配置行（手动备份与云端恢复共用）
-          _buildConfigRows(scheme),
-          // 手动操作与状态
-          ValueListenableBuilder<bool>(
-            valueListenable: _service.busyNotifier,
-            builder: (context, busy, _) => Column(
-              children: [
-                ListTile(
-                  leading: const Icon(Icons.cloud_upload_outlined),
-                  title: Text(l10n.actionBackupNow),
-                  subtitle: Text(
-                    _config.isConfigured
-                        ? l10n.backupNowSubtitleReady
-                        : l10n.backupServerNotConfigured,
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          children: [
+            SectionHeader(l10n.sectionWebdavBackup),
+            // 服务器配置行（手动备份与云端恢复共用）
+            _buildConfigRows(scheme),
+            // 手动操作与状态
+            ValueListenableBuilder<bool>(
+              valueListenable: _service.busyNotifier,
+              builder: (context, busy, _) => Column(
+                children: [
+                  ListTile(
+                    leading: const Icon(Icons.cloud_upload_outlined),
+                    title: Text(l10n.actionBackupNow),
+                    subtitle: Text(
+                      _config.isConfigured
+                          ? l10n.backupNowSubtitleReady
+                          : l10n.backupServerNotConfigured,
+                    ),
+                    trailing: busy || _remoteBusy ? _spinner() : null,
+                    enabled: !busy && !_remoteBusy,
+                    onTap: _onManualBackup,
                   ),
-                  trailing: busy || _remoteBusy ? _spinner() : null,
-                  enabled: !busy && !_remoteBusy,
-                  onTap: _onManualBackup,
-                ),
-                ListTile(
-                  leading: const Icon(Icons.cloud_download_outlined),
-                  title: Text(l10n.actionRestoreFromCloud),
-                  subtitle: Text(l10n.backupRestoreSubtitle),
-                  trailing: _remoteBusy ? _spinner() : null,
-                  enabled: !busy && !_remoteBusy,
-                  onTap: _onRestoreFromCloud,
-                ),
-              ],
+                  ListTile(
+                    leading: const Icon(Icons.cloud_download_outlined),
+                    title: Text(l10n.actionRestoreFromCloud),
+                    subtitle: Text(l10n.backupRestoreSubtitle),
+                    trailing: _remoteBusy ? _spinner() : null,
+                    enabled: !busy && !_remoteBusy,
+                    onTap: _onRestoreFromCloud,
+                  ),
+                ],
+              ),
             ),
-          ),
-          _buildStatusArea(),
-          SectionHeader(l10n.sectionLocalFiles),
-          ListTile(
-            leading: const Icon(Icons.file_upload_outlined),
-            title: Text(l10n.actionExportToFile),
-            subtitle: Text(l10n.backupExportSubtitle),
-            onTap: _onExportFile,
-          ),
-          ListTile(
-            leading: const Icon(Icons.file_download_outlined),
-            title: Text(l10n.actionImportFile),
-            subtitle: Text(l10n.backupImportSubtitle),
-            onTap: _onImportFile,
-          ),
-          SectionHeader(l10n.sectionInfo),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
-            child: Text(
-              l10n.backupOverwriteHint,
-              style: Theme.of(context)
-                  .textTheme
-                  .bodySmall
-                  ?.copyWith(color: scheme.onSurfaceVariant),
+            _buildStatusArea(),
+            SectionHeader(l10n.sectionLocalFiles),
+            ListTile(
+              leading: const Icon(Icons.file_upload_outlined),
+              title: Text(l10n.actionExportToFile),
+              subtitle: Text(l10n.backupExportSubtitle),
+              onTap: _onExportFile,
             ),
-          ),
-        ],
+            ListTile(
+              leading: const Icon(Icons.file_download_outlined),
+              title: Text(l10n.actionImportFile),
+              subtitle: Text(l10n.backupImportSubtitle),
+              onTap: _onImportFile,
+            ),
+            SectionHeader(l10n.sectionInfo),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 4, 16, 24),
+              child: Text(
+                l10n.backupOverwriteHint,
+                style: Theme.of(context).textTheme.bodySmall
+                    ?.copyWith(color: scheme.onSurfaceVariant),
+              ),
+            ),
+          ],
+        ),
       ),
     );
   }
 
   static Widget _spinner() => const SizedBox(
-        width: 18,
-        height: 18,
-        child: CircularProgressIndicator(strokeWidth: 2.0),
-      );
+    width: 18,
+    height: 18,
+    child: CircularProgressIndicator(strokeWidth: 2.0),
+  );
 
   /// 服务器地址/账号/密码配置行
   Widget _buildConfigRows(ColorScheme scheme) {
@@ -310,7 +311,8 @@ class _BackupPageState extends State<BackupPage> {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
     final lastSuccessMs = _config.lastSuccessAtNotifier.value;
-    final warn = relation == RemoteBackupRelation.remoteNewer ||
+    final warn =
+        relation == RemoteBackupRelation.remoteNewer ||
         relation == RemoteBackupRelation.remoteUnknown;
     final int? contentLength = info.contentLength;
     final String remoteLine;
@@ -352,8 +354,9 @@ class _BackupPageState extends State<BackupPage> {
           ),
           if (relation == RemoteBackupRelation.remoteNewer)
             TextButton(
-              onPressed: () => Navigator.of(dialogContext)
-                  .pop(_OverwriteDecision.restoreFromCloud),
+              onPressed: () =>
+                  Navigator.of(dialogContext)
+                      .pop(_OverwriteDecision.restoreFromCloud),
               child: Text(l10n.actionRestoreRemote),
             ),
           FilledButton(
@@ -365,11 +368,13 @@ class _BackupPageState extends State<BackupPage> {
                     foregroundColor: scheme.onError,
                   )
                 : null,
-            child: Text(!info.exists
-                ? l10n.actionUpload
-                : warn
-                    ? l10n.actionOverwriteAnyway
-                    : l10n.actionOverwriteUpload),
+            child: Text(
+              !info.exists
+                  ? l10n.actionUpload
+                  : warn
+                  ? l10n.actionOverwriteAnyway
+                  : l10n.actionOverwriteUpload,
+            ),
           ),
         ],
       ),
@@ -410,7 +415,8 @@ class _BackupPageState extends State<BackupPage> {
     try {
       preview = await _service.fetchRemotePreview();
     } on WebDavException catch (e) {
-      if (mounted) _snack(l10n.snackFetchRemoteFailed(webdavExceptionText(l10n, e)));
+      if (mounted)
+        _snack(l10n.snackFetchRemoteFailed(webdavExceptionText(l10n, e)));
     } on DataArchiveException catch (e) {
       if (mounted) {
         _snack(l10n.snackInvalidCloudFile(archiveExceptionText(l10n, e)));
@@ -460,15 +466,9 @@ class _BackupPageState extends State<BackupPage> {
           isError: true,
         );
       case RemoteBackupRelation.remoteNewer:
-        return (
-          text: l10n.dialogWarningRestoreNewer,
-          isError: false,
-        );
+        return (text: l10n.dialogWarningRestoreNewer, isError: false);
       case RemoteBackupRelation.remoteUnknown:
-        return (
-          text: l10n.dialogWarningRestoreUnknown,
-          isError: false,
-        );
+        return (text: l10n.dialogWarningRestoreUnknown, isError: false);
       case RemoteBackupRelation.noRemote:
         // 有预览必然存在云端文件，此分支不会走到
         return null;
@@ -489,7 +489,8 @@ class _BackupPageState extends State<BackupPage> {
       return;
     }
     final now = DateTime.now();
-    final stamp = '${now.year}'
+    final stamp =
+        '${now.year}'
         '${now.month.toString().padLeft(2, '0')}'
         '${now.day.toString().padLeft(2, '0')}_'
         '${now.hour.toString().padLeft(2, '0')}'

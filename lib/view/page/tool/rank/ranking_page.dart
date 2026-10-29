@@ -102,7 +102,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
           l10n.labelRankingTrend(rankingKindLabel(l10n, widget.kind)),
         ),
       ),
-      body: _buildBody(),
+      body: SafeArea(top: false, child: _buildBody()),
     );
   }
 
@@ -536,7 +536,7 @@ class _RankingPageState extends State<RankingPage> {
           ),
         ],
       ),
-      body: _buildBody(),
+      body: SafeArea(top: false, child: _buildBody()),
     );
   }
 
@@ -732,9 +732,9 @@ class _RankingPageState extends State<RankingPage> {
                 Text(
                   switch (widget.kind) {
                     RankingKind.hell => row.score.formatCompact(
-                        english: english,
-                        traditional: traditional,
-                      ),
+                      english: english,
+                      traditional: traditional,
+                    ),
                     _ => row.score.format(),
                   },
                   style: TextStyle(

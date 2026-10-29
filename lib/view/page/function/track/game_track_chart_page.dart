@@ -106,15 +106,18 @@ class _GameTrackChartPageState extends ConsumerState<GameTrackChartPage> {
             ),
         ],
       ),
-      body: _chartRecords.length < 2
-          ? Center(child: Text(l10n.emptyChartNeedTwoRecords))
-          : Padding(
-              padding: const EdgeInsets.all(12),
-              child: LayoutBuilder(
-                builder: (context, constraints) =>
-                    _buildChartBody(context, constraints),
+      body: SafeArea(
+        top: false,
+        child: _chartRecords.length < 2
+            ? Center(child: Text(l10n.emptyChartNeedTwoRecords))
+            : Padding(
+                padding: const EdgeInsets.all(12),
+                child: LayoutBuilder(
+                  builder: (context, constraints) =>
+                      _buildChartBody(context, constraints),
+                ),
               ),
-            ),
+      ),
     );
   }
 

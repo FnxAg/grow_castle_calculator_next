@@ -127,17 +127,20 @@ class _AboutPageState extends State<AboutPage> {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
       appBar: AppBar(title: Text(l10n.settingsAbout)),
-      body: ListView(
-        children: [
-          _buildHeader(context),
-          SectionHeader(l10n.sectionInfo),
-          for (final entry in _infoEntries) entry,
-          SectionHeader(l10n.sectionLinks),
-          for (final entry in _linkEntries) entry,
-          SectionHeader(l10n.sectionLicenses),
-          for (final entry in _legalEntries) entry,
-          _buildFooter(context),
-        ],
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          children: [
+            _buildHeader(context),
+            SectionHeader(l10n.sectionInfo),
+            for (final entry in _infoEntries) entry,
+            SectionHeader(l10n.sectionLinks),
+            for (final entry in _linkEntries) entry,
+            SectionHeader(l10n.sectionLicenses),
+            for (final entry in _legalEntries) entry,
+            _buildFooter(context),
+          ],
+        ),
       ),
     );
   }

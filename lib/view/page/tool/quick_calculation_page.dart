@@ -139,7 +139,7 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
   }
 
   /// 刚锁定时，用已有的另一项数值立即补算
-  /// 
+  ///
   /// **注意**：当_lastEdited为两项指数时，可能会出现越界，
   /// 导致总波数与总金币的输入框被清空
   void _recalculateAfterLock() {
@@ -319,26 +319,29 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
         title: Text(l10n.toolQuickCalculation),
         actions: _buildAppBarActions(l10n),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16.0),
-        children: [
-          Text(
-            l10n.quickCalcHint,
-            style: Theme.of(context).textTheme.bodySmall
-                ?.copyWith(color: scheme.onSurfaceVariant),
-          ),
-          const SizedBox(height: 16.0),
-          for (final field in _Field.values) ...[
-            Row(
-              children: [
-                Expanded(child: _buildField(l10n, field)),
-                _buildLockButton(l10n, field),
-                _buildFillButton(l10n, field),
-              ],
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(16.0),
+          children: [
+            Text(
+              l10n.quickCalcHint,
+              style: Theme.of(context).textTheme.bodySmall
+                  ?.copyWith(color: scheme.onSurfaceVariant),
             ),
-            if (field != _Field.values.last) const SizedBox(height: 12.0),
+            const SizedBox(height: 16.0),
+            for (final field in _Field.values) ...[
+              Row(
+                children: [
+                  Expanded(child: _buildField(l10n, field)),
+                  _buildLockButton(l10n, field),
+                  _buildFillButton(l10n, field),
+                ],
+              ),
+              if (field != _Field.values.last) const SizedBox(height: 12.0),
+            ],
           ],
-        ],
+        ),
       ),
     );
   }

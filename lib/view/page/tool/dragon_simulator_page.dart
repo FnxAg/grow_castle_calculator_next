@@ -249,196 +249,203 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
           ),
         ],
       ),
-      body: ShortWindowFallback(
-        minHeight: 460,
-        child: Column(
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  GestureDetector(
-                    onLongPress: context.isChineseLocale
-                        ? () {
-                            setState(
-                              () => _showEasterEggNames = !_showEasterEggNames,
-                            );
-                            if (_showEasterEggNames) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    l10n.eastereggDragonName,
-                                    style: TextStyle(color: scheme.onPrimary),
-                                  ),
-                                  duration: const Duration(seconds: 5),
-                                  showCloseIcon: true,
-                                  backgroundColor: scheme.primary,
-                                ),
+      body: SafeArea(
+        top: false,
+        child: ShortWindowFallback(
+          minHeight: 460,
+          child: Column(
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    GestureDetector(
+                      onLongPress: context.isChineseLocale
+                          ? () {
+                              setState(
+                                () =>
+                                    _showEasterEggNames = !_showEasterEggNames,
                               );
+                              if (_showEasterEggNames) {
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      l10n.eastereggDragonName,
+                                      style: TextStyle(color: scheme.onPrimary),
+                                    ),
+                                    duration: const Duration(seconds: 5),
+                                    showCloseIcon: true,
+                                    backgroundColor: scheme.primary,
+                                  ),
+                                );
+                              }
                             }
-                          }
-                        : null,
-                    child: DropdownButtonFormField<ItemSource>(
-                      initialValue: _source,
+                          : null,
+                      child: DropdownButtonFormField<ItemSource>(
+                        initialValue: _source,
+                        isExpanded: true,
+                        decoration: InputDecoration(
+                          labelText: l10n.labelItemSource,
+                          isDense: true,
+                        ),
+                        items: [
+                          for (final source in ItemSource.values)
+                            DropdownMenuItem(
+                              value: source,
+                              child: Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  Text(
+                                    _sourceLabel(
+                                      l10n,
+                                      source,
+                                      easterEgg: showEasterEggNames,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  Text(
+                                    _dropRatesText(source, _bonus),
+                                    style: theme.textTheme.bodySmall?.copyWith(
+                                      color: theme.colorScheme.onSurfaceVariant,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                        ],
+                        onChanged: (source) {
+                          if (source != null) setState(() => _source = source);
+                        },
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<int>(
+                      initialValue: _count,
                       isExpanded: true,
                       decoration: InputDecoration(
-                        labelText: l10n.labelItemSource,
+                        labelText: l10n.labelRollBatchSize,
                         isDense: true,
                       ),
                       items: [
-                        for (final source in ItemSource.values)
+                        for (final count in _countOptions)
+                          DropdownMenuItem(value: count, child: Text('$count')),
+                      ],
+                      onChanged: (count) {
+                        if (count != null) setState(() => _count = count);
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    DropdownButtonFormField<double>(
+                      initialValue: _bonus,
+                      isExpanded: true,
+                      decoration: InputDecoration(
+                        labelText: l10n.labelHighestTierBonus,
+                        isDense: true,
+                      ),
+                      items: [
+                        for (final bonus in _bonusOptions)
                           DropdownMenuItem(
-                            value: source,
-                            child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  _sourceLabel(
-                                    l10n,
-                                    source,
-                                    easterEgg: showEasterEggNames,
-                                  ),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                                Text(
-                                  _dropRatesText(source, _bonus),
-                                  style: theme.textTheme.bodySmall?.copyWith(
-                                    color: theme.colorScheme.onSurfaceVariant,
-                                  ),
-                                ),
-                              ],
+                            value: bonus,
+                            child: Text(
+                              '+${(bonus * 100).toStringAsFixed(1)}%',
                             ),
                           ),
                       ],
-                      onChanged: (source) {
-                        if (source != null) setState(() => _source = source);
+                      onChanged: (bonus) {
+                        if (bonus != null) setState(() => _bonus = bonus);
                       },
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<int>(
-                    initialValue: _count,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: l10n.labelRollBatchSize,
-                      isDense: true,
-                    ),
-                    items: [
-                      for (final count in _countOptions)
-                        DropdownMenuItem(value: count, child: Text('$count')),
-                    ],
-                    onChanged: (count) {
-                      if (count != null) setState(() => _count = count);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  DropdownButtonFormField<double>(
-                    initialValue: _bonus,
-                    isExpanded: true,
-                    decoration: InputDecoration(
-                      labelText: l10n.labelHighestTierBonus,
-                      isDense: true,
-                    ),
-                    items: [
-                      for (final bonus in _bonusOptions)
-                        DropdownMenuItem(
-                          value: bonus,
-                          child: Text('+${(bonus * 100).toStringAsFixed(1)}%'),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: _generate,
+                            icon: const Icon(Icons.casino_outlined),
+                            label: Text(l10n.actionRollOnce),
+                          ),
                         ),
-                    ],
-                    onChanged: (bonus) {
-                      if (bonus != null) setState(() => _bonus = bonus);
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: _generate,
-                          icon: const Icon(Icons.casino_outlined),
-                          label: Text(l10n.actionRollOnce),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: _rolling
+                                ? _stopRollToHit
+                                : _startRollToHit,
+                            icon: Icon(_rolling ? Icons.stop : Icons.autorenew),
+                            label: Text(
+                              _rolling ? l10n.actionStop : l10n.actionRollToHit,
+                            ),
+                          ),
                         ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: FilledButton.tonalIcon(
-                          onPressed: _rolling
-                              ? _stopRollToHit
-                              : _startRollToHit,
-                          icon: Icon(_rolling ? Icons.stop : Icons.autorenew),
-                          label: Text(
-                            _rolling ? l10n.actionStop : l10n.actionRollToHit,
+                      ],
+                    ),
+                    // roll到死 状态提示
+                    if (_rolling || _rollResult != null)
+                      Padding(
+                        padding: const EdgeInsets.only(top: 8),
+                        child: Text(
+                          _rolling
+                              ? l10n.rollToHitRunning(_rollCount.format())
+                              : _rollResult!,
+                          style: theme.textTheme.bodySmall?.copyWith(
+                            color: _rolling ? theme.colorScheme.primary : null,
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  // roll到死 状态提示
-                  if (_rolling || _rollResult != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8),
-                      child: Text(
-                        _rolling
-                            ? l10n.rollToHitRunning(_rollCount.format())
-                            : _rollResult!,
-                        style: theme.textTheme.bodySmall?.copyWith(
-                          color: _rolling ? theme.colorScheme.primary : null,
+                  ],
+                ),
+              ),
+
+              // ── 本次等级分布 ──
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: Row(
+                  children: [
+                    for (final entry in levelCount.entries)
+                      Padding(
+                        padding: const EdgeInsets.only(right: 12),
+                        child: Text(
+                          '${entry.key.name} ×${entry.value}',
+                          style: theme.textTheme.bodyMedium,
                         ),
                       ),
-                    ),
-                ],
+                  ],
+                ),
               ),
-            ),
+              const Divider(height: 16),
 
-            // ── 本次等级分布 ──
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16),
-              child: Row(
-                children: [
-                  for (final entry in levelCount.entries)
-                    Padding(
-                      padding: const EdgeInsets.only(right: 12),
-                      child: Text(
-                        '${entry.key.name} ×${entry.value}',
-                        style: theme.textTheme.bodyMedium,
-                      ),
-                    ),
-                ],
+              // ── 结果区（规则变更时自动刷新排序与高亮）──
+              Expanded(
+                child: ValueListenableBuilder<List<UserHighlightRule>>(
+                  valueListenable: Stores.itemRuleStore.rulesNotifier,
+                  builder: (context, rules, _) {
+                    // 命中规则（如白cd + 红cd + 加强）的装备置顶，
+                    // 其余按装备等级从高到低排列：U > E > L > S > A > B
+                    final items = [..._items]
+                      ..sort((a, b) {
+                        final pinnedA = matchRule(a, rules)?.pinToTop ?? false;
+                        final pinnedB = matchRule(b, rules)?.pinToTop ?? false;
+                        if (pinnedA != pinnedB) return pinnedA ? -1 : 1;
+                        return b.level.index.compareTo(a.level.index);
+                      });
+                    return ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                      itemCount: items.length,
+                      itemBuilder: (context, index) {
+                        final item = items[index];
+                        return _ItemCard(
+                          item: item,
+                          rule: matchRule(item, rules),
+                        );
+                      },
+                    );
+                  },
+                ),
               ),
-            ),
-            const Divider(height: 16),
-
-            // ── 结果区（规则变更时自动刷新排序与高亮）──
-            Expanded(
-              child: ValueListenableBuilder<List<UserHighlightRule>>(
-                valueListenable: Stores.itemRuleStore.rulesNotifier,
-                builder: (context, rules, _) {
-                  // 命中规则（如白cd + 红cd + 加强）的装备置顶，
-                  // 其余按装备等级从高到低排列：U > E > L > S > A > B
-                  final items = [..._items]
-                    ..sort((a, b) {
-                      final pinnedA = matchRule(a, rules)?.pinToTop ?? false;
-                      final pinnedB = matchRule(b, rules)?.pinToTop ?? false;
-                      if (pinnedA != pinnedB) return pinnedA ? -1 : 1;
-                      return b.level.index.compareTo(a.level.index);
-                    });
-                  return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-                    itemCount: items.length,
-                    itemBuilder: (context, index) {
-                      final item = items[index];
-                      return _ItemCard(
-                        item: item,
-                        rule: matchRule(item, rules),
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

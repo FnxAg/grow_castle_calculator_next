@@ -119,205 +119,208 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
           children: [Text(l10n.incomeTrend), _AppBarInfo()],
         ),
       ),
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          Center(child: timeSelector),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              SectionHeader(l10n.incomeTrendNow),
-              SummaryCard(
-                children: [
-                  SummaryRow(
-                    leading: const Icon(Icons.waves),
-                    title: Text(l10n.totalWave),
-                    trailing: SummaryRowValueText(text: startWave.format()),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.money),
-                    title: Text(l10n.labelGabCost),
-                    trailing: SummaryRowValueText(
-                      text: startWaveGabCost.formatCompact(
-                        english: english,
-                        traditional: traditional,
-                      ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.all(16),
+          children: [
+            Center(child: timeSelector),
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                SectionHeader(l10n.incomeTrendNow),
+                SummaryCard(
+                  children: [
+                    SummaryRow(
+                      leading: const Icon(Icons.waves),
+                      title: Text(l10n.totalWave),
+                      trailing: SummaryRowValueText(text: startWave.format()),
                     ),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.monetization_on),
-                    title: Text(l10n.totalGold),
-                    trailing: SummaryRowValueText(
-                      text: startWaveTotalGold.formatCompact(
-                        english: english,
-                        traditional: traditional,
-                      ),
-                    ),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.star),
-                    title: Text(l10n.gp),
-                    trailing: SummaryRowValueText(
-                      text: startGp.format(fractionDigits: 3),
-                    ),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.star),
-                    title: Text(l10n.gpCN),
-                    trailing: SummaryRowValueText(
-                      text: startGpCN.format(fractionDigits: 3),
-                    ),
-                  ),
-                ],
-              ),
-              SectionHeader(l10n.incomeTrendEnd),
-              SummaryCard(
-                children: [
-                  SummaryRow(
-                    leading: const Icon(Icons.waves),
-                    title: Text(l10n.totalWave),
-                    trailing: Row(
-                      children: [
-                        PillChip(
-                          leading: Icon(
-                            Icons.arrow_upward,
-                            size: PillChip.leadingIconSize,
-                          ),
-                          text: Text(
-                            passedWave.format(),
-                            style: PillChip.textStyle,
-                          ),
+                    SummaryRow(
+                      leading: const Icon(Icons.money),
+                      title: Text(l10n.labelGabCost),
+                      trailing: SummaryRowValueText(
+                        text: startWaveGabCost.formatCompact(
+                          english: english,
+                          traditional: traditional,
                         ),
-                        const SizedBox(width: 8),
-                        SummaryRowValueText(text: endWave.format()),
-                      ],
+                      ),
                     ),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.money),
-                    title: Text(l10n.labelGabCost),
-                    trailing: Row(
-                      children: [
-                        PillChip(
-                          leading: Icon(
-                            Icons.arrow_upward,
-                            size: PillChip.leadingIconSize,
+                    SummaryRow(
+                      leading: const Icon(Icons.monetization_on),
+                      title: Text(l10n.totalGold),
+                      trailing: SummaryRowValueText(
+                        text: startWaveTotalGold.formatCompact(
+                          english: english,
+                          traditional: traditional,
+                        ),
+                      ),
+                    ),
+                    SummaryRow(
+                      leading: const Icon(Icons.star),
+                      title: Text(l10n.gp),
+                      trailing: SummaryRowValueText(
+                        text: startGp.format(fractionDigits: 3),
+                      ),
+                    ),
+                    SummaryRow(
+                      leading: const Icon(Icons.star),
+                      title: Text(l10n.gpCN),
+                      trailing: SummaryRowValueText(
+                        text: startGpCN.format(fractionDigits: 3),
+                      ),
+                    ),
+                  ],
+                ),
+                SectionHeader(l10n.incomeTrendEnd),
+                SummaryCard(
+                  children: [
+                    SummaryRow(
+                      leading: const Icon(Icons.waves),
+                      title: Text(l10n.totalWave),
+                      trailing: Row(
+                        children: [
+                          PillChip(
+                            leading: Icon(
+                              Icons.arrow_upward,
+                              size: PillChip.leadingIconSize,
+                            ),
+                            text: Text(
+                              passedWave.format(),
+                              style: PillChip.textStyle,
+                            ),
                           ),
-                          text: Text(
-                            (endWaveGabCost - startWaveGabCost).formatCompact(
+                          const SizedBox(width: 8),
+                          SummaryRowValueText(text: endWave.format()),
+                        ],
+                      ),
+                    ),
+                    SummaryRow(
+                      leading: const Icon(Icons.money),
+                      title: Text(l10n.labelGabCost),
+                      trailing: Row(
+                        children: [
+                          PillChip(
+                            leading: Icon(
+                              Icons.arrow_upward,
+                              size: PillChip.leadingIconSize,
+                            ),
+                            text: Text(
+                              (endWaveGabCost - startWaveGabCost).formatCompact(
+                                english: english,
+                                traditional: traditional,
+                              ),
+                              style: PillChip.textStyle,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          SummaryRowValueText(
+                            text: endWaveGabCost.formatCompact(
                               english: english,
                               traditional: traditional,
                             ),
-                            style: PillChip.textStyle,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        SummaryRowValueText(
-                          text: endWaveGabCost.formatCompact(
-                            english: english,
-                            traditional: traditional,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.monetization_on),
-                    title: Text(l10n.totalGold),
-                    trailing: Row(
-                      children: [
-                        PillChip(
-                          leading: Icon(
-                            Icons.arrow_upward,
-                            size: PillChip.leadingIconSize,
+                    SummaryRow(
+                      leading: const Icon(Icons.monetization_on),
+                      title: Text(l10n.totalGold),
+                      trailing: Row(
+                        children: [
+                          PillChip(
+                            leading: Icon(
+                              Icons.arrow_upward,
+                              size: PillChip.leadingIconSize,
+                            ),
+                            text: Text(
+                              totalIncome.formatCompact(
+                                english: english,
+                                traditional: traditional,
+                              ),
+                              style: PillChip.textStyle,
+                            ),
                           ),
-                          text: Text(
-                            totalIncome.formatCompact(
+                          const SizedBox(width: 8),
+                          SummaryRowValueText(
+                            text: endWaveTotalGold.formatCompact(
                               english: english,
                               traditional: traditional,
                             ),
-                            style: PillChip.textStyle,
                           ),
-                        ),
-                        const SizedBox(width: 8),
-                        SummaryRowValueText(
-                          text: endWaveTotalGold.formatCompact(
-                            english: english,
-                            traditional: traditional,
-                          ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.star),
-                    title: Text(l10n.gp),
-                    trailing: Row(
-                      children: [
-                        PillChip(
-                          leading: Icon(
-                            endGp - startGp < 0
-                                ? Icons.arrow_downward
-                                : Icons.arrow_upward,
-                            size: PillChip.leadingIconSize,
-                          ),
-                          text: Text(
-                            (endGp - startGp).abs().format(fractionDigits: 3),
-                            style: PillChip.textStyle,
-                          ),
-                          backgroundColor: (endGp - startGp) >= 0
-                              ? goodColor
-                              : badColor,
-                        ),
-                        const SizedBox(width: 8),
-                        SummaryRowValueText(
-                          text: endGp.format(fractionDigits: 3),
-                        ),
-                      ],
-                    ),
-                  ),
-                  SummaryRow(
-                    leading: const Icon(Icons.star),
-                    title: Text(l10n.gpCN),
-                    trailing: Row(
-                      children: [
-                        PillChip(
-                          leading: Icon(
-                            endGpCN - startGpCN < 0
-                                ? Icons.arrow_downward
-                                : Icons.arrow_upward,
-                            size: PillChip.leadingIconSize,
-                          ),
-                          text: Text(
-                            (endGpCN - startGpCN).abs().format(
-                              fractionDigits: 3,
+                    SummaryRow(
+                      leading: const Icon(Icons.star),
+                      title: Text(l10n.gp),
+                      trailing: Row(
+                        children: [
+                          PillChip(
+                            leading: Icon(
+                              endGp - startGp < 0
+                                  ? Icons.arrow_downward
+                                  : Icons.arrow_upward,
+                              size: PillChip.leadingIconSize,
                             ),
-                            style: PillChip.textStyle,
+                            text: Text(
+                              (endGp - startGp).abs().format(fractionDigits: 3),
+                              style: PillChip.textStyle,
+                            ),
+                            backgroundColor: (endGp - startGp) >= 0
+                                ? goodColor
+                                : badColor,
                           ),
-                          backgroundColor: (endGpCN - startGpCN) >= 0
-                              ? goodColor
-                              : badColor,
-                        ),
-                        const SizedBox(width: 8),
-                        SummaryRowValueText(
-                          text: endGpCN.format(fractionDigits: 3),
-                        ),
-                      ],
+                          const SizedBox(width: 8),
+                          SummaryRowValueText(
+                            text: endGp.format(fractionDigits: 3),
+                          ),
+                        ],
+                      ),
                     ),
-                  ),
-                ],
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              l10n.dataDisclaimer,
-              style: Theme.of(context).textTheme.bodySmall,
+                    SummaryRow(
+                      leading: const Icon(Icons.star),
+                      title: Text(l10n.gpCN),
+                      trailing: Row(
+                        children: [
+                          PillChip(
+                            leading: Icon(
+                              endGpCN - startGpCN < 0
+                                  ? Icons.arrow_downward
+                                  : Icons.arrow_upward,
+                              size: PillChip.leadingIconSize,
+                            ),
+                            text: Text(
+                              (endGpCN - startGpCN).abs().format(
+                                fractionDigits: 3,
+                              ),
+                              style: PillChip.textStyle,
+                            ),
+                            backgroundColor: (endGpCN - startGpCN) >= 0
+                                ? goodColor
+                                : badColor,
+                          ),
+                          const SizedBox(width: 8),
+                          SummaryRowValueText(
+                            text: endGpCN.format(fractionDigits: 3),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ],
             ),
-          ),
-          const SizedBox(height: 32),
-        ],
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                l10n.dataDisclaimer,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }

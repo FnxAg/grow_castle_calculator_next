@@ -128,34 +128,39 @@ class _GameTrackPageState extends ConsumerState<GameTrackPage> {
           ),
         ],
       ),
-      body: Column(
-        children: [
-          _userId == 0
-              ? Expanded(child: Center(child: Text(l10n.emptyTrackDefaultUser)))
-              : _records.isEmpty && !_gameTrackEnabled
-              ? Expanded(child: Center(child: Text(l10n.emptyTrackDisabled)))
-              : _records.isEmpty
-              ? Expanded(child: Center(child: Text(l10n.emptyGameTrack)))
-              : Expanded(
-                  child: ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
-                    itemCount: _records.length * 2 - 1,
-                    itemBuilder: (context, index) {
-                      if (index.isOdd) {
-                        return _TrackDelta(
-                          previous: _records[index ~/ 2 + 1],
-                          current: _records[index ~/ 2],
+      body: SafeArea(
+        top: false,
+        child: Column(
+          children: [
+            _userId == 0
+                ? Expanded(
+                    child: Center(child: Text(l10n.emptyTrackDefaultUser)),
+                  )
+                : _records.isEmpty && !_gameTrackEnabled
+                ? Expanded(child: Center(child: Text(l10n.emptyTrackDisabled)))
+                : _records.isEmpty
+                ? Expanded(child: Center(child: Text(l10n.emptyGameTrack)))
+                : Expanded(
+                    child: ListView.builder(
+                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      itemCount: _records.length * 2 - 1,
+                      itemBuilder: (context, index) {
+                        if (index.isOdd) {
+                          return _TrackDelta(
+                            previous: _records[index ~/ 2 + 1],
+                            current: _records[index ~/ 2],
+                          );
+                        }
+                        final record = _records[index ~/ 2];
+                        return _TrackCard(
+                          record: record,
+                          onDelete: () => _deleteRecord(record),
                         );
-                      }
-                      final record = _records[index ~/ 2];
-                      return _TrackCard(
-                        record: record,
-                        onDelete: () => _deleteRecord(record),
-                      );
-                    },
+                      },
+                    ),
                   ),
-                ),
-        ],
+          ],
+        ),
       ),
     );
   }
@@ -171,7 +176,10 @@ class _TrackCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final trackInfo = [
-      PillChip(leading: const Icon(Icons.emoji_events), text: Text(record.wave.format())),
+      PillChip(
+        leading: const Icon(Icons.emoji_events),
+        text: Text(record.wave.format()),
+      ),
       PillChip(
         leading: const Icon(Icons.monetization_on),
         text: Text(

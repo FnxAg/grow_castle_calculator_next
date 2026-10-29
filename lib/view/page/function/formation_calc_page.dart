@@ -177,14 +177,17 @@ class _FormationCalcPageState extends ConsumerState<FormationCalcPage> {
         ),
         actions: actions,
       ),
-      body: isWide
-          ? Row(
-              children: [
-                formationExpanded,
-                const Expanded(flex: 4, child: formationSummaryBar),
-              ],
-            )
-          : Column(children: [formationExpanded, formationSummaryBar]),
+      body: SafeArea(
+        top: false,
+        child: isWide
+            ? Row(
+                children: [
+                  formationExpanded,
+                  const Expanded(flex: 4, child: formationSummaryBar),
+                ],
+              )
+            : Column(children: [formationExpanded, formationSummaryBar]),
+      ),
     );
   }
 }

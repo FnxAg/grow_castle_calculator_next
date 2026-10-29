@@ -54,143 +54,146 @@ class WaveStatusPage extends ConsumerWidget {
           children: [Text(l10n.waveStatus), _AppBarInfo()],
         ),
       ),
-      body: ListView(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(16),
-            child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
-          ),
-          // 游戏速度：gameSpeed
-          ExpansionTile(
-            title: Text(l10n.labelGameSpeed),
-            subtitle: Text(
-              _gameSpeedEntries(l10n)
-                  .firstWhere((entry) => entry.$1 == user.gameSpeed)
-                  .$2,
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
             ),
-            childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            children: [
-              RadioGroup<int>(
-                groupValue: user.gameSpeed,
-                onChanged: (value) {
-                  if (value != null) {
-                    ref.users.setCurrentUserGameSpeed(value);
-                  }
-                },
-                child: Column(
-                  children: [
-                    for (final (value, label) in _gameSpeedEntries(l10n))
-                      RadioListTile<int>(title: Text(label), value: value),
-                  ],
-                ),
+            // 游戏速度：gameSpeed
+            ExpansionTile(
+              title: Text(l10n.labelGameSpeed),
+              subtitle: Text(
+                _gameSpeedEntries(l10n)
+                    .firstWhere((entry) => entry.$1 == user.gameSpeed)
+                    .$2,
               ),
-            ],
-          ),
-          // 闹钟转职：chronoClass
-          ExpansionTile(
-            title: Text(l10n.labelChronoType),
-            subtitle: Text(
-              _chronoEntries(l10n)
-                  .firstWhere((entry) => entry.$1 == user.chronoClass)
-                  .$2,
-            ),
-            childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            children: [
-              RadioGroup<int>(
-                groupValue: user.chronoClass,
-                onChanged: (value) {
-                  if (value != null) {
-                    ref.users.setCurrentUserChronoClass(value);
-                  }
-                },
-                child: Column(
-                  children: [
-                    for (final (value, label) in _chronoEntries(l10n))
-                      RadioListTile<int>(title: Text(label), value: value),
-                  ],
-                ),
+              childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
               ),
-            ],
-          ),
-          // 10%角：horn
-          SwitchListTile(
-            title: Text(l10n.labelHorn10),
-            subtitle: Text(
-              _equipEntries(l10n)
-                  .firstWhere((entry) => entry.$1 == user.horn)
-                  .$2,
-            ),
-            value: user.horn,
-            onChanged: (value) => ref.users.setCurrentUserHorn(value),
-          ),
-          // 30%角：goldenHorn
-          SwitchListTile(
-            title: Text(l10n.labelHorn30),
-            subtitle: Text(
-              _equipEntries(l10n)
-                  .firstWhere((entry) => entry.$1 == user.goldenHorn)
-                  .$2,
-            ),
-            value: user.goldenHorn,
-            onChanged: (value) => ref.users.setCurrentUserGoldenHorn(value),
-          ),
-          // 恶魔号角跳波数：devilHornSkip
-          ExpansionTile(
-            title: Text(l10n.labelDevilHornSkip),
-            subtitle: Text(
-              _devilHornEntries(l10n)
-                  .firstWhere((entry) => entry.$1 == user.devilHornSkip)
-                  .$2,
-            ),
-            childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
-            children: [
-              RadioGroup<int>(
-                groupValue: user.devilHornSkip,
-                onChanged: (value) {
-                  if (value != null) {
-                    ref.users.setCurrentUserDevilHornSkip(value);
-                  }
-                },
-                child: Column(
-                  children: [
-                    for (final (value, label) in _devilHornEntries(l10n))
-                      RadioListTile<int>(title: Text(label), value: value),
-                  ],
+              children: [
+                RadioGroup<int>(
+                  groupValue: user.gameSpeed,
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref.users.setCurrentUserGameSpeed(value);
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      for (final (value, label) in _gameSpeedEntries(l10n))
+                        RadioListTile<int>(title: Text(label), value: value),
+                    ],
+                  ),
                 ),
+              ],
+            ),
+            // 闹钟转职：chronoClass
+            ExpansionTile(
+              title: Text(l10n.labelChronoType),
+              subtitle: Text(
+                _chronoEntries(l10n)
+                    .firstWhere((entry) => entry.$1 == user.chronoClass)
+                    .$2,
               ),
-            ],
-          ),
-          // 挂机类型：isGoldAutoBattle
-          SwitchListTile(
-            title: Text(l10n.labelAutoBattleType),
-            // subtitle: Text(l10n.infoAutoBattleTab),
-            subtitle: Text(
-              _autoBattleEntries(l10n)
-                  .firstWhere((entry) => entry.$1 == user.isGoldAutoBattle)
-                  .$2,
+              childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              children: [
+                RadioGroup<int>(
+                  groupValue: user.chronoClass,
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref.users.setCurrentUserChronoClass(value);
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      for (final (value, label) in _chronoEntries(l10n))
+                        RadioListTile<int>(title: Text(label), value: value),
+                    ],
+                  ),
+                ),
+              ],
             ),
-            value: !user.isGoldAutoBattle,
-            onChanged: (value) =>
-                ref.users.setCurrentUserIsGoldAutoBattle(!value),
-          ),
-          const SizedBox(height: 8),
-          Center(
-            child: Text(
-              l10n.dataDisclaimer,
-              style: Theme.of(context).textTheme.bodySmall,
+            // 10%角：horn
+            SwitchListTile(
+              title: Text(l10n.labelHorn10),
+              subtitle: Text(
+                _equipEntries(l10n)
+                    .firstWhere((entry) => entry.$1 == user.horn)
+                    .$2,
+              ),
+              value: user.horn,
+              onChanged: (value) => ref.users.setCurrentUserHorn(value),
             ),
-          ),
-          const SizedBox(height: 32),
-        ],
+            // 30%角：goldenHorn
+            SwitchListTile(
+              title: Text(l10n.labelHorn30),
+              subtitle: Text(
+                _equipEntries(l10n)
+                    .firstWhere((entry) => entry.$1 == user.goldenHorn)
+                    .$2,
+              ),
+              value: user.goldenHorn,
+              onChanged: (value) => ref.users.setCurrentUserGoldenHorn(value),
+            ),
+            // 恶魔号角跳波数：devilHornSkip
+            ExpansionTile(
+              title: Text(l10n.labelDevilHornSkip),
+              subtitle: Text(
+                _devilHornEntries(l10n)
+                    .firstWhere((entry) => entry.$1 == user.devilHornSkip)
+                    .$2,
+              ),
+              childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8.0),
+              ),
+              children: [
+                RadioGroup<int>(
+                  groupValue: user.devilHornSkip,
+                  onChanged: (value) {
+                    if (value != null) {
+                      ref.users.setCurrentUserDevilHornSkip(value);
+                    }
+                  },
+                  child: Column(
+                    children: [
+                      for (final (value, label) in _devilHornEntries(l10n))
+                        RadioListTile<int>(title: Text(label), value: value),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+            // 挂机类型：isGoldAutoBattle
+            SwitchListTile(
+              title: Text(l10n.labelAutoBattleType),
+              // subtitle: Text(l10n.infoAutoBattleTab),
+              subtitle: Text(
+                _autoBattleEntries(l10n)
+                    .firstWhere((entry) => entry.$1 == user.isGoldAutoBattle)
+                    .$2,
+              ),
+              value: !user.isGoldAutoBattle,
+              onChanged: (value) =>
+                  ref.users.setCurrentUserIsGoldAutoBattle(!value),
+            ),
+            const SizedBox(height: 8),
+            Center(
+              child: Text(
+                l10n.dataDisclaimer,
+                style: Theme.of(context).textTheme.bodySmall,
+              ),
+            ),
+            const SizedBox(height: 32),
+          ],
+        ),
       ),
     );
   }
