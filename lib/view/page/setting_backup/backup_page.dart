@@ -12,7 +12,7 @@ import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/extension/service_error_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
-import 'package:grow_castle_calculator_next/view/widget/setting_edit_dialog.dart';
+import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
 
 /// 覆盖确认弹窗的选择结果
 enum _OverwriteDecision { overwrite, restoreFromCloud }

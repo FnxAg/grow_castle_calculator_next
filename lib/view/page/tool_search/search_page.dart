@@ -1,5 +1,5 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
+import 'package:grow_castle_calculator_next/view/page/guild/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 import 'package:material_ui/material_ui.dart';

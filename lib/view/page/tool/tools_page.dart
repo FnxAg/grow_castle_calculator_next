@@ -1,11 +1,11 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/best_line_calc_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/dragon_simulator_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/item_comparer.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/quick_calculation_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/search_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_best_line_calc/best_line_calc_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_dragon_simulator/dragon_simulator_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_item_comparer/item_comparer_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_quick_calculation/quick_calculation_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_kind.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_search/search_page.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 工具页

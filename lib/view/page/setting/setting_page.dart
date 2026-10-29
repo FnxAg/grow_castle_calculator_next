@@ -10,9 +10,9 @@ import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
-import 'package:grow_castle_calculator_next/view/page/setting/about_page.dart';
-import 'package:grow_castle_calculator_next/view/page/setting/backup_page.dart';
-import 'package:grow_castle_calculator_next/view/widget/setting_edit_dialog.dart';
+import 'package:grow_castle_calculator_next/view/page/setting_about/about_page.dart';
+import 'package:grow_castle_calculator_next/view/page/setting_backup/backup_page.dart';
+import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
 
 /// 设置页
 class SettingPage extends StatefulWidget {

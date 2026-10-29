@@ -12,10 +12,10 @@ import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/function/formation_calc_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_kind.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
@@ -520,7 +520,7 @@ class _HomePageState extends ConsumerState<HomePage>
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const FormationCalcPage()),
+            MaterialPageRoute(builder: (context) => const BuildCalcPage()),
           );
         },
       ),

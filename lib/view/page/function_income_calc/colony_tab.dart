@@ -4,7 +4,6 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
-import 'package:grow_castle_calculator_next/view/widget/income_switch_tile.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -115,13 +114,13 @@ class _ColonyTabState extends ConsumerState<ColonyTab> {
           ),
         ),
       ),
-      IncomeSwitchTile(
-        label: l10n.labelWheel,
+      SwitchListTile(
+        title: Text(l10n.labelWheel),
         value: ref.watch(currentUserProvider.select((u) => u.equipWheel)),
         onChanged: ref.users.setCurrentUserEquipWheel,
       ),
-      IncomeSwitchTile(
-        label: l10n.labelWhip,
+      SwitchListTile(
+        title: Text(l10n.labelWhip),
         value: ref.watch(currentUserProvider.select((u) => u.equipWhip)),
         onChanged: ref.users.setCurrentUserEquipWhip,
       ),

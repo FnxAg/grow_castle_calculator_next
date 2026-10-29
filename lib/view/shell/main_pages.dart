@@ -1,10 +1,10 @@
-import 'package:grow_castle_calculator_next/view/page/home_page.dart';
+import 'package:grow_castle_calculator_next/view/page/home/home_page.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/view/page/guild_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function_page.dart';
-import 'package:grow_castle_calculator_next/view/page/setting_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tools_page.dart';
+import 'package:grow_castle_calculator_next/view/page/guild/guild_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function/function_page.dart';
+import 'package:grow_castle_calculator_next/view/page/setting/setting_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool/tools_page.dart';
 
 /// 主界面页面注册表
 class MainPageEntry {

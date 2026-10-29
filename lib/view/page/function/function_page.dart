@@ -6,12 +6,12 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/function/formation_calc_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function/bonus_gold_calc.dart';
-import 'package:grow_castle_calculator_next/view/page/function/game_track_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function/income_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function/income_trend_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function/wave_status_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_bonus_gold_calc/bonus_gold_calc_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_income_trend/income_trend_page.dart';
+import 'package:grow_castle_calculator_next/view/page/function_wave_status/wave_status_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:material_ui/material_ui.dart';
@@ -43,7 +43,7 @@ class FunctionPage extends ConsumerWidget {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (context) => const FormationCalcPage(),
+                  builder: (context) => const BuildCalcPage(),
                 ),
               );
             },

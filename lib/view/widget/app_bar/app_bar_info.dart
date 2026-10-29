@@ -23,7 +23,7 @@ class AppBarInfo extends StatelessWidget {
           for (var i = 0; i < children.length; i++) ...[
             if (i > 0)
               Text(
-                '  ·  ',
+                ' ✦ ',
                 style: const TextStyle(fontSize: 12.0),
               ),
             children[i],

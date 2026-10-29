@@ -2,13 +2,13 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
-import 'package:grow_castle_calculator_next/view/page/function/income/colony_tab.dart';
-import 'package:grow_castle_calculator_next/view/page/function/income/other_tab.dart';
-import 'package:grow_castle_calculator_next/view/page/function/income/wave_tab.dart';
+import 'package:grow_castle_calculator_next/view/page/function_income_calc/colony_tab.dart';
+import 'package:grow_castle_calculator_next/view/page/function_income_calc/other_tab.dart';
+import 'package:grow_castle_calculator_next/view/page/function_income_calc/wave_tab.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
-import 'package:grow_castle_calculator_next/view/widget/income_summary_bar.dart';
+import 'package:grow_castle_calculator_next/view/page/function_income_calc/summary_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 收入计算页

@@ -8,7 +8,7 @@ import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/item_rule_edit_page.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_dragon_simulator/item_rule_edit_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 import 'package:material_ui/material_ui.dart';
 

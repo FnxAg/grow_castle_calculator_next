@@ -3,20 +3,20 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_selector
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
-import 'package:grow_castle_calculator_next/view/widget/formation_listtile.dart';
-import 'package:grow_castle_calculator_next/view/widget/formation_summary_bar.dart';
+import 'package:grow_castle_calculator_next/view/page/function_build_calc/widget/formation_listtile.dart';
+import 'package:grow_castle_calculator_next/view/page/function_build_calc/widget/formation_summary_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 阵容经济计算页
-class FormationCalcPage extends ConsumerStatefulWidget {
-  const FormationCalcPage({super.key});
+class BuildCalcPage extends ConsumerStatefulWidget {
+  const BuildCalcPage({super.key});
 
   @override
-  ConsumerState<FormationCalcPage> createState() => _FormationCalcPageState();
+  ConsumerState<BuildCalcPage> createState() => _FormationCalcPageState();
 }
 
-class _FormationCalcPageState extends ConsumerState<FormationCalcPage> {
+class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};

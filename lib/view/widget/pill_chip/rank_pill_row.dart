@@ -6,7 +6,7 @@ import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_kind.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:material_ui/material_ui.dart';

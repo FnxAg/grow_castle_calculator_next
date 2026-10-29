@@ -6,7 +6,7 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/widget/formation_input_field.dart';
+import 'package:grow_castle_calculator_next/view/page/function_build_calc/widget/formation_input_field.dart';
 
 /// 阵容页卡片行
 class FormationCardTile extends ConsumerStatefulWidget {
