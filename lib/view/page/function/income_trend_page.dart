@@ -5,8 +5,7 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_gab_bonus.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
@@ -331,7 +330,7 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final segments = <Widget>[CurrentUser(), CurrentUserGabBonus()];
+    final segments = <Widget>[AppBarItem.currentUser(), AppBarItem.currentUserGabBonus()];
     return AppBarInfo(children: segments);
   }
 }

@@ -10,7 +10,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_selector
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 
 class GameTrackChartPage extends ConsumerStatefulWidget {
   const GameTrackChartPage({super.key});
@@ -369,7 +369,7 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> segments = <Widget>[CurrentUser()];
+    final List<Widget> segments = <Widget>[AppBarItem.currentUser()];
     return AppBarInfo(children: segments);
   }
 }

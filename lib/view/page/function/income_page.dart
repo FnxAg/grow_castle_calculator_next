@@ -7,8 +7,7 @@ import 'package:grow_castle_calculator_next/view/page/function/income/other_tab.
 import 'package:grow_castle_calculator_next/view/page/function/income/wave_tab.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_total_gold.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/income_summary_bar.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -112,7 +111,7 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final List<Widget> segments = [CurrentUser(), CurrentUserTotalGold()];
+    final List<Widget> segments = [AppBarItem.currentUser(), AppBarItem.currentUserTotalGold()];
     return AppBarInfo(children: segments);
   }
 }

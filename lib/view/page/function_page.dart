@@ -13,9 +13,7 @@ import 'package:grow_castle_calculator_next/view/page/function/income_page.dart'
 import 'package:grow_castle_calculator_next/view/page/function/income_trend_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function/wave_status_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 当前用户的功能页
@@ -44,7 +42,9 @@ class FunctionPage extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const FormationCalcPage()),
+                MaterialPageRoute(
+                  builder: (context) => const FormationCalcPage(),
+                ),
               );
             },
           ),
@@ -118,7 +118,9 @@ class FunctionPage extends ConsumerWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const IncomeTrendPage()),
+                MaterialPageRoute(
+                  builder: (context) => const IncomeTrendPage(),
+                ),
               );
             },
           ),
@@ -151,7 +153,11 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final segments = <Widget>[CurrentUser(), LastOnline(), CurrentUserGuild()];
+    final segments = <Widget>[
+      AppBarItem.currentUser(),
+      AppBarItem.currentUserLastOnline(),
+      AppBarItem.currentUserGuild(),
+    ];
     return AppBarInfo(children: segments);
   }
 }

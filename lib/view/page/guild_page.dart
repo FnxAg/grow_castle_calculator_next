@@ -20,9 +20,7 @@ import 'package:grow_castle_calculator_next/view/page/public/select_user_page.da
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
@@ -488,7 +486,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
 
   /// 成员列表，按赛季波数从大到小展示，当前用户高亮
   Widget _buildMemberList({required bool wide}) {
-    final l10n = AppLocalizations.of(context);
+    // final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final currentUser = ref.read(currentUsernameProvider);
     final totalScore = _members.fold<int>(0, (sum, m) => sum + m.score);
@@ -688,9 +686,9 @@ class _AppBarInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> segments = <Widget>[
-      CurrentUser(),
-      LastOnline(),
-      CurrentUserGuild(),
+      AppBarItem.currentUser(),
+      AppBarItem.currentUserLastOnline(),
+      AppBarItem.currentUserGuild(),
       SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
     ];
     return AppBarInfo(children: segments);

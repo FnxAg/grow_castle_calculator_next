@@ -18,9 +18,7 @@ import 'package:grow_castle_calculator_next/view/page/public/select_user_page.da
 import 'package:grow_castle_calculator_next/view/page/tool/rank/ranking_kind.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/current_user_guild.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/last_online.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/rank_pill_row.dart';
@@ -642,9 +640,9 @@ class _AppBarInfo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final List<Widget> segments = <Widget>[
-      CurrentUser(),
-      LastOnline(),
-      CurrentUserGuild(),
+      AppBarItem.currentUser(),
+      AppBarItem.currentUserLastOnline(),
+      AppBarItem.currentUserGuild(),
     ];
     return AppBarInfo(children: segments);
   }
