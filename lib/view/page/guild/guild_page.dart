@@ -512,7 +512,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
       children: [
         if (guildReward != 0)
           PillChip(
-            text: Text('$guildReward', style: PillChip.textStyle),
+            text: '$guildReward',
             leading: BoxIcon(
               size: PillChip.leadingIconSize,
               color: scheme.primary,
@@ -523,19 +523,16 @@ class _GuildPageState extends ConsumerState<GuildPage>
             backgroundColor: Colors.red,
             foreground: Colors.white,
             leading: Icon(Icons.arrow_upward),
-            text: Text(_guildGapPrev!.format(), style: PillChip.textStyle),
+            text: _guildGapPrev!.format(),
           ),
         if (_guildRank != null)
-          PillChip(
-            text: Text('#$_guildRank', style: PillChip.textStyle),
-            leading: Icon(Icons.flag_circle),
-          ),
+          PillChip(text: '#$_guildRank', leading: Icon(Icons.flag_circle)),
         if (_guildGapNext != null)
           PillChip(
             backgroundColor: Colors.green,
             foreground: Colors.white,
             leading: Icon(Icons.arrow_downward),
-            text: Text(_guildGapNext!.format(), style: PillChip.textStyle),
+            text: _guildGapNext!.format(),
           ),
       ],
     );
@@ -591,10 +588,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
                               children: [
                                 if (reward != 0)
                                   PillChip(
-                                    text: Text(
-                                      '$reward',
-                                      style: PillChip.textStyle,
-                                    ),
+                                    text: '$reward',
                                     leading: CrystalIcon(
                                       size: 12.0,
                                       color: scheme.primary,
@@ -602,18 +596,12 @@ class _GuildPageState extends ConsumerState<GuildPage>
                                   ),
                                 if (seasonRank != null)
                                   PillChip(
-                                    text: Text(
-                                      '#$seasonRank',
-                                      style: PillChip.textStyle,
-                                    ),
+                                    text: '#$seasonRank',
                                     leading: Icon(Icons.eco),
                                   ),
                                 if (hellRank != null)
                                   PillChip(
-                                    text: Text(
-                                      '#$hellRank',
-                                      style: PillChip.textStyle,
-                                    ),
+                                    text: '#$hellRank',
                                     leading: Icon(Icons.all_inclusive),
                                   ),
                               ],
@@ -679,7 +667,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
                         children: <Widget>[
                           SummaryRow(
                             leading: Icon(Icons.eco),
-                            title: Text(totalScore.format()),
+                            title: SummaryRow.text(totalScore.format()),
                             trailing: chips,
                           ),
                         ],

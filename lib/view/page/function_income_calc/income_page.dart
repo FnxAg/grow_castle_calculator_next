@@ -1,17 +1,15 @@
-import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
-import 'package:grow_castle_calculator_next/view/page/function_income_calc/colony_section.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_edit_tile.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_field.dart';
-import 'package:grow_castle_calculator_next/view/page/function_income_calc/other_section.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/summary_bar.dart';
-import 'package:grow_castle_calculator_next/view/page/function_income_calc/wave_section.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -23,86 +21,86 @@ class IncomePage extends ConsumerStatefulWidget {
   ConsumerState<IncomePage> createState() => _IncomePageState();
 }
 
-class _IncomePageState extends ConsumerState<IncomePage>
-    with SingleTickerProviderStateMixin {
-  late final AnimationController _cardController;
-  late final CurvedAnimation _cardAnimation;
-  bool _showCard = true;
-
-  @override
-  void initState() {
-    super.initState();
-    _cardController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-      value: 0.0,
-    );
-    _cardAnimation = CurvedAnimation(
-      parent: _cardController,
-      curve: Curves.easeInOutCubic,
-    );
-  }
-
-  @override
-  void dispose() {
-    _cardAnimation.dispose();
-    _cardController.dispose();
-    super.dispose();
-  }
-
-  /// 根据滑动方向显示/隐藏底部汇总卡片
-  void _setCardVisible(bool visible) {
-    if (_showCard == visible) return;
-    setState(() => _showCard = visible);
-    if (visible) {
-      _cardController.forward();
-    } else {
-      _cardController.reverse();
-    }
-  }
-
-  /// 手势滑动
-  bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is UserScrollNotification) {
-      switch (notification.direction) {
-        case ScrollDirection.reverse:
-          _setCardVisible(false);
-        case ScrollDirection.forward:
-          _setCardVisible(true);
-        case ScrollDirection.idle:
-          break;
-      }
-    }
-    return false;
-  }
-
-  /// 鼠标滚轮/触控板滚动
-  void _onPointerSignal(PointerSignalEvent event) {
-    if (event is PointerScrollEvent && event.scrollDelta.dy != 0.0) {
-      _setCardVisible(event.scrollDelta.dy < 0.0);
-    }
-  }
-
+class _IncomePageState extends ConsumerState<IncomePage> {
   Widget _buildList({required bool wide, required AppLocalizations l10n}) {
+    final wave = ref.watch(currentUserWaveProvider);
+    final infiniteColony = ref.watch(
+      currentUserProvider.select((u) => u.infiniteColony),
+    );
+    final english = !context.isChineseLocale;
+    final traditional = context.isTraditionalChineseLocale;
+    final income = ref.watch(dailyIncomeProvider);
+    Widget sectionHeaderTrailing(IconData icon, String text) =>
+        PillChip(leading: Icon(icon), text: text);
     final list = ListView(
-      // 内容不足一屏时也接受拖动，卡片才能响应手势
-      physics: const AlwaysScrollableScrollPhysics(),
       children: [
         const IncomeEditTile(field: IncomeField.gabTime),
         const IncomeEditTile(field: IncomeField.tabTime),
-        SectionHeader(l10n.tabIncomeWave),
-        const WaveSection(),
-        SectionHeader(l10n.tabIncomeColony),
-        const ColonySection(),
-        SectionHeader(l10n.tabIncomeOther),
-        const OtherSection(),
+        SectionHeader(
+          l10n.tabIncomeWave,
+          trailing: sectionHeaderTrailing(
+            Icons.bolt,
+            income.autoBattle.formatCompact(
+              english: english,
+              traditional: traditional,
+            ),
+          ),
+        ),
+        const IncomeEditTile(field: IncomeField.gabBonus),
+        SectionHeader(
+          l10n.tabIncomeColony,
+          trailing: sectionHeaderTrailing(
+            Icons.terrain,
+            income.colony.formatCompact(
+              english: english,
+              traditional: traditional,
+            ),
+          ),
+        ),
+        IncomeEditTile(
+          field: IncomeField.infiniteColony,
+          titleTrailing: Tooltip(
+            message: l10n.tooltipInfiniteColonyRatio,
+            child: PillChip(
+              text: wave > 0 ? (infiniteColony / wave * 1000).format() : '0',
+            ),
+          ),
+        ),
+        const IncomeEditTile(field: IncomeField.icCooldown),
+        const IncomeEditTile(field: IncomeField.icGold),
+        SwitchListTile(
+          title: Text(l10n.labelWheel),
+          value: ref.watch(currentUserProvider.select((u) => u.equipWheel)),
+          onChanged: ref.users.setCurrentUserEquipWheel,
+        ),
+        SwitchListTile(
+          title: Text(l10n.labelWhip),
+          value: ref.watch(currentUserProvider.select((u) => u.equipWhip)),
+          onChanged: ref.users.setCurrentUserEquipWhip,
+        ),
+        SectionHeader(
+          l10n.tabIncomeOther,
+          trailing: sectionHeaderTrailing(
+            Icons.park,
+            income.other.formatCompact(
+              english: english,
+              traditional: traditional,
+            ),
+          ),
+        ),
+        SwitchListTile(
+          title: Text(l10n.labelSeasonColony),
+          value: ref.watch(currentUserProvider.select((u) => u.seasonColony)),
+          onChanged: ref.users.setCurrentUserSeasonColony,
+        ),
+        SwitchListTile(
+          title: Text(l10n.labelGoldenTree),
+          value: ref.watch(currentUserProvider.select((u) => u.goldenTree)),
+          onChanged: ref.users.setCurrentUserGoldenTree,
+        ),
       ],
     );
-    if (wide) return list;
-    return NotificationListener<UserScrollNotification>(
-      onNotification: _onScrollNotification,
-      child: list,
-    );
+    return list;
   }
 
   @override
@@ -117,27 +115,7 @@ class _IncomePageState extends ConsumerState<IncomePage>
               const Expanded(flex: 4, child: IncomeSummaryBar()),
             ],
           )
-        : Listener(
-            onPointerSignal: _onPointerSignal,
-            child: Stack(
-              children: [
-                Positioned.fill(child: list),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  child: IgnorePointer(
-                    ignoring: !_showCard,
-                    child: SizeTransition(
-                      sizeFactor: _cardAnimation,
-                      alignment: Alignment.topCenter,
-                      child: const IncomeSummaryBar(),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          );
+        : list;
     return Scaffold(
       appBar: AppBar(
         title: Column(

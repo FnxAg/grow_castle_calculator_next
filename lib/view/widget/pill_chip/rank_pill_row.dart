@@ -37,12 +37,12 @@ class RankPillRow extends StatelessWidget {
       children: [
         if (rankingKind != null)
           PillChip(
-            text: Text(switch (rankingKind) {
+            text: switch (rankingKind) {
               .player => '${getRedCrystalFromPlayerRank(rank ?? 0)}',
               .guild => '${getItemBoxFromGuildRank(rank ?? 0)}',
               .hell => '${getRedCrystalFromHellModeRank(rank ?? 0)}',
               _ => '',
-            }, style: PillChip.textStyle),
+            },
             leading: switch (rankingKind) {
               .player || .hell => CrystalIcon(
                 size: PillChip.leadingIconSize,
@@ -60,19 +60,16 @@ class RankPillRow extends StatelessWidget {
             backgroundColor: Colors.red,
             foreground: Colors.white,
             leading: Icon(Icons.arrow_upward, size: PillChip.leadingIconSize),
-            text: Text(
-              rankingKind == .hell
-                  ? gapPrev!.formatCompact(
-                      english: english,
-                      traditional: traditional,
-                    )
-                  : gapPrev!.format(),
-              style: PillChip.textStyle,
-            ),
+            text: rankingKind == .hell
+                ? gapPrev!.formatCompact(
+                    english: english,
+                    traditional: traditional,
+                  )
+                : gapPrev!.format(),
           ),
         if (rank != null)
           PillChip(
-            text: Text('#$rank', style: PillChip.textStyle),
+            text: '#$rank',
             leading: Icon(switch (rankingKind) {
               .player => Icons.eco,
               .guild => Icons.flag_circle,
@@ -85,15 +82,12 @@ class RankPillRow extends StatelessWidget {
             backgroundColor: Colors.green,
             foreground: Colors.white,
             leading: Icon(Icons.arrow_downward, size: PillChip.leadingIconSize),
-            text: Text(
-              rankingKind == .hell
-                  ? gapNext!.formatCompact(
-                      english: english,
-                      traditional: traditional,
-                    )
-                  : gapNext!.format(),
-              style: PillChip.textStyle,
-            ),
+            text: rankingKind == .hell
+                ? gapNext!.formatCompact(
+                    english: english,
+                    traditional: traditional,
+                  )
+                : gapNext!.format(),
           ),
       ],
     );

@@ -178,22 +178,19 @@ class _TrackCard extends StatelessWidget {
     final trackInfo = [
       PillChip(
         leading: const Icon(Icons.emoji_events),
-        text: Text(record.wave.format()),
+        text: record.wave.format(),
       ),
       PillChip(
         leading: const Icon(Icons.monetization_on),
-        text: Text(
-          record.totalGold.formatCompact(
-            english: !context.isChineseLocale,
-            traditional: context.isTraditionalChineseLocale,
-          ),
+        text: record.totalGold.formatCompact(
+          english: !context.isChineseLocale,
+          traditional: context.isTraditionalChineseLocale,
         ),
       ),
       PillChip(
         leading: const Icon(Icons.star),
-        text: Text(
-          '${record.gp.format(fractionDigits: 3)} · ${record.gpCN.format(fractionDigits: 3)}',
-        ),
+        text:
+            '${record.gp.format(fractionDigits: 3)} · ${record.gpCN.format(fractionDigits: 3)}',
       ),
     ];
     return Card(
@@ -227,7 +224,7 @@ class _TrackCard extends StatelessWidget {
                   for (final unit in record.units)
                     Builder(
                       builder: (context) => PillChip(
-                        text: Text('${unit.name} Lv.${unit.level}'),
+                        text: '${unit.name} Lv.${unit.level}',
                         backgroundColor: unit.enabled
                             ? null
                             : Theme.of(context)

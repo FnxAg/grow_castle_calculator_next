@@ -23,8 +23,8 @@ class IncomeSummaryBar extends ConsumerWidget {
           SummaryRow(
             leading: Icon(Icons.bolt),
             title: Text(l10n.tabIncomeWave),
-            trailing: SummaryRowValueText(
-              text: income.autoBattle.formatCompact(
+            trailing: SummaryRow.text(
+              income.autoBattle.formatCompact(
                 fractionDigits: 2,
                 english: english,
                 traditional: traditional,
@@ -34,8 +34,8 @@ class IncomeSummaryBar extends ConsumerWidget {
           SummaryRow(
             leading: Icon(Icons.terrain),
             title: Text(l10n.tabIncomeColony),
-            trailing: SummaryRowValueText(
-              text: income.colony.formatCompact(
+            trailing: SummaryRow.text(
+              income.colony.formatCompact(
                 fractionDigits: 2,
                 english: english,
                 traditional: traditional,
@@ -45,8 +45,8 @@ class IncomeSummaryBar extends ConsumerWidget {
           SummaryRow(
             leading: Icon(Icons.park),
             title: Text(l10n.tabIncomeOther),
-            trailing: SummaryRowValueText(
-              text: income.other.formatCompact(
+            trailing: SummaryRow.text(
+              income.other.formatCompact(
                 fractionDigits: 2,
                 english: english,
                 traditional: traditional,
@@ -56,8 +56,8 @@ class IncomeSummaryBar extends ConsumerWidget {
           SummaryRow(
             leading: Icon(Icons.monetization_on_outlined),
             title: Text(l10n.incomeTotal),
-            trailing: SummaryRowValueText(
-              text: income.total.formatCompact(
+            trailing: SummaryRow.text(
+              income.total.formatCompact(
                 fractionDigits: 2,
                 english: english,
                 traditional: traditional,

@@ -4,7 +4,7 @@ class AnimatedTextSwitcher extends StatelessWidget {
   const AnimatedTextSwitcher({
     super.key,
     required this.child,
-    this.alignment = .centerLeft,
+    this.alignment = AlignmentGeometry.centerLeft,
   });
 
   final Widget child;
@@ -12,16 +12,21 @@ class AnimatedTextSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return AnimatedSwitcher(
+    return AnimatedSize(
       duration: const Duration(milliseconds: 150),
-      transitionBuilder: (Widget child, Animation<double> animation) {
-        return FadeTransition(opacity: animation, child: child);
-      },
-      layoutBuilder: (currentChild, previousChildren) => Stack(
-        alignment: alignment,
-        children: [...previousChildren, ?currentChild],
+      curve: Curves.easeInOutCubic,
+      alignment: alignment,
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 150),
+        transitionBuilder: (Widget child, Animation<double> animation) {
+          return FadeTransition(opacity: animation, child: child);
+        },
+        layoutBuilder: (currentChild, previousChildren) => Stack(
+          alignment: alignment,
+          children: [...previousChildren, ?currentChild],
+        ),
+        child: child,
       ),
-      child: child,
     );
   }
 }

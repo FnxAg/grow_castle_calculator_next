@@ -656,10 +656,6 @@ class _RankingPageState extends State<RankingPage> {
     final scheme = Theme.of(context).colorScheme;
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
-    const pillChipStyle = TextStyle(
-      fontSize: 11.0,
-      fontWeight: FontWeight.w600,
-    );
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
       child: ListView.builder(
@@ -697,14 +693,11 @@ class _RankingPageState extends State<RankingPage> {
                 ? SubtitlePillWrap(
                     children: [
                       if (reward != 0) ...[
-                        PillChip(
-                          text: Text('$reward', style: pillChipStyle),
-                          leading: rewardIcon,
-                        ),
+                        PillChip(text: '$reward', leading: rewardIcon),
                       ],
                       if (crossRank != null) ...[
                         PillChip(
-                          text: Text('#$crossRank', style: pillChipStyle),
+                          text: '#$crossRank',
                           leading: Icon(widget.kind.crossIcon!),
                         ),
                       ],
@@ -716,15 +709,12 @@ class _RankingPageState extends State<RankingPage> {
               children: [
                 if (row.gapPrev != null) ...[
                   PillChip(
-                    text: Text(
-                      row.gapPrev! >= 10000000
-                          ? row.gapPrev!.formatCompact(
-                              english: english,
-                              traditional: traditional,
-                            )
-                          : row.gapPrev!.format(),
-                      style: pillChipStyle,
-                    ),
+                    text: row.gapPrev! >= 10000000
+                        ? row.gapPrev!.formatCompact(
+                            english: english,
+                            traditional: traditional,
+                          )
+                        : row.gapPrev!.format(),
                     leading: Icon(Icons.arrow_upward_outlined),
                   ),
                   const SizedBox(width: 8.0),

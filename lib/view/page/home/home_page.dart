@@ -354,12 +354,12 @@ class _HomePageState extends ConsumerState<HomePage>
         SummaryRow(
           title: Text(l10n.totalWave),
           leading: Icon(Icons.emoji_events),
-          trailing: SummaryRowValueText(text: wave.format()),
+          trailing: SummaryRow.text(wave.format()),
         ),
         SummaryRow(
           title: Text(l10n.seasonWave),
           leading: Icon(Icons.eco),
-          trailing: SummaryRowValueText(text: seasonWave.format()),
+          trailing: SummaryRow.text(seasonWave.format()),
         ),
         if (_playerRank != null ||
             _playerGapPrev != null ||
@@ -378,8 +378,8 @@ class _HomePageState extends ConsumerState<HomePage>
         SummaryRow(
           leading: Icon(Icons.monetization_on),
           title: Text(l10n.totalGold),
-          trailing: SummaryRowValueText(
-            text: totalGold.formatCompact(
+          trailing: SummaryRow.text(
+            totalGold.formatCompact(
               fractionDigits: 2,
               english: english,
               traditional: traditional,
@@ -392,11 +392,10 @@ class _HomePageState extends ConsumerState<HomePage>
             mainAxisSize: MainAxisSize.min,
             children: [Text(l10n.goldPower)],
           ),
-          trailing: SummaryRowValueText(
-            text:
-                '${gp.format(fractionDigits: 3)}'
-                ' · '
-                '${gpCn.format(fractionDigits: 3)}',
+          trailing: SummaryRow.text(
+            '${gp.format(fractionDigits: 3)}'
+            ' · '
+            '${gpCn.format(fractionDigits: 3)}',
           ),
         ),
         SummaryRow(
@@ -404,15 +403,10 @@ class _HomePageState extends ConsumerState<HomePage>
           title: Text(l10n.income),
           trailing: Row(
             children: [
-              PillChip(
-                text: Text(
-                  '${gabBonus.toStringAsFixed(2)}%',
-                  style: PillChip.textStyle,
-                ),
-              ),
+              PillChip(text: '${gabBonus.toStringAsFixed(2)}%'),
               const SizedBox(width: 8.0),
-              SummaryRowValueText(
-                text: dailyIncome.formatCompact(
+              SummaryRow.text(
+                dailyIncome.formatCompact(
                   fractionDigits: 2,
                   english: english,
                   traditional: traditional,
@@ -426,14 +420,9 @@ class _HomePageState extends ConsumerState<HomePage>
           title: Text(l10n.infiniteColony),
           trailing: Row(
             children: [
-              PillChip(
-                text: Text(
-                  (infiniteColony * 1000 / wave).toStringAsFixed(2),
-                  style: PillChip.textStyle,
-                ),
-              ),
+              PillChip(text: (infiniteColony * 1000 / wave).toStringAsFixed(2)),
               const SizedBox(width: 8.0),
-              SummaryRowValueText(text: 'Lv.${infiniteColony.format()}'),
+              SummaryRow.text('Lv.${infiniteColony.format()}'),
             ],
           ),
         ),
@@ -445,7 +434,7 @@ class _HomePageState extends ConsumerState<HomePage>
         SummaryRow(
           leading: Icon(Icons.flag_circle),
           title: Text(l10n.guildTotalScore),
-          trailing: SummaryRowValueText(text: guildTotalScore?.format() ?? '—'),
+          trailing: SummaryRow.text(guildTotalScore?.format() ?? '—'),
         ),
         if (_guildRank != null ||
             _guildGapPrev != null ||
@@ -464,7 +453,7 @@ class _HomePageState extends ConsumerState<HomePage>
         SummaryRow(
           leading: Icon(Icons.all_inclusive),
           title: Text(l10n.hellModeScore),
-          trailing: SummaryRowValueText(text: _hellScore?.format() ?? '—'),
+          trailing: SummaryRow.text(_hellScore?.format() ?? '—'),
         ),
         if (_hellRank != null || _hellGapPrev != null || _hellGapNext != null)
           RankPillRow(
@@ -488,7 +477,7 @@ class _HomePageState extends ConsumerState<HomePage>
             children: [
               if (_boxReward > 0)
                 PillChip(
-                  text: Text('$_boxReward', style: PillChip.textStyle),
+                  text: '$_boxReward',
                   leading: BoxIcon(
                     size: PillChip.leadingIconSize,
                     color: scheme.primary,
@@ -496,7 +485,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ),
               if (_crystalReward > 0)
                 PillChip(
-                  text: Text('$_crystalReward', style: PillChip.textStyle),
+                  text: '$_crystalReward',
                   leading: CrystalIcon(
                     size: PillChip.leadingIconSize,
                     color: scheme.primary,

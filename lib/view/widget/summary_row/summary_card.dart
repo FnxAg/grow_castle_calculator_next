@@ -27,6 +27,8 @@ class SummaryRow extends StatelessWidget {
     required this.trailing,
   });
 
+  static Widget text(String text) => SummaryRowValueText(text: text);
+
   final Widget leading;
   final Widget title;
   final List<Widget> actions;
@@ -41,7 +43,11 @@ class SummaryRow extends StatelessWidget {
     final icon = leading is Icon ? (leading as Icon).icon : null;
     final Widget leadingWidget = icon == null
         ? leading
-        : Icon(icon, size: SummaryRow.leadingIconSize, color: colorScheme.primary);
+        : Icon(
+            icon,
+            size: SummaryRow.leadingIconSize,
+            color: colorScheme.primary,
+          );
     return Row(
       children: [
         leadingWidget,

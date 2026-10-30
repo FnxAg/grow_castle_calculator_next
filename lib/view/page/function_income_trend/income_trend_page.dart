@@ -133,13 +133,13 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                     SummaryRow(
                       leading: const Icon(Icons.waves),
                       title: Text(l10n.totalWave),
-                      trailing: SummaryRowValueText(text: startWave.format()),
+                      trailing: SummaryRow.text(startWave.format()),
                     ),
                     SummaryRow(
                       leading: const Icon(Icons.money),
                       title: Text(l10n.labelGabCost),
-                      trailing: SummaryRowValueText(
-                        text: startWaveGabCost.formatCompact(
+                      trailing: SummaryRow.text(
+                        startWaveGabCost.formatCompact(
                           english: english,
                           traditional: traditional,
                         ),
@@ -148,8 +148,8 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                     SummaryRow(
                       leading: const Icon(Icons.monetization_on),
                       title: Text(l10n.totalGold),
-                      trailing: SummaryRowValueText(
-                        text: startWaveTotalGold.formatCompact(
+                      trailing: SummaryRow.text(
+                        startWaveTotalGold.formatCompact(
                           english: english,
                           traditional: traditional,
                         ),
@@ -158,15 +158,15 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                     SummaryRow(
                       leading: const Icon(Icons.star),
                       title: Text(l10n.gp),
-                      trailing: SummaryRowValueText(
-                        text: startGp.format(fractionDigits: 3),
+                      trailing: SummaryRow.text(
+                        startGp.format(fractionDigits: 3),
                       ),
                     ),
                     SummaryRow(
                       leading: const Icon(Icons.star),
                       title: Text(l10n.gpCN),
-                      trailing: SummaryRowValueText(
-                        text: startGpCN.format(fractionDigits: 3),
+                      trailing: SummaryRow.text(
+                        startGpCN.format(fractionDigits: 3),
                       ),
                     ),
                   ],
@@ -184,13 +184,10 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                               Icons.arrow_upward,
                               size: PillChip.leadingIconSize,
                             ),
-                            text: Text(
-                              passedWave.format(),
-                              style: PillChip.textStyle,
-                            ),
+                            text: passedWave.format(),
                           ),
                           const SizedBox(width: 8),
-                          SummaryRowValueText(text: endWave.format()),
+                          SummaryRow.text(endWave.format()),
                         ],
                       ),
                     ),
@@ -204,17 +201,15 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                               Icons.arrow_upward,
                               size: PillChip.leadingIconSize,
                             ),
-                            text: Text(
-                              (endWaveGabCost - startWaveGabCost).formatCompact(
-                                english: english,
-                                traditional: traditional,
-                              ),
-                              style: PillChip.textStyle,
-                            ),
+                            text: (endWaveGabCost - startWaveGabCost)
+                                .formatCompact(
+                                  english: english,
+                                  traditional: traditional,
+                                ),
                           ),
                           const SizedBox(width: 8),
-                          SummaryRowValueText(
-                            text: endWaveGabCost.formatCompact(
+                          SummaryRow.text(
+                            endWaveGabCost.formatCompact(
                               english: english,
                               traditional: traditional,
                             ),
@@ -232,17 +227,14 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                               Icons.arrow_upward,
                               size: PillChip.leadingIconSize,
                             ),
-                            text: Text(
-                              totalIncome.formatCompact(
-                                english: english,
-                                traditional: traditional,
-                              ),
-                              style: PillChip.textStyle,
+                            text: totalIncome.formatCompact(
+                              english: english,
+                              traditional: traditional,
                             ),
                           ),
                           const SizedBox(width: 8),
-                          SummaryRowValueText(
-                            text: endWaveTotalGold.formatCompact(
+                          SummaryRow.text(
+                            endWaveTotalGold.formatCompact(
                               english: english,
                               traditional: traditional,
                             ),
@@ -262,18 +254,15 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                                   : Icons.arrow_upward,
                               size: PillChip.leadingIconSize,
                             ),
-                            text: Text(
-                              (endGp - startGp).abs().format(fractionDigits: 3),
-                              style: PillChip.textStyle,
+                            text: (endGp - startGp).abs().format(
+                              fractionDigits: 3,
                             ),
                             backgroundColor: (endGp - startGp) >= 0
                                 ? goodColor
                                 : badColor,
                           ),
                           const SizedBox(width: 8),
-                          SummaryRowValueText(
-                            text: endGp.format(fractionDigits: 3),
-                          ),
+                          SummaryRow.text(endGp.format(fractionDigits: 3)),
                         ],
                       ),
                     ),
@@ -289,20 +278,15 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                                   : Icons.arrow_upward,
                               size: PillChip.leadingIconSize,
                             ),
-                            text: Text(
-                              (endGpCN - startGpCN).abs().format(
-                                fractionDigits: 3,
-                              ),
-                              style: PillChip.textStyle,
+                            text: (endGpCN - startGpCN).abs().format(
+                              fractionDigits: 3,
                             ),
                             backgroundColor: (endGpCN - startGpCN) >= 0
                                 ? goodColor
                                 : badColor,
                           ),
                           const SizedBox(width: 8),
-                          SummaryRowValueText(
-                            text: endGpCN.format(fractionDigits: 3),
-                          ),
+                          SummaryRow.text(endGpCN.format(fractionDigits: 3)),
                         ],
                       ),
                     ),
@@ -330,7 +314,10 @@ class _AppBarInfo extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final segments = <Widget>[AppBarItem.currentUser(), AppBarItem.currentUserGabBonus()];
+    final segments = <Widget>[
+      AppBarItem.currentUser(),
+      AppBarItem.currentUserGabBonus(),
+    ];
     return AppBarInfo(children: segments);
   }
 }

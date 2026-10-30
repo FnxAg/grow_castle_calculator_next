@@ -344,7 +344,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                       SummaryRow(
                         leading: Icon(Icons.emoji_events),
                         title: Text(l10n.totalWave),
-                        trailing: SummaryRowValueText(text: r.wave.format()),
+                        trailing: SummaryRow.text(r.wave.format()),
                       ),
                       SummaryRow(
                         leading: Icon(Icons.eco),
@@ -354,15 +354,12 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                           children: [
                             if (_playerRank != null) ...[
                               PillChip(
-                                text: Text(
-                                  '#$_playerRank',
-                                  style: PillChip.textStyle,
-                                ),
+                                text: '#$_playerRank',
                                 leading: const Icon(Icons.eco),
                               ),
                               const SizedBox(width: 8.0),
                             ],
-                            SummaryRowValueText(text: r.seasonalScore.format()),
+                            SummaryRow.text(r.seasonalScore.format()),
                           ],
                         ),
                       ),
@@ -375,15 +372,12 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                             children: [
                               if (_hellRank != null) ...[
                                 PillChip(
-                                  text: Text(
-                                    '#$_hellRank',
-                                    style: PillChip.textStyle,
-                                  ),
+                                  text: '#$_hellRank',
                                   leading: const Icon(Icons.all_inclusive),
                                 ),
                                 const SizedBox(width: 8.0),
                               ],
-                              SummaryRowValueText(text: _hellScore!.format()),
+                              SummaryRow.text(_hellScore!.format()),
                             ],
                           ),
                         ),
@@ -399,13 +393,13 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                               size: PillChip.leadingIconSize,
                               color: scheme.primary,
                             ),
-                            text: Text('$reward', style: PillChip.textStyle),
+                            text: '$reward',
                           ),
                         ),
                       SummaryRow(
                         leading: Icon(Icons.schedule),
                         title: Text(l10n.lastOnline),
-                        trailing: SummaryRowValueText(text: '$lastOnline ago'),
+                        trailing: SummaryRow.text('$lastOnline ago'),
                       ),
                     ],
                   ),

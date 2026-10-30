@@ -40,9 +40,7 @@ class FormationSummaryBar extends ConsumerWidget {
                   },
                 ),
             ],
-            trailing: SummaryRowValueText(
-              text: ref.watch(currentUserWaveProvider).format(),
-            ),
+            trailing: SummaryRow.text(ref.watch(currentUserWaveProvider).format()),
           ),
           SummaryRow(
             leading: Icon(Icons.eco),
@@ -64,15 +62,13 @@ class FormationSummaryBar extends ConsumerWidget {
                   },
                 ),
             ],
-            trailing: SummaryRowValueText(
-              text: ref.watch(currentUserSeasonWaveProvider).format(),
-            ),
+            trailing: SummaryRow.text(ref.watch(currentUserSeasonWaveProvider).format()),
           ),
           SummaryRow(
             leading: Icon(Icons.monetization_on),
             title: Text(l10n.totalGold),
-            trailing: SummaryRowValueText(
-              text: ref
+            trailing: SummaryRow.text(
+              ref
                   .watch(currentUserTotalGoldProvider)
                   .formatCompact(
                     fractionDigits: 2,
@@ -87,11 +83,10 @@ class FormationSummaryBar extends ConsumerWidget {
               mainAxisSize: MainAxisSize.min,
               children: [Text(l10n.goldPower)],
             ),
-            trailing: SummaryRowValueText(
-              text:
-                  '${ref.watch(currentUserGpProvider).format(fractionDigits: 3)}'
-                  ' · '
-                  '${ref.watch(currentUserGpCnProvider).format(fractionDigits: 3)}',
+            trailing: SummaryRow.text(
+              '${ref.watch(currentUserGpProvider).format(fractionDigits: 3)}'
+              ' · '
+              '${ref.watch(currentUserGpCnProvider).format(fractionDigits: 3)}',
             ),
           ),
         ],

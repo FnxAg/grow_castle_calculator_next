@@ -89,29 +89,20 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
                   children: [
                     Text(username),
                     if (guild.isNotEmpty)
-                      PillChip(
-                        text: Text(guild, style: PillChip.textStyle),
-                        leading: Icon(Icons.flag_circle),
-                      ),
+                      PillChip(text: guild, leading: Icon(Icons.flag_circle)),
                   ],
                 ),
                 subtitle: SubtitlePillWrap(
                   children: [
                     PillChip(
-                      text: Text(
-                        (user?.wave ?? 1).format(),
-                        style: PillChip.textStyle,
-                      ),
+                      text: (user?.wave ?? 1).format(),
                       leading: Icon(Icons.emoji_events),
                     ),
                     PillChip(
-                      text: Text(
-                        (user?.totalGold ?? 0.0).formatCompact(
-                          fractionDigits: 2,
-                          english: !context.isChineseLocale,
-                          traditional: context.isTraditionalChineseLocale,
-                        ),
-                        style: PillChip.textStyle,
+                      text: (user?.totalGold ?? 0.0).formatCompact(
+                        fractionDigits: 2,
+                        english: !context.isChineseLocale,
+                        traditional: context.isTraditionalChineseLocale,
                       ),
                       leading: Icon(Icons.monetization_on),
                     ),

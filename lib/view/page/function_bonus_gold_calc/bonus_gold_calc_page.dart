@@ -302,19 +302,17 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
           SummaryRow(
             leading: Icon(Icons.money),
             title: Text(l10n.labelGabCost),
-            trailing: SummaryRowValueText(text: gabCost.format()),
+            trailing: SummaryRow.text(gabCost.format()),
           ),
           SummaryRow(
             leading: Icon(Icons.monetization_on),
             title: Text(l10n.labelAverageIncome),
-            trailing: SummaryRowValueText(text: avgIncome.format()),
+            trailing: SummaryRow.text(avgIncome.format()),
           ),
           SummaryRow(
             leading: Icon(Icons.percent),
             title: Text(l10n.labelPercent),
-            trailing: SummaryRowValueText(
-              text: '${percent.format(fractionDigits: 2)}%',
-            ),
+            trailing: SummaryRow.text('${percent.format(fractionDigits: 2)}%'),
           ),
           const SizedBox(height: 12.0),
           Row(
