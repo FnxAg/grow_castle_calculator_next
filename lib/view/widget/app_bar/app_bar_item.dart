@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
+import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
@@ -37,26 +38,37 @@ abstract class AppBarItem extends ConsumerWidget {
 
   static Widget currentUserTotalGold() => Consumer(
     builder: (context, ref, child) {
+      final l10n = AppLocalizations.of(context);
       final totalGold = ref.watch(currentUserTotalGoldProvider);
-      return Text(
-        totalGold.formatCompact(
-          fractionDigits: 2,
-          english: !context.isChineseLocale,
-          traditional: context.isTraditionalChineseLocale,
+      return Tooltip(
+        message: l10n.totalGold,
+        child: AnimatedTextSwitcher(
+          child: Text(
+            totalGold.formatCompact(
+              fractionDigits: 2,
+              english: !context.isChineseLocale,
+              traditional: context.isTraditionalChineseLocale,
+            ),
+            style: textStyle,
+            key: ValueKey(totalGold),
+          ),
         ),
-        style: textStyle,
       );
     },
   );
 
   static Widget currentUserLastOnline() => Consumer(
     builder: (context, ref, child) {
+      final l10n = AppLocalizations.of(context);
       final lastOnline = ref.watch(currentUserLastOnlineProvider);
-      return AnimatedTextSwitcher(
-        child: Text(
-          lastOnline.isEmpty ? '-' : '$lastOnline ago',
-          style: textStyle,
-          key: ValueKey(lastOnline),
+      return Tooltip(
+        message: l10n.lastOnline,
+        child: AnimatedTextSwitcher(
+          child: Text(
+            lastOnline.isEmpty ? '-' : '$lastOnline ago',
+            style: textStyle,
+            key: ValueKey(lastOnline),
+          ),
         ),
       );
     },
@@ -64,16 +76,54 @@ abstract class AppBarItem extends ConsumerWidget {
 
   static Widget currentUserDailyIncome() => Consumer(
     builder: (context, ref, child) {
+      final l10n = AppLocalizations.of(context);
       final dailyIncome = ref.watch(dailyIncomeProvider).total;
-      return AnimatedTextSwitcher(
-        child: Text(
-          dailyIncome.formatCompact(
-            fractionDigits: 2,
-            english: !context.isChineseLocale,
-            traditional: context.isTraditionalChineseLocale,
+      return Tooltip(
+        message: l10n.dailyIncome,
+        child: AnimatedTextSwitcher(
+          child: Text(
+            dailyIncome.formatCompact(
+              fractionDigits: 2,
+              english: !context.isChineseLocale,
+              traditional: context.isTraditionalChineseLocale,
+            ),
+            style: textStyle,
+            key: ValueKey(dailyIncome),
           ),
-          style: textStyle,
-          key: ValueKey(dailyIncome),
+        ),
+      );
+    },
+  );
+
+  static Widget currentUserGp() => Consumer(
+    builder: (context, ref, child) {
+      final l10n = AppLocalizations.of(context);
+      final gp = ref.watch(currentUserGpProvider);
+      return Tooltip(
+        message: l10n.gp,
+        child: AnimatedTextSwitcher(
+          child: Text(
+            gp.toStringAsFixed(3),
+            style: textStyle,
+            key: ValueKey(gp),
+          ),
+        ),
+      );
+    },
+  );
+
+  static Widget currentUserGpCn() => Consumer(
+    builder: (context, ref, child) {
+      final l10n = AppLocalizations.of(context);
+      final gpCN = ref.watch(currentUserGpCnProvider);
+      return Tooltip(
+        message: l10n.gpCN,
+        child: AnimatedTextSwitcher(
+          child: Text(
+            gpCN.toStringAsFixed(3),
+            style: textStyle,
+            key: ValueKey(gpCN),
+          ),
         ),
       );
     },

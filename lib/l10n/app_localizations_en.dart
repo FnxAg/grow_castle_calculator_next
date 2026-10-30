@@ -25,6 +25,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltipViewMode => 'View mode';
 
   @override
+  String get tooltipShowActions => 'Show actions';
+
+  @override
+  String get tooltipHideActions => 'Hide actions';
+
+  @override
   String get tooltipFetchData => 'Fetch data';
 
   @override
@@ -1592,4 +1598,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get labelGabBonusNote =>
       'If you are FAB player, click the \"FAB\" button and save it, and the GAB bonus will be considered 0%';
+
+  @override
+  String get dailyIncome => 'Daily income';
 }

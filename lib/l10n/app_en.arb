@@ -5,6 +5,8 @@
   "tooltipAddEntry": "Add entry",
   "tooltipInputMode": "Input mode",
   "tooltipViewMode": "View mode",
+  "tooltipShowActions": "Show actions",
+  "tooltipHideActions": "Hide actions",
   "tooltipFetchData": "Fetch data",
   "snackQueryTooFrequent": "Too many queries. Please try again later.",
   "snackUserBanned": "User \"{name}\" is banned",
@@ -433,5 +435,6 @@
   "incomeTrendEnd": "End",
   "dataDisclaimer": "Data is for reference only",
   "fromDev": "Welcome to join POC!",
-  "labelGabBonusNote": "If you are FAB player, click the \"FAB\" button and save it, and the GAB bonus will be considered 0%"
+  "labelGabBonusNote": "If you are FAB player, click the \"FAB\" button and save it, and the GAB bonus will be considered 0%",
+  "dailyIncome": "Daily income"
 }

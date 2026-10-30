@@ -25,6 +25,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltipViewMode => '查看模式';
 
   @override
+  String get tooltipShowActions => '展开操作';
+
+  @override
+  String get tooltipHideActions => '隐藏操作';
+
+  @override
   String get tooltipFetchData => '拉取数据';
 
   @override
@@ -1485,6 +1491,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelGabBonusNote => '破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%';
+
+  @override
+  String get dailyIncome => '每日收入';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1505,6 +1514,12 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tooltipViewMode => '檢視模式';
+
+  @override
+  String get tooltipShowActions => '展開操作';
+
+  @override
+  String get tooltipHideActions => '隱藏操作';
 
   @override
   String get tooltipFetchData => '取得資料';
@@ -2967,4 +2982,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get labelGabBonusNote => '破掛請點擊「FAB」按鈕后保存，金掛收益將被視為 0%';
+
+  @override
+  String get dailyIncome => '每日收入';
 }

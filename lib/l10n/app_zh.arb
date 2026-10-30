@@ -5,6 +5,8 @@
   "tooltipAddEntry": "新增条目",
   "tooltipInputMode": "输入模式",
   "tooltipViewMode": "查看模式",
+  "tooltipShowActions": "展开操作",
+  "tooltipHideActions": "隐藏操作",
   "tooltipFetchData": "拉取数据",
   "snackQueryTooFrequent": "查询过于频繁，请稍后后再试",
   "snackUserBanned": "用户「{name}」已被封禁",
@@ -986,5 +988,6 @@
   "incomeTrendEnd": "结束数据",
   "dataDisclaimer": "数据仅供参考",
   "fromDev": "欢迎加入 POC 谢谢喵！",
-  "labelGabBonusNote": "破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%"
+  "labelGabBonusNote": "破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%",
+  "dailyIncome": "每日收入"
 }

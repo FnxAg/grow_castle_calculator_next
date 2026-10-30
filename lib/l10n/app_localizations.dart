@@ -129,6 +129,18 @@ abstract class AppLocalizations {
   /// **'查看模式'**
   String get tooltipViewMode;
 
+  /// No description provided for @tooltipShowActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'展开操作'**
+  String get tooltipShowActions;
+
+  /// No description provided for @tooltipHideActions.
+  ///
+  /// In zh, this message translates to:
+  /// **'隐藏操作'**
+  String get tooltipHideActions;
+
   /// No description provided for @tooltipFetchData.
   ///
   /// In zh, this message translates to:
@@ -2699,6 +2711,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%'**
   String get labelGabBonusNote;
+
+  /// No description provided for @dailyIncome.
+  ///
+  /// In zh, this message translates to:
+  /// **'每日收入'**
+  String get dailyIncome;
 }
 
 class _AppLocalizationsDelegate

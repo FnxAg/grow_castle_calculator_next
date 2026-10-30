@@ -16,12 +16,22 @@ class BuildCalcPage extends ConsumerStatefulWidget {
   ConsumerState<BuildCalcPage> createState() => _FormationCalcPageState();
 }
 
-class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
+class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
+    with TickerProviderStateMixin {
   final Map<int, FocusNode> _numberFocusNodes = {};
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
   final Map<int, TextEditingController> _textControllers = {};
   static bool _viewMode = false;
+  bool _floatingActionsExpanded = false;
+  late final _animationController = AnimationController(
+    vsync: this,
+    duration: const Duration(milliseconds: 300),
+  );
+  late final _animation = CurvedAnimation(
+    parent: _animationController,
+    curve: Curves.easeInOutCubic,
+  );
 
   FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
     return cache.putIfAbsent(id, () => FocusNode());
@@ -59,6 +69,8 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
   @override
   void dispose() {
     _discardCardCaches();
+    _animationController.dispose();
+    _animation.dispose();
     super.dispose();
   }
 
@@ -101,7 +113,8 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
     final isWide = context.isWideContent;
     final l10n = AppLocalizations.of(context);
     final cardIds = ref.watch(currentUserCardIdsProvider);
-    final List<Widget> actions = <Widget>[
+
+    final List<Widget> appBarActions = <Widget>[
       IconButton(
         icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
         tooltip: _viewMode ? l10n.tooltipInputMode : l10n.tooltipViewMode,
@@ -116,6 +129,60 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
         onPressed: () => ref.users.addNewCard(),
       ),
     ];
+
+    final Widget floatingActions = Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.end,
+      children: [
+        SizeTransition(
+          sizeFactor: _animation,
+          alignment: Alignment.bottomRight,
+          child: Column(
+            children: [
+              FloatingActionButton.small(
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  setState(() => _viewMode = !_viewMode);
+                },
+                tooltip: _viewMode
+                    ? l10n.tooltipInputMode
+                    : l10n.tooltipViewMode,
+                child: Icon(_viewMode ? Icons.edit : Icons.visibility),
+              ),
+              const SizedBox(height: 12),
+              FloatingActionButton.small(
+                onPressed: () => ref.users.addNewCard(),
+                tooltip: l10n.tooltipAddEntry,
+                child: const Icon(Icons.add),
+              ),
+              const SizedBox(height: 12),
+            ],
+          ),
+        ),
+        FloatingActionButton.small(
+          onPressed: () {
+            setState(
+              () {
+                _floatingActionsExpanded = !_floatingActionsExpanded;
+                if (_floatingActionsExpanded) {
+                  _animationController.forward();
+                } else {
+                  _animationController.reverse();
+                }
+              },
+            );
+          },
+          tooltip: _floatingActionsExpanded
+              ? l10n.tooltipHideActions
+              : l10n.tooltipShowActions,
+          child: AnimatedIcon(
+            icon: AnimatedIcons.menu_close,
+            progress: _animation,
+          ),
+        ),
+      ],
+    );
+
     final Widget formationExpanded = Expanded(
       flex: isWide ? 6 : 1,
       child: cardIds.isEmpty
@@ -165,6 +232,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
               scrollDirection: .vertical,
             ),
     );
+
     const Widget formationSummaryBar = FormationSummaryBar();
 
     return Scaffold(
@@ -173,8 +241,9 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
           crossAxisAlignment: .start,
           children: [Text(l10n.tabFormation), _AppBarInfo()],
         ),
-        actions: actions,
+        actions: isWide ? appBarActions : null,
       ),
+      floatingActionButton: isWide ? null : floatingActions,
       body: SafeArea(
         top: false,
         child: isWide
@@ -184,7 +253,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
                   const Expanded(flex: 4, child: formationSummaryBar),
                 ],
               )
-            : Column(children: [formationExpanded, formationSummaryBar]),
+            : Column(children: [formationExpanded]),
       ),
     );
   }
@@ -197,6 +266,9 @@ class _AppBarInfo extends StatelessWidget {
   Widget build(BuildContext context) {
     final List<Widget> segments = <Widget>[
       AppBarItem.currentUser(),
+      AppBarItem.currentUserTotalGold(),
+      AppBarItem.currentUserGp(),
+      AppBarItem.currentUserGpCn(),
     ];
     return AppBarInfo(children: segments);
   }
