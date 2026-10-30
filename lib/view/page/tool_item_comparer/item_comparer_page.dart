@@ -1,5 +1,3 @@
-import 'package:flutter/gestures.dart';
-import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -12,6 +10,7 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
@@ -48,7 +47,7 @@ class _LineOption {
   final bool isElementDamage;
 
   String get label => isMoreDmg
-      ? 'More Dmg %'
+      ? 'More Damage %'
       : isElementDamage
       ? 'Element Damage %'
       : line!.label;
@@ -118,10 +117,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
 
   bool _restoring = false;
 
-  late final AnimationController _cardController;
-  late final CurvedAnimation _cardAnimation;
-  bool _showCard = true;
-
   List<TextEditingController> get _panelCtrls => [
     _baseAttackCtrl,
     _increasedDmgCtrl,
@@ -135,15 +130,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   @override
   void initState() {
     super.initState();
-    _cardController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-      value: 1.0,
-    );
-    _cardAnimation = CurvedAnimation(
-      parent: _cardController,
-      curve: Curves.easeInOutCubic,
-    );
     // 数据恢复/导入后从 store 重新回填输入（结构可能与旧输入不一致）
     BackupService.instance.dataRestoredNotifier.addListener(_onDataRestored);
     _restoring = true;
@@ -165,41 +151,7 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     for (final input in [..._item1Lines, ..._item2Lines]) {
       input.dispose();
     }
-    _cardAnimation.dispose();
-    _cardController.dispose();
     super.dispose();
-  }
-
-  /// 手势滑动
-  bool _onScrollNotification(ScrollNotification notification) {
-    if (notification is UserScrollNotification) {
-      switch (notification.direction) {
-        case ScrollDirection.reverse:
-          _setCardVisible(false);
-        case ScrollDirection.forward:
-          _setCardVisible(true);
-        case ScrollDirection.idle:
-          break;
-      }
-    }
-    return false;
-  }
-
-  /// 鼠标滚轮/触控板滚动
-  void _onPointerSignal(PointerSignalEvent event) {
-    if (event is PointerScrollEvent && event.scrollDelta.dy != 0.0) {
-      _setCardVisible(event.scrollDelta.dy < 0.0);
-    }
-  }
-
-  void _setCardVisible(bool visible) {
-    if (_showCard == visible) return;
-    setState(() => _showCard = visible);
-    if (visible) {
-      _cardController.forward();
-    } else {
-      _cardController.reverse();
-    }
   }
 
   /// 数据恢复/导入完成：整页输入按新 store 数据重建
@@ -343,6 +295,8 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final english = !context.isChineseLocale;
+    final traditional = context.isTraditionalChineseLocale;
     final baseResult = computeItemDps(
       baseAttack: _valueOf(_baseAttackCtrl),
       increasedDmg: _valueOf(_increasedDmgCtrl),
@@ -354,19 +308,52 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     );
     final item1Result = _computeItemResult(_item1Lines);
     final item2Result = _computeItemResult(_item2Lines);
+    final baseDps = baseResult.dps;
+    final item1Dps = item1Result.dps;
+    final item2Dps = item2Result.dps;
+    final item1Inc = item1Dps / baseDps;
+    final item2Inc = item2Dps / baseDps;
     final bool isWide = context.isWideContent;
 
     final Widget list = ListView(
       key: const PageStorageKey('item_comparer_list'),
-      // 内容不足一屏时也接受拖动，卡片才能响应手势
-      physics: const AlwaysScrollableScrollPhysics(),
       padding: EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
       children: [
-        SectionHeader(l10n.labelNoItemPanel),
+        SectionHeader(
+          l10n.labelNoItemPanel,
+          trailing: PillChip(
+            text: baseResult.dps.formatCompact(
+              english: english,
+              traditional: traditional,
+            ),
+          ),
+        ),
         SummaryCard(children: _buildPanelCard()),
-        SectionHeader(l10n.labelItemLines(1)),
+        SectionHeader(
+          l10n.labelItemLines(1),
+          trailing: PillChip(
+            leading: item1Inc > item2Inc
+                ? const Icon(Icons.arrow_drop_up)
+                : item1Inc < item2Inc
+                    ? const Icon(Icons.arrow_drop_down)
+                    : null,
+            backgroundColor: item1Inc > item2Inc ? Colors.green : null,
+            text: '${((item1Inc - 1) * 100).toStringAsFixed(2)}%',
+          ),
+        ),
         SummaryCard(children: <Widget>[_buildItemCard(_item1Lines, 'item1')]),
-        SectionHeader(l10n.labelItemLines(2)),
+        SectionHeader(
+          l10n.labelItemLines(2),
+          trailing: PillChip(
+            leading: item1Inc < item2Inc
+                ? const Icon(Icons.arrow_drop_up)
+                : item1Inc > item2Inc
+                    ? const Icon(Icons.arrow_drop_down)
+                    : null,
+            backgroundColor: item1Inc < item2Inc ? Colors.green : null,
+            text: '${((item2Inc - 1) * 100).toStringAsFixed(2)}%',
+          ),
+        ),
         SummaryCard(children: <Widget>[_buildItemCard(_item2Lines, 'item2')]),
       ],
     );
@@ -440,7 +427,7 @@ class _ItemComparerPageState extends State<ItemComparerPage>
           ),
           IconButton(
             tooltip: l10n.actionReset,
-            icon: const Icon(Icons.restore_page),
+            icon: const Icon(Icons.refresh),
             onPressed: () => showDialog<void>(
               context: context,
               builder: (dialogContext) => AlertDialog(
@@ -475,32 +462,7 @@ class _ItemComparerPageState extends State<ItemComparerPage>
                     Expanded(flex: 4, child: summaryView),
                   ],
                 )
-              : Listener(
-                  onPointerSignal: _onPointerSignal,
-                  child: Stack(
-                    children: [
-                      Positioned.fill(
-                        child: NotificationListener<UserScrollNotification>(
-                          onNotification: _onScrollNotification,
-                          child: list,
-                        ),
-                      ),
-                      Positioned(
-                        left: 0,
-                        right: 0,
-                        bottom: 0,
-                        child: IgnorePointer(
-                          ignoring: !_showCard,
-                          child: SizeTransition(
-                            sizeFactor: _cardAnimation,
-                            alignment: Alignment.topCenter,
-                            child: summaryView,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
+              : list,
         ),
       ),
     );
@@ -509,10 +471,10 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   List<Widget> _buildPanelCard() {
     return [
       _panelField('Base Attack', _baseAttackCtrl, isPercent: false),
-      _panelField('Increased Dmg', _increasedDmgCtrl),
-      _panelField('More Dmg', _moreDmgCtrl),
+      _panelField('Increased Damage', _increasedDmgCtrl),
+      _panelField('More Damage', _moreDmgCtrl),
       _panelField('Critical Chance', _critChanceCtrl),
-      _panelField('Critical Dmg', _critDmgCtrl),
+      _panelField('Critical Damage', _critDmgCtrl),
       _panelField('Attacks Per Second', _baseApsCtrl, isPercent: false),
       _panelField('Increased Speed', _speedCtrl),
     ];
