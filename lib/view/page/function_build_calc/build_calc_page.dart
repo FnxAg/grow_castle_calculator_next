@@ -139,7 +139,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
           alignment: Alignment.bottomRight,
           child: Column(
             children: [
-              FloatingActionButton.small(
+              FloatingActionButton(
                 onPressed: () {
                   FocusManager.instance.primaryFocus?.unfocus();
                   setState(() => _viewMode = !_viewMode);
@@ -150,7 +150,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
                 child: Icon(_viewMode ? Icons.edit : Icons.visibility),
               ),
               const SizedBox(height: 12),
-              FloatingActionButton.small(
+              FloatingActionButton(
                 onPressed: () => ref.users.addNewCard(),
                 tooltip: l10n.tooltipAddEntry,
                 child: const Icon(Icons.add),
@@ -159,7 +159,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
             ],
           ),
         ),
-        FloatingActionButton.small(
+        FloatingActionButton(
           onPressed: () {
             setState(
               () {
