@@ -1590,6 +1590,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get incomeTrendEnd => 'End';
 
   @override
+  String get incomeTrendCustom => 'Custom';
+
+  @override
+  String get incomeTrendDaysHint => 'Enter days';
+
+  @override
+  String get incomeTrendDaysInvalid => 'Enter a positive whole number';
+
+  @override
   String get dataDisclaimer => 'Data is for reference only';
 
   @override

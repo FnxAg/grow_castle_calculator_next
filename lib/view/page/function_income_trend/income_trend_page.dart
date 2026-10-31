@@ -1,3 +1,4 @@
+import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/calc/gold_income.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -19,8 +20,10 @@ class IncomeTrendPage extends ConsumerStatefulWidget {
 }
 
 class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
+  static const _customOptionIndex = 6;
   static int _selectedOptionIndex = 0;
-  final List<int> _trendMinutesOptions = const [
+  static int? _customTime;
+  late final List<int> _trendMinutesOptions = const [
     1440,
     10080,
     43200,
@@ -29,7 +32,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     525600,
   ];
   final List<String> _dropdownOptions = const [
-    '24h',
+    '1d',
     '7d',
     '30d',
     '90d',
@@ -42,7 +45,9 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     final l10n = AppLocalizations.of(context);
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
-    final afterTime = _trendMinutesOptions[_selectedOptionIndex];
+    final afterTime = _selectedOptionIndex == _customOptionIndex
+        ? _customTime! * 1440
+        : _trendMinutesOptions[_selectedOptionIndex];
     final user = ref.watch(currentUserProvider);
     final startWave = user.wave;
     final gabBonus = user.gabBonus;
@@ -94,21 +99,37 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
       alignment: .center,
       spacing: 8,
       runSpacing: 4,
-      children: _trendMinutesOptions.map((minutes) {
-        final index = _trendMinutesOptions.indexOf(minutes);
-        final isSelected = index == _selectedOptionIndex;
-        return ChoiceChip(
-          label: Text(_dropdownOptions[index]),
-          selected: isSelected,
-          onSelected: (selected) {
-            if (selected) {
-              setState(() {
-                _selectedOptionIndex = index;
-              });
-            }
+      children: [
+        ..._trendMinutesOptions.map((minutes) {
+          final index = _trendMinutesOptions.indexOf(minutes);
+          final isSelected = index == _selectedOptionIndex;
+          return ChoiceChip(
+            label: Text(_dropdownOptions[index]),
+            selected: isSelected,
+            onSelected: (selected) {
+              if (selected) {
+                setState(() {
+                  _selectedOptionIndex = index;
+                });
+              }
+            },
+          );
+        }),
+        ChoiceChip(
+          label: Text(
+            _customTime == null ? l10n.incomeTrendCustom : '${_customTime}d',
+          ),
+          selected: _selectedOptionIndex == _customOptionIndex,
+          onSelected: (_) async {
+            final days = await _showCustomTimeDialog(context);
+            if (!context.mounted || days == null) return;
+            setState(() {
+              _customTime = days;
+              _selectedOptionIndex = _customOptionIndex;
+            });
           },
-        );
-      }).toList(),
+        ),
+      ],
     );
 
     return Scaffold(
@@ -306,6 +327,51 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
         ),
       ),
     );
+  }
+
+  Future<int?> _showCustomTimeDialog(BuildContext context) {
+    final controller = TextEditingController(
+      text: _customTime?.toString() ?? '1',
+    );
+    String? error;
+    return showDialog<int>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: Text(AppLocalizations.of(context).incomeTrendCustom),
+          content: TextField(
+            controller: controller,
+            autofocus: true,
+            keyboardType: TextInputType.number,
+            inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+            decoration: InputDecoration(
+              suffixText: 'd',
+              hintText: AppLocalizations.of(context).incomeTrendDaysHint,
+              errorText: error,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(dialogContext),
+              child: Text(AppLocalizations.of(context).actionCancel),
+            ),
+            FilledButton(
+              onPressed: () {
+                final days = int.tryParse(controller.text);
+                if (days == null || days <= 0) {
+                  setDialogState(() {
+                    error = AppLocalizations.of(context).incomeTrendDaysInvalid;
+                  });
+                  return;
+                }
+                Navigator.pop(dialogContext, days);
+              },
+              child: Text(AppLocalizations.of(context).actionSave),
+            ),
+          ],
+        ),
+      ),
+    ).whenComplete(controller.dispose);
   }
 }
 

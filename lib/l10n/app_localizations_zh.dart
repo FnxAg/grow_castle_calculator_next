@@ -1484,6 +1484,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get incomeTrendEnd => '结束数据';
 
   @override
+  String get incomeTrendCustom => '自定义';
+
+  @override
+  String get incomeTrendDaysHint => '请输入天数';
+
+  @override
+  String get incomeTrendDaysInvalid => '请输入大于 0 的整数';
+
+  @override
   String get dataDisclaimer => '数据仅供参考';
 
   @override
@@ -2973,6 +2982,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get incomeTrendEnd => '結束數據';
+
+  @override
+  String get incomeTrendCustom => '自訂';
+
+  @override
+  String get incomeTrendDaysHint => '請輸入天數';
+
+  @override
+  String get incomeTrendDaysInvalid => '請輸入大於 0 的整數';
 
   @override
   String get dataDisclaimer => '資料僅供參考';

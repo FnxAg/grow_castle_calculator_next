@@ -2694,6 +2694,24 @@ abstract class AppLocalizations {
   /// **'结束数据'**
   String get incomeTrendEnd;
 
+  /// No description provided for @incomeTrendCustom.
+  ///
+  /// In zh, this message translates to:
+  /// **'自定义'**
+  String get incomeTrendCustom;
+
+  /// No description provided for @incomeTrendDaysHint.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入天数'**
+  String get incomeTrendDaysHint;
+
+  /// No description provided for @incomeTrendDaysInvalid.
+  ///
+  /// In zh, this message translates to:
+  /// **'请输入大于 0 的整数'**
+  String get incomeTrendDaysInvalid;
+
   /// No description provided for @dataDisclaimer.
   ///
   /// In zh, this message translates to:
