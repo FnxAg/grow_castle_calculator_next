@@ -23,15 +23,6 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
   final Map<int, TextEditingController> _numberControllers = {};
   final Map<int, TextEditingController> _textControllers = {};
   static bool _viewMode = false;
-  bool _floatingActionsExpanded = false;
-  late final _animationController = AnimationController(
-    vsync: this,
-    duration: const Duration(milliseconds: 300),
-  );
-  late final _animation = CurvedAnimation(
-    parent: _animationController,
-    curve: Curves.easeInOutCubic,
-  );
 
   FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
     return cache.putIfAbsent(id, () => FocusNode());
@@ -69,8 +60,6 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
   @override
   void dispose() {
     _discardCardCaches();
-    _animationController.dispose();
-    _animation.dispose();
     super.dispose();
   }
 
@@ -130,55 +119,25 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
       ),
     ];
 
-    final Widget floatingActions = Column(
+    final Widget floatingActions = Row(
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.end,
       children: [
-        SizeTransition(
-          sizeFactor: _animation,
-          alignment: Alignment.bottomRight,
-          child: Column(
-            children: [
-              FloatingActionButton(
-                onPressed: () {
-                  FocusManager.instance.primaryFocus?.unfocus();
-                  setState(() => _viewMode = !_viewMode);
-                },
-                tooltip: _viewMode
-                    ? l10n.tooltipInputMode
-                    : l10n.tooltipViewMode,
-                child: Icon(_viewMode ? Icons.edit : Icons.visibility),
-              ),
-              const SizedBox(height: 12),
-              FloatingActionButton(
-                onPressed: () => ref.users.addNewCard(),
-                tooltip: l10n.tooltipAddEntry,
-                child: const Icon(Icons.add),
-              ),
-              const SizedBox(height: 12),
-            ],
-          ),
-        ),
-        FloatingActionButton(
+        FloatingActionButton.small(
           onPressed: () {
-            setState(
-              () {
-                _floatingActionsExpanded = !_floatingActionsExpanded;
-                if (_floatingActionsExpanded) {
-                  _animationController.forward();
-                } else {
-                  _animationController.reverse();
-                }
-              },
-            );
+            FocusManager.instance.primaryFocus?.unfocus();
+            setState(() => _viewMode = !_viewMode);
           },
-          tooltip: _floatingActionsExpanded
-              ? l10n.tooltipHideActions
-              : l10n.tooltipShowActions,
-          child: AnimatedIcon(
-            icon: AnimatedIcons.menu_close,
-            progress: _animation,
-          ),
+          tooltip: _viewMode
+              ? l10n.tooltipInputMode
+              : l10n.tooltipViewMode,
+          child: Icon(_viewMode ? Icons.edit : Icons.visibility),
+        ),
+        const SizedBox(width: 12),
+        FloatingActionButton.small(
+          onPressed: () => ref.users.addNewCard(),
+          tooltip: l10n.tooltipAddEntry,
+          child: const Icon(Icons.add),
         ),
       ],
     );
@@ -195,6 +154,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
           : ReorderableListView.builder(
               key: const PageStorageKey('formation_card_list'),
               itemCount: cardIds.length,
+              padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
               proxyDecorator: (child, index, animation) {
                 return AnimatedBuilder(
                   animation: animation,
