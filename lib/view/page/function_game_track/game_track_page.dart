@@ -175,10 +175,12 @@ class _TrackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final textStyle = TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600);
     final trackInfo = [
       PillChip(
         leading: const Icon(Icons.emoji_events),
         text: record.wave.format(),
+        textStyle: textStyle,
       ),
       PillChip(
         leading: const Icon(Icons.monetization_on),
@@ -186,11 +188,13 @@ class _TrackCard extends StatelessWidget {
           english: !context.isChineseLocale,
           traditional: context.isTraditionalChineseLocale,
         ),
+        textStyle: textStyle,
       ),
       PillChip(
         leading: const Icon(Icons.star),
         text:
             '${record.gp.format(fractionDigits: 3)} · ${record.gpCN.format(fractionDigits: 3)}',
+        textStyle: textStyle,
       ),
     ];
     return Card(
@@ -225,6 +229,7 @@ class _TrackCard extends StatelessWidget {
                     Builder(
                       builder: (context) => PillChip(
                         text: '${unit.name} Lv.${unit.level}',
+                        textStyle: textStyle,
                         backgroundColor: unit.enabled
                             ? null
                             : Theme.of(context)
