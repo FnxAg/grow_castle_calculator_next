@@ -1,8 +1,8 @@
-import 'dart:async';
+// import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
-import 'package:grow_castle_calculator_next/data/res/store.dart';
+// import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
@@ -126,15 +126,16 @@ class FunctionPage extends ConsumerWidget {
           ),
           ListTile(
             leading: const Icon(Icons.timeline),
-            title: Row(
-              children: [
-                Expanded(
-                  child: Text(l10n.gameTrack, overflow: TextOverflow.ellipsis),
-                ),
-                const SizedBox(width: 8.0),
-                _RelativeTimeText(style: style),
-              ],
-            ),
+            // title: Row(
+            //   children: [
+            //     Expanded(
+            //       child: Text(l10n.gameTrack, overflow: TextOverflow.ellipsis),
+            //     ),
+            //     const SizedBox(width: 8.0),
+            //     _RelativeTimeText(style: style),
+            //   ],
+            // ),
+            title: Text(l10n.gameTrack),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
@@ -162,61 +163,61 @@ class _AppBarInfo extends StatelessWidget {
   }
 }
 
-class _RelativeTimeText extends ConsumerStatefulWidget {
-  const _RelativeTimeText({required this.style});
+// class _RelativeTimeText extends ConsumerStatefulWidget {
+//   const _RelativeTimeText({required this.style});
 
-  final TextStyle? style;
+//   final TextStyle? style;
 
-  @override
-  ConsumerState<_RelativeTimeText> createState() => _RelativeTimeTextState();
-}
+//   @override
+//   ConsumerState<_RelativeTimeText> createState() => _RelativeTimeTextState();
+// }
 
-class _RelativeTimeTextState extends ConsumerState<_RelativeTimeText> {
-  Timer? _timer;
+// class _RelativeTimeTextState extends ConsumerState<_RelativeTimeText> {
+//   Timer? _timer;
 
-  @override
-  void initState() {
-    super.initState();
-    _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
-  }
+//   @override
+//   void initState() {
+//     super.initState();
+//     _timer = Timer.periodic(const Duration(seconds: 1), (_) => setState(() {}));
+//   }
 
-  @override
-  void dispose() {
-    _timer?.cancel();
-    super.dispose();
-  }
+//   @override
+//   void dispose() {
+//     _timer?.cancel();
+//     super.dispose();
+//   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    final lastTime = Stores.gameTrackStore.getLastRecordTime(
-      ref.read(currentUserIdProvider),
-    );
-    final text = lastTime == null
-        ? l10n.noRecord
-        : _formatRelativeTime(l10n, lastTime.toLocal(), DateTime.now());
-    return Text(text, style: widget.style);
-  }
-}
+//   @override
+//   Widget build(BuildContext context) {
+//     final l10n = AppLocalizations.of(context);
+//     final lastTime = Stores.gameTrackStore.getLastRecordTime(
+//       ref.read(currentUserIdProvider),
+//     );
+//     final text = lastTime == null
+//         ? l10n.noRecord
+//         : _formatRelativeTime(l10n, lastTime.toLocal(), DateTime.now());
+//     return Text(text, style: widget.style);
+//   }
+// }
 
-String _formatRelativeTime(AppLocalizations l10n, DateTime time, DateTime now) {
-  final duration = now.difference(time);
-  if (duration.inSeconds < 60) {
-    return l10n.timeSecondsAgo(duration.inSeconds);
-  }
-  if (duration.inMinutes < 60) {
-    return l10n.timeMinutesAgo(duration.inMinutes);
-  }
-  if (duration.inHours < 24) {
-    return l10n.timeHoursAgo(duration.inHours);
-  }
-  if (duration.inDays < 30) {
-    return l10n.timeDaysAgo(duration.inDays);
-  }
-  final months = duration.inDays ~/ 30;
-  if (months < 12) {
-    return l10n.timeMonthsAgo(months);
-  }
-  final years = months ~/ 12;
-  return l10n.timeYearsAgo(years);
-}
+// String _formatRelativeTime(AppLocalizations l10n, DateTime time, DateTime now) {
+//   final duration = now.difference(time);
+//   if (duration.inSeconds < 60) {
+//     return l10n.timeSecondsAgo(duration.inSeconds);
+//   }
+//   if (duration.inMinutes < 60) {
+//     return l10n.timeMinutesAgo(duration.inMinutes);
+//   }
+//   if (duration.inHours < 24) {
+//     return l10n.timeHoursAgo(duration.inHours);
+//   }
+//   if (duration.inDays < 30) {
+//     return l10n.timeDaysAgo(duration.inDays);
+//   }
+//   final months = duration.inDays ~/ 30;
+//   if (months < 12) {
+//     return l10n.timeMonthsAgo(months);
+//   }
+//   final years = months ~/ 12;
+//   return l10n.timeYearsAgo(years);
+// }
