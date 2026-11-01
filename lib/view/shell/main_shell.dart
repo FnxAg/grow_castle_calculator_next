@@ -107,9 +107,12 @@ class _MainShellState extends State<MainShell>
     if (_dragTarget == null) {
       final target = dx < 0 ? current + 1 : current - 1;
       if (target < 0 || target >= mainPages.length) return;
-      _dragTarget = target;
-      _slideDirection = dx < 0 ? 1 : -1;
-      _visited.add(target);
+      // 页面子树在动画 tick 之外构建，首次拖到新页时重建一次把它挂上
+      setState(() {
+        _dragTarget = target;
+        _slideDirection = dx < 0 ? 1 : -1;
+        _visited.add(target);
+      });
     }
     _dragDistance += dx;
     // 反向拖动时进度退回，但不切换到另一侧
@@ -329,6 +332,13 @@ class _MainShellState extends State<MainShell>
   /// 访问过的 tab 常驻；切换时旧页滑出、新页滑入
   Widget _buildPages(bool wide, double width) {
     _pageWidth = width;
+    // 页面子树只在 shell 重建时构建。动画 tick 里复用同一份 widget，
+    // 避免每帧重建所有已访问页面。
+    final tabs = <int, Widget>{
+      for (var i = 0; i < mainPages.length; i++)
+        if (_visited.contains(i))
+          i: RepaintBoundary(child: _buildTab(i, mainPages[i], wide)),
+    };
     final pages = ClipRect(
       child: AnimatedBuilder(
         animation: _switchController,
@@ -341,43 +351,43 @@ class _MainShellState extends State<MainShell>
           final outgoing = _dragTarget != null
               ? _selectIndex.value
               : (_switching ? _outgoingIndex : null);
+          // 只做平移，不做整页 Opacity 淡化：整页半透明会让引擎为
+          // 每页创建 saveLayer 离屏纹理，且滑动时裁剪范围逐帧变化，
+          // 切换期间 Raster 开销会成倍增加。两页在滑动中始终首尾
+          // 相接，不会露出背景，无需淡入淡出遮盖接缝。
           return Stack(
             children: [
-              for (var i = 0; i < mainPages.length; i++)
-                if (_visited.contains(i))
-                  Positioned.fill(
-                    key: ValueKey(i),
-                    child: Offstage(
-                      offstage:
-                          i != _selectIndex.value &&
-                          i != incoming &&
-                          i != outgoing,
-                      child: IgnorePointer(
-                        ignoring: i != _selectIndex.value && i != incoming,
-                        child: TickerMode(
-                          enabled: i == _selectIndex.value || i == incoming,
-                          child: Opacity(
-                            opacity: i == incoming
-                                ? t
-                                : i == outgoing
-                                ? 1.0 - t
-                                : 1.0,
-                            child: Transform.translate(
-                              offset: Offset(
-                                i == incoming
-                                    ? (1 - t) * shift
-                                    : i == outgoing
-                                    ? -t * shift
-                                    : 0.0,
-                                0,
-                              ),
-                              child: _buildTab(i, mainPages[i], wide),
-                            ),
+              for (final entry in tabs.entries)
+                Positioned.fill(
+                  key: ValueKey(entry.key),
+                  child: Offstage(
+                    offstage:
+                        entry.key != _selectIndex.value &&
+                        entry.key != incoming &&
+                        entry.key != outgoing,
+                    child: IgnorePointer(
+                      ignoring:
+                          entry.key != _selectIndex.value &&
+                          entry.key != incoming,
+                      child: TickerMode(
+                        enabled:
+                            entry.key == _selectIndex.value ||
+                            entry.key == incoming,
+                        child: Transform.translate(
+                          offset: Offset(
+                            entry.key == incoming
+                                ? (1 - t) * shift
+                                : entry.key == outgoing
+                                ? -t * shift
+                                : 0.0,
+                            0,
                           ),
+                          child: entry.value,
                         ),
                       ),
                     ),
                   ),
+                ),
             ],
           );
         },
