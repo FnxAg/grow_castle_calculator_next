@@ -4,6 +4,7 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
@@ -192,8 +193,10 @@ class _TrackCard extends StatelessWidget {
       ),
       PillChip(
         leading: const Icon(Icons.star),
-        text:
-            '${record.gp.format(fractionDigits: 3)} · ${record.gpCN.format(fractionDigits: 3)}',
+        text: dividerText([
+          (record.gp.format(fractionDigits: 3)),
+          (record.gpCN.format(fractionDigits: 3)),
+        ]),
         textStyle: textStyle,
       ),
     ];

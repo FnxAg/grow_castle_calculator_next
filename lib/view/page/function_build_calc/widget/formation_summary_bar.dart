@@ -40,7 +40,9 @@ class FormationSummaryBar extends ConsumerWidget {
                   },
                 ),
             ],
-            trailing: SummaryRow.text(ref.watch(currentUserWaveProvider).format()),
+            trailing: SummaryRow.text(
+              ref.watch(currentUserWaveProvider).format(),
+            ),
           ),
           SummaryRow(
             leading: Icon(Icons.eco),
@@ -62,7 +64,9 @@ class FormationSummaryBar extends ConsumerWidget {
                   },
                 ),
             ],
-            trailing: SummaryRow.text(ref.watch(currentUserSeasonWaveProvider).format()),
+            trailing: SummaryRow.text(
+              ref.watch(currentUserSeasonWaveProvider).format(),
+            ),
           ),
           SummaryRow(
             leading: Icon(Icons.monetization_on),
@@ -79,14 +83,16 @@ class FormationSummaryBar extends ConsumerWidget {
           ),
           SummaryRow(
             leading: Icon(Icons.star),
-            title: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [Text(l10n.goldPower)],
-            ),
+            title: Text(l10n.gp),
             trailing: SummaryRow.text(
-              '${ref.watch(currentUserGpProvider).format(fractionDigits: 3)}'
-              ' · '
-              '${ref.watch(currentUserGpCnProvider).format(fractionDigits: 3)}',
+              ref.watch(currentUserGpProvider).format(fractionDigits: 3),
+            ),
+          ),
+          SummaryRow(
+            leading: Icon(Icons.star),
+            title: Text(l10n.gpCN),
+            trailing: SummaryRow.text(
+              ref.watch(currentUserGpCnProvider).format(fractionDigits: 3),
             ),
           ),
         ],
