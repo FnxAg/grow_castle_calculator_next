@@ -26,6 +26,19 @@ import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
+enum AnimSource {
+  playerPrev,
+  playerSelf,
+  playerNext,
+  guildPrev,
+  guildSelf,
+  guildNext,
+  hellPrev,
+  hellSelf,
+  hellNext,
+  rewardCard,
+}
+
 /// 首页
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -38,8 +51,8 @@ class _HomePageState extends ConsumerState<HomePage>
     with TickerProviderStateMixin {
   static final Set<String> _autoQueriedUsers = {};
 
-  late final AnimationController _cardController;
-  late final CurvedAnimation _cardAnimation;
+  late final Map<AnimSource, AnimationController> _animCtrls;
+  late final Map<AnimSource, CurvedAnimation> _anims;
 
   static const Duration _queryCooldown = Duration(seconds: 5);
   DateTime? _lastQueryAt;
@@ -70,15 +83,21 @@ class _HomePageState extends ConsumerState<HomePage>
   @override
   void initState() {
     super.initState();
-    _cardController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-      value: 0,
-    );
-    _cardAnimation = CurvedAnimation(
-      parent: _cardController,
-      curve: Curves.easeInOutCubic,
-    );
+    _animCtrls = {
+      for (final source in AnimSource.values)
+        source: AnimationController(
+          vsync: this,
+          duration: const Duration(milliseconds: 300),
+          value: 0,
+        ),
+    };
+    _anims = {
+      for (final source in AnimSource.values)
+        source: CurvedAnimation(
+          parent: _animCtrls[source]!,
+          curve: Curves.easeInOutCubic,
+        ),
+    };
     ref.listenManual(userReloadSignalProvider, (_, _) {
       if (!mounted) return;
       _loadCurrentUser();
@@ -88,8 +107,12 @@ class _HomePageState extends ConsumerState<HomePage>
 
   @override
   void dispose() {
-    _cardAnimation.dispose();
-    _cardController.dispose();
+    for (final animation in _anims.values) {
+      animation.dispose();
+    }
+    for (final controller in _animCtrls.values) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
@@ -102,7 +125,7 @@ class _HomePageState extends ConsumerState<HomePage>
     if (userId == 0 || !_applyCachedRanks(username, guild)) {
       _clearRanks();
     }
-    _syncRewardCard(animate: false);
+    _syncAnimations(animate: false);
     if (userId == 0) {
       // 默认用户不查榜单，清理可能残留的加载态
       _loadingRanks = false;
@@ -207,18 +230,33 @@ class _HomePageState extends ConsumerState<HomePage>
     _hellScore = null;
     _crystalReward = 0;
     _boxReward = 0;
+    _syncAnimations(animate: false);
   }
 
-  /// 奖励卡高度跟随奖励是否可见；[animate] 为 false 时直接到位
-  void _syncRewardCard({required bool animate}) {
-    final target = (_crystalReward > 0 || _boxReward > 0) ? 1.0 : 0.0;
-    if (_cardController.value == target) return;
-    if (!animate) {
-      _cardController.value = target;
-    } else if (target == 1.0) {
-      _cardController.forward();
-    } else {
-      _cardController.reverse();
+  /// 各排名内容独立跟随是否可见；[animate] 为 false 时直接到位
+  void _syncAnimations({required bool animate}) {
+    final visible = <AnimSource, bool>{
+      AnimSource.playerPrev: _playerGapPrev != null,
+      AnimSource.playerSelf: _playerRank != null,
+      AnimSource.playerNext: _playerGapNext != null,
+      AnimSource.guildPrev: _guildGapPrev != null,
+      AnimSource.guildSelf: _guildRank != null,
+      AnimSource.guildNext: _guildGapNext != null,
+      AnimSource.hellPrev: _hellGapPrev != null,
+      AnimSource.hellSelf: _hellRank != null,
+      AnimSource.hellNext: _hellGapNext != null,
+      AnimSource.rewardCard: _crystalReward > 0 || _boxReward > 0,
+    };
+    for (final entry in visible.entries) {
+      final controller = _animCtrls[entry.key]!;
+      final target = entry.value ? 1.0 : 0.0;
+      if (!animate) {
+        controller.value = target;
+      } else if (entry.value) {
+        controller.forward();
+      } else {
+        controller.reverse();
+      }
     }
   }
 
@@ -261,7 +299,7 @@ class _HomePageState extends ConsumerState<HomePage>
       _loadingRanks = false;
       _applyRanks(username, guild, players, hell, guilds);
     });
-    _syncRewardCard(animate: true);
+    _syncAnimations(animate: true);
   }
 
   /// 在榜单中按名字（不区分大小写）取当前用户/公会的那一条
@@ -284,7 +322,6 @@ class _HomePageState extends ConsumerState<HomePage>
       );
       return;
     }
-    _cardController.reverse();
     _lastQueryAt = now;
     await _performQuery();
   }
@@ -406,7 +443,7 @@ class _HomePageState extends ConsumerState<HomePage>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizeTransition(
-                sizeFactor: _cardAnimation,
+                sizeFactor: _anims[AnimSource.playerPrev]!,
                 child: _playerGapPrev != null
                     ? SubtitlePillWrap(
                         children: [
@@ -428,7 +465,7 @@ class _HomePageState extends ConsumerState<HomePage>
               Row(
                 children: [
                   SizeTransition(
-                    sizeFactor: _cardAnimation,
+                    sizeFactor: _anims[AnimSource.playerSelf]!,
                     child: _playerRank != null
                         ? Row(
                             children: [
@@ -444,7 +481,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ],
               ),
               SizeTransition(
-                sizeFactor: _cardAnimation,
+                sizeFactor: _anims[AnimSource.playerNext]!,
                 child: _playerGapNext != null
                     ? SubtitlePillWrap(
                         children: [
@@ -535,7 +572,7 @@ class _HomePageState extends ConsumerState<HomePage>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizeTransition(
-                sizeFactor: _cardAnimation,
+                sizeFactor: _anims[AnimSource.guildPrev]!,
                 child: _guildGapPrev != null
                     ? SubtitlePillWrap(
                         children: [
@@ -557,7 +594,7 @@ class _HomePageState extends ConsumerState<HomePage>
               Row(
                 children: [
                   SizeTransition(
-                    sizeFactor: _cardAnimation,
+                    sizeFactor: _anims[AnimSource.guildSelf]!,
                     child: _guildRank != null
                         ? Row(
                             children: [
@@ -573,7 +610,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ],
               ),
               SizeTransition(
-                sizeFactor: _cardAnimation,
+                sizeFactor: _anims[AnimSource.guildNext]!,
                 child: _guildGapNext != null
                     ? SubtitlePillWrap(
                         children: [
@@ -607,7 +644,7 @@ class _HomePageState extends ConsumerState<HomePage>
             crossAxisAlignment: CrossAxisAlignment.end,
             children: [
               SizeTransition(
-                sizeFactor: _cardAnimation,
+                sizeFactor: _anims[AnimSource.hellPrev]!,
                 child: _hellGapPrev != null
                     ? SubtitlePillWrap(
                         children: [
@@ -630,7 +667,7 @@ class _HomePageState extends ConsumerState<HomePage>
               Row(
                 children: [
                   SizeTransition(
-                    sizeFactor: _cardAnimation,
+                    sizeFactor: _anims[AnimSource.hellSelf]!,
                     child: _hellRank != null
                         ? Row(
                             children: [
@@ -652,7 +689,7 @@ class _HomePageState extends ConsumerState<HomePage>
                 ],
               ),
               SizeTransition(
-                sizeFactor: _cardAnimation,
+                sizeFactor: _anims[AnimSource.hellNext]!,
                 child: _hellGapNext != null
                     ? SubtitlePillWrap(
                         children: [
@@ -793,7 +830,7 @@ class _HomePageState extends ConsumerState<HomePage>
                       guildCard,
                       hellCard,
                       SizeTransition(
-                        sizeFactor: _cardAnimation,
+                        sizeFactor: _anims[AnimSource.rewardCard]!,
                         alignment: .bottomCenter,
                         child: rewardCard,
                       ),
@@ -824,7 +861,7 @@ class _HomePageState extends ConsumerState<HomePage>
                               guildCard,
                               hellCard,
                               SizeTransition(
-                                sizeFactor: _cardAnimation,
+                                sizeFactor: _anims[AnimSource.rewardCard]!,
                                 alignment: .bottomCenter,
                                 child: rewardCard,
                               ),
