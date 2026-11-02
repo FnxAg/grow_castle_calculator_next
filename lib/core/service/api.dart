@@ -41,17 +41,20 @@ class RankInfo {
   final String name;
   final int score;
   final int? gapPrev;
+  final String? prevName;
   final int? gapNext;
+  final String? nextName;
 
   const RankInfo({
     required this.rank,
     required this.name,
     required this.score,
     this.gapPrev,
+    this.prevName,
     this.gapNext,
+    this.nextName,
   });
 }
-
 
 /// A member of a guild.
 class GuildMember {
@@ -438,7 +441,11 @@ class PlayerApiService {
       final response = await ApiClient.get(
         uri,
         // 默认第三方 API 附带 `User`（当前用户）与 UA；自建地址不带
-        options: await ApiClient.thirdPartyOptions(baseUrl, username: username, guild: guild),
+        options: await ApiClient.thirdPartyOptions(
+          baseUrl,
+          username: username,
+          guild: guild,
+        ),
       ).timeout(_timeout);
       if (response.statusCode == 404) return const <SeasonWphGroup>[];
       if (response.statusCode != 200) {
@@ -549,9 +556,11 @@ class PlayerApiService {
           name: items[i].name,
           score: items[i].score,
           gapPrev: i > 0 ? items[i - 1].score - items[i].score : null,
+          prevName: i > 0 ? items[i - 1].name : null,
           gapNext: i < items.length - 1
               ? items[i].score - items[i + 1].score
               : null,
+          nextName: i < items.length - 1 ? items[i + 1].name : null,
         ),
     ];
   }

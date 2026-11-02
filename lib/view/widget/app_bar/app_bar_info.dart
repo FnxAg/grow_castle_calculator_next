@@ -1,11 +1,9 @@
+import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:material_ui/material_ui.dart';
 
 class AppBarInfo extends StatelessWidget {
   /// AppBar 拼接信息
-  const AppBarInfo({
-    super.key,
-    required this.children,
-  });
+  const AppBarInfo({super.key, required this.children});
 
   final List<Widget> children;
 
@@ -21,11 +19,7 @@ class AppBarInfo extends StatelessWidget {
         mainAxisSize: MainAxisSize.min,
         children: [
           for (var i = 0; i < children.length; i++) ...[
-            if (i > 0)
-              Text(
-                ' ✦ ',
-                style: const TextStyle(fontSize: 12.0),
-              ),
+            if (i > 0) Text(divider, style: const TextStyle(fontSize: 12.0)),
             children[i],
           ],
         ],

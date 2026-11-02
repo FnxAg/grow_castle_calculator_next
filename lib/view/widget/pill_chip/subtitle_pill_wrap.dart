@@ -13,6 +13,7 @@ class SubtitlePillWrap extends StatelessWidget {
     return Wrap(
       spacing: 4.0,
       runSpacing: 2.0,
+      crossAxisAlignment: WrapCrossAlignment.center,
       children: children,
     );
   }
