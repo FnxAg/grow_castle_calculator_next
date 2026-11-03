@@ -5,16 +5,15 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/last_online_cache.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
-import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/guild_rank.dart';
 import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
 import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
-import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
@@ -70,7 +69,9 @@ class _GuildPageState extends ConsumerState<GuildPage>
 
   int? _guildRank;
   int? _guildGapPrev;
+  String? _guildPrevName;
   int? _guildGapNext;
+  String? _guildNextName;
   List<GuildMember> _members = const [];
 
   Map<String, int> _playerRankByName = {};
@@ -265,7 +266,9 @@ class _GuildPageState extends ConsumerState<GuildPage>
             _guildRank = g.rank;
             // 上一名/下一名分差（解析榜单时已算好）
             _guildGapPrev = g.gapPrev;
+            _guildPrevName = g.prevName;
             _guildGapNext = g.gapNext;
+            _guildNextName = g.nextName;
             break;
           }
         }
@@ -503,39 +506,40 @@ class _GuildPageState extends ConsumerState<GuildPage>
 
   /// 成员列表，按赛季波数从大到小展示，当前用户高亮
   Widget _buildMemberList({required bool wide}) {
-    // final l10n = AppLocalizations.of(context);
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final currentUser = ref.read(currentUsernameProvider);
     final totalScore = _members.fold<int>(0, (sum, m) => sum + m.score);
-    final guildReward = getItemBoxFromGuildRank(_guildRank ?? 0);
-    final chips = SubtitlePillWrap(
-      children: [
-        if (guildReward != 0)
-          PillChip(
-            text: '$guildReward',
-            leading: BoxIcon(
-              size: PillChip.leadingIconSize,
-              color: scheme.primary,
-            ),
-          ),
-        if (_guildGapPrev != null)
-          PillChip(
-            backgroundColor: Colors.red,
-            foreground: Colors.white,
-            leading: Icon(Icons.arrow_upward),
-            text: _guildGapPrev!.format(),
-          ),
-        if (_guildRank != null)
-          PillChip(text: '#$_guildRank', leading: Icon(Icons.flag_circle)),
-        if (_guildGapNext != null)
-          PillChip(
-            backgroundColor: Colors.green,
-            foreground: Colors.white,
-            leading: Icon(Icons.arrow_downward),
-            text: _guildGapNext!.format(),
-          ),
-      ],
-    );
+    // final guildReward = getItemBoxFromGuildRank(_guildRank ?? 0);
+    final String guild = widget.guildName ?? ref.read(currentUserGuildProvider);
+    // final chips = SubtitlePillWrap(
+    //   children: [
+    //     if (guildReward != 0)
+    //       PillChip(
+    //         text: '$guildReward',
+    //         leading: BoxIcon(
+    //           size: PillChip.leadingIconSize,
+    //           color: scheme.primary,
+    //         ),
+    //       ),
+    //     if (_guildGapPrev != null)
+    //       PillChip(
+    //         backgroundColor: Colors.red,
+    //         foreground: Colors.white,
+    //         leading: Icon(Icons.arrow_upward),
+    //         text: _guildGapPrev!.format(),
+    //       ),
+    //     if (_guildRank != null)
+    //       PillChip(text: '#$_guildRank', leading: Icon(Icons.flag_circle)),
+    //     if (_guildGapNext != null)
+    //       PillChip(
+    //         backgroundColor: Colors.green,
+    //         foreground: Colors.white,
+    //         leading: Icon(Icons.arrow_downward),
+    //         text: _guildGapNext!.format(),
+    //       ),
+    //   ],
+    // );
     return RefreshIndicator(
       onRefresh: _refresh,
       child: Listener(
@@ -666,9 +670,57 @@ class _GuildPageState extends ConsumerState<GuildPage>
                       child: SummaryCard(
                         children: <Widget>[
                           SummaryRow(
-                            leading: Icon(Icons.eco),
-                            title: SummaryRow.text(totalScore.format()),
-                            trailing: chips,
+                            leading: Icon(Icons.flag_circle),
+                            title: Text(l10n.guildTotalScore),
+                            trailing: Column(
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                if (_guildGapPrev != null)
+                                  SubtitlePillWrap(
+                                    children: [
+                                      PillChip(
+                                        text: dividerText([
+                                          '#${_guildRank! - 1}',
+                                          _guildPrevName ?? '',
+                                        ]),
+                                      ),
+                                      PillChip(
+                                        backgroundColor: Colors.red,
+                                        foreground: Colors.white,
+                                        text: '+${_guildGapPrev!.format()}',
+                                      ),
+                                    ],
+                                  ),
+                                SubtitlePillWrap(
+                                  children: [
+                                    if (_guildRank != null)
+                                      PillChip(
+                                        text: dividerText([
+                                          '#$_guildRank',
+                                          guild,
+                                        ]),
+                                      ),
+                                    SummaryRow.text(totalScore.format()),
+                                  ],
+                                ),
+                                if (_guildGapNext != null)
+                                  SubtitlePillWrap(
+                                    children: [
+                                      PillChip(
+                                        text: dividerText([
+                                          '#${_guildRank! + 1}',
+                                          _guildNextName ?? '',
+                                        ]),
+                                      ),
+                                      PillChip(
+                                        backgroundColor: Colors.green,
+                                        foreground: Colors.white,
+                                        text: '-${_guildGapNext!.format()}',
+                                      ),
+                                    ],
+                                  ),
+                              ],
+                            ),
                           ),
                         ],
                       ),

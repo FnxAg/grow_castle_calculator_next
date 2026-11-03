@@ -460,22 +460,17 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ],
                       )
-                    : const SizedBox.shrink(),
+                    : null,
               ),
-              Row(
+              SubtitlePillWrap(
                 children: [
                   SizeTransition(
                     sizeFactor: _anims[AnimSource.playerSelf]!,
                     child: _playerRank != null
-                        ? Row(
-                            children: [
-                              PillChip(
-                                text: dividerText(['#$_playerRank', username]),
-                              ),
-                              const SizedBox(width: 2.0),
-                            ],
+                        ? PillChip(
+                            text: dividerText(['#$_playerRank', username]),
                           )
-                        : const SizedBox.shrink(),
+                        : null,
                   ),
                   SummaryRow.text(seasonWave.format()),
                 ],
@@ -498,7 +493,7 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ],
                       )
-                    : const SizedBox.shrink(),
+                    : null,
               ),
             ],
           ),
@@ -589,22 +584,15 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ],
                       )
-                    : const SizedBox.shrink(),
+                    : null,
               ),
-              Row(
+              SubtitlePillWrap(
                 children: [
                   SizeTransition(
                     sizeFactor: _anims[AnimSource.guildSelf]!,
                     child: _guildRank != null
-                        ? Row(
-                            children: [
-                              PillChip(
-                                text: dividerText(['#$_guildRank', guild]),
-                              ),
-                              SizedBox(width: 2.0),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
+                        ? PillChip(text: dividerText(['#$_guildRank', guild]))
+                        : null,
                   ),
                   SummaryRow.text(guildTotalScore?.format() ?? '—'),
                 ],
@@ -627,7 +615,7 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ],
                       )
-                    : const SizedBox.shrink(),
+                    : null,
               ),
             ],
           ),
@@ -662,22 +650,15 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ],
                       )
-                    : const SizedBox.shrink(),
+                    : null,
               ),
-              Row(
+              SubtitlePillWrap(
                 children: [
                   SizeTransition(
                     sizeFactor: _anims[AnimSource.hellSelf]!,
                     child: _hellRank != null
-                        ? Row(
-                            children: [
-                              PillChip(
-                                text: dividerText(['#$_hellRank', username]),
-                              ),
-                              SizedBox(width: 2.0),
-                            ],
-                          )
-                        : const SizedBox.shrink(),
+                        ? PillChip(text: dividerText(['#$_hellRank', username]))
+                        : null,
                   ),
                   SummaryRow.text(
                     _hellScore?.formatCompact(
@@ -707,7 +688,7 @@ class _HomePageState extends ConsumerState<HomePage>
                           ),
                         ],
                       )
-                    : const SizedBox.shrink(),
+                    : null,
               ),
             ],
           ),
