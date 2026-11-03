@@ -1,5 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grow_castle_calculator_next/icon/icon_full.dart';
+import 'package:grow_castle_calculator_next/icon/icons.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -444,16 +446,7 @@ class _SettingPageState extends State<SettingPage> {
             onTap: _checking ? null : _checkUpdate,
           ),
           ListTile(
-            // leading: const Icon(Icons.info),
-            leading: Hero(
-              tag: 'app_icon',
-              child: Image.asset(
-                'assets/images/app_icon.png',
-                width: 24,
-                height: 24,
-                fit: BoxFit.cover,
-              ),
-            ),
+            leading: AppIcons.icon_half(size: 24.0),
             title: Text(l10n.settingsAbout),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {

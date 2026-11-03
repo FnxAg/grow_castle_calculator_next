@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:grow_castle_calculator_next/icon/icons.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_pages.dart';
@@ -143,7 +144,7 @@ class _SidebarHeader extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 26 + (16 - 26) * t),
         child: Row(
           children: [
-            Image.asset('assets/images/app_icon.png', width: 28, height: 28),
+            AppIcons.icon_full(size: 28.0, color: scheme.primary),
             const SizedBox(width: 12),
             Opacity(
               opacity: t,

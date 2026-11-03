@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/icon/icons.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:material_ui/material_ui.dart';
@@ -154,22 +155,14 @@ class _AboutPageState extends State<AboutPage> {
       padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
       child: Column(
         children: [
-          Hero(
-            tag: 'app_icon',
-            child: GestureDetector(
-              onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(l10n.fromDev),
-                  backgroundColor: scheme.primary,
-                ),
-              ),
-              child: Image.asset(
-                'assets/images/app_icon.png',
-                width: 88,
-                height: 88,
-                fit: BoxFit.cover,
+          GestureDetector(
+            onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(l10n.fromDev),
+                backgroundColor: scheme.primary,
               ),
             ),
+            child: AppIcons.icon_full(size: 88.0, color: scheme.primary),
           ),
           Text(
             info?.appName ?? 'GCC Next',

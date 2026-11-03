@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 500 500" aria-hidden="true" class="vt-work" preserveAspectRatio="xMidYMid meet">
+    <defs>
+        <path id="shining" d="M50,0 Q50,100,100,100 Q50,100,50,200 Q50,100,0,100 Q50,100,50,0 Z" />
+    </defs>
+    <path
+        d="M250,90 L297,205 L420,205 L325,275 L360,390 L250,320 L140,390 L175,275 L80,205 L203,205 Z
+                 M250,142.5 L280.55,217.25 L360.5,217.25 L298.75,262.75 L321.5,337.5 L250,300 L178.5,337.5 L201.25,262.75 L139.5,217.25 L219.45,217.25 Z"
+        fill="black" fill-rule="evenodd" stroke="black" stroke-width="18" stroke-linejoin="round"
+        stroke-linecap="round" />
+    <use href="#shining" x="100" y="70" transform="scale(0.6)" />
+    <use href="#shining" x="650" y="500" transform="scale(0.6)" />
+    <use href="#shining" x="650" y="50" transform="scale(0.6)" />
+    <use href="#shining" x="80" y="550" transform="scale(0.6)" />
+</svg>
