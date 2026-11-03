@@ -162,7 +162,7 @@ class _AboutPageState extends State<AboutPage> {
                 backgroundColor: scheme.primary,
               ),
             ),
-            child: AppIcons.icon_full(size: 88.0, color: scheme.primary),
+            child: AppIcons.icon(size: 88.0, color: scheme.primary),
           ),
           Text(
             info?.appName ?? 'GCC Next',

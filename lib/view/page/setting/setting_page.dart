@@ -1,20 +1,17 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:grow_castle_calculator_next/icon/icon_full.dart';
-import 'package:grow_castle_calculator_next/icon/icons.dart';
-import 'package:material_ui/material_ui.dart';
-import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
-
 import 'package:grow_castle_calculator_next/core/service/update_checker.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
+import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
 import 'package:grow_castle_calculator_next/view/page/setting_about/about_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting_backup/backup_page.dart';
-import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
+import 'package:material_ui/material_ui.dart';
+import 'package:package_info_plus/package_info_plus.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 /// 设置页
 class SettingPage extends StatefulWidget {
@@ -416,7 +413,6 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ],
           ),
-          // 数据备份：WebDAV 云备份/恢复 + 本地导入导出
           ListTile(
             leading: const Icon(Icons.cloud_outlined),
             title: Text(l10n.settingsDataBackup),
@@ -429,7 +425,6 @@ class _SettingPageState extends State<SettingPage> {
               );
             },
           ),
-          // 检查更新：查询 GitHub 最新发布（镜像备用），发现新版弹窗展示
           ListTile(
             leading: const Icon(Icons.system_update_alt),
             title: Text(l10n.settingsCheckUpdate),
@@ -446,7 +441,7 @@ class _SettingPageState extends State<SettingPage> {
             onTap: _checking ? null : _checkUpdate,
           ),
           ListTile(
-            leading: AppIcons.icon_half(size: 24.0),
+            leading: const Icon(Icons.info_outline),
             title: Text(l10n.settingsAbout),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
