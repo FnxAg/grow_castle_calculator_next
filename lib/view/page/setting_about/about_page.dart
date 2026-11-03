@@ -106,11 +106,8 @@ class _AboutPageState extends State<AboutPage> {
         onTap: () => showLicensePage(
           context: context,
           applicationName: _packageInfo?.appName ?? 'GCC Next',
-          applicationIcon: Image.asset(
-            'assets/images/app_icon.png',
-            width: 72,
-            height: 72,
-            fit: BoxFit.cover,
+          applicationIcon: AppIcons.icon(
+            size: 72.0,
           ),
         ),
       ),
@@ -162,7 +159,7 @@ class _AboutPageState extends State<AboutPage> {
                 backgroundColor: scheme.primary,
               ),
             ),
-            child: AppIcons.icon(size: 88.0, color: scheme.primary),
+            child: AppIcons.icon(size: 88.0),
           ),
           Text(
             info?.appName ?? 'GCC Next',

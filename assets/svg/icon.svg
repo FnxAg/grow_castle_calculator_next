@@ -1,14 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800" aria-hidden="true" class="vt-work">
     <defs>
         <path id="shining" d="M50,0 Q50,100,100,100 Q50,100,50,200 Q50,100,0,100 Q50,100,50,0 Z" />
+        <linearGradient id="star" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#eec5fc" />
+            <stop offset="45%" stop-color="#c5c4fc" />
+            <stop offset="100%" stop-color="#56c4fc" />
+        </linearGradient>
+        <linearGradient id="stick" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f9c0ea" />
+            <stop offset="100%" stop-color="#a18cd1" />
+        </linearGradient>
     </defs>
+    <path d="M490,270 L510,270 L510,800 Q500,810,490,800 Z" fill="url(#stick)" fill-rule="evenodd" stroke="url(#stick)" 
+        stroke-width="12" stroke-linejoin="round" stroke-linecap="round" transform="rotate(-30,500,500)" />
     <path
-        d="M500,40 L547,155 L670,155 L575,225 L610,340 L510,276.36 L510,800 Q500,810,490,800 L490,276.36 L390,340 L425,225 L330,155 L453,155 Z
+        d="M500,40 L547,155 L670,155 L575,225 L610,340 L500,270 L390,340 L425,225 L330,155 L453,155 Z
                  M500,92.5 L530.55,167.25 L610.5,167.25 L548.75,212.75 L571.5,287.5 L500,250 L428.5,287.5 L451.25,212.75 L389.5,167.25 L469.45,167.25 Z"
-        fill="black" fill-rule="evenodd" stroke="black" stroke-width="18" stroke-linejoin="round" stroke-linecap="round"
-        transform="rotate(-30,500,500)" />
-    <use href="#shining" x="250" y="200" transform="scale(0.6)" />
-    <use href="#shining" x="850" y="250" transform="scale(0.6)" />
-    <use href="#shining" x="580" y="40" transform="scale(0.6)" />
-    <use href="#shining" x="300" y="530" transform="scale(0.6)" />
+        fill="url(#star)" fill-rule="evenodd" stroke="url(#star)" stroke-width="24" stroke-linejoin="round"
+        stroke-linecap="round" transform="rotate(-30,500,500)" />
+    <use href="#shining" x="250" y="200" transform="scale(0.6)" fill="darkkhaki" />
+    <use href="#shining" x="850" y="250" transform="scale(0.6)" fill="darkblue" />
+    <use href="#shining" x="580" y="40" transform="scale(0.6)" fill="darkcyan" />
+    <use href="#shining" x="300" y="530" transform="scale(0.6)" fill="darkviolet" />
 </svg>

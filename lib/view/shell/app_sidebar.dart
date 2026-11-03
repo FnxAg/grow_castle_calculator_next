@@ -144,7 +144,7 @@ class _SidebarHeader extends StatelessWidget {
         padding: EdgeInsets.symmetric(horizontal: 26 + (16 - 26) * t),
         child: Row(
           children: [
-            AppIcons.icon(size: 28.0, color: scheme.primary),
+            AppIcons.icon(size: 28.0),
             const SizedBox(width: 12),
             Opacity(
               opacity: t,

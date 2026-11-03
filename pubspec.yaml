@@ -52,5 +52,5 @@ flutter:
 
 flutter_native_splash:
   color: "#ffffff"
-  image: assets/images/app_icon.png
+  image: assets/images/splash_icon.png
   color_dark: "#121212"
