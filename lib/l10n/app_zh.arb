@@ -825,6 +825,17 @@
       }
     }
   },
+  "labelEquipPiece": "第 {index} 件",
+  "@labelEquipPiece": {
+    "placeholders": {
+      "index": {
+        "type": "int"
+      }
+    }
+  },
+  "actionAddEquip": "添加装备",
+  "tooltipDeleteEquip": "删除装备",
+  "tooltipSwapEquip": "与另一侧装备对调",
   "labelCompareGainSummary": "装备 1 较无装备 {gain1} · 装备 2 较无装备 {gain2}",
   "@labelCompareGainSummary": {
     "placeholders": {

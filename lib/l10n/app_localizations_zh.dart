@@ -1273,6 +1273,20 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String labelEquipPiece(int index) {
+    return '第 $index 件';
+  }
+
+  @override
+  String get actionAddEquip => '添加装备';
+
+  @override
+  String get tooltipDeleteEquip => '删除装备';
+
+  @override
+  String get tooltipSwapEquip => '与另一侧装备对调';
+
+  @override
   String labelCompareGainSummary(String gain1, String gain2) {
     return '装备 1 较无装备 $gain1 · 装备 2 较无装备 $gain2';
   }
@@ -2771,6 +2785,20 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String labelItemNumber(int index) {
     return '裝備 $index';
   }
+
+  @override
+  String labelEquipPiece(int index) {
+    return '第 $index 件';
+  }
+
+  @override
+  String get actionAddEquip => '新增裝備';
+
+  @override
+  String get tooltipDeleteEquip => '刪除裝備';
+
+  @override
+  String get tooltipSwapEquip => '與另一側裝備對調';
 
   @override
   String labelCompareGainSummary(String gain1, String gain2) {

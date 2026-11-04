@@ -2328,6 +2328,30 @@ abstract class AppLocalizations {
   /// **'装备 {index}'**
   String labelItemNumber(int index);
 
+  /// No description provided for @labelEquipPiece.
+  ///
+  /// In zh, this message translates to:
+  /// **'第 {index} 件'**
+  String labelEquipPiece(int index);
+
+  /// No description provided for @actionAddEquip.
+  ///
+  /// In zh, this message translates to:
+  /// **'添加装备'**
+  String get actionAddEquip;
+
+  /// No description provided for @tooltipDeleteEquip.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除装备'**
+  String get tooltipDeleteEquip;
+
+  /// No description provided for @tooltipSwapEquip.
+  ///
+  /// In zh, this message translates to:
+  /// **'与另一侧装备对调'**
+  String get tooltipSwapEquip;
+
   /// No description provided for @labelCompareGainSummary.
   ///
   /// In zh, this message translates to:

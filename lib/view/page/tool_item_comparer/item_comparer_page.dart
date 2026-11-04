@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
@@ -25,6 +26,7 @@ class ItemComparerPage extends StatefulWidget {
 }
 
 const int kMaxLinesPerItem = 3;
+const int kMaxEquipsPerSide = 3;
 
 class _LineOption {
   const _LineOption._({
@@ -97,6 +99,21 @@ class _LineInput {
   }
 }
 
+/// 一侧对比中的一件装备（最多 [kMaxLinesPerItem] 条词条）
+class _EquipInput {
+  _EquipInput(this.id);
+
+  /// 稳定标识：作为行列表的 key，增删装备后不会串用其他装备的动画状态
+  final int id;
+  final List<_LineInput> lines = [];
+
+  void dispose() {
+    for (final line in lines) {
+      line.dispose();
+    }
+  }
+}
+
 class _ItemComparerPageState extends State<ItemComparerPage>
     with SingleTickerProviderStateMixin {
   final _baseAttackCtrl = TextEditingController();
@@ -111,9 +128,10 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   /// 面板 Increased Speed：与 [_baseApsCtrl] 一起参与攻击次数计算
   final _speedCtrl = TextEditingController();
 
-  final _item1Lines = <_LineInput>[];
-  final _item2Lines = <_LineInput>[];
-  int _lineListGeneration = 0;
+  /// 两侧对比的装备
+  final _equip1 = <_EquipInput>[];
+  final _equip2 = <_EquipInput>[];
+  int _nextEquipId = 0;
 
   bool _restoring = false;
 
@@ -138,8 +156,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     for (final ctrl in _panelCtrls) {
       ctrl.addListener(_onInputChanged);
     }
-    if (_item1Lines.isEmpty) _item1Lines.add(_createLineInput());
-    if (_item2Lines.isEmpty) _item2Lines.add(_createLineInput());
   }
 
   @override
@@ -148,8 +164,8 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     for (final ctrl in _panelCtrls) {
       ctrl.dispose();
     }
-    for (final input in [..._item1Lines, ..._item2Lines]) {
-      input.dispose();
+    for (final equip in [..._equip1, ..._equip2]) {
+      equip.dispose();
     }
     super.dispose();
   }
@@ -158,14 +174,14 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   void _onDataRestored() {
     if (!mounted) return;
     _restoring = true;
-    for (final input in [..._item1Lines, ..._item2Lines]) {
-      input.dispose();
+    for (final equip in [..._equip1, ..._equip2]) {
+      equip.dispose();
     }
-    _item1Lines.clear();
-    _item2Lines.clear();
+    _equip1.clear();
+    _equip2.clear();
     _restoreFromStore();
     _restoring = false;
-    setState(() => _lineListGeneration++);
+    setState(() {});
   }
 
   void _onInputChanged() {
@@ -176,21 +192,55 @@ class _ItemComparerPageState extends State<ItemComparerPage>
 
   _LineInput _createLineInput() => _LineInput(_onInputChanged);
 
+  _EquipInput _createEquip() =>
+      _EquipInput(_nextEquipId++)..lines.add(_createLineInput());
+
+  void _addEquip(List<_EquipInput> equips) {
+    if (equips.length >= kMaxEquipsPerSide) return;
+    setState(() => equips.add(_createEquip()));
+    _saveToStore();
+  }
+
+  void _removeEquip(List<_EquipInput> equips, _EquipInput equip) {
+    if (equips.length <= 1) return;
+    setState(() {
+      equips.remove(equip);
+      equip.dispose();
+    });
+    _saveToStore();
+  }
+
+  /// 两件装备互换位置（各自的行输入随对象一起移动）
+  void _swapEquips(
+    List<_EquipInput> from,
+    _EquipInput fromEquip,
+    List<_EquipInput> to,
+    _EquipInput toEquip,
+  ) {
+    final fromIndex = from.indexOf(fromEquip);
+    final toIndex = to.indexOf(toEquip);
+    if (fromIndex < 0 || toIndex < 0) return;
+    setState(() {
+      from[fromIndex] = toEquip;
+      to[toIndex] = fromEquip;
+    });
+    _saveToStore();
+  }
+
   void _reset() {
-    for (final input in [..._item1Lines, ..._item2Lines]) {
-      input.dispose();
+    for (final equip in [..._equip1, ..._equip2]) {
+      equip.dispose();
     }
     for (final ctrl in _panelCtrls) {
       ctrl.clear();
     }
     setState(() {
-      _item1Lines
+      _equip1
         ..clear()
-        ..add(_createLineInput());
-      _item2Lines
+        ..add(_createEquip());
+      _equip2
         ..clear()
-        ..add(_createLineInput());
-      _lineListGeneration++;
+        ..add(_createEquip());
     });
     _saveToStore();
   }
@@ -204,25 +254,32 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     _critDmgCtrl.text = store.critDmg;
     _baseApsCtrl.text = store.baseAps;
     _speedCtrl.text = store.speed;
-    _restoreLines(_item1Lines, store.item1);
-    _restoreLines(_item2Lines, store.item2);
+    _restoreEquips(_equip1, store.item1);
+    _restoreEquips(_equip2, store.item2);
+    if (_equip1.isEmpty) _equip1.add(_createEquip());
+    if (_equip2.isEmpty) _equip2.add(_createEquip());
   }
 
-  void _restoreLines(
-    List<_LineInput> target,
-    List<ItemComparerLineInput> saved,
+  void _restoreEquips(
+    List<_EquipInput> target,
+    List<List<ItemComparerLineInput>> saved,
   ) {
-    for (final input in saved) {
-      final row = _createLineInput();
-      if (input.isMoreDmg) {
-        row.line = const _LineOption.moreDmg();
-      } else if (input.isElementDamage) {
-        row.line = const _LineOption.elementDamage();
-      } else if (input.line != null) {
-        row.line = _LineOption.item(input.line!);
+    for (final savedLines in saved) {
+      final equip = _EquipInput(_nextEquipId++);
+      for (final input in savedLines) {
+        final row = _createLineInput();
+        if (input.isMoreDmg) {
+          row.line = const _LineOption.moreDmg();
+        } else if (input.isElementDamage) {
+          row.line = const _LineOption.elementDamage();
+        } else if (input.line != null) {
+          row.line = _LineOption.item(input.line!);
+        }
+        row.valueCtrl.text = input.value;
+        equip.lines.add(row);
       }
-      row.valueCtrl.text = input.value;
-      target.add(row);
+      if (equip.lines.isEmpty) equip.lines.add(_createLineInput());
+      target.add(equip);
     }
   }
 
@@ -235,22 +292,28 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     store.critDmg = _critDmgCtrl.text;
     store.baseAps = _baseApsCtrl.text;
     store.speed = _speedCtrl.text;
-    _saveLines(_item1Lines, store.item1);
-    _saveLines(_item2Lines, store.item2);
+    _saveEquips(_equip1, store.item1);
+    _saveEquips(_equip2, store.item2);
     store.save();
   }
 
-  void _saveLines(List<_LineInput> source, List<ItemComparerLineInput> target) {
+  void _saveEquips(
+    List<_EquipInput> source,
+    List<List<ItemComparerLineInput>> target,
+  ) {
     target
       ..clear()
       ..addAll([
-        for (final input in source)
-          ItemComparerLineInput(
-            line: input.line?.line,
-            isMoreDmg: input.line?.isMoreDmg ?? false,
-            isElementDamage: input.line?.isElementDamage ?? false,
-            value: input.valueCtrl.text,
-          ),
+        for (final equip in source)
+          [
+            for (final input in equip.lines)
+              ItemComparerLineInput(
+                line: input.line?.line,
+                isMoreDmg: input.line?.isMoreDmg ?? false,
+                isElementDamage: input.line?.isElementDamage ?? false,
+                value: input.valueCtrl.text,
+              ),
+          ],
       ]);
   }
 
@@ -260,7 +323,9 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   double? _optionalValue(TextEditingController ctrl) =>
       ctrl.text.trim().isEmpty ? null : double.tryParse(ctrl.text.trim()) ?? 0;
 
-  ItemDpsResult _computeItemResult(List<_LineInput> lines) {
+  ItemDpsResult _computeItemResult(List<_EquipInput> equips) {
+    // 同一侧多件装备的词条叠加计算
+    final lines = [for (final equip in equips) ...equip.lines];
     return computeItemDps(
       baseAttack: _valueOf(_baseAttackCtrl),
       increasedDmg: _valueOf(_increasedDmgCtrl),
@@ -306,8 +371,8 @@ class _ItemComparerPageState extends State<ItemComparerPage>
       baseAps: _optionalValue(_baseApsCtrl),
       increasedSpeed: _optionalValue(_speedCtrl),
     );
-    final item1Result = _computeItemResult(_item1Lines);
-    final item2Result = _computeItemResult(_item2Lines);
+    final item1Result = _computeItemResult(_equip1);
+    final item2Result = _computeItemResult(_equip2);
     final baseDps = baseResult.dps;
     final item1Dps = item1Result.dps;
     final item2Dps = item2Result.dps;
@@ -335,26 +400,30 @@ class _ItemComparerPageState extends State<ItemComparerPage>
             leading: item1Inc > item2Inc
                 ? const Icon(Icons.arrow_drop_up)
                 : item1Inc < item2Inc
-                    ? const Icon(Icons.arrow_drop_down)
-                    : null,
+                ? const Icon(Icons.arrow_drop_down)
+                : null,
             backgroundColor: item1Inc > item2Inc ? Colors.green : null,
             text: '${((item1Inc - 1) * 100).toStringAsFixed(2)}%',
           ),
         ),
-        SummaryCard(children: <Widget>[_buildItemCard(_item1Lines, 'item1')]),
+        SummaryCard(
+          children: <Widget>[_buildItemCard(_equip1, _equip2, 1, 'item1')],
+        ),
         SectionHeader(
           l10n.labelItemLines(2),
           trailing: PillChip(
             leading: item1Inc < item2Inc
                 ? const Icon(Icons.arrow_drop_up)
                 : item1Inc > item2Inc
-                    ? const Icon(Icons.arrow_drop_down)
-                    : null,
+                ? const Icon(Icons.arrow_drop_down)
+                : null,
             backgroundColor: item1Inc < item2Inc ? Colors.green : null,
             text: '${((item2Inc - 1) * 100).toStringAsFixed(2)}%',
           ),
         ),
-        SummaryCard(children: <Widget>[_buildItemCard(_item2Lines, 'item2')]),
+        SummaryCard(
+          children: <Widget>[_buildItemCard(_equip2, _equip1, 2, 'item2')],
+        ),
       ],
     );
     final Widget summaryView = Padding(
@@ -521,12 +590,94 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     );
   }
 
-  Widget _buildItemCard(List<_LineInput> lines, String listId) {
-    return _AnimatedItemLineList(
-      key: ValueKey('$listId-$_lineListGeneration'),
-      lines: lines,
-      onChanged: _onInputChanged,
-      createLine: _createLineInput,
+  Widget _buildItemCard(
+    List<_EquipInput> equips,
+    List<_EquipInput> otherEquips,
+    int side,
+    String listId,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final showHeader = equips.length > 1 || otherEquips.length > 1;
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var i = 0; i < equips.length; i++) ...[
+          if (i > 0) const Divider(height: 16),
+          if (showHeader) _buildEquipHeader(equips, otherEquips, side, i),
+          _AnimatedItemLineList(
+            key: ValueKey('$listId-${equips[i].id}'),
+            lines: equips[i].lines,
+            onChanged: _onInputChanged,
+            createLine: _createLineInput,
+          ),
+        ],
+        if (equips.length < kMaxEquipsPerSide)
+          Padding(
+            padding: const EdgeInsets.only(top: 8),
+            child: TextButton.icon(
+              onPressed: () => _addEquip(equips),
+              icon: const Icon(Icons.add),
+              label: Text(l10n.actionAddEquip),
+            ),
+          ),
+      ],
+    );
+  }
+
+  /// 分件标题：对调菜单与删除按钮
+  Widget _buildEquipHeader(
+    List<_EquipInput> equips,
+    List<_EquipInput> otherEquips,
+    int side,
+    int index,
+  ) {
+    final l10n = AppLocalizations.of(context);
+    final theme = Theme.of(context);
+    final equip = equips[index];
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Row(
+        children: [
+          Text(
+            l10n.labelEquipPiece(index + 1),
+            style: theme.textTheme.labelLarge?.copyWith(
+              color: theme.colorScheme.onSurfaceVariant,
+            ),
+          ),
+          const Spacer(),
+          PopupMenuButton<int>(
+            tooltip: l10n.tooltipSwapEquip,
+            padding: EdgeInsets.zero,
+            iconSize: 20,
+            icon: const Icon(Icons.swap_horiz),
+            itemBuilder: (context) => [
+              for (var i = 0; i < otherEquips.length; i++)
+                PopupMenuItem(
+                  value: i,
+                  child: Text(
+                    dividerText([
+                      (l10n.labelItemNumber(side == 1 ? 2 : 1)),
+                      (l10n.labelEquipPiece(i + 1)),
+                    ]),
+                  ),
+                ),
+            ],
+            onSelected: (otherIndex) => _swapEquips(
+              equips,
+              equip,
+              otherEquips,
+              otherEquips[otherIndex],
+            ),
+          ),
+          if (equips.length > 1)
+            IconButton(
+              tooltip: l10n.tooltipDeleteEquip,
+              icon: const Icon(Icons.delete_outline, size: 20),
+              visualDensity: VisualDensity.compact,
+              onPressed: () => _removeEquip(equips, equip),
+            ),
+        ],
+      ),
     );
   }
 }

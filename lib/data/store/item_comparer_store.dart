@@ -65,9 +65,9 @@ class ItemComparerStore {
   String baseAps = '';
   String speed = '';
 
-  /// 两件装备的词条输入（词条类型 + 数值文本）
-  final List<ItemComparerLineInput> item1 = [];
-  final List<ItemComparerLineInput> item2 = [];
+  /// 两侧对比的装备词条输入：外层每项为一件装备，内层为该装备的词条
+  final List<List<ItemComparerLineInput>> item1 = [];
+  final List<List<ItemComparerLineInput>> item2 = [];
 
   ItemComparerStore() {
     _load();
@@ -86,17 +86,25 @@ class ItemComparerStore {
     speed = json['speed'] as String? ?? '';
     item1
       ..clear()
-      ..addAll([
-        for (final entry in json['item1'] as List? ?? const [])
-          ItemComparerLineInput.fromJson(entry as Map<String, dynamic>),
-      ]);
+      ..addAll(_parseSide(json['item1']));
     item2
       ..clear()
-      ..addAll([
-        for (final entry in json['item2'] as List? ?? const [])
-          ItemComparerLineInput.fromJson(entry as Map<String, dynamic>),
-      ]);
+      ..addAll(_parseSide(json['item2']));
   }
+
+  /// 兼容旧格式：旧存档每侧只有一件装备（扁平词条列表）
+  static List<List<ItemComparerLineInput>> _parseSide(Object? raw) {
+    if (raw is! List || raw.isEmpty) return [];
+    if (raw.first is Map) {
+      return [_parseLines(raw)];
+    }
+    return [for (final group in raw) _parseLines(group as List)];
+  }
+
+  static List<ItemComparerLineInput> _parseLines(List raw) => [
+    for (final entry in raw)
+      ItemComparerLineInput.fromJson(entry as Map<String, dynamic>),
+  ];
 
   /// 重新从 box 加载输入并覆盖当前字段（数据恢复/导入后调用）。
   /// 页面输入框的文本回填由 BackupService 的 dataRestoredNotifier 驱动
@@ -116,9 +124,15 @@ class ItemComparerStore {
         'critDmg': critDmg,
         'baseAps': baseAps,
         'speed': speed,
-        'item1': [for (final l in item1) l.toJson()],
-        'item2': [for (final l in item2) l.toJson()],
+        'item1': _encodeSide(item1),
+        'item2': _encodeSide(item2),
       }),
     );
   }
+
+  static List<List<Map<String, dynamic>>> _encodeSide(
+    List<List<ItemComparerLineInput>> side,
+  ) => [
+    for (final group in side) [for (final line in group) line.toJson()],
+  ];
 }

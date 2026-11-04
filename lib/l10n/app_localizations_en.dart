@@ -1364,6 +1364,20 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String labelEquipPiece(int index) {
+    return 'Piece $index';
+  }
+
+  @override
+  String get actionAddEquip => 'Add piece';
+
+  @override
+  String get tooltipDeleteEquip => 'Delete piece';
+
+  @override
+  String get tooltipSwapEquip => 'Swap with the other side';
+
+  @override
   String labelCompareGainSummary(String gain1, String gain2) {
     return 'Item 1 vs no item $gain1 · Item 2 vs no item $gain2';
   }
