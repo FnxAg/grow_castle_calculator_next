@@ -14,6 +14,11 @@ abstract class AppBarItem extends ConsumerWidget {
 
   static const TextStyle textStyle = TextStyle(fontSize: 12.0);
 
+  static Widget text(String text, {String? tooltip}) => Tooltip(
+    message: tooltip,
+    child: AnimatedTextSwitcher(child: Text(text, style: textStyle)),
+  );
+
   static Widget currentUser() => Consumer(
     builder: (context, ref, child) {
       final username = ref.watch(currentUsernameProvider);
@@ -23,8 +28,12 @@ abstract class AppBarItem extends ConsumerWidget {
 
   static Widget currentUserGabBonus() => Consumer(
     builder: (context, ref, child) {
+      final l10n = AppLocalizations.of(context);
       final bonusGold = ref.watch(currentUserGabBonusProvider);
-      return Text('${bonusGold.toStringAsFixed(2)}%', style: textStyle);
+      return Tooltip(
+        message: l10n.labelGabAverageBonus,
+        child: Text('${bonusGold.toStringAsFixed(2)}%', style: textStyle),
+      );
     },
   );
 

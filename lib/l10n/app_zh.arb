@@ -581,7 +581,6 @@
   },
   "totalEconomy": "总经济",
   "metricIndex": "指数",
-  "dialogConfirmApplyIncome": "确认填入收益",
   "dialogApplyGabBonusContent": "金挂收益：{from}% -> {to}%？",
   "@dialogApplyGabBonusContent": {
     "placeholders": {
@@ -603,13 +602,13 @@
   },
   "actionConfirm": "确认",
   "actionReset": "重置",
-  "dialogResetIncomeSamples": "确认清空当前用户的所有收入样本？",
+  "dialogReset": "确认重置？",
   "emptyIncomeSamples": "暂无收入样本",
   "labelGabCost": "金挂成本",
   "labelAverageIncome": "平均收入",
   "labelPercent": "百分比",
-  "actionFillIn": "填入",
-  "dialogInputWaveIncome": "输入每波金币收入",
+  "actionOverwriteCurrentUserData": "写入当前用户数据",
+  "dialogInputWaveIncome": "输入单波金币收入",
   "labelWaveGoldIncome": "每波金币收入",
   "tooltipInfo": "提示",
   "dialogIncomeNotice": "填写“跳波状态”后再填写此处，否则计算结果不准确。\n\n此处计算结果为每日收入。",
@@ -1003,5 +1002,9 @@
   "dataDisclaimer": "数据仅供参考",
   "fromDev": "欢迎加入 POC 谢谢喵！",
   "labelGabBonusNote": "破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%",
-  "dailyIncome": "每日收入"
+  "dailyIncome": "每日收入",
+  "gabBonus": "金挂收益",
+  "tabBonus": "时挂收益",
+  "actionRemove": "删除",
+  "dialogRemove": "确认删除？"
 }

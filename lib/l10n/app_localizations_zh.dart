@@ -903,9 +903,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get metricIndex => '指数';
 
   @override
-  String get dialogConfirmApplyIncome => '确认填入收益';
-
-  @override
   String dialogApplyGabBonusContent(String from, String to) {
     return '金挂收益：$from% -> $to%？';
   }
@@ -922,7 +919,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get actionReset => '重置';
 
   @override
-  String get dialogResetIncomeSamples => '确认清空当前用户的所有收入样本？';
+  String get dialogReset => '确认重置？';
 
   @override
   String get emptyIncomeSamples => '暂无收入样本';
@@ -937,10 +934,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get labelPercent => '百分比';
 
   @override
-  String get actionFillIn => '填入';
+  String get actionOverwriteCurrentUserData => '写入当前用户数据';
 
   @override
-  String get dialogInputWaveIncome => '输入每波金币收入';
+  String get dialogInputWaveIncome => '输入单波金币收入';
 
   @override
   String get labelWaveGoldIncome => '每波金币收入';
@@ -1517,6 +1514,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dailyIncome => '每日收入';
+
+  @override
+  String get gabBonus => '金挂收益';
+
+  @override
+  String get tabBonus => '时挂收益';
+
+  @override
+  String get actionRemove => '删除';
+
+  @override
+  String get dialogRemove => '确认删除？';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2417,9 +2426,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get metricIndex => '指數';
 
   @override
-  String get dialogConfirmApplyIncome => '確認填入收益';
-
-  @override
   String dialogApplyGabBonusContent(String from, String to) {
     return '金掛收益：$from% -> $to%？';
   }
@@ -2436,7 +2442,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get actionReset => '重設';
 
   @override
-  String get dialogResetIncomeSamples => '確認清除目前使用者的所有收入樣本？';
+  String get dialogReset => '確認重設？';
 
   @override
   String get emptyIncomeSamples => '尚無收入樣本';
@@ -2451,10 +2457,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get labelPercent => '百分比';
 
   @override
-  String get actionFillIn => '填入';
+  String get actionOverwriteCurrentUserData => '寫入目前使用者資料';
 
   @override
-  String get dialogInputWaveIncome => '輸入每波金幣收入';
+  String get dialogInputWaveIncome => '輸入單波金幣收入';
 
   @override
   String get labelWaveGoldIncome => '每波金幣收入';
@@ -3031,4 +3037,16 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get dailyIncome => '每日收入';
+
+  @override
+  String get gabBonus => '金掛收益';
+
+  @override
+  String get tabBonus => '時掛收益';
+
+  @override
+  String get actionRemove => '刪除';
+
+  @override
+  String get dialogRemove => '確認刪除？';
 }

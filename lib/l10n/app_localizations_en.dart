@@ -976,9 +976,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get metricIndex => 'Index';
 
   @override
-  String get dialogConfirmApplyIncome => 'Apply this income?';
-
-  @override
   String dialogApplyGabBonusContent(String from, String to) {
     return 'GAB bonus: $from% -> $to%?';
   }
@@ -995,8 +992,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get actionReset => 'Reset';
 
   @override
-  String get dialogResetIncomeSamples =>
-      'Clear all income samples for the current user?';
+  String get dialogReset => 'Confirm reset?';
 
   @override
   String get emptyIncomeSamples => 'No income samples yet';
@@ -1011,7 +1007,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get labelPercent => 'Percentage';
 
   @override
-  String get actionFillIn => 'Apply';
+  String get actionOverwriteCurrentUserData => 'Overwrite current user data';
 
   @override
   String get dialogInputWaveIncome => 'Enter per-wave gold income';
@@ -1624,4 +1620,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dailyIncome => 'Daily income';
+
+  @override
+  String get gabBonus => 'GAB bonus';
+
+  @override
+  String get tabBonus => 'TAB bonus';
+
+  @override
+  String get actionRemove => 'Remove';
+
+  @override
+  String get dialogRemove => 'Are you sure you want to remove this item?';
 }

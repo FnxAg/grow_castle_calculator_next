@@ -1662,12 +1662,6 @@ abstract class AppLocalizations {
   /// **'指数'**
   String get metricIndex;
 
-  /// No description provided for @dialogConfirmApplyIncome.
-  ///
-  /// In zh, this message translates to:
-  /// **'确认填入收益'**
-  String get dialogConfirmApplyIncome;
-
   /// No description provided for @dialogApplyGabBonusContent.
   ///
   /// In zh, this message translates to:
@@ -1692,11 +1686,11 @@ abstract class AppLocalizations {
   /// **'重置'**
   String get actionReset;
 
-  /// No description provided for @dialogResetIncomeSamples.
+  /// No description provided for @dialogReset.
   ///
   /// In zh, this message translates to:
-  /// **'确认清空当前用户的所有收入样本？'**
-  String get dialogResetIncomeSamples;
+  /// **'确认重置？'**
+  String get dialogReset;
 
   /// No description provided for @emptyIncomeSamples.
   ///
@@ -1722,16 +1716,16 @@ abstract class AppLocalizations {
   /// **'百分比'**
   String get labelPercent;
 
-  /// No description provided for @actionFillIn.
+  /// No description provided for @actionOverwriteCurrentUserData.
   ///
   /// In zh, this message translates to:
-  /// **'填入'**
-  String get actionFillIn;
+  /// **'写入当前用户数据'**
+  String get actionOverwriteCurrentUserData;
 
   /// No description provided for @dialogInputWaveIncome.
   ///
   /// In zh, this message translates to:
-  /// **'输入每波金币收入'**
+  /// **'输入单波金币收入'**
   String get dialogInputWaveIncome;
 
   /// No description provided for @labelWaveGoldIncome.
@@ -2759,6 +2753,30 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'每日收入'**
   String get dailyIncome;
+
+  /// No description provided for @gabBonus.
+  ///
+  /// In zh, this message translates to:
+  /// **'金挂收益'**
+  String get gabBonus;
+
+  /// No description provided for @tabBonus.
+  ///
+  /// In zh, this message translates to:
+  /// **'时挂收益'**
+  String get tabBonus;
+
+  /// No description provided for @actionRemove.
+  ///
+  /// In zh, this message translates to:
+  /// **'删除'**
+  String get actionRemove;
+
+  /// No description provided for @dialogRemove.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认删除？'**
+  String get dialogRemove;
 }
 
 class _AppLocalizationsDelegate

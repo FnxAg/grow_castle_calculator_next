@@ -23,6 +23,7 @@ class IncomePage extends ConsumerStatefulWidget {
 
 class _IncomePageState extends ConsumerState<IncomePage> {
   Widget _buildList({required bool wide, required AppLocalizations l10n}) {
+    final scheme = Theme.of(context).colorScheme;
     final wave = ref.watch(currentUserWaveProvider);
     final infiniteColony = ref.watch(
       currentUserProvider.select((u) => u.infiniteColony),
@@ -32,10 +33,12 @@ class _IncomePageState extends ConsumerState<IncomePage> {
     final income = ref.watch(dailyIncomeProvider);
     Widget sectionHeaderTrailing(IconData icon, String text) =>
         PillChip(leading: Icon(icon), text: text);
+    final Widget divider = Divider(height: 1, thickness: 1, color: scheme.primary);
     final list = ListView(
       children: [
         const IncomeEditTile(field: IncomeField.gabTime),
         const IncomeEditTile(field: IncomeField.tabTime),
+        divider,
         SectionHeader(
           l10n.tabIncomeWave,
           trailing: sectionHeaderTrailing(
@@ -47,6 +50,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
           ),
         ),
         const IncomeEditTile(field: IncomeField.gabBonus),
+        divider,
         SectionHeader(
           l10n.tabIncomeColony,
           trailing: sectionHeaderTrailing(
@@ -78,6 +82,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
           value: ref.watch(currentUserProvider.select((u) => u.equipWhip)),
           onChanged: ref.users.setCurrentUserEquipWhip,
         ),
+        divider,
         SectionHeader(
           l10n.tabIncomeOther,
           trailing: sectionHeaderTrailing(
