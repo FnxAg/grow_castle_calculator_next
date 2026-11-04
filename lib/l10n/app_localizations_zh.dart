@@ -1526,6 +1526,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dialogRemove => '确认删除？';
+
+  @override
+  String get actionHelp => '帮助';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3049,4 +3052,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get dialogRemove => '確認刪除？';
+
+  @override
+  String get actionHelp => '說明';
 }

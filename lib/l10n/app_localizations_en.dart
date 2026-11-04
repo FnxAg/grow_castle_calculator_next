@@ -1632,4 +1632,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dialogRemove => 'Are you sure you want to remove this item?';
+
+  @override
+  String get actionHelp => 'Help';
 }

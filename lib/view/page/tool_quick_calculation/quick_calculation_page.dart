@@ -349,21 +349,38 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
   List<Widget> _buildAppBarActions(AppLocalizations l10n) {
     return [
       IconButton(
-        tooltip: l10n.actionResetToDefault,
+        tooltip: l10n.actionReset,
         icon: const Icon(Icons.refresh),
-        onPressed: () {
-          setState(() {
-            _wave = '';
-            _gp = '';
-            _gpCN = '';
-            _gold = '';
-            _lockedField = null;
-            _waveController.text = '';
-            _gpController.text = '';
-            _gpCNController.text = '';
-            _goldController.text = '';
-          });
-        },
+        onPressed: () => showDialog(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(l10n.actionReset),
+            content: Text(l10n.dialogReset),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(context).pop(),
+                child: Text(l10n.actionCancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  setState(() {
+                    _wave = '';
+                    _gp = '';
+                    _gpCN = '';
+                    _gold = '';
+                    _lockedField = null;
+                    _waveController.text = '';
+                    _gpController.text = '';
+                    _gpCNController.text = '';
+                    _goldController.text = '';
+                  });
+                  Navigator.of(context).pop();
+                },
+                child: Text(l10n.actionConfirm),
+              ),
+            ],
+          ),
+        ),
       ),
     ];
   }

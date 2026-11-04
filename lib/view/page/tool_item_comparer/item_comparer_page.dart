@@ -8,13 +8,9 @@ import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart'
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/responsive/short_window_fallback.dart';
-import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 装备对比
@@ -24,6 +20,8 @@ class ItemComparerPage extends StatefulWidget {
   @override
   State<ItemComparerPage> createState() => _ItemComparerPageState();
 }
+
+enum Actions { reset, help }
 
 const int kMaxLinesPerItem = 3;
 const int kMaxEquipsPerSide = 3;
@@ -376,13 +374,11 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     final baseDps = baseResult.dps;
     final item1Dps = item1Result.dps;
     final item2Dps = item2Result.dps;
-    final item1Inc = item1Dps / baseDps;
-    final item2Inc = item2Dps / baseDps;
-    final bool isWide = context.isWideContent;
+    final bool ready = _valueOf(_baseAttackCtrl) > 0;
 
     final Widget list = ListView(
       key: const PageStorageKey('item_comparer_list'),
-      padding: EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+      // padding: EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
       children: [
         SectionHeader(
           l10n.labelNoItemPanel,
@@ -393,147 +389,98 @@ class _ItemComparerPageState extends State<ItemComparerPage>
             ),
           ),
         ),
-        SummaryCard(children: _buildPanelCard()),
-        SectionHeader(
-          l10n.labelItemLines(1),
-          trailing: PillChip(
-            leading: item1Inc > item2Inc
-                ? const Icon(Icons.arrow_drop_up)
-                : item1Inc < item2Inc
-                ? const Icon(Icons.arrow_drop_down)
-                : null,
-            backgroundColor: item1Inc > item2Inc ? Colors.green : null,
-            text: '${((item1Inc - 1) * 100).toStringAsFixed(2)}%',
-          ),
-        ),
-        SummaryCard(
-          children: <Widget>[_buildItemCard(_equip1, _equip2, 1, 'item1')],
-        ),
-        SectionHeader(
-          l10n.labelItemLines(2),
-          trailing: PillChip(
-            leading: item1Inc < item2Inc
-                ? const Icon(Icons.arrow_drop_up)
-                : item1Inc > item2Inc
-                ? const Icon(Icons.arrow_drop_down)
-                : null,
-            backgroundColor: item1Inc < item2Inc ? Colors.green : null,
-            text: '${((item2Inc - 1) * 100).toStringAsFixed(2)}%',
-          ),
-        ),
-        SummaryCard(
-          children: <Widget>[_buildItemCard(_equip2, _equip1, 2, 'item2')],
+        ..._buildPanelCard(),
+        const SizedBox(height: 20),
+        _buildCompareCards(
+          ready: ready,
+          baseDps: baseDps,
+          item1Dps: item1Dps,
+          item2Dps: item2Dps,
         ),
       ],
     );
-    final Widget summaryView = Padding(
-      padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 16.0),
-      child: SummaryCard(
-        children: <Widget>[
-          _ResultView(
-            baseResult: baseResult,
-            item1Result: item1Result,
-            item2Result: item2Result,
-            ready: _valueOf(_baseAttackCtrl) > 0,
+
+    final popupMenuButton = PopupMenuButton<Actions>(
+      itemBuilder: (context) => [
+        PopupMenuItem(value: Actions.reset, child: Text(l10n.actionReset)),
+        PopupMenuItem(value: Actions.help, child: Text(l10n.actionHelp)),
+      ],
+      onSelected: (value) => switch (value) {
+        Actions.reset => showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(l10n.actionReset),
+            content: Text(l10n.dialogReset),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.actionCancel),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(dialogContext).pop();
+                  _reset();
+                },
+                child: Text(l10n.actionConfirm),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+        Actions.help => showDialog<void>(
+          context: context,
+          builder: (dialogContext) => AlertDialog(
+            title: Text(l10n.aboutGuide),
+            content: Text.rich(
+              TextSpan(
+                style: const TextStyle(fontSize: 14),
+                children: [
+                  TextSpan(text: l10n.dialogItemCompareHelpIntro),
+                  TextSpan(
+                    text: l10n.dialogItemCompareHelpStepsTitle,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: l10n.dialogItemCompareHelpStep1),
+                  TextSpan(text: l10n.dialogItemCompareHelpStep2),
+                  TextSpan(
+                    text: l10n.dialogItemCompareHelpStep2Note,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: l10n.dialogItemCompareHelpStep3),
+                  TextSpan(
+                    text: l10n.dialogItemCompareHelpNormalUnit,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: l10n.dialogItemCompareHelpNormalUnitDesc),
+                  TextSpan(
+                    text: l10n.dialogItemCompareHelpSkillUnit,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: l10n.dialogItemCompareHelpSkillUnitDesc),
+                  TextSpan(
+                    text: l10n.dialogItemCompareHelpNoteLabel,
+                    style: const TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  TextSpan(text: l10n.dialogItemCompareHelpNoteDesc),
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.actionClose),
+              ),
+            ],
+          ),
+        ),
+      },
     );
 
     return Scaffold(
       appBar: AppBar(
         title: Row(children: [Text(l10n.toolItemComparer)]),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.help_outline),
-            tooltip: l10n.aboutGuide,
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: Text(l10n.aboutGuide),
-                content: Text.rich(
-                  TextSpan(
-                    style: const TextStyle(fontSize: 14),
-                    children: [
-                      TextSpan(text: l10n.dialogItemCompareHelpIntro),
-                      TextSpan(
-                        text: l10n.dialogItemCompareHelpStepsTitle,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: l10n.dialogItemCompareHelpStep1),
-                      TextSpan(text: l10n.dialogItemCompareHelpStep2),
-                      TextSpan(
-                        text: l10n.dialogItemCompareHelpStep2Note,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: l10n.dialogItemCompareHelpStep3),
-                      TextSpan(
-                        text: l10n.dialogItemCompareHelpNormalUnit,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: l10n.dialogItemCompareHelpNormalUnitDesc),
-                      TextSpan(
-                        text: l10n.dialogItemCompareHelpSkillUnit,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: l10n.dialogItemCompareHelpSkillUnitDesc),
-                      TextSpan(
-                        text: l10n.dialogItemCompareHelpNoteLabel,
-                        style: const TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                      TextSpan(text: l10n.dialogItemCompareHelpNoteDesc),
-                    ],
-                  ),
-                ),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: Text(l10n.actionClose),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          IconButton(
-            tooltip: l10n.actionReset,
-            icon: const Icon(Icons.refresh),
-            onPressed: () => showDialog<void>(
-              context: context,
-              builder: (dialogContext) => AlertDialog(
-                title: Text(l10n.actionReset),
-                content: Text(l10n.dialogResetConfirm),
-                actions: [
-                  TextButton(
-                    onPressed: () => Navigator.of(dialogContext).pop(),
-                    child: Text(l10n.actionCancel),
-                  ),
-                  TextButton(
-                    onPressed: () {
-                      Navigator.of(dialogContext).pop();
-                      _reset();
-                    },
-                    child: Text(l10n.actionConfirm),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
+        actions: [popupMenuButton],
       ),
-      body: SafeArea(
-        top: false,
-        child: ShortWindowFallback(
-          minHeight: 340,
-          child: isWide
-              ? Row(
-                  children: [
-                    Expanded(flex: 6, child: list),
-                    Expanded(flex: 4, child: summaryView),
-                  ],
-                )
-              : list,
-        ),
-      ),
+      body: SafeArea(top: false, child: list),
     );
   }
 
@@ -554,77 +501,210 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     TextEditingController ctrl, {
     bool isPercent = true,
   }) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 140.0,
-            child: Text(
-              label,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.bodyMedium,
-            ),
+    return ListTile(
+      dense: true,
+      title: Text(label),
+      trailing: Text(
+        ctrl.text.trim().isEmpty ? '—' : '${ctrl.text}${isPercent ? '%' : ''}',
+        style: TextStyle(
+          fontWeight: FontWeight.w600,
+          color: Theme.of(context).colorScheme.primary,
+        ),
+      ),
+      onTap: () => _editPanelField(label, ctrl, isPercent: isPercent),
+    );
+  }
+
+  Future<void> _editPanelField(
+    String label,
+    TextEditingController ctrl, {
+    required bool isPercent,
+  }) async {
+    final controller = TextEditingController(text: ctrl.text);
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(label),
+        content: SelectAllTextField(
+          controller: controller,
+          autofocus: true,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+          ],
+          decoration: InputDecoration(suffixText: isPercent ? '%' : null),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(),
+            child: Text(AppLocalizations.of(context).actionCancel),
           ),
-          const Spacer(),
-          SizedBox(
-            width: 88.0,
-            child: SelectAllTextField(
-              controller: ctrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-              ],
-              decoration: InputDecoration(
-                isDense: true,
-                suffixText: isPercent ? '%' : null,
-              ),
-            ),
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(AppLocalizations.of(context).actionSave),
           ),
         ],
       ),
     );
+    if (saved == true) ctrl.text = controller.text;
+    controller.dispose();
   }
 
-  Widget _buildItemCard(
+  /// 两侧对比卡的并排阈值（列表内容宽度）
+  static const double _sideBySideMinWidth = 600.0;
+
+  /// 两侧装备对比区：宽度足够时左右并排，否则上下堆叠。
+  Widget _buildCompareCards({
+    required bool ready,
+    required double baseDps,
+    required double item1Dps,
+    required double item2Dps,
+  }) {
+    final item1Card = _buildItemCard(
+      equips: _equip1,
+      otherEquips: _equip2,
+      side: 1,
+      listId: 'item1',
+      itemDps: item1Dps,
+      otherDps: item2Dps,
+      baseDps: baseDps,
+      ready: ready,
+    );
+    final item2Card = _buildItemCard(
+      equips: _equip2,
+      otherEquips: _equip1,
+      side: 2,
+      listId: 'item2',
+      itemDps: item2Dps,
+      otherDps: item1Dps,
+      baseDps: baseDps,
+      ready: ready,
+    );
+
+    return LayoutBuilder(
+      builder: (context, constraints) =>
+          constraints.maxWidth >= _sideBySideMinWidth
+          ? Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Expanded(child: item1Card),
+                Expanded(child: item2Card),
+              ],
+            )
+          : Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [item1Card, item2Card],
+            ),
+    );
+  }
+
+  /// 一侧装备卡：标题 + 相对无装备的涨幅/胜负徽标，下挂各件装备。
+  Widget _buildItemCard({
+    required List<_EquipInput> equips,
+    required List<_EquipInput> otherEquips,
+    required int side,
+    required String listId,
+    required double itemDps,
+    required double otherDps,
+    required double baseDps,
+    required bool ready,
+  }) {
+    final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
+    final l10n = AppLocalizations.of(context);
+    final winning = ready && itemDps > otherDps;
+    final hasGain = baseDps > 0;
+    final gainText = hasGain
+        ? '${((itemDps / baseDps - 1) * 100).toStringAsFixed(2)}%'
+        : '—';
+
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Card(
+        margin: EdgeInsets.zero,
+        elevation: 0,
+        clipBehavior: Clip.antiAlias,
+        color: scheme.surfaceContainerLow,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(12),
+          side: BorderSide(
+            color: winning ? scheme.primary : scheme.outlineVariant,
+            width: winning ? 1.5 : 1,
+          ),
+        ),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(vertical: 4),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        l10n.labelItemNumber(side),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: theme.textTheme.titleSmall?.copyWith(
+                          color: scheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    PillChip(
+                      leading: !ready || itemDps == otherDps
+                          ? null
+                          : Icon(
+                              winning
+                                  ? Icons.arrow_drop_up
+                                  : Icons.arrow_drop_down,
+                            ),
+                      backgroundColor: winning ? Colors.green : null,
+                      text: gainText,
+                    ),
+                  ],
+                ),
+              ),
+              for (var i = 0; i < equips.length; i++) ...[
+                if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
+                _buildEquipSection(equips, otherEquips, side, i, listId),
+              ],
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildEquipSection(
     List<_EquipInput> equips,
     List<_EquipInput> otherEquips,
     int side,
+    int index,
     String listId,
   ) {
-    final l10n = AppLocalizations.of(context);
-    final showHeader = equips.length > 1 || otherEquips.length > 1;
+    final equip = equips[index];
     return Column(
       mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        for (var i = 0; i < equips.length; i++) ...[
-          if (i > 0) const Divider(height: 16),
-          if (showHeader) _buildEquipHeader(equips, otherEquips, side, i),
-          _AnimatedItemLineList(
-            key: ValueKey('$listId-${equips[i].id}'),
-            lines: equips[i].lines,
-            onChanged: _onInputChanged,
-            createLine: _createLineInput,
-          ),
-        ],
-        if (equips.length < kMaxEquipsPerSide)
-          Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: TextButton.icon(
-              onPressed: () => _addEquip(equips),
-              icon: const Icon(Icons.add),
-              label: Text(l10n.actionAddEquip),
-            ),
-          ),
+        _buildEquipHeader(equips, otherEquips, side, index),
+        _AnimatedItemLineList(
+          key: ValueKey('$listId-${equip.id}'),
+          lines: equip.lines,
+          onChanged: _onInputChanged,
+          createLine: _createLineInput,
+        ),
+        const SizedBox(height: 4),
       ],
     );
   }
 
-  /// 分件标题：对调菜单与删除按钮
+  /// 分件标题：将交换、删除、添加装备等次要操作收进菜单。
   Widget _buildEquipHeader(
     List<_EquipInput> equips,
     List<_EquipInput> otherEquips,
@@ -633,49 +713,70 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   ) {
     final l10n = AppLocalizations.of(context);
     final theme = Theme.of(context);
+    final scheme = theme.colorScheme;
     final equip = equips[index];
     return Padding(
-      padding: const EdgeInsets.only(top: 8),
+      padding: const EdgeInsets.only(left: 16, right: 4, top: 4),
       child: Row(
         children: [
-          Text(
-            l10n.labelEquipPiece(index + 1),
-            style: theme.textTheme.labelLarge?.copyWith(
-              color: theme.colorScheme.onSurfaceVariant,
+          Expanded(
+            child: Text(
+              l10n.labelEquipPiece(index + 1),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: theme.textTheme.labelLarge?.copyWith(
+                color: scheme.onSurfaceVariant,
+              ),
             ),
           ),
-          const Spacer(),
-          PopupMenuButton<int>(
-            tooltip: l10n.tooltipSwapEquip,
-            padding: EdgeInsets.zero,
+          const SizedBox(width: 8),
+          Text(
+            '${equip.lines.length}/$kMaxLinesPerItem',
+            style: theme.textTheme.labelSmall?.copyWith(
+              color: scheme.onSurfaceVariant,
+            ),
+          ),
+          PopupMenuButton<String>(
+            padding: const EdgeInsets.all(8),
             iconSize: 20,
-            icon: const Icon(Icons.swap_horiz),
             itemBuilder: (context) => [
+              if (equips.length < kMaxEquipsPerSide)
+                PopupMenuItem(value: 'add', child: Text(l10n.actionAddEquip)),
               for (var i = 0; i < otherEquips.length; i++)
                 PopupMenuItem(
-                  value: i,
+                  value: 'swap:$i',
                   child: Text(
                     dividerText([
-                      (l10n.labelItemNumber(side == 1 ? 2 : 1)),
-                      (l10n.labelEquipPiece(i + 1)),
+                      l10n.tooltipSwapEquip,
+                      l10n.labelItemNumber(side == 1 ? 2 : 1),
+                      l10n.labelEquipPiece(i + 1),
                     ]),
                   ),
                 ),
+              if (equips.length > 1)
+                PopupMenuItem(
+                  value: 'delete',
+                  child: Text(l10n.tooltipDeleteEquip),
+                ),
             ],
-            onSelected: (otherIndex) => _swapEquips(
-              equips,
-              equip,
-              otherEquips,
-              otherEquips[otherIndex],
-            ),
+            onSelected: (value) {
+              if (value == 'add') {
+                _addEquip(equips);
+              } else if (value == 'delete') {
+                _removeEquip(equips, equip);
+              } else if (value.startsWith('swap:')) {
+                final otherIndex = int.tryParse(value.substring(5));
+                if (otherIndex != null && otherIndex < otherEquips.length) {
+                  _swapEquips(
+                    equips,
+                    equip,
+                    otherEquips,
+                    otherEquips[otherIndex],
+                  );
+                }
+              }
+            },
           ),
-          if (equips.length > 1)
-            IconButton(
-              tooltip: l10n.tooltipDeleteEquip,
-              icon: const Icon(Icons.delete_outline, size: 20),
-              visualDensity: VisualDensity.compact,
-              onPressed: () => _removeEquip(equips, equip),
-            ),
         ],
       ),
     );
@@ -745,6 +846,65 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
     });
   }
 
+  Future<void> _editLine(_LineInput input) async {
+    final l10n = AppLocalizations.of(context);
+    final valueController = TextEditingController(text: input.valueCtrl.text);
+    var selectedLine = input.line;
+    final saved = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (context, setState) => AlertDialog(
+          title: Text(l10n.actionEdit),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              DropdownButtonFormField<_LineOption>(
+                initialValue: selectedLine,
+                hint: Text(l10n.hintSelectLineType),
+                items: [
+                  for (final option in _lineOptions)
+                    DropdownMenuItem(value: option, child: Text(option.label)),
+                ],
+                onChanged: (value) => setState(() => selectedLine = value),
+              ),
+              const SizedBox(height: 12),
+              SelectAllTextField(
+                controller: valueController,
+                autofocus: selectedLine != null,
+                keyboardType: const TextInputType.numberWithOptions(
+                  decimal: true,
+                ),
+                inputFormatters: [
+                  FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+                ],
+                decoration: InputDecoration(
+                  hintText: l10n.hintValue,
+                  suffixText: selectedLine?.isPercent == true ? '%' : null,
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(),
+              child: Text(l10n.actionCancel),
+            ),
+            TextButton(
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+              child: Text(l10n.actionSave),
+            ),
+          ],
+        ),
+      ),
+    );
+    if (saved == true) {
+      input.line = selectedLine;
+      input.valueCtrl.text = valueController.text;
+      widget.onChanged();
+    }
+    valueController.dispose();
+  }
+
   Widget _buildAnimatedRow(_LineInput input, Animation<double> animation) {
     final curvedAnimation = CurvedAnimation(
       parent: animation,
@@ -760,7 +920,7 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
       sizeFactor: curvedAnimation,
       alignment: const Alignment(-1.0, -1.0),
       child: Padding(
-        padding: const EdgeInsets.only(top: 8),
+        padding: const EdgeInsets.only(top: 2),
         child: FadeTransition(
           opacity: curvedAnimation,
           child: SlideTransition(
@@ -768,8 +928,8 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
             child: _ItemLineRow(
               key: ObjectKey(input),
               input: input,
-              onChanged: widget.onChanged,
               onRemove: () => _removeLine(input),
+              onEdit: () => _editLine(input),
             ),
           ),
         ),
@@ -791,11 +951,20 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
         ),
         if (widget.lines.length < kMaxLinesPerItem)
           Padding(
-            padding: const EdgeInsets.only(top: 8),
-            child: TextButton.icon(
-              onPressed: _addLine,
-              icon: const Icon(Icons.add),
-              label: Text(AppLocalizations.of(context).actionAddLine),
+            padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
+            child: Align(
+              alignment: Alignment.centerLeft,
+              child: TextButton.icon(
+                onPressed: _addLine,
+                icon: const Icon(Icons.add, size: 18),
+                label: Text(AppLocalizations.of(context).actionAddLine),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                  padding: EdgeInsets.zero,
+                  minimumSize: const Size(0, 32),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
             ),
           ),
       ],
@@ -857,7 +1026,7 @@ class _RemovedLineItemState extends State<_RemovedLineItem> {
         sizeFactor: _curved,
         alignment: const Alignment(-1.0, -1.0),
         child: Padding(
-          padding: const EdgeInsets.only(top: 8),
+          padding: const EdgeInsets.only(top: 2),
           child: FadeTransition(
             opacity: _curved,
             child: SlideTransition(
@@ -865,8 +1034,8 @@ class _RemovedLineItemState extends State<_RemovedLineItem> {
               child: _ItemLineRow(
                 key: ObjectKey(widget.input),
                 input: widget.input,
-                onChanged: () {},
                 onRemove: () {},
+                onEdit: () {},
               ),
             ),
           ),
@@ -880,267 +1049,56 @@ class _ItemLineRow extends StatelessWidget {
   const _ItemLineRow({
     super.key,
     required this.input,
-    required this.onChanged,
     required this.onRemove,
+    required this.onEdit,
   });
 
   final _LineInput input;
-  final VoidCallback onChanged;
   final VoidCallback onRemove;
+  final VoidCallback onEdit;
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+    final scheme = Theme.of(context).colorScheme;
     final line = input.line;
-    return Row(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Expanded(
-          child: DropdownButtonFormField<_LineOption>(
-            initialValue: line,
-            hint: Text(l10n.hintSelectLineType),
-            items: [
-              for (final option in _lineOptions)
-                DropdownMenuItem(value: option, child: Text(option.label)),
-            ],
-            onChanged: (value) {
-              input.line = value;
-              onChanged();
-            },
-            decoration: const InputDecoration(
-              isDense: true,
-              contentPadding: EdgeInsets.symmetric(
-                horizontal: 12,
-                vertical: 12,
-              ),
-            ),
-          ),
-        ),
-        const SizedBox(width: 8),
-        SizedBox(
-          width: 88,
-          child: SelectAllTextField(
-            controller: input.valueCtrl,
-            enabled: line != null,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-            ],
-            decoration: InputDecoration(
-              hintText: l10n.hintValue,
-              suffixText: line?.isPercent == true ? '%' : null,
-            ),
-          ),
-        ),
-        IconButton(
-          tooltip: l10n.tooltipDeleteLine,
-          icon: const Icon(Icons.close),
-          onPressed: onRemove,
-        ),
-      ],
-    );
-  }
-}
-
-class _ResultView extends StatelessWidget {
-  const _ResultView({
-    required this.baseResult,
-    required this.item1Result,
-    required this.item2Result,
-    required this.ready,
-  });
-
-  final ItemDpsResult baseResult;
-  final ItemDpsResult item1Result;
-  final ItemDpsResult item2Result;
-
-  final bool ready;
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
-    final l10n = AppLocalizations.of(context);
-    final baseDps = baseResult.dps;
-    final item1Dps = item1Result.dps;
-    final item2Dps = item2Result.dps;
-
-    // 结论：0 = 装备 1 更优，1 = 装备 2 更优，-1 = 相同/未就绪
-    final (String text, int winner) = _verdict(l10n, item1Dps, item2Dps);
-    final gain1 = baseDps > 0 ? _pct(item1Dps / baseDps - 1) : null;
-    final gain2 = baseDps > 0 ? _pct(item2Dps / baseDps - 1) : null;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-          decoration: BoxDecoration(
-            color: ready
-                ? scheme.primaryContainer
-                : scheme.surfaceContainerHighest,
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Text(
-            text,
-            textAlign: TextAlign.center,
-            style: theme.textTheme.titleMedium?.copyWith(
-              color: ready
-                  ? scheme.onPrimaryContainer
-                  : scheme.onSurfaceVariant,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ),
-        const SizedBox(height: 16),
-        Row(
+    final hasValue = input.valueCtrl.text.trim().isNotEmpty;
+    return InkWell(
+      onTap: onEdit,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(16, 2, 4, 2),
+        child: Row(
           children: [
-            const SizedBox(width: 68),
-            for (final title in [
-              l10n.labelNoCrit,
-              l10n.labelWithCrit,
-              'APS',
-              'DPS',
-            ])
-              Expanded(
-                child: Text(
-                  title,
-                  textAlign: .right,
-                  style: theme.textTheme.labelSmall?.copyWith(
-                    color: scheme.onSurfaceVariant,
-                  ),
+            Expanded(
+              child: Text(
+                line?.label ?? AppLocalizations.of(context).hintSelectLineType,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: line == null ? scheme.onSurfaceVariant : null,
                 ),
               ),
+            ),
+            const SizedBox(width: 8),
+            Text(
+              hasValue
+                  ? '${input.valueCtrl.text}${line?.isPercent == true ? '%' : ''}'
+                  : '—',
+              style: TextStyle(
+                fontWeight: FontWeight.w600,
+                color: hasValue ? scheme.primary : scheme.onSurfaceVariant,
+              ),
+            ),
+            IconButton(
+              tooltip: AppLocalizations.of(context).tooltipDeleteLine,
+              icon: const Icon(Icons.close, size: 18),
+              onPressed: onRemove,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
+              visualDensity: VisualDensity.compact,
+            ),
           ],
         ),
-        _tableRow(context, l10n.labelNoItem, baseResult),
-        _tableRow(
-          context,
-          l10n.labelItemNumber(1),
-          item1Result,
-          highlight: winner == 0,
-        ),
-        _tableRow(
-          context,
-          l10n.labelItemNumber(2),
-          item2Result,
-          highlight: winner == 1,
-        ),
-        const SizedBox(height: 12),
-        Text(
-          l10n.labelCompareGainSummary(gain1 ?? '—', gain2 ?? '—'),
-          textAlign: TextAlign.center,
-          style: theme.textTheme.bodySmall?.copyWith(
-            color: scheme.onSurfaceVariant,
-          ),
-        ),
-      ],
-    );
-  }
-
-  (String, int) _verdict(
-    AppLocalizations l10n,
-    double item1Dps,
-    double item2Dps,
-  ) {
-    if (!ready) return (l10n.compareVerdictPending, -1);
-    if (item1Dps > item2Dps) {
-      final gap = item2Dps > 0
-          ? l10n.compareGapItem2(_pct(item1Dps / item2Dps - 1))
-          : '';
-      return (l10n.compareVerdictItem1(gap), 0);
-    }
-    if (item2Dps > item1Dps) {
-      final gap = item1Dps > 0
-          ? l10n.compareGapItem1(_pct(item2Dps / item1Dps - 1))
-          : '';
-      return (l10n.compareVerdictItem2(gap), 1);
-    }
-    return (l10n.compareVerdictTie, -1);
-  }
-
-  Widget _tableRow(
-    BuildContext context,
-    String label,
-    ItemDpsResult result, {
-    bool highlight = false,
-  }) {
-    final theme = Theme.of(context);
-    final english = !context.isChineseLocale;
-    final traditional = context.isTraditionalChineseLocale;
-    final style = theme.textTheme.bodyMedium?.copyWith(
-      color: highlight ? theme.colorScheme.primary : null,
-      fontWeight: highlight ? FontWeight.w700 : null,
-    );
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        children: [
-          SizedBox(width: 68, child: Text(label, style: style)),
-          Expanded(
-            child: AnimatedTextSwitcher(
-              alignment: .centerRight,
-              child: Text(
-                result.normalHit.formatCompact(
-                  english: english,
-                  traditional: traditional,
-                ),
-                key: ValueKey(result.normalHit),
-                textAlign: TextAlign.right,
-                style: style,
-              ),
-            ),
-          ),
-          Expanded(
-            child: AnimatedTextSwitcher(
-              alignment: .centerRight,
-              child: Text(
-                result.critHit.formatCompact(
-                  english: english,
-                  traditional: traditional,
-                ),
-                key: ValueKey(result.critHit),
-                textAlign: TextAlign.right,
-                style: style,
-              ),
-            ),
-          ),
-          Expanded(
-            child: AnimatedTextSwitcher(
-              alignment: .centerRight,
-              child: Text(
-                result.aps?.format() ?? '—',
-                key: ValueKey(result.aps),
-                textAlign: TextAlign.right,
-                style: style,
-              ),
-            ),
-          ),
-          Expanded(
-            child: AnimatedTextSwitcher(
-              alignment: .centerRight,
-              child: Text(
-                result.dps.formatCompact(
-                  english: english,
-                  traditional: traditional,
-                ),
-                key: ValueKey(result.dps),
-                textAlign: TextAlign.right,
-                style: style,
-              ),
-            ),
-          ),
-        ],
       ),
     );
   }
-}
-
-/// 比率转百分比文本
-String _pct(double ratio) {
-  final value = ratio * 100;
-  return value == value.roundToDouble()
-      ? '${value.toStringAsFixed(0)}%'
-      : '${value.toStringAsFixed(1)}%';
 }

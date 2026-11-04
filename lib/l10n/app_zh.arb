@@ -1006,5 +1006,6 @@
   "gabBonus": "金挂收益",
   "tabBonus": "时挂收益",
   "actionRemove": "删除",
-  "dialogRemove": "确认删除？"
+  "dialogRemove": "确认删除？",
+  "actionHelp": "帮助"
 }

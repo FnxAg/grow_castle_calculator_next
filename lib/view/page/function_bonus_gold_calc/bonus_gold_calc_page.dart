@@ -178,6 +178,9 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     );
 
     final Widget list = ListView.builder(
+      padding: EdgeInsetsGeometry.only(
+        bottom: 72 + MediaQuery.of(context).padding.bottom,
+      ),
       itemCount: _incomes.length,
       itemBuilder: (context, index) {
         final income = _incomes[index];
@@ -230,6 +233,14 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
         top: false,
         child: Builder(
           builder: (context) {
+            if (_incomes.isEmpty) {
+              return Center(
+                child: Text(
+                  l10n.emptyIncomeSamples,
+                  style: const TextStyle(color: Colors.grey),
+                ),
+              );
+            }
             return list;
           },
         ),
@@ -255,6 +266,7 @@ class _IncomeTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
       color: Theme.of(context).colorScheme.primary,
@@ -287,15 +299,15 @@ class _IncomeTile extends StatelessWidget {
         children: [
           Text('${rate.format(fractionDigits: 2)}%', style: style),
           PopupMenuButton<Action>(
-            tooltip: AppLocalizations.of(context).actionEdit,
+            tooltip: l10n.actionEdit,
             itemBuilder: (context) => [
               PopupMenuItem(
                 value: Action.edit,
-                child: Text(AppLocalizations.of(context).actionEdit),
+                child: Text(l10n.actionEdit),
               ),
               PopupMenuItem(
                 value: Action.remove,
-                child: Text(AppLocalizations.of(context).actionRemove),
+                child: Text(l10n.actionRemove),
               ),
             ],
             onSelected: (action) {
@@ -303,19 +315,19 @@ class _IncomeTile extends StatelessWidget {
                 showDialog<void>(
                   context: context,
                   builder: (dialogContext) => AlertDialog(
-                    title: Text(AppLocalizations.of(context).actionRemove),
-                    content: Text(AppLocalizations.of(context).dialogRemove),
+                    title: Text(l10n.actionRemove),
+                    content: Text(l10n.dialogRemove),
                     actions: [
                       TextButton(
                         onPressed: () => Navigator.of(dialogContext).pop(),
-                        child: Text(AppLocalizations.of(context).actionCancel),
+                        child: Text(l10n.actionCancel),
                       ),
                       TextButton(
                         onPressed: () {
                           Navigator.of(dialogContext).pop();
                           onAction(Action.remove);
                         },
-                        child: Text(AppLocalizations.of(context).actionConfirm),
+                        child: Text(l10n.actionConfirm),
                       ),
                     ],
                   ),
@@ -392,7 +404,11 @@ class _AddIncomeDialogState extends State<_AddIncomeDialog> {
           child: Text(l10n.actionCancel),
         ),
         TextButton(
-          onPressed: _submit,
+          onPressed: _controller.text.trim().isEmpty
+              ? null
+              : widget.initialIncome.toString() == _controller.text
+              ? null
+              : _submit,
           child: Text(
             widget.initialIncome == null ? l10n.actionAdd : l10n.actionSave,
           ),

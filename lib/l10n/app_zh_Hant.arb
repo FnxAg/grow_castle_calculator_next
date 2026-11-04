@@ -445,5 +445,6 @@
   "gabBonus": "金掛收益",
   "tabBonus": "時掛收益",
   "actionRemove": "刪除",
-  "dialogRemove": "確認刪除？"
+  "dialogRemove": "確認刪除？",
+  "actionHelp": "說明"
 }

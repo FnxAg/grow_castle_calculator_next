@@ -2777,6 +2777,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'确认删除？'**
   String get dialogRemove;
+
+  /// No description provided for @actionHelp.
+  ///
+  /// In zh, this message translates to:
+  /// **'帮助'**
+  String get actionHelp;
 }
 
 class _AppLocalizationsDelegate

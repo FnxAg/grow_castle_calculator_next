@@ -446,5 +446,6 @@
   "gabBonus": "GAB bonus",
   "tabBonus": "TAB bonus",
   "actionRemove": "Remove",
-  "dialogRemove": "Are you sure you want to remove this item?"
+  "dialogRemove": "Are you sure you want to remove this item?",
+  "actionHelp": "Help"
 }
