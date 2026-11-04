@@ -166,16 +166,21 @@ final dailyIncomeProvider =
 
 // 重载信号
 
-/// 切换/重命名用户，或数据被整体替换时变化
+/// 切换/重命名用户、修改公会，或数据被整体替换时变化
 final userReloadSignalProvider = Provider<UserReloadSignal>((ref) {
   return (
     username: ref.watch(currentUsernameProvider),
+    guild: ref.watch(currentUserGuildProvider),
     dataVersion: ref.watch(dataVersionProvider),
   );
 });
 
 /// [userReloadSignalProvider] 的值类型
-typedef UserReloadSignal = ({String username, int dataVersion});
+typedef UserReloadSignal = ({
+  String username,
+  String guild,
+  int dataVersion,
+});
 
 /// 让 `store.setXxx` 形式的 tear-off 保持一个 token 的长度：`ref.users.setXxx`。
 ///
