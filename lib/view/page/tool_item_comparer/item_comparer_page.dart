@@ -520,34 +520,15 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     TextEditingController ctrl, {
     required bool isPercent,
   }) async {
-    final controller = TextEditingController(text: ctrl.text);
-    final saved = await showDialog<bool>(
+    final text = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: Text(label),
-        content: SelectAllTextField(
-          controller: controller,
-          autofocus: true,
-          keyboardType: const TextInputType.numberWithOptions(decimal: true),
-          inputFormatters: [
-            FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-          ],
-          decoration: InputDecoration(suffixText: isPercent ? '%' : null),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(),
-            child: Text(AppLocalizations.of(context).actionCancel),
-          ),
-          TextButton(
-            onPressed: () => Navigator.of(dialogContext).pop(true),
-            child: Text(AppLocalizations.of(context).actionSave),
-          ),
-        ],
+      builder: (dialogContext) => _PanelFieldDialog(
+        label: label,
+        initialValue: ctrl.text,
+        isPercent: isPercent,
       ),
     );
-    if (saved == true) ctrl.text = controller.text;
-    controller.dispose();
+    if (text != null) ctrl.text = text;
   }
 
   /// 两侧对比卡的并排阈值（列表内容宽度）
@@ -847,62 +828,17 @@ class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
   }
 
   Future<void> _editLine(_LineInput input) async {
-    final l10n = AppLocalizations.of(context);
-    final valueController = TextEditingController(text: input.valueCtrl.text);
-    var selectedLine = input.line;
-    final saved = await showDialog<bool>(
+    final result = await showDialog<({_LineOption? line, String value})>(
       context: context,
-      builder: (dialogContext) => StatefulBuilder(
-        builder: (context, setState) => AlertDialog(
-          title: Text(l10n.actionEdit),
-          content: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              DropdownButtonFormField<_LineOption>(
-                initialValue: selectedLine,
-                hint: Text(l10n.hintSelectLineType),
-                items: [
-                  for (final option in _lineOptions)
-                    DropdownMenuItem(value: option, child: Text(option.label)),
-                ],
-                onChanged: (value) => setState(() => selectedLine = value),
-              ),
-              const SizedBox(height: 12),
-              SelectAllTextField(
-                controller: valueController,
-                autofocus: selectedLine != null,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
-                ),
-                inputFormatters: [
-                  FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-                ],
-                decoration: InputDecoration(
-                  hintText: l10n.hintValue,
-                  suffixText: selectedLine?.isPercent == true ? '%' : null,
-                ),
-              ),
-            ],
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(),
-              child: Text(l10n.actionCancel),
-            ),
-            TextButton(
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-              child: Text(l10n.actionSave),
-            ),
-          ],
-        ),
+      builder: (dialogContext) => _LineEditDialog(
+        initialLine: input.line,
+        initialValue: input.valueCtrl.text,
       ),
     );
-    if (saved == true) {
-      input.line = selectedLine;
-      input.valueCtrl.text = valueController.text;
-      widget.onChanged();
-    }
-    valueController.dispose();
+    if (result == null) return;
+    input.line = result.line;
+    input.valueCtrl.text = result.value;
+    widget.onChanged();
   }
 
   Widget _buildAnimatedRow(_LineInput input, Animation<double> animation) {
@@ -1099,6 +1035,131 @@ class _ItemLineRow extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+}
+
+class _PanelFieldDialog extends StatefulWidget {
+  const _PanelFieldDialog({
+    required this.label,
+    required this.initialValue,
+    required this.isPercent,
+  });
+
+  final String label;
+  final String initialValue;
+  final bool isPercent;
+
+  @override
+  State<_PanelFieldDialog> createState() => _PanelFieldDialogState();
+}
+
+class _PanelFieldDialogState extends State<_PanelFieldDialog> {
+  late final TextEditingController _controller = TextEditingController(
+    text: widget.initialValue,
+  );
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(widget.label),
+      content: SelectAllTextField(
+        controller: _controller,
+        autofocus: true,
+        keyboardType: const TextInputType.numberWithOptions(decimal: true),
+        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
+        decoration: InputDecoration(suffixText: widget.isPercent ? '%' : null),
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.actionCancel),
+        ),
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(_controller.text),
+          child: Text(l10n.actionSave),
+        ),
+      ],
+    );
+  }
+}
+
+class _LineEditDialog extends StatefulWidget {
+  const _LineEditDialog({
+    required this.initialLine,
+    required this.initialValue,
+  });
+
+  final _LineOption? initialLine;
+  final String initialValue;
+
+  @override
+  State<_LineEditDialog> createState() => _LineEditDialogState();
+}
+
+class _LineEditDialogState extends State<_LineEditDialog> {
+  late final TextEditingController _valueController = TextEditingController(
+    text: widget.initialValue,
+  );
+  late _LineOption? _selectedLine = widget.initialLine;
+
+  @override
+  void dispose() {
+    _valueController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return AlertDialog(
+      title: Text(l10n.actionEdit),
+      content: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          DropdownButtonFormField<_LineOption>(
+            initialValue: _selectedLine,
+            hint: Text(l10n.hintSelectLineType),
+            items: [
+              for (final option in _lineOptions)
+                DropdownMenuItem(value: option, child: Text(option.label)),
+            ],
+            onChanged: (value) => setState(() => _selectedLine = value),
+          ),
+          const SizedBox(height: 12),
+          SelectAllTextField(
+            controller: _valueController,
+            autofocus: _selectedLine != null,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+            ],
+            decoration: InputDecoration(
+              hintText: l10n.hintValue,
+              suffixText: _selectedLine?.isPercent == true ? '%' : null,
+            ),
+          ),
+        ],
+      ),
+      actions: [
+        TextButton(
+          onPressed: () => Navigator.of(context).pop(),
+          child: Text(l10n.actionCancel),
+        ),
+        TextButton(
+          onPressed: () =>
+              Navigator.of(context)
+                  .pop((line: _selectedLine, value: _valueController.text)),
+          child: Text(l10n.actionSave),
+        ),
+      ],
     );
   }
 }
