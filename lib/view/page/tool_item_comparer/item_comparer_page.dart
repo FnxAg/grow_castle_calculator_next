@@ -23,6 +23,24 @@ class ItemComparerPage extends StatefulWidget {
 
 enum Actions { reset, help }
 
+/// 无装备面板中的一个属性
+enum AttributeType {
+  baseAttack('Base Attack', isPercent: false),
+  increasedDmg('Increased Damage'),
+  moreDmg('More Damage'),
+  critChance('Critical Chance'),
+  critDmg('Critical Damage'),
+  baseAps('Attacks Per Second', isPercent: false),
+  increasedSpeed('Increased Speed');
+
+  const AttributeType(this.label, {this.isPercent = true});
+
+  final String label;
+
+  /// 是否按百分比显示（输入框后缀、面板数值）
+  final bool isPercent;
+}
+
 const int kMaxLinesPerItem = 3;
 const int kMaxEquipsPerSide = 3;
 
@@ -75,73 +93,34 @@ final List<_LineOption> _lineOptions = [
   const _LineOption.moreDmg(),
 ];
 
-/// 一条装备词条输入（词条选项 + 数值输入框）
+/// 一件装备的一条词条（词条选项 + 数值文本）
 class _LineInput {
-  _LineInput(this._onChanged) {
-    valueCtrl.addListener(_onChanged);
-  }
-
-  final VoidCallback _onChanged;
-  final valueCtrl = TextEditingController();
+  _LineInput({this.line, this.value = ''});
 
   _LineOption? line;
-
-  bool _disposed = false;
-
-  /// 幂等：处于退场动画中的行可能经由页面 dispose / 重置路径被二次释放
-  void dispose() {
-    if (_disposed) return;
-    _disposed = true;
-    valueCtrl.removeListener(_onChanged);
-    valueCtrl.dispose();
-  }
+  String value;
 }
 
 /// 一侧对比中的一件装备（最多 [kMaxLinesPerItem] 条词条）
 class _EquipInput {
-  _EquipInput(this.id);
-
-  /// 稳定标识：作为行列表的 key，增删装备后不会串用其他装备的动画状态
-  final int id;
   final List<_LineInput> lines = [];
-
-  void dispose() {
-    for (final line in lines) {
-      line.dispose();
-    }
-  }
 }
 
-class _ItemComparerPageState extends State<ItemComparerPage>
-    with SingleTickerProviderStateMixin {
-  final _baseAttackCtrl = TextEditingController();
-  final _increasedDmgCtrl = TextEditingController();
-  final _moreDmgCtrl = TextEditingController();
-  final _critChanceCtrl = TextEditingController();
-  final _critDmgCtrl = TextEditingController();
-
-  /// 基础每秒攻击次数（与 [_speedCtrl] 都填写后，DPS 才按攻击次数计算）
-  final _baseApsCtrl = TextEditingController();
-
-  /// 面板 Increased Speed：与 [_baseApsCtrl] 一起参与攻击次数计算
-  final _speedCtrl = TextEditingController();
+class _ItemComparerPageState extends State<ItemComparerPage> {
+  /// 无装备面板各属性的输入框
+  final Map<AttributeType, TextEditingController> _ctrls = {
+    for (final type in AttributeType.values) type: TextEditingController(),
+  };
 
   /// 两侧对比的装备
   final _equip1 = <_EquipInput>[];
   final _equip2 = <_EquipInput>[];
-  int _nextEquipId = 0;
 
   bool _restoring = false;
 
-  List<TextEditingController> get _panelCtrls => [
-    _baseAttackCtrl,
-    _increasedDmgCtrl,
-    _moreDmgCtrl,
-    _critChanceCtrl,
-    _critDmgCtrl,
-    _baseApsCtrl,
-    _speedCtrl,
-  ];
+  Iterable<TextEditingController> get _panelCtrls => _ctrls.values;
+
+  TextEditingController _ctrl(AttributeType type) => _ctrls[type]!;
 
   @override
   void initState() {
@@ -162,9 +141,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     for (final ctrl in _panelCtrls) {
       ctrl.dispose();
     }
-    for (final equip in [..._equip1, ..._equip2]) {
-      equip.dispose();
-    }
     super.dispose();
   }
 
@@ -172,9 +148,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   void _onDataRestored() {
     if (!mounted) return;
     _restoring = true;
-    for (final equip in [..._equip1, ..._equip2]) {
-      equip.dispose();
-    }
     _equip1.clear();
     _equip2.clear();
     _restoreFromStore();
@@ -188,10 +161,7 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     setState(() {});
   }
 
-  _LineInput _createLineInput() => _LineInput(_onInputChanged);
-
-  _EquipInput _createEquip() =>
-      _EquipInput(_nextEquipId++)..lines.add(_createLineInput());
+  _EquipInput _createEquip() => _EquipInput()..lines.add(_LineInput());
 
   void _addEquip(List<_EquipInput> equips) {
     if (equips.length >= kMaxEquipsPerSide) return;
@@ -201,11 +171,24 @@ class _ItemComparerPageState extends State<ItemComparerPage>
 
   void _removeEquip(List<_EquipInput> equips, _EquipInput equip) {
     if (equips.length <= 1) return;
-    setState(() {
-      equips.remove(equip);
-      equip.dispose();
-    });
+    setState(() => equips.remove(equip));
     _saveToStore();
+  }
+
+  /// 打开一件装备的词条编辑对话框，保存后写回并持久化
+  Future<void> _editEquip(_EquipInput equip, int index) async {
+    final lines = await showDialog<List<_LineInput>>(
+      context: context,
+      builder: (dialogContext) => _EquipEditDialog(
+        title: AppLocalizations.of(context).labelEquipPiece(index + 1),
+        lines: equip.lines,
+      ),
+    );
+    if (lines == null || !mounted) return;
+    equip.lines
+      ..clear()
+      ..addAll(lines);
+    _onInputChanged();
   }
 
   /// 两件装备互换位置（各自的行输入随对象一起移动）
@@ -226,9 +209,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
   }
 
   void _reset() {
-    for (final equip in [..._equip1, ..._equip2]) {
-      equip.dispose();
-    }
     for (final ctrl in _panelCtrls) {
       ctrl.clear();
     }
@@ -245,17 +225,48 @@ class _ItemComparerPageState extends State<ItemComparerPage>
 
   void _restoreFromStore() {
     final store = Stores.itemComparerStore;
-    _baseAttackCtrl.text = store.baseAttack;
-    _increasedDmgCtrl.text = store.increasedDmg;
-    _moreDmgCtrl.text = store.moreDmg;
-    _critChanceCtrl.text = store.critChance;
-    _critDmgCtrl.text = store.critDmg;
-    _baseApsCtrl.text = store.baseAps;
-    _speedCtrl.text = store.speed;
+    for (final type in AttributeType.values) {
+      _ctrl(type).text = _readStore(store, type);
+    }
     _restoreEquips(_equip1, store.item1);
     _restoreEquips(_equip2, store.item2);
     if (_equip1.isEmpty) _equip1.add(_createEquip());
     if (_equip2.isEmpty) _equip2.add(_createEquip());
+  }
+
+  /// 面板输入在 store 中的持久化字段
+  static String _readStore(ItemComparerStore store, AttributeType type) =>
+      switch (type) {
+        AttributeType.baseAttack => store.baseAttack,
+        AttributeType.increasedDmg => store.increasedDmg,
+        AttributeType.moreDmg => store.moreDmg,
+        AttributeType.critChance => store.critChance,
+        AttributeType.critDmg => store.critDmg,
+        AttributeType.baseAps => store.baseAps,
+        AttributeType.increasedSpeed => store.speed,
+      };
+
+  static void _writeStore(
+    ItemComparerStore store,
+    AttributeType type,
+    String value,
+  ) {
+    switch (type) {
+      case AttributeType.baseAttack:
+        store.baseAttack = value;
+      case AttributeType.increasedDmg:
+        store.increasedDmg = value;
+      case AttributeType.moreDmg:
+        store.moreDmg = value;
+      case AttributeType.critChance:
+        store.critChance = value;
+      case AttributeType.critDmg:
+        store.critDmg = value;
+      case AttributeType.baseAps:
+        store.baseAps = value;
+      case AttributeType.increasedSpeed:
+        store.speed = value;
+    }
   }
 
   void _restoreEquips(
@@ -263,33 +274,31 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     List<List<ItemComparerLineInput>> saved,
   ) {
     for (final savedLines in saved) {
-      final equip = _EquipInput(_nextEquipId++);
+      final equip = _EquipInput();
       for (final input in savedLines) {
-        final row = _createLineInput();
-        if (input.isMoreDmg) {
-          row.line = const _LineOption.moreDmg();
-        } else if (input.isElementDamage) {
-          row.line = const _LineOption.elementDamage();
-        } else if (input.line != null) {
-          row.line = _LineOption.item(input.line!);
-        }
-        row.valueCtrl.text = input.value;
-        equip.lines.add(row);
+        equip.lines.add(
+          _LineInput(
+            line: input.isMoreDmg
+                ? const _LineOption.moreDmg()
+                : input.isElementDamage
+                ? const _LineOption.elementDamage()
+                : input.line != null
+                ? _LineOption.item(input.line!)
+                : null,
+            value: input.value,
+          ),
+        );
       }
-      if (equip.lines.isEmpty) equip.lines.add(_createLineInput());
+      if (equip.lines.isEmpty) equip.lines.add(_LineInput());
       target.add(equip);
     }
   }
 
   void _saveToStore() {
     final store = Stores.itemComparerStore;
-    store.baseAttack = _baseAttackCtrl.text;
-    store.increasedDmg = _increasedDmgCtrl.text;
-    store.moreDmg = _moreDmgCtrl.text;
-    store.critChance = _critChanceCtrl.text;
-    store.critDmg = _critDmgCtrl.text;
-    store.baseAps = _baseApsCtrl.text;
-    store.speed = _speedCtrl.text;
+    for (final type in AttributeType.values) {
+      _writeStore(store, type, _ctrl(type).text);
+    }
     _saveEquips(_equip1, store.item1);
     _saveEquips(_equip2, store.item2);
     store.save();
@@ -309,48 +318,51 @@ class _ItemComparerPageState extends State<ItemComparerPage>
                 line: input.line?.line,
                 isMoreDmg: input.line?.isMoreDmg ?? false,
                 isElementDamage: input.line?.isElementDamage ?? false,
-                value: input.valueCtrl.text,
+                value: input.value,
               ),
           ],
       ]);
   }
 
-  double _valueOf(TextEditingController ctrl) =>
-      double.tryParse(ctrl.text.trim()) ?? 0;
+  double _valueOf(AttributeType type) => _valueOfText(_ctrl(type).text);
 
-  double? _optionalValue(TextEditingController ctrl) =>
-      ctrl.text.trim().isEmpty ? null : double.tryParse(ctrl.text.trim()) ?? 0;
+  double _valueOfText(String text) => double.tryParse(text.trim()) ?? 0;
+
+  /// 空文本表示未填写（攻速相关字段未填时按未提供处理）
+  double? _optionalValue(AttributeType type) {
+    final text = _ctrl(type).text.trim();
+    return text.isEmpty ? null : double.tryParse(text) ?? 0;
+  }
 
   ItemDpsResult _computeItemResult(List<_EquipInput> equips) {
     // 同一侧多件装备的词条叠加计算
     final lines = [for (final equip in equips) ...equip.lines];
     return computeItemDps(
-      baseAttack: _valueOf(_baseAttackCtrl),
-      increasedDmg: _valueOf(_increasedDmgCtrl),
-      moreDmg: _valueOf(_moreDmgCtrl),
-      critChance: _valueOf(_critChanceCtrl),
-      critDmg: _valueOf(_critDmgCtrl),
-      baseAps: _optionalValue(_baseApsCtrl),
-      increasedSpeed: _optionalValue(_speedCtrl),
+      baseAttack: _valueOf(AttributeType.baseAttack),
+      increasedDmg: _valueOf(AttributeType.increasedDmg),
+      moreDmg: _valueOf(AttributeType.moreDmg),
+      critChance: _valueOf(AttributeType.critChance),
+      critDmg: _valueOf(AttributeType.critDmg),
+      baseAps: _optionalValue(AttributeType.baseAps),
+      increasedSpeed: _optionalValue(AttributeType.increasedSpeed),
       lines: [
         for (final input in lines)
           if (input.line != null &&
               !input.line!.isMoreDmg &&
               !input.line!.isElementDamage &&
-              input.valueCtrl.text.trim().isNotEmpty)
-            (line: input.line!.line!, value: _valueOf(input.valueCtrl)),
+              input.value.trim().isNotEmpty)
+            (line: input.line!.line!, value: _valueOfText(input.value)),
       ],
       moreDmgLines: [
         for (final input in lines)
-          if (input.line?.isMoreDmg == true &&
-              input.valueCtrl.text.trim().isNotEmpty)
-            _valueOf(input.valueCtrl),
+          if (input.line?.isMoreDmg == true && input.value.trim().isNotEmpty)
+            _valueOfText(input.value),
       ],
       elementDmgLines: [
         for (final input in lines)
           if (input.line?.isElementDamage == true &&
-              input.valueCtrl.text.trim().isNotEmpty)
-            _valueOf(input.valueCtrl),
+              input.value.trim().isNotEmpty)
+            _valueOfText(input.value),
       ],
     );
   }
@@ -360,21 +372,13 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     final l10n = AppLocalizations.of(context);
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
-    final baseResult = computeItemDps(
-      baseAttack: _valueOf(_baseAttackCtrl),
-      increasedDmg: _valueOf(_increasedDmgCtrl),
-      moreDmg: _valueOf(_moreDmgCtrl),
-      critChance: _valueOf(_critChanceCtrl),
-      critDmg: _valueOf(_critDmgCtrl),
-      baseAps: _optionalValue(_baseApsCtrl),
-      increasedSpeed: _optionalValue(_speedCtrl),
-    );
+    final baseResult = _computeItemResult(const []);
     final item1Result = _computeItemResult(_equip1);
     final item2Result = _computeItemResult(_equip2);
     final baseDps = baseResult.dps;
     final item1Dps = item1Result.dps;
     final item2Dps = item2Result.dps;
-    final bool ready = _valueOf(_baseAttackCtrl) > 0;
+    final bool ready = _valueOf(AttributeType.baseAttack) > 0;
 
     final Widget list = ListView(
       key: const PageStorageKey('item_comparer_list'),
@@ -484,57 +488,38 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     );
   }
 
-  List<Widget> _buildPanelCard() {
-    return [
-      _panelField('Base Attack', _baseAttackCtrl, isPercent: false),
-      _panelField('Increased Damage', _increasedDmgCtrl),
-      _panelField('More Damage', _moreDmgCtrl),
-      _panelField('Critical Chance', _critChanceCtrl),
-      _panelField('Critical Damage', _critDmgCtrl),
-      _panelField('Attacks Per Second', _baseApsCtrl, isPercent: false),
-      _panelField('Increased Speed', _speedCtrl),
-    ];
-  }
+  List<Widget> _buildPanelCard() => [
+    for (final type in AttributeType.values) _panelField(type),
+  ];
 
-  Widget _panelField(
-    String label,
-    TextEditingController ctrl, {
-    bool isPercent = true,
-  }) {
+  Widget _panelField(AttributeType type) {
+    final ctrl = _ctrl(type);
     return ListTile(
-      dense: true,
-      title: Text(label),
+      title: Text(type.label),
       trailing: Text(
-        ctrl.text.trim().isEmpty ? '—' : '${ctrl.text}${isPercent ? '%' : ''}',
+        ctrl.text.trim().isEmpty
+            ? '—'
+            : '${ctrl.text}${type.isPercent ? '%' : ''}',
         style: TextStyle(
+          fontSize: 14.0,
           fontWeight: FontWeight.w600,
           color: Theme.of(context).colorScheme.primary,
         ),
       ),
-      onTap: () => _editPanelField(label, ctrl, isPercent: isPercent),
+      onTap: () => _editPanelField(type),
     );
   }
 
-  Future<void> _editPanelField(
-    String label,
-    TextEditingController ctrl, {
-    required bool isPercent,
-  }) async {
+  Future<void> _editPanelField(AttributeType type) async {
+    final ctrl = _ctrl(type);
     final text = await showDialog<String>(
       context: context,
-      builder: (dialogContext) => _PanelFieldDialog(
-        label: label,
-        initialValue: ctrl.text,
-        isPercent: isPercent,
-      ),
+      builder: (dialogContext) =>
+          _PanelFieldDialog(attribute: type, initialValue: ctrl.text),
     );
     if (text != null) ctrl.text = text;
   }
 
-  /// 两侧对比卡的并排阈值（列表内容宽度）
-  static const double _sideBySideMinWidth = 600.0;
-
-  /// 两侧装备对比区：宽度足够时左右并排，否则上下堆叠。
   Widget _buildCompareCards({
     required bool ready,
     required double baseDps,
@@ -545,7 +530,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
       equips: _equip1,
       otherEquips: _equip2,
       side: 1,
-      listId: 'item1',
       itemDps: item1Dps,
       otherDps: item2Dps,
       baseDps: baseDps,
@@ -555,7 +539,6 @@ class _ItemComparerPageState extends State<ItemComparerPage>
       equips: _equip2,
       otherEquips: _equip1,
       side: 2,
-      listId: 'item2',
       itemDps: item2Dps,
       otherDps: item1Dps,
       baseDps: baseDps,
@@ -563,29 +546,18 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     );
 
     return LayoutBuilder(
-      builder: (context, constraints) =>
-          constraints.maxWidth >= _sideBySideMinWidth
-          ? Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(child: item1Card),
-                Expanded(child: item2Card),
-              ],
-            )
-          : Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [item1Card, item2Card],
-            ),
+      builder: (context, constraints) => Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [item1Card, item2Card],
+      ),
     );
   }
 
-  /// 一侧装备卡：标题 + 相对无装备的涨幅/胜负徽标，下挂各件装备。
   Widget _buildItemCard({
     required List<_EquipInput> equips,
     required List<_EquipInput> otherEquips,
     required int side,
-    required String listId,
     required double itemDps,
     required double otherDps,
     required double baseDps,
@@ -652,7 +624,7 @@ class _ItemComparerPageState extends State<ItemComparerPage>
               ),
               for (var i = 0; i < equips.length; i++) ...[
                 if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
-                _buildEquipSection(equips, otherEquips, side, i, listId),
+                _buildEquipRow(equips, otherEquips, side, i),
               ],
             ],
           ),
@@ -661,32 +633,7 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     );
   }
 
-  Widget _buildEquipSection(
-    List<_EquipInput> equips,
-    List<_EquipInput> otherEquips,
-    int side,
-    int index,
-    String listId,
-  ) {
-    final equip = equips[index];
-    return Column(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        _buildEquipHeader(equips, otherEquips, side, index),
-        _AnimatedItemLineList(
-          key: ValueKey('$listId-${equip.id}'),
-          lines: equip.lines,
-          onChanged: _onInputChanged,
-          createLine: _createLineInput,
-        ),
-        const SizedBox(height: 4),
-      ],
-    );
-  }
-
-  /// 分件标题：将交换、删除、添加装备等次要操作收进菜单。
-  Widget _buildEquipHeader(
+  Widget _buildEquipRow(
     List<_EquipInput> equips,
     List<_EquipInput> otherEquips,
     int side,
@@ -696,359 +643,98 @@ class _ItemComparerPageState extends State<ItemComparerPage>
     final theme = Theme.of(context);
     final scheme = theme.colorScheme;
     final equip = equips[index];
-    return Padding(
-      padding: const EdgeInsets.only(left: 16, right: 4, top: 4),
-      child: Row(
-        children: [
-          Expanded(
-            child: Text(
-              l10n.labelEquipPiece(index + 1),
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: theme.textTheme.labelLarge?.copyWith(
-                color: scheme.onSurfaceVariant,
-              ),
-            ),
-          ),
-          const SizedBox(width: 8),
-          Text(
-            '${equip.lines.length}/$kMaxLinesPerItem',
-            style: theme.textTheme.labelSmall?.copyWith(
-              color: scheme.onSurfaceVariant,
-            ),
-          ),
-          PopupMenuButton<String>(
-            padding: const EdgeInsets.all(8),
-            iconSize: 20,
-            itemBuilder: (context) => [
-              if (equips.length < kMaxEquipsPerSide)
-                PopupMenuItem(value: 'add', child: Text(l10n.actionAddEquip)),
-              for (var i = 0; i < otherEquips.length; i++)
-                PopupMenuItem(
-                  value: 'swap:$i',
-                  child: Text(
-                    dividerText([
-                      l10n.tooltipSwapEquip,
-                      l10n.labelItemNumber(side == 1 ? 2 : 1),
-                      l10n.labelEquipPiece(i + 1),
-                    ]),
-                  ),
-                ),
-              if (equips.length > 1)
-                PopupMenuItem(
-                  value: 'delete',
-                  child: Text(l10n.tooltipDeleteEquip),
-                ),
-            ],
-            onSelected: (value) {
-              if (value == 'add') {
-                _addEquip(equips);
-              } else if (value == 'delete') {
-                _removeEquip(equips, equip);
-              } else if (value.startsWith('swap:')) {
-                final otherIndex = int.tryParse(value.substring(5));
-                if (otherIndex != null && otherIndex < otherEquips.length) {
-                  _swapEquips(
-                    equips,
-                    equip,
-                    otherEquips,
-                    otherEquips[otherIndex],
-                  );
-                }
-              }
-            },
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class _AnimatedItemLineList extends StatefulWidget {
-  const _AnimatedItemLineList({
-    super.key,
-    required this.lines,
-    required this.onChanged,
-    required this.createLine,
-  });
-
-  final List<_LineInput> lines;
-  final VoidCallback onChanged;
-  final _LineInput Function() createLine;
-
-  @override
-  State<_AnimatedItemLineList> createState() => _AnimatedItemLineListState();
-}
-
-class _AnimatedItemLineListState extends State<_AnimatedItemLineList> {
-  static const _animationDuration = Duration(milliseconds: 280);
-
-  final _listKey = GlobalKey<AnimatedListState>();
-  final _removingInputs = <_LineInput>{};
-
-  @override
-  void dispose() {
-    for (final input in _removingInputs) {
-      input.dispose();
-    }
-    super.dispose();
-  }
-
-  void _addLine() {
-    if (widget.lines.length >= kMaxLinesPerItem) return;
-    final index = widget.lines.length;
-    widget.lines.add(widget.createLine());
-    _listKey.currentState?.insertItem(index, duration: _animationDuration);
-    widget.onChanged();
-  }
-
-  void _removeLine(_LineInput input) {
-    final index = widget.lines.indexOf(input);
-    if (index < 0 || !_removingInputs.add(input)) return;
-
-    widget.lines.removeAt(index);
-    _listKey.currentState?.removeItem(
-      index,
-      (context, animation) => _RemovedLineItem(
-        key: ObjectKey(input),
-        input: input,
-        animation: animation,
-        onRemoved: _finishRemove,
-      ),
-      duration: _animationDuration,
-    );
-    widget.onChanged();
-  }
-
-  void _finishRemove(_LineInput input) {
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      _removingInputs.remove(input);
-      input.dispose();
-    });
-  }
-
-  Future<void> _editLine(_LineInput input) async {
-    final result = await showDialog<({_LineOption? line, String value})>(
-      context: context,
-      builder: (dialogContext) => _LineEditDialog(
-        initialLine: input.line,
-        initialValue: input.valueCtrl.text,
-      ),
-    );
-    if (result == null) return;
-    input.line = result.line;
-    input.valueCtrl.text = result.value;
-    widget.onChanged();
-  }
-
-  Widget _buildAnimatedRow(_LineInput input, Animation<double> animation) {
-    final curvedAnimation = CurvedAnimation(
-      parent: animation,
-      curve: Curves.easeOutCubic,
-      reverseCurve: Curves.easeInCubic,
-    );
-    final offset = Tween<Offset>(
-      begin: const Offset(0, -0.12),
-      end: Offset.zero,
-    ).animate(curvedAnimation);
-
-    return SizeTransition(
-      sizeFactor: curvedAnimation,
-      alignment: const Alignment(-1.0, -1.0),
-      child: Padding(
-        padding: const EdgeInsets.only(top: 2),
-        child: FadeTransition(
-          opacity: curvedAnimation,
-          child: SlideTransition(
-            position: offset,
-            child: _ItemLineRow(
-              key: ObjectKey(input),
-              input: input,
-              onRemove: () => _removeLine(input),
-              onEdit: () => _editLine(input),
-            ),
+    final summary = _equipSummary(equip);
+    return ListTile(
+      leading: CircleAvatar(
+        radius: 14.0,
+        backgroundColor: scheme.primaryContainer,
+        child: Text(
+          '${index + 1}',
+          style: TextStyle(
+            fontSize: 12.0,
+            fontWeight: FontWeight.bold,
+            color: scheme.onPrimaryContainer,
           ),
         ),
       ),
-    );
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Column(
-      children: [
-        AnimatedList(
-          key: _listKey,
-          shrinkWrap: true,
-          physics: const NeverScrollableScrollPhysics(),
-          initialItemCount: widget.lines.length,
-          itemBuilder: (context, index, animation) =>
-              _buildAnimatedRow(widget.lines[index], animation),
-        ),
-        if (widget.lines.length < kMaxLinesPerItem)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 2, 16, 2),
-            child: Align(
-              alignment: Alignment.centerLeft,
-              child: TextButton.icon(
-                onPressed: _addLine,
-                icon: const Icon(Icons.add, size: 18),
-                label: Text(AppLocalizations.of(context).actionAddLine),
-                style: TextButton.styleFrom(
-                  visualDensity: VisualDensity.compact,
-                  padding: EdgeInsets.zero,
-                  minimumSize: const Size(0, 32),
-                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                ),
-              ),
-            ),
-          ),
-      ],
-    );
-  }
-}
-
-class _RemovedLineItem extends StatefulWidget {
-  const _RemovedLineItem({
-    super.key,
-    required this.input,
-    required this.animation,
-    required this.onRemoved,
-  });
-
-  final _LineInput input;
-
-  final Animation<double> animation;
-  final ValueChanged<_LineInput> onRemoved;
-
-  @override
-  State<_RemovedLineItem> createState() => _RemovedLineItemState();
-}
-
-class _RemovedLineItemState extends State<_RemovedLineItem> {
-  late final CurvedAnimation _curved = CurvedAnimation(
-    parent: widget.animation,
-    curve: Curves.easeOutCubic,
-    reverseCurve: Curves.easeInCubic,
-  );
-  late final Animation<Offset> _offset = Tween<Offset>(
-    begin: Offset.zero,
-    end: const Offset(0, -0.12),
-  ).animate(_curved);
-
-  @override
-  void initState() {
-    super.initState();
-    widget.animation.addStatusListener(_onAnimationStatusChanged);
-  }
-
-  void _onAnimationStatusChanged(AnimationStatus status) {
-    if (status == AnimationStatus.dismissed) {
-      widget.onRemoved(widget.input);
-    }
-  }
-
-  @override
-  void dispose() {
-    widget.animation.removeStatusListener(_onAnimationStatusChanged);
-    _curved.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return IgnorePointer(
-      child: SizeTransition(
-        sizeFactor: _curved,
-        alignment: const Alignment(-1.0, -1.0),
-        child: Padding(
-          padding: const EdgeInsets.only(top: 2),
-          child: FadeTransition(
-            opacity: _curved,
-            child: SlideTransition(
-              position: _offset,
-              child: _ItemLineRow(
-                key: ObjectKey(widget.input),
-                input: widget.input,
-                onRemove: () {},
-                onEdit: () {},
-              ),
-            ),
-          ),
+      title: Text(
+        summary.isEmpty ? '—' : summary,
+        overflow: TextOverflow.ellipsis,
+        style: theme.textTheme.bodyMedium?.copyWith(
+          color: summary.isEmpty ? scheme.onSurfaceVariant : null,
         ),
       ),
-    );
-  }
-}
-
-class _ItemLineRow extends StatelessWidget {
-  const _ItemLineRow({
-    super.key,
-    required this.input,
-    required this.onRemove,
-    required this.onEdit,
-  });
-
-  final _LineInput input;
-  final VoidCallback onRemove;
-  final VoidCallback onEdit;
-
-  @override
-  Widget build(BuildContext context) {
-    final scheme = Theme.of(context).colorScheme;
-    final line = input.line;
-    final hasValue = input.valueCtrl.text.trim().isNotEmpty;
-    return InkWell(
-      onTap: onEdit,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 2, 4, 2),
-        child: Row(
-          children: [
-            Expanded(
+      onTap: () => _editEquip(equip, index),
+      trailing: PopupMenuButton<String>(
+        padding: const EdgeInsets.all(8),
+        iconSize: 20,
+        itemBuilder: (context) => [
+          if (equips.length < kMaxEquipsPerSide)
+            PopupMenuItem(value: 'add', child: Text(l10n.actionAddEquip)),
+          for (var i = 0; i < otherEquips.length; i++)
+            PopupMenuItem(
+              value: 'swap:$i',
               child: Text(
-                line?.label ?? AppLocalizations.of(context).hintSelectLineType,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: line == null ? scheme.onSurfaceVariant : null,
-                ),
+                dividerText([
+                  l10n.tooltipSwapEquip,
+                  l10n.labelItemNumber(side == 1 ? 2 : 1),
+                  l10n.labelEquipPiece(i + 1),
+                ]),
               ),
             ),
-            const SizedBox(width: 8),
-            Text(
-              hasValue
-                  ? '${input.valueCtrl.text}${line?.isPercent == true ? '%' : ''}'
-                  : '—',
-              style: TextStyle(
-                fontWeight: FontWeight.w600,
-                color: hasValue ? scheme.primary : scheme.onSurfaceVariant,
-              ),
+          if (equips.length > 1)
+            PopupMenuItem(
+              value: 'delete',
+              child: Text(l10n.tooltipDeleteEquip),
             ),
-            IconButton(
-              tooltip: AppLocalizations.of(context).tooltipDeleteLine,
-              icon: const Icon(Icons.close, size: 18),
-              onPressed: onRemove,
-              padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 36, minHeight: 36),
-              visualDensity: VisualDensity.compact,
-            ),
-          ],
-        ),
+        ],
+        onSelected: (value) {
+          if (value == 'add') {
+            _addEquip(equips);
+          } else if (value == 'delete') {
+            _removeEquip(equips, equip);
+          } else if (value.startsWith('swap:')) {
+            final otherIndex = int.tryParse(value.substring(5));
+            if (otherIndex != null && otherIndex < otherEquips.length) {
+              _swapEquips(equips, equip, otherEquips, otherEquips[otherIndex]);
+            }
+          }
+        },
       ),
     );
+  }
+
+  /// 词条摘要：`Damage 8% \n Critical Damage 12%`
+  // String _equipSummary(_EquipInput equip) => dividerText([
+  //   for (final input in equip.lines)
+  //     if (input.line != null) _lineSummary(input.line!, input.value),
+  // ]);
+
+  String _equipSummary(_EquipInput equip) {
+    final lines = [
+      for (final input in equip.lines)
+        if (input.line != null) _lineSummary(input.line!, input.value),
+    ];
+    return lines.join('\n');
+  }
+
+  static String _lineSummary(_LineOption line, String value) {
+    final text = value.trim();
+    if (text.isEmpty) return line.label;
+    if (!line.isPercent) return '${line.label} $text';
+    // 词条名已自带 “%”，数值后不再重复
+    return '${line.label.replaceAll('%', '').trim()} $text%';
   }
 }
 
 class _PanelFieldDialog extends StatefulWidget {
   const _PanelFieldDialog({
-    required this.label,
+    required this.attribute,
     required this.initialValue,
-    required this.isPercent,
   });
 
-  final String label;
+  final AttributeType attribute;
   final String initialValue;
-  final bool isPercent;
 
   @override
   State<_PanelFieldDialog> createState() => _PanelFieldDialogState();
@@ -1069,13 +755,15 @@ class _PanelFieldDialogState extends State<_PanelFieldDialog> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(widget.label),
+      title: Text(widget.attribute.label),
       content: SelectAllTextField(
         controller: _controller,
         autofocus: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
-        decoration: InputDecoration(suffixText: widget.isPercent ? '%' : null),
+        decoration: InputDecoration(
+          suffixText: widget.attribute.isPercent ? '%' : null,
+        ),
       ),
       actions: [
         TextButton(
@@ -1091,75 +779,168 @@ class _PanelFieldDialogState extends State<_PanelFieldDialog> {
   }
 }
 
-class _LineEditDialog extends StatefulWidget {
-  const _LineEditDialog({
-    required this.initialLine,
-    required this.initialValue,
-  });
+/// 编辑一件装备：增减词条数量，并逐条选择类型、填写数值。
+class _EquipEditDialog extends StatefulWidget {
+  const _EquipEditDialog({required this.title, required this.lines});
 
-  final _LineOption? initialLine;
-  final String initialValue;
+  final String title;
+  final List<_LineInput> lines;
 
   @override
-  State<_LineEditDialog> createState() => _LineEditDialogState();
+  State<_EquipEditDialog> createState() => _EquipEditDialogState();
 }
 
-class _LineEditDialogState extends State<_LineEditDialog> {
-  late final TextEditingController _valueController = TextEditingController(
-    text: widget.initialValue,
-  );
-  late _LineOption? _selectedLine = widget.initialLine;
+/// 对话框内的词条草稿：取消时不影响装备，保存时才写回
+class _LineDraft {
+  _LineDraft({this.line, String value = ''})
+    : valueCtrl = TextEditingController(text: value);
+
+  _LineOption? line;
+  final TextEditingController valueCtrl;
+
+  void dispose() => valueCtrl.dispose();
+
+  _LineInput toInput() => _LineInput(line: line, value: valueCtrl.text);
+}
+
+class _EquipEditDialogState extends State<_EquipEditDialog> {
+  late final List<_LineDraft> _drafts = [
+    for (final line in widget.lines)
+      _LineDraft(line: line.line, value: line.value),
+  ];
+
+  @override
+  void initState() {
+    super.initState();
+    if (_drafts.isEmpty) _drafts.add(_LineDraft());
+  }
 
   @override
   void dispose() {
-    _valueController.dispose();
+    for (final draft in _drafts) {
+      draft.dispose();
+    }
     super.dispose();
+  }
+
+  void _addLine() {
+    if (_drafts.length >= kMaxLinesPerItem) return;
+    setState(() => _drafts.add(_LineDraft()));
+  }
+
+  void _removeLine(_LineDraft draft) {
+    if (!_drafts.remove(draft)) return;
+    setState(() {});
+    WidgetsBinding.instance.addPostFrameCallback((_) => draft.dispose());
+  }
+
+  void _save() {
+    Navigator.of(context).pop([
+      for (final draft in _drafts)
+        if (draft.line != null || draft.valueCtrl.text.trim().isNotEmpty)
+          draft.toInput(),
+    ]);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
-      title: Text(l10n.actionEdit),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          DropdownButtonFormField<_LineOption>(
-            initialValue: _selectedLine,
-            hint: Text(l10n.hintSelectLineType),
-            items: [
-              for (final option in _lineOptions)
-                DropdownMenuItem(value: option, child: Text(option.label)),
+      title: Text(widget.title),
+      content: SizedBox(
+        width: double.maxFinite,
+        child: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              for (var i = 0; i < _drafts.length; i++)
+                Padding(
+                  key: ObjectKey(_drafts[i]),
+                  padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
+                  child: _buildLineField(_drafts[i]),
+                ),
+              if (_drafts.length < kMaxLinesPerItem)
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: TextButton.icon(
+                    onPressed: _addLine,
+                    icon: const Icon(Icons.add, size: 18),
+                    label: Text(l10n.actionAddLine),
+                    style: TextButton.styleFrom(
+                      visualDensity: VisualDensity.compact,
+                      padding: EdgeInsets.zero,
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                  ),
+                ),
             ],
-            onChanged: (value) => setState(() => _selectedLine = value),
           ),
-          const SizedBox(height: 12),
-          SelectAllTextField(
-            controller: _valueController,
-            autofocus: _selectedLine != null,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-            ],
-            decoration: InputDecoration(
-              hintText: l10n.hintValue,
-              suffixText: _selectedLine?.isPercent == true ? '%' : null,
-            ),
-          ),
-        ],
+        ),
       ),
       actions: [
         TextButton(
           onPressed: () => Navigator.of(context).pop(),
           child: Text(l10n.actionCancel),
         ),
-        TextButton(
-          onPressed: () =>
-              Navigator.of(context)
-                  .pop((line: _selectedLine, value: _valueController.text)),
-          child: Text(l10n.actionSave),
-        ),
+        TextButton(onPressed: _save, child: Text(l10n.actionSave)),
       ],
+    );
+  }
+
+  Widget _buildLineField(_LineDraft draft) {
+    final l10n = AppLocalizations.of(context);
+    return ListTile(
+      title: Row(
+        children: [
+          Expanded(
+            child: DropdownButtonFormField<_LineOption>(
+              initialValue: draft.line,
+              isExpanded: true,
+              isDense: true,
+              hint: Text(
+                l10n.hintSelectLineType,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+              items: [
+                for (final option in _lineOptions)
+                  DropdownMenuItem(value: option, child: Text(option.label)),
+              ],
+              onChanged: (value) => setState(() => draft.line = value),
+              decoration: const InputDecoration(
+                isDense: true,
+                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+              ),
+            ),
+          ),
+          const SizedBox(width: 8),
+          SizedBox(
+            width: 88,
+            child: SelectAllTextField(
+              controller: draft.valueCtrl,
+              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              inputFormatters: [
+                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
+              ],
+              decoration: InputDecoration(
+                isDense: true,
+                hintText: l10n.hintValue,
+                suffixText: draft.line?.isPercent == true ? '%' : null,
+              ),
+            ),
+          ),
+          IconButton(
+            tooltip: l10n.tooltipDeleteLine,
+            icon: const Icon(Icons.close, size: 18),
+            onPressed: () => _removeLine(draft),
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+            visualDensity: VisualDensity.compact,
+          ),
+        ],
+      ),
     );
   }
 }
