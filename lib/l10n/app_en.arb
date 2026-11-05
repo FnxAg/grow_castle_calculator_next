@@ -447,5 +447,7 @@
   "tabBonus": "TAB bonus",
   "actionRemove": "Remove",
   "dialogRemove": "Are you sure you want to remove this item?",
-  "actionHelp": "Help"
+  "actionHelp": "Help",
+  "labelScore": "Score",
+  "labelSeasonWPH": "Season WPH"
 }

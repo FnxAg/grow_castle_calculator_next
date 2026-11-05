@@ -911,7 +911,10 @@ class _EquipEditDialogState extends State<_EquipEditDialog> {
               onChanged: (value) => setState(() => draft.line = value),
               decoration: const InputDecoration(
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                contentPadding: EdgeInsets.symmetric(
+                  horizontal: 12,
+                  vertical: 8,
+                ),
               ),
             ),
           ),
@@ -920,7 +923,9 @@ class _EquipEditDialogState extends State<_EquipEditDialog> {
             width: 88,
             child: SelectAllTextField(
               controller: draft.valueCtrl,
-              keyboardType: const TextInputType.numberWithOptions(decimal: true),
+              keyboardType: const TextInputType.numberWithOptions(
+                decimal: true,
+              ),
               inputFormatters: [
                 FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
               ],
@@ -931,15 +936,15 @@ class _EquipEditDialogState extends State<_EquipEditDialog> {
               ),
             ),
           ),
-          IconButton(
-            tooltip: l10n.tooltipDeleteLine,
-            icon: const Icon(Icons.close, size: 18),
-            onPressed: () => _removeLine(draft),
-            padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-            visualDensity: VisualDensity.compact,
-          ),
         ],
+      ),
+      trailing: IconButton(
+        tooltip: l10n.tooltipDeleteLine,
+        icon: const Icon(Icons.close, size: 18),
+        onPressed: () => _removeLine(draft),
+        padding: EdgeInsets.zero,
+        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
+        visualDensity: VisualDensity.compact,
       ),
     );
   }

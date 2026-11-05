@@ -1529,6 +1529,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get actionHelp => '帮助';
+
+  @override
+  String get labelScore => '分数';
+
+  @override
+  String get labelSeasonWPH => '赛季波速';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3055,4 +3061,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get actionHelp => '說明';
+
+  @override
+  String get labelScore => '分數';
+
+  @override
+  String get labelSeasonWPH => '賽季波速';
 }

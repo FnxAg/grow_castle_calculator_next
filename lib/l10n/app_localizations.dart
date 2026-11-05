@@ -2783,6 +2783,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'帮助'**
   String get actionHelp;
+
+  /// No description provided for @labelScore.
+  ///
+  /// In zh, this message translates to:
+  /// **'分数'**
+  String get labelScore;
+
+  /// No description provided for @labelSeasonWPH.
+  ///
+  /// In zh, this message translates to:
+  /// **'赛季波速'**
+  String get labelSeasonWPH;
 }
 
 class _AppLocalizationsDelegate

@@ -1007,5 +1007,7 @@
   "tabBonus": "时挂收益",
   "actionRemove": "删除",
   "dialogRemove": "确认删除？",
-  "actionHelp": "帮助"
+  "actionHelp": "帮助",
+  "labelScore": "分数",
+  "labelSeasonWPH": "赛季波速"
 }

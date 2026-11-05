@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
@@ -12,289 +11,15 @@ import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/guild/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_kind.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
+import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:material_ui/material_ui.dart';
-
-String rankingKindLabel(AppLocalizations l10n, RankingKind kind) =>
-    switch (kind) {
-      RankingKind.player => l10n.rankingKindPlayer,
-      RankingKind.guild => l10n.rankingKindGuild,
-      RankingKind.hell => l10n.rankingKindHell,
-    };
-
-/// 排行榜分数趋势图
-class RankingChartPage extends StatefulWidget {
-  const RankingChartPage({super.key, required this.kind});
-
-  final RankingKind kind;
-
-  @override
-  State<RankingChartPage> createState() => _RankingChartPageState();
-}
-
-class _RankingChartPageState extends State<RankingChartPage> {
-  int _selectedRange = 50;
-  bool _loading = true;
-  String? _error;
-  List<_RankRow> _rows = const [];
-
-  @override
-  void initState() {
-    super.initState();
-    _load();
-  }
-
-  Future<void> _load() async {
-    setState(() {
-      _loading = true;
-      _error = null;
-    });
-    final result = await switch (widget.kind) {
-      RankingKind.player => RankingCache.playerRanking(),
-      RankingKind.guild => RankingCache.guildRanking(),
-      RankingKind.hell => RankingCache.hellRanking(),
-    };
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context);
-    setState(() {
-      _loading = false;
-      if (result is QueryError) {
-        _error = _errorMessage(l10n, result);
-        return;
-      }
-      _rows = switch (widget.kind) {
-        RankingKind.player when result is SeasonQueryResult<RankInfo> =>
-          result.items
-              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
-              .toList(),
-        RankingKind.guild when result is SeasonQueryResult<RankInfo> =>
-          result.items
-              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
-              .toList(),
-        RankingKind.hell when result is SeasonQueryResult<RankInfo> =>
-          result.items
-              .map((e) => _RankRow(rank: e.rank, name: e.name, score: e.score))
-              .toList(),
-        _ => const <_RankRow>[],
-      };
-    });
-  }
-
-  String _errorMessage(AppLocalizations l10n, QueryError error) {
-    return switch (error) {
-      NameNotFound() => l10n.emptyRankingData,
-      TimeoutError() => l10n.errorQueryTimeout,
-      NetworkError(:final message) => message,
-    };
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Text(
-          l10n.labelRankingTrend(rankingKindLabel(l10n, widget.kind)),
-        ),
-      ),
-      body: SafeArea(top: false, child: _buildBody()),
-    );
-  }
-
-  Widget _buildBody() {
-    if (_loading) return const Center(child: CircularProgressIndicator());
-    if (_error != null) {
-      return Center(
-        child: FilledButton.icon(
-          onPressed: _load,
-          icon: const Icon(Icons.refresh),
-          label: Text(_error!),
-        ),
-      );
-    }
-    if (_rows.isEmpty) {
-      return Center(child: Text(AppLocalizations.of(context).emptyData));
-    }
-
-    final visibleRows = _rows.take(_selectedRange).toList();
-    final maxScore = visibleRows.fold<int>(
-      0,
-      (max, row) => row.score > max ? row.score : max,
-    );
-    final minScore = visibleRows.fold<int>(
-      maxScore,
-      (min, row) => row.score < min ? row.score : min,
-    );
-
-    final l10n = AppLocalizations.of(context);
-    final rangeSelector = SegmentedButton<int>(
-      showSelectedIcon: false,
-      segments: [
-        ButtonSegment(value: 50, label: Text(l10n.labelTopCount(50))),
-        ButtonSegment(value: 100, label: Text(l10n.labelTopCount(100))),
-        ButtonSegment(value: 300, label: Text(l10n.labelTopCount(300))),
-      ],
-      selected: {_selectedRange},
-      onSelectionChanged: (selection) => setState(() {
-        _selectedRange = selection.first;
-      }),
-    );
-    final summary = Text(
-      l10n.labelRankSummary(
-        visibleRows.length,
-        maxScore.format(),
-        minScore.format(),
-      ),
-      textAlign: TextAlign.center,
-      style: TextStyle(color: Theme.of(context).colorScheme.onSurfaceVariant),
-    );
-    final chart = LineChart(_chartData(visibleRows, minScore, maxScore));
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        if (constraints.maxWidth < Breakpoints.sideBySide) {
-          return ListView(
-            padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
-            children: [
-              rangeSelector,
-              const SizedBox(height: 20.0),
-              SizedBox(height: 320.0, child: chart),
-              const SizedBox(height: 16.0),
-              summary,
-            ],
-          );
-        }
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16.0, 16.0, 16.0, 24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              rangeSelector,
-              const SizedBox(height: 20.0),
-              Expanded(child: chart),
-              const SizedBox(height: 16.0),
-              summary,
-            ],
-          ),
-        );
-      },
-    );
-  }
-
-  LineChartData _chartData(List<_RankRow> rows, int minScore, int maxScore) {
-    final scheme = Theme.of(context).colorScheme;
-    final english = !context.isChineseLocale;
-    final traditional = context.isTraditionalChineseLocale;
-    final scoreRange = (maxScore - minScore).abs();
-    final chartMinY = (minScore - scoreRange * 0.08).clamp(0, double.infinity);
-    final chartMaxY = maxScore + (scoreRange == 0 ? 1 : scoreRange * 0.08);
-    final labelInterval = rows.length <= 50 ? 10.0 : 50.0;
-    return LineChartData(
-      minX: 1.0,
-      maxX: rows.length.toDouble(),
-      minY: chartMinY.toDouble(),
-      maxY: chartMaxY.toDouble(),
-      gridData: FlGridData(
-        show: true,
-        drawVerticalLine: false,
-        horizontalInterval: scoreRange == 0 ? 1 : scoreRange / 4,
-      ),
-      borderData: FlBorderData(show: false),
-      titlesData: FlTitlesData(
-        topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-        rightTitles: const AxisTitles(
-          sideTitles: SideTitles(showTitles: false),
-        ),
-        leftTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            reservedSize: 48.0,
-            getTitlesWidget: (value, meta) {
-              if (value <= chartMinY || value >= chartMaxY) {
-                return const SizedBox.shrink();
-              }
-              return Text(
-                _formatAxisValue(
-                  value,
-                  english: english,
-                  traditional: traditional,
-                ),
-                style: const TextStyle(fontSize: 10.0),
-                textAlign: .right,
-              );
-            },
-          ),
-        ),
-        bottomTitles: AxisTitles(
-          sideTitles: SideTitles(
-            showTitles: true,
-            interval: labelInterval,
-            getTitlesWidget: (value, meta) => Text(
-              '#${value.round()}',
-              style: const TextStyle(fontSize: 10.0),
-            ),
-          ),
-        ),
-      ),
-      lineTouchData: LineTouchData(
-        touchTooltipData: LineTouchTooltipData(
-          fitInsideVertically: true,
-          fitInsideHorizontally: true,
-          getTooltipItems: (spots) => spots.map((spot) {
-            final row = rows[spot.x.round() - 1];
-            return LineTooltipItem(
-              '${row.name}\n#${row.rank}  ${row.score.format()}',
-              TextStyle(color: scheme.onInverseSurface),
-            );
-          }).toList(),
-        ),
-      ),
-      lineBarsData: [
-        LineChartBarData(
-          spots: [
-            for (final row in rows)
-              FlSpot(row.rank.toDouble(), row.score.toDouble()),
-          ],
-          isCurved: false,
-          color: scheme.primary,
-          barWidth: 2.5,
-          dotData: FlDotData(show: rows.length <= 50),
-          belowBarData: BarAreaData(
-            show: true,
-            gradient: LinearGradient(
-              colors: [
-                scheme.primary.withValues(alpha: 0.5),
-                scheme.primary.withValues(alpha: 0.0),
-              ],
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-            ),
-          ),
-        ),
-      ],
-    );
-  }
-
-  /// 轴标签
-  String _formatAxisValue(
-    double value, {
-    required bool english,
-    required bool traditional,
-  }) {
-    if (widget.kind != RankingKind.hell) return value.round().format();
-    if (value.abs() < 10000) return value.round().format();
-    return value.formatCompact(
-      fractionDigits: 1,
-      english: english,
-      traditional: traditional,
-    );
-  }
-}
 
 /// 榜单页
 class RankingPage extends StatefulWidget {
@@ -306,29 +31,14 @@ class RankingPage extends StatefulWidget {
   State<RankingPage> createState() => _RankingPageState();
 }
 
-/// 归一化后的榜单行
-class _RankRow {
-  const _RankRow({
-    required this.rank,
-    required this.name,
-    required this.score,
-    this.gapPrev,
-    this.gapNext,
-  });
-
-  final int rank;
-  final String name;
-  final int score;
-  final int? gapPrev;
-  final int? gapNext;
-}
-
 class _RankingPageState extends State<RankingPage> {
   static const List<int> _milestoneRanks = [1, 3, 5, 10, 50, 100, 200, 300];
 
   bool _firstLoading = true;
   String? _error;
-  List<_RankRow> _rows = const [];
+  List<RankRow> _rows = const [];
+
+  bool _viewWPHMode = false;
 
   Map<String, int> _crossRanks = {};
 
@@ -372,7 +82,7 @@ class _RankingPageState extends State<RankingPage> {
         RankingKind.player when result is SeasonQueryResult<RankInfo> =>
           result.items
               .map(
-                (e) => _RankRow(
+                (e) => RankRow(
                   rank: e.rank,
                   name: e.name,
                   score: e.score,
@@ -384,7 +94,7 @@ class _RankingPageState extends State<RankingPage> {
         RankingKind.guild when result is SeasonQueryResult<RankInfo> =>
           result.items
               .map(
-                (e) => _RankRow(
+                (e) => RankRow(
                   rank: e.rank,
                   name: e.name,
                   score: e.score,
@@ -396,7 +106,7 @@ class _RankingPageState extends State<RankingPage> {
         RankingKind.hell when result is SeasonQueryResult<RankInfo> =>
           result.items
               .map(
-                (e) => _RankRow(
+                (e) => RankRow(
                   rank: e.rank,
                   name: e.name,
                   score: e.score,
@@ -405,7 +115,7 @@ class _RankingPageState extends State<RankingPage> {
                 ),
               )
               .toList(),
-        _ => const <_RankRow>[],
+        _ => const <RankRow>[],
       };
 
       if (result is! QueryError) {
@@ -465,7 +175,7 @@ class _RankingPageState extends State<RankingPage> {
               separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final rank = _milestoneRanks[index];
-                final row = _rows.cast<_RankRow?>().firstWhere(
+                final row = _rows.cast<RankRow?>().firstWhere(
                   (item) => item?.rank == rank,
                   orElse: () => null,
                 );
@@ -501,42 +211,78 @@ class _RankingPageState extends State<RankingPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return Scaffold(
-      appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: .start,
+
+    final appBarInfo = AppBarInfo(
+      children: [
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(rankingKindLabel(l10n, widget.kind)),
-            _AppBarInfo(kind: widget.kind),
+            SeasonIndicator(
+              notifier: switch (widget.kind) {
+                RankingKind.player => RankingCache.playerSeasonNotifier,
+                RankingKind.guild => RankingCache.guildSeasonNotifier,
+                RankingKind.hell => RankingCache.hellSeasonNotifier,
+              },
+            ),
           ],
         ),
-        actions: [
-          isDesktop
-              ? IconButton(
-                  icon: const Icon(Icons.cloud_sync),
-                  tooltip: l10n.tooltipFetchData,
-                  onPressed: () => _load(force: true),
-                )
-              : const SizedBox.shrink(),
-          IconButton(
-            icon: const Icon(Icons.show_chart),
-            tooltip: l10n.tooltipViewScoreTrend,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => RankingChartPage(kind: widget.kind),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.format_list_numbered),
-            tooltip: l10n.tooltipViewMilestoneRanks,
-            onPressed: _rows.isEmpty ? null : _showMilestoneRanks,
-          ),
-        ],
+      ],
+    );
+
+    final floatingActionButton = FloatingActionButton.extended(
+      onPressed: () => setState(() => _viewWPHMode = !_viewWPHMode),
+      label: AnimatedTextSwitcher(
+        child: Text(
+          !_viewWPHMode ? l10n.labelScore : l10n.labelSeasonWPH,
+          key: ValueKey<bool>(_viewWPHMode),
+        ),
       ),
+      icon: Icon(Icons.swap_vert),
+    );
+
+    final List<Widget> appBarActions = <Widget>[
+      if (isDesktop) ...[
+        IconButton(
+          icon: const Icon(Icons.cloud_sync),
+          tooltip: l10n.tooltipFetchData,
+          onPressed: () => _load(force: true),
+        ),
+        ?switch (widget.kind) {
+          RankingKind.player || RankingKind.guild => IconButton(
+            icon: const Icon(Icons.swap_vert),
+            tooltip: !_viewWPHMode ? l10n.labelScore : l10n.labelSeasonWPH,
+            onPressed: () => setState(() => _viewWPHMode = !_viewWPHMode),
+          ),
+          RankingKind.hell => null,
+        },
+      ],
+      IconButton(
+        icon: const Icon(Icons.show_chart),
+        tooltip: l10n.tooltipViewScoreTrend,
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(
+              builder: (context) => RankingChartPage(kind: widget.kind),
+            ),
+          );
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.format_list_numbered),
+        tooltip: l10n.tooltipViewMilestoneRanks,
+        onPressed: _rows.isEmpty ? null : _showMilestoneRanks,
+      ),
+    ];
+
+    return Scaffold(
+      appBar: AppBar(title: appBarInfo, actions: appBarActions),
       body: SafeArea(top: false, child: _buildBody()),
+      floatingActionButton: switch (widget.kind) {
+        RankingKind.player ||
+        RankingKind.guild => !isDesktop ? floatingActionButton : null,
+        RankingKind.hell => null,
+      },
     );
   }
 
@@ -572,7 +318,7 @@ class _RankingPageState extends State<RankingPage> {
     );
   }
 
-  void _openRow(_RankRow row) {
+  void _openRow(RankRow row) {
     FocusManager.instance.primaryFocus?.unfocus();
     if (widget.kind != RankingKind.guild && context.isWideContent) {
       setState(() => _selectedName = row.name);
@@ -659,7 +405,9 @@ class _RankingPageState extends State<RankingPage> {
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
       child: ListView.builder(
-        physics: const AlwaysScrollableScrollPhysics(),
+        padding: EdgeInsets.only(
+          bottom: 72.0 + MediaQuery.of(context).padding.bottom,
+        ),
         itemCount: _rows.length,
         itemBuilder: (context, index) {
           final row = _rows[index];
@@ -678,7 +426,6 @@ class _RankingPageState extends State<RankingPage> {
           };
           return ListTile(
             selected: wide && row.name == _selectedName,
-            // 点击进入详情页或右侧面板
             onTap: () => _openRow(row),
             leading: CircleAvatar(
               radius: 14.0,
@@ -709,28 +456,58 @@ class _RankingPageState extends State<RankingPage> {
               children: [
                 if (row.gapPrev != null) ...[
                   PillChip(
-                    text: row.gapPrev! >= 10000000
-                        ? row.gapPrev!.formatCompact(
-                            english: english,
-                            traditional: traditional,
-                          )
-                        : row.gapPrev!.format(),
+                    text: switch (widget.kind) {
+                      RankingKind.hell => row.gapPrev!.formatCompact(
+                        english: english,
+                        traditional: traditional,
+                      ),
+                      RankingKind.player =>
+                        !_viewWPHMode
+                            ? row.gapPrev!.format()
+                            : (row.gapPrev! /
+                                      RankingCache.playerSeasonProgress()! /
+                                      RankingCache.playerSeasonDuration()!)
+                                  .format(),
+                      RankingKind.guild =>
+                        !_viewWPHMode
+                            ? row.gapPrev!.format()
+                            : (row.gapPrev! /
+                                      RankingCache.guildSeasonProgress()! /
+                                      RankingCache.guildSeasonDuration()!)
+                                  .format(),
+                    },
                     leading: Icon(Icons.arrow_upward_outlined),
                   ),
                   const SizedBox(width: 8.0),
                 ],
-                Text(
-                  switch (widget.kind) {
-                    RankingKind.hell => row.score.formatCompact(
-                      english: english,
-                      traditional: traditional,
+                AnimatedTextSwitcher(
+                  child: Text(
+                    switch (widget.kind) {
+                      RankingKind.hell => row.score.formatCompact(
+                        english: english,
+                        traditional: traditional,
+                      ),
+                      RankingKind.player =>
+                        !_viewWPHMode
+                            ? row.score.format()
+                            : (row.score /
+                                      RankingCache.playerSeasonProgress()! /
+                                      RankingCache.playerSeasonDuration()!)
+                                  .format(),
+                      RankingKind.guild =>
+                        !_viewWPHMode
+                            ? row.score.format()
+                            : (row.score /
+                                      RankingCache.guildSeasonProgress()! /
+                                      RankingCache.guildSeasonDuration()!)
+                                  .format(),
+                    },
+                    style: TextStyle(
+                      fontSize: 14.0,
+                      fontWeight: FontWeight.bold,
+                      color: scheme.primary,
                     ),
-                    _ => row.score.format(),
-                  },
-                  style: TextStyle(
-                    fontSize: 14.0,
-                    fontWeight: FontWeight.bold,
-                    color: scheme.primary,
+                    key: ValueKey<bool>(_viewWPHMode),
                   ),
                 ),
               ],
@@ -739,25 +516,5 @@ class _RankingPageState extends State<RankingPage> {
         },
       ),
     );
-  }
-}
-
-class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo({required this.kind});
-
-  final RankingKind kind;
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> segments = <Widget>[
-      SeasonIndicator(
-        notifier: switch (kind) {
-          RankingKind.player => RankingCache.playerSeasonNotifier,
-          RankingKind.guild => RankingCache.guildSeasonNotifier,
-          RankingKind.hell => RankingCache.hellSeasonNotifier,
-        },
-      ),
-    ];
-    return AppBarInfo(children: segments);
   }
 }

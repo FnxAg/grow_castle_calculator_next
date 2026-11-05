@@ -1635,4 +1635,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionHelp => 'Help';
+
+  @override
+  String get labelScore => 'Score';
+
+  @override
+  String get labelSeasonWPH => 'Season WPH';
 }

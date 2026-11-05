@@ -15,6 +15,69 @@ class RankingCache {
   static final ValueNotifier<SeasonRange?> hellSeasonNotifier =
       ValueNotifier<SeasonRange?>(null);
 
+  /// 赛季已经过的百分比（推波）
+  static double? playerSeasonProgress() {
+    final season = playerSeasonNotifier.value;
+    if (season == null) return null;
+    final start = season.start;
+    final end = season.end;
+    if (start == null || end == null) return null;
+    final now = DateTime.now();
+    return now.difference(start).inSeconds / end.difference(start).inSeconds;
+  }
+
+  /// 赛季时间（小时）（推波）
+  static int? playerSeasonDuration() {
+    final season = playerSeasonNotifier.value;
+    if (season == null) return null;
+    final start = season.start;
+    final end = season.end;
+    if (start == null || end == null) return null;
+    return end.difference(start).inHours;
+  }
+
+  /// 赛季已经过的百分比（公会）
+  static double? guildSeasonProgress() {
+    final season = guildSeasonNotifier.value;
+    if (season == null) return null;
+    final start = season.start;
+    final end = season.end;
+    if (start == null || end == null) return null;
+    final now = DateTime.now();
+    return now.difference(start).inSeconds / end.difference(start).inSeconds;
+  }
+
+  /// 赛季时间（小时）（公会）
+  static int? guildSeasonDuration() {
+    final season = guildSeasonNotifier.value;
+    if (season == null) return null;
+    final start = season.start;
+    final end = season.end;
+    if (start == null || end == null) return null;
+    return end.difference(start).inHours;
+  }
+
+  /// 赛季已经过的百分比（无尽）
+  static double? hellSeasonProgress() {
+    final season = hellSeasonNotifier.value;
+    if (season == null) return null;
+    final start = season.start;
+    final end = season.end;
+    if (start == null || end == null) return null;
+    final now = DateTime.now();
+    return now.difference(start).inSeconds / end.difference(start).inSeconds;
+  }
+
+  /// 赛季时间（小时）（无尽）
+  static int? hellSeasonDuration() {
+    final season = hellSeasonNotifier.value;
+    if (season == null) return null;
+    final start = season.start;
+    final end = season.end;
+    if (start == null || end == null) return null;
+    return end.difference(start).inHours;
+  }
+
   static final Map<String, SeasonQueryResult<GuildMember>> _guildDetails = {};
 
   static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */> guildDetail(

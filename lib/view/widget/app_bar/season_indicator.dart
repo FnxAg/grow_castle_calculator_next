@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
@@ -68,16 +69,16 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
 
   /// 只显示百分比；start 缺失（无法计算进度）时回退显示剩余时长
   String _label(AppLocalizations l10n, SeasonRange season, DateTime end) {
-    final start = season.start;
-    if (start == null) {
-      return PlayerApiService.formatSeasonRemaining(end, DateTime.now()) ??
-          l10n.seasonEnded;
+    final num? percent = RankingCache.playerSeasonProgress();
+    switch (percent) {
+      case null:
+        return PlayerApiService.formatSeasonRemaining(end, DateTime.now()) ??
+            l10n.seasonEnded;
+      case num p when p >= 1.0:
+        return l10n.seasonEnded;
+      case num p:
+        return '${(p * 100).clamp(0, 100).round()}%';
     }
-    final total = end.difference(start).inMilliseconds;
-    if (total <= 0) return l10n.seasonEnded;
-    final elapsed = DateTime.now().difference(start).inMilliseconds;
-    final percent = (elapsed / total * 100).clamp(0, 100).round();
-    return '$percent%';
   }
 
   static double _progress(SeasonRange season, DateTime end, DateTime now) {

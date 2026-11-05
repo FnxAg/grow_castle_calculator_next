@@ -103,6 +103,14 @@ class _GuildPageState extends ConsumerState<GuildPage>
     )..layout()).width.ceilToDouble();
   }
 
+  /// 表格单元格
+  Widget _trailingCell(Widget child) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(padding: const EdgeInsets.only(left: 4.0), child: child),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -346,6 +354,16 @@ class _GuildPageState extends ConsumerState<GuildPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    final appBarInfo = AppBarInfo(
+      children: <Widget>[
+        AppBarItem.currentUser(),
+        AppBarItem.currentUserLastOnline(),
+        AppBarItem.currentUserGuild(),
+        SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
+      ],
+    );
+
     final Widget body;
     if (_firstLoading) {
       body = const Center(child: CircularProgressIndicator());
@@ -382,7 +400,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: .start,
-          children: [Text(l10n.tabGuild), _AppBarInfo()],
+          children: [Text(l10n.tabGuild), appBarInfo],
         ),
         bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
         actions: [
@@ -510,36 +528,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
     final scheme = Theme.of(context).colorScheme;
     final currentUser = ref.read(currentUsernameProvider);
     final totalScore = _members.fold<int>(0, (sum, m) => sum + m.score);
-    // final guildReward = getItemBoxFromGuildRank(_guildRank ?? 0);
     final String guild = widget.guildName ?? ref.read(currentUserGuildProvider);
-    // final chips = SubtitlePillWrap(
-    //   children: [
-    //     if (guildReward != 0)
-    //       PillChip(
-    //         text: '$guildReward',
-    //         leading: BoxIcon(
-    //           size: PillChip.leadingIconSize,
-    //           color: scheme.primary,
-    //         ),
-    //       ),
-    //     if (_guildGapPrev != null)
-    //       PillChip(
-    //         backgroundColor: Colors.red,
-    //         foreground: Colors.white,
-    //         leading: Icon(Icons.arrow_upward),
-    //         text: _guildGapPrev!.format(),
-    //       ),
-    //     if (_guildRank != null)
-    //       PillChip(text: '#$_guildRank', leading: Icon(Icons.flag_circle)),
-    //     if (_guildGapNext != null)
-    //       PillChip(
-    //         backgroundColor: Colors.green,
-    //         foreground: Colors.white,
-    //         leading: Icon(Icons.arrow_downward),
-    //         text: _guildGapNext!.format(),
-    //       ),
-    //   ],
-    // );
     return RefreshIndicator(
       onRefresh: _refresh,
       child: Listener(
@@ -564,7 +553,6 @@ class _GuildPageState extends ConsumerState<GuildPage>
                     final lastOnline = _lastOnlineByLower[lowerName];
                     return ListTile(
                       selected: wide && member.name == _selectedMember,
-                      // 点击成员进入玩家详情页，宽屏下改为右侧面板展示
                       onTap: () => _openMember(member),
                       leading: CircleAvatar(
                         radius: 14.0,
@@ -672,50 +660,65 @@ class _GuildPageState extends ConsumerState<GuildPage>
                           SummaryRow(
                             leading: Icon(Icons.flag_circle),
                             title: Text(l10n.guildTotalScore),
-                            trailing: Column(
-                              crossAxisAlignment: CrossAxisAlignment.end,
+                            trailing: Table(
+                              defaultColumnWidth: const IntrinsicColumnWidth(),
+                              defaultVerticalAlignment:
+                                  TableCellVerticalAlignment.middle,
                               children: [
                                 if (_guildGapPrev != null)
-                                  SubtitlePillWrap(
+                                  TableRow(
                                     children: [
-                                      PillChip(
-                                        text: dividerText([
-                                          '#${_guildRank! - 1}',
-                                          _guildPrevName ?? '',
-                                        ]),
+                                      _trailingCell(
+                                        PillChip(
+                                          text: dividerText([
+                                            _guildPrevName ?? '',
+                                            '#${_guildRank! - 1}',
+                                          ]),
+                                        ),
                                       ),
-                                      PillChip(
-                                        backgroundColor: Colors.red,
-                                        foreground: Colors.white,
-                                        text: '+${_guildGapPrev!.format()}',
+                                      _trailingCell(
+                                        PillChip(
+                                          backgroundColor: Colors.red,
+                                          foreground: Colors.white,
+                                          text: '+${_guildGapPrev!.format()}',
+                                        ),
                                       ),
                                     ],
                                   ),
-                                SubtitlePillWrap(
+                                TableRow(
                                   children: [
-                                    if (_guildRank != null)
-                                      PillChip(
-                                        text: dividerText([
-                                          '#$_guildRank',
-                                          guild,
-                                        ]),
-                                      ),
-                                    SummaryRow.text(totalScore.format()),
+                                    _trailingCell(
+                                      _guildRank != null
+                                          ? PillChip(
+                                              text: dividerText([
+                                                guild,
+                                                '#$_guildRank',
+                                              ]),
+                                            )
+                                          : const SizedBox.shrink(),
+                                    ),
+                                    _trailingCell(
+                                      SummaryRow.text(totalScore.format()),
+                                    ),
                                   ],
                                 ),
                                 if (_guildGapNext != null)
-                                  SubtitlePillWrap(
+                                  TableRow(
                                     children: [
-                                      PillChip(
-                                        text: dividerText([
-                                          '#${_guildRank! + 1}',
-                                          _guildNextName ?? '',
-                                        ]),
+                                      _trailingCell(
+                                        PillChip(
+                                          text: dividerText([
+                                            _guildNextName ?? '',
+                                            '#${_guildRank! + 1}',
+                                          ]),
+                                        ),
                                       ),
-                                      PillChip(
-                                        backgroundColor: Colors.green,
-                                        foreground: Colors.white,
-                                        text: '-${_guildGapNext!.format()}',
+                                      _trailingCell(
+                                        PillChip(
+                                          backgroundColor: Colors.green,
+                                          foreground: Colors.white,
+                                          text: '-${_guildGapNext!.format()}',
+                                        ),
                                       ),
                                     ],
                                   ),
@@ -733,20 +736,5 @@ class _GuildPageState extends ConsumerState<GuildPage>
         ),
       ),
     );
-  }
-}
-
-class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo();
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> segments = <Widget>[
-      AppBarItem.currentUser(),
-      AppBarItem.currentUserLastOnline(),
-      AppBarItem.currentUserGuild(),
-      SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
-    ];
-    return AppBarInfo(children: segments);
   }
 }

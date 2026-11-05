@@ -395,6 +395,40 @@ class _HomePageState extends ConsumerState<HomePage>
     };
   }
 
+  /// 表格单元格
+  Widget _trailingCell(Widget child) {
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Padding(padding: const EdgeInsets.only(left: 4.0), child: child),
+    );
+  }
+
+  /// 名次差行：两列共用一条高度动画
+  TableRow _gapRow(
+    Animation<double> animation, {
+    required Widget? rank,
+    required Widget? gap,
+  }) {
+    return TableRow(
+      children: [
+        _trailingCell(
+          SizeTransition(
+            sizeFactor: animation,
+            fixedCrossAxisSizeFactor: 1.0,
+            child: rank,
+          ),
+        ),
+        _trailingCell(
+          SizeTransition(
+            sizeFactor: animation,
+            fixedCrossAxisSizeFactor: 1.0,
+            child: gap,
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -439,59 +473,59 @@ class _HomePageState extends ConsumerState<HomePage>
         SummaryRow(
           title: Text(l10n.seasonWave),
           leading: Icon(Icons.eco),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          trailing: Table(
+            defaultColumnWidth: const IntrinsicColumnWidth(),
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: [
-              SizeTransition(
-                sizeFactor: _anims[AnimSource.playerPrev]!,
-                child: _playerGapPrev != null
-                    ? SubtitlePillWrap(
-                        children: [
-                          PillChip(
-                            text: dividerText([
-                              '#${_playerRank! - 1}',
-                              _playerPrevName ?? '',
-                            ]),
-                          ),
-                          PillChip(
-                            backgroundColor: Colors.red,
-                            foreground: Colors.white,
-                            text: '+${_playerGapPrev!.format()}',
-                          ),
-                        ],
+              _gapRow(
+                _anims[AnimSource.playerPrev]!,
+                rank: _playerGapPrev != null
+                    ? PillChip(
+                        text: dividerText([
+                          _playerPrevName ?? '',
+                          '#${_playerRank! - 1}',
+                        ]),
+                      )
+                    : null,
+                gap: _playerGapPrev != null
+                    ? PillChip(
+                        backgroundColor: Colors.red,
+                        foreground: Colors.white,
+                        text: '+${_playerGapPrev!.format()}',
                       )
                     : null,
               ),
-              SubtitlePillWrap(
+              TableRow(
                 children: [
-                  SizeTransition(
-                    sizeFactor: _anims[AnimSource.playerSelf]!,
-                    child: _playerRank != null
-                        ? PillChip(
-                            text: dividerText(['#$_playerRank', username]),
-                          )
-                        : null,
+                  _trailingCell(
+                    SizeTransition(
+                      sizeFactor: _anims[AnimSource.playerSelf]!,
+                      fixedCrossAxisSizeFactor: 1.0,
+                      child: _playerRank != null
+                          ? PillChip(
+                              text: dividerText([username, '#$_playerRank']),
+                            )
+                          : null,
+                    ),
                   ),
-                  SummaryRow.text(seasonWave.format()),
+                  _trailingCell(SummaryRow.text(seasonWave.format())),
                 ],
               ),
-              SizeTransition(
-                sizeFactor: _anims[AnimSource.playerNext]!,
-                child: _playerGapNext != null
-                    ? SubtitlePillWrap(
-                        children: [
-                          PillChip(
-                            text: dividerText([
-                              '#${_playerRank! + 1}',
-                              _playerNextName ?? '',
-                            ]),
-                          ),
-                          PillChip(
-                            backgroundColor: Colors.green,
-                            foreground: Colors.white,
-                            text: '-${_playerGapNext!.format()}',
-                          ),
-                        ],
+              _gapRow(
+                _anims[AnimSource.playerNext]!,
+                rank: _playerGapNext != null
+                    ? PillChip(
+                        text: dividerText([
+                          _playerNextName ?? '',
+                          '#${_playerRank! + 1}',
+                        ]),
+                      )
+                    : null,
+                gap: _playerGapNext != null
+                    ? PillChip(
+                        backgroundColor: Colors.green,
+                        foreground: Colors.white,
+                        text: '-${_playerGapNext!.format()}',
                       )
                     : null,
               ),
@@ -563,57 +597,59 @@ class _HomePageState extends ConsumerState<HomePage>
         SummaryRow(
           leading: Icon(Icons.flag_circle),
           title: Text(l10n.guildTotalScore),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          trailing: Table(
+            defaultColumnWidth: const IntrinsicColumnWidth(),
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: [
-              SizeTransition(
-                sizeFactor: _anims[AnimSource.guildPrev]!,
-                child: _guildGapPrev != null
-                    ? SubtitlePillWrap(
-                        children: [
-                          PillChip(
-                            text: dividerText([
-                              '#${_guildRank! - 1}',
-                              _guildPrevName ?? '',
-                            ]),
-                          ),
-                          PillChip(
-                            backgroundColor: Colors.red,
-                            foreground: Colors.white,
-                            text: '+${_guildGapPrev!.format()}',
-                          ),
-                        ],
+              _gapRow(
+                _anims[AnimSource.guildPrev]!,
+                rank: _guildGapPrev != null
+                    ? PillChip(
+                        text: dividerText([
+                          _guildPrevName ?? '',
+                          '#${_guildRank! - 1}',
+                        ]),
+                      )
+                    : null,
+                gap: _guildGapPrev != null
+                    ? PillChip(
+                        backgroundColor: Colors.red,
+                        foreground: Colors.white,
+                        text: '+${_guildGapPrev!.format()}',
                       )
                     : null,
               ),
-              SubtitlePillWrap(
+              TableRow(
                 children: [
-                  SizeTransition(
-                    sizeFactor: _anims[AnimSource.guildSelf]!,
-                    child: _guildRank != null
-                        ? PillChip(text: dividerText(['#$_guildRank', guild]))
-                        : null,
+                  _trailingCell(
+                    SizeTransition(
+                      sizeFactor: _anims[AnimSource.guildSelf]!,
+                      fixedCrossAxisSizeFactor: 1.0,
+                      child: _guildRank != null
+                          ? PillChip(text: dividerText([guild, '#$_guildRank']))
+                          : null,
+                    ),
                   ),
-                  SummaryRow.text(guildTotalScore?.format() ?? '—'),
+                  _trailingCell(
+                    SummaryRow.text(guildTotalScore?.format() ?? '—'),
+                  ),
                 ],
               ),
-              SizeTransition(
-                sizeFactor: _anims[AnimSource.guildNext]!,
-                child: _guildGapNext != null
-                    ? SubtitlePillWrap(
-                        children: [
-                          PillChip(
-                            text: dividerText([
-                              '#${_guildRank! + 1}',
-                              _guildNextName ?? '',
-                            ]),
-                          ),
-                          PillChip(
-                            backgroundColor: Colors.green,
-                            foreground: Colors.white,
-                            text: '-${_guildGapNext!.format()}',
-                          ),
-                        ],
+              _gapRow(
+                _anims[AnimSource.guildNext]!,
+                rank: _guildGapNext != null
+                    ? PillChip(
+                        text: dividerText([
+                          _guildNextName ?? '',
+                          '#${_guildRank! + 1}',
+                        ]),
+                      )
+                    : null,
+                gap: _guildGapNext != null
+                    ? PillChip(
+                        backgroundColor: Colors.green,
+                        foreground: Colors.white,
+                        text: '-${_guildGapNext!.format()}',
                       )
                     : null,
               ),
@@ -628,65 +664,69 @@ class _HomePageState extends ConsumerState<HomePage>
         SummaryRow(
           leading: Icon(Icons.all_inclusive),
           title: Text(l10n.hellModeScore),
-          trailing: Column(
-            crossAxisAlignment: CrossAxisAlignment.end,
+          trailing: Table(
+            defaultColumnWidth: const IntrinsicColumnWidth(),
+            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
             children: [
-              SizeTransition(
-                sizeFactor: _anims[AnimSource.hellPrev]!,
-                child: _hellGapPrev != null
-                    ? SubtitlePillWrap(
-                        children: [
-                          PillChip(
-                            text: dividerText([
-                              '#${_hellRank! - 1}',
-                              _hellPrevName ?? '',
-                            ]),
-                          ),
-                          PillChip(
-                            backgroundColor: Colors.red,
-                            foreground: Colors.white,
-                            text:
-                                '+${_hellGapPrev!.formatCompact(english: english, traditional: traditional)}',
-                          ),
-                        ],
+              _gapRow(
+                _anims[AnimSource.hellPrev]!,
+                rank: _hellGapPrev != null
+                    ? PillChip(
+                        text: dividerText([
+                          _hellPrevName ?? '',
+                          '#${_hellRank! - 1}',
+                        ]),
+                      )
+                    : null,
+                gap: _hellGapPrev != null
+                    ? PillChip(
+                        backgroundColor: Colors.red,
+                        foreground: Colors.white,
+                        text:
+                            '+${_hellGapPrev!.formatCompact(english: english, traditional: traditional)}',
                       )
                     : null,
               ),
-              SubtitlePillWrap(
+              TableRow(
                 children: [
-                  SizeTransition(
-                    sizeFactor: _anims[AnimSource.hellSelf]!,
-                    child: _hellRank != null
-                        ? PillChip(text: dividerText(['#$_hellRank', username]))
-                        : null,
+                  _trailingCell(
+                    SizeTransition(
+                      sizeFactor: _anims[AnimSource.hellSelf]!,
+                      fixedCrossAxisSizeFactor: 1.0,
+                      child: _hellRank != null
+                          ? PillChip(
+                              text: dividerText([username, '#$_hellRank']),
+                            )
+                          : null,
+                    ),
                   ),
-                  SummaryRow.text(
-                    _hellScore?.formatCompact(
-                          english: english,
-                          traditional: traditional,
-                        ) ??
-                        '—',
+                  _trailingCell(
+                    SummaryRow.text(
+                      _hellScore?.formatCompact(
+                            english: english,
+                            traditional: traditional,
+                          ) ??
+                          '—',
+                    ),
                   ),
                 ],
               ),
-              SizeTransition(
-                sizeFactor: _anims[AnimSource.hellNext]!,
-                child: _hellGapNext != null
-                    ? SubtitlePillWrap(
-                        children: [
-                          PillChip(
-                            text: dividerText([
-                              '#${_hellRank! + 1}',
-                              _hellNextName ?? '',
-                            ]),
-                          ),
-                          PillChip(
-                            backgroundColor: Colors.green,
-                            foreground: Colors.white,
-                            text:
-                                '-${_hellGapNext!.formatCompact(english: english, traditional: traditional)}',
-                          ),
-                        ],
+              _gapRow(
+                _anims[AnimSource.hellNext]!,
+                rank: _hellGapNext != null
+                    ? PillChip(
+                        text: dividerText([
+                          _hellNextName ?? '',
+                          '#${_hellRank! + 1}',
+                        ]),
+                      )
+                    : null,
+                gap: _hellGapNext != null
+                    ? PillChip(
+                        backgroundColor: Colors.green,
+                        foreground: Colors.white,
+                        text:
+                            '-${_hellGapNext!.formatCompact(english: english, traditional: traditional)}',
                       )
                     : null,
               ),
