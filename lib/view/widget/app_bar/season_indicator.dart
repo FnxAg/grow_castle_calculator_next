@@ -1,17 +1,11 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
-import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 
-/// 赛季进度指示按钮（AppBar action 区用）。
-///
-/// 原生 [IconButton]，文本只显示进度百分比（start 缺失无法计算进度时
-/// 回退显示剩余时长）；点击弹出赛季详情（进度条 / 起止时间 / 剩余时间）。
-/// 赛季起止时间已由 [_parseSeason] 换算为本地时区；无赛季结束时间时
-/// 不渲染；组件内部每分钟自刷新一次。
+/// 赛季进度指示按钮
 class SeasonIndicator extends StatefulWidget {
   const SeasonIndicator({super.key, required this.notifier});
 
@@ -22,7 +16,7 @@ class SeasonIndicator extends StatefulWidget {
 }
 
 class _SeasonIndicatorState extends State<SeasonIndicator> {
-  /// 分钟精度：百分比与剩余时间每分钟刷新一次
+  /// 刷新时间
   Timer? _ticker;
 
   @override
@@ -69,16 +63,13 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
 
   /// 只显示百分比；start 缺失（无法计算进度）时回退显示剩余时长
   String _label(AppLocalizations l10n, SeasonRange season, DateTime end) {
-    final num? percent = RankingCache.playerSeasonProgress();
-    switch (percent) {
-      case null:
-        return PlayerApiService.formatSeasonRemaining(end, DateTime.now()) ??
-            l10n.seasonEnded;
-      case num p when p >= 1.0:
-        return l10n.seasonEnded;
-      case num p:
-        return '${(p * 100).clamp(0, 100).round()}%';
+    if (season.start == null) {
+      return PlayerApiService.formatSeasonRemaining(end, DateTime.now()) ??
+          l10n.seasonEnded;
     }
+    final percent = _progress(season, end, DateTime.now());
+    if (percent >= 1.0) return l10n.seasonEnded;
+    return '${(percent * 100).round()}%';
   }
 
   static double _progress(SeasonRange season, DateTime end, DateTime now) {
@@ -122,7 +113,6 @@ class _SeasonIndicatorState extends State<SeasonIndicator> {
                 _detailRow(l10n.labelStart, _fmt(start), scheme),
               ],
               _detailRow(l10n.labelEnd, _fmt(end), scheme),
-              // 赛季已结束时服务层返回 null，由这里补本地化文案
               _detailRow(
                 l10n.labelRemaining,
                 PlayerApiService.formatSeasonRemaining(end, now) ??
