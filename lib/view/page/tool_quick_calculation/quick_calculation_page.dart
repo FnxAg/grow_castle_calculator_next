@@ -5,6 +5,8 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -314,9 +316,15 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+
+    final appBarInfo = AppBarInfo(children: [AppBarItem.currentUser()]);
+
     return Scaffold(
       appBar: AppBar(
-        title: Text(l10n.toolQuickCalculation),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [Text(l10n.toolQuickCalculation), appBarInfo],
+        ),
         actions: _buildAppBarActions(l10n),
       ),
       body: SafeArea(

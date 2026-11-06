@@ -320,9 +320,8 @@ class _SettingPageState extends State<SettingPage> {
             title: Text(l10n.settingsThirdPartyApi),
             subtitle: Text(l10n.settingsThirdPartyApiSubtitle),
             childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
+            shape: const Border(),
+            collapsedShape: const Border(),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.thirdPartyApiEnabledNotifier,
@@ -351,9 +350,8 @@ class _SettingPageState extends State<SettingPage> {
             title: Text(l10n.settingsAutoLastOnline),
             subtitle: Text(l10n.settingsAutoLastOnlineSubtitle),
             childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
+            shape: const Border(),
+            collapsedShape: const Border(),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
@@ -383,9 +381,8 @@ class _SettingPageState extends State<SettingPage> {
             title: Text(l10n.settingsGameTrack),
             subtitle: Text(l10n.settingsGameTrackSubtitle),
             childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(8.0),
-            ),
+            shape: const Border(),
+            collapsedShape: const Border(),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.gameTrackEnabledNotifier,

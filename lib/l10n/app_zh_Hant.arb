@@ -232,6 +232,7 @@
   "optionEquipped": "已裝備",
   "optionNotEquipped": "未裝備",
   "optionNone": "無",
+  "optionNotSelected": "未選擇",
   "optionAutoBattleGoldBreak": "金掛(GAB) / 破掛(FAB)",
   "optionAutoBattleTime": "時掛(TAB)",
   "dialogWaveStatusDisclaimer": "資料僅供參考，實際遊戲中可能會有較大偏差。",

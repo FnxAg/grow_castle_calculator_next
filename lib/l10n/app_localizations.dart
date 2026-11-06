@@ -1494,6 +1494,12 @@ abstract class AppLocalizations {
   /// **'无'**
   String get optionNone;
 
+  /// No description provided for @optionNotSelected.
+  ///
+  /// In zh, this message translates to:
+  /// **'未选择'**
+  String get optionNotSelected;
+
   /// No description provided for @optionAutoBattleGoldBreak.
   ///
   /// In zh, this message translates to:

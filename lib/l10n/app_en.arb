@@ -231,6 +231,7 @@
   "optionEquipped": "Equipped",
   "optionNotEquipped": "Not equipped",
   "optionNone": "None",
+  "optionNotSelected": "Not selected",
   "optionAutoBattleGoldBreak": "GAB / FAB",
   "optionAutoBattleTime": "TAB",
   "dialogWavelineusDisclaimer": "For reference only. Actual in-game results may differ significantly.",

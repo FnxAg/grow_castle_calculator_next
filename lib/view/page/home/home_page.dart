@@ -457,6 +457,14 @@ class _HomePageState extends ConsumerState<HomePage>
       color: scheme.primary,
     );
 
+    final appBarInfo = AppBarInfo(
+      children: <Widget>[
+        AppBarItem.currentUser(),
+        AppBarItem.currentUserLastOnline(),
+        AppBarItem.currentUserGuild(),
+      ],
+    );
+
     // 总波数
     final totalWaveCard = SummaryCard(
       children: <Widget>[
@@ -809,30 +817,33 @@ class _HomePageState extends ConsumerState<HomePage>
         },
       ),
     ];
+
+    final appBarActions = [
+      if (!isDefaultUser)
+        IconButton(
+          icon: _querying
+              ? const SizedBox(
+                  width: 20.0,
+                  height: 20.0,
+                  child: CircularProgressIndicator(strokeWidth: 2.0),
+                )
+              : const Icon(Icons.cloud_sync),
+          tooltip: l10n.tooltipFetchData,
+          onPressed: _queryOnline,
+        ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
-          children: [Text(l10n.tabHome), _AppBarInfo()],
+          children: [Text(l10n.tabHome), appBarInfo],
         ),
         bottom: LoadingIndicatorAppBar(
           bottom: null,
           isLoading: _querying || _loadingRanks,
         ),
-        actions: [
-          if (!isDefaultUser)
-            IconButton(
-              icon: _querying
-                  ? const SizedBox(
-                      width: 20.0,
-                      height: 20.0,
-                      child: CircularProgressIndicator(strokeWidth: 2.0),
-                    )
-                  : const Icon(Icons.cloud_sync),
-              tooltip: l10n.tooltipFetchData,
-              onPressed: _queryOnline,
-            ),
-        ],
+        actions: appBarActions,
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
@@ -906,19 +917,5 @@ class _HomePageState extends ConsumerState<HomePage>
         },
       ),
     );
-  }
-}
-
-class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo();
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> segments = <Widget>[
-      AppBarItem.currentUser(),
-      AppBarItem.currentUserLastOnline(),
-      AppBarItem.currentUserGuild(),
-    ];
-    return AppBarInfo(children: segments);
   }
 }

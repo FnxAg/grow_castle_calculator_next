@@ -874,6 +874,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get optionNone => 'None';
 
   @override
+  String get optionNotSelected => 'Not selected';
+
+  @override
   String get optionAutoBattleGoldBreak => 'GAB / FAB';
 
   @override

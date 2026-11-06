@@ -79,55 +79,60 @@ class _GameTrackPageState extends ConsumerState<GameTrackPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+
+    final appBarActions = [
+      if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
+        IconButton(
+          icon: const Icon(Icons.warning, color: Colors.orange),
+          tooltip: l10n.dialogWarning,
+          onPressed: () {
+            showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(l10n.dialogWarning),
+                content: Text(l10n.dialogGameTrackOff),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.actionGotIt),
+                  ),
+                ],
+              ),
+            );
+          },
+        ),
+      IconButton(
+        icon: const Icon(Icons.show_chart),
+        tooltip: l10n.tooltipViewTrackChart,
+        onPressed: () {
+          Navigator.of(context).push(
+            MaterialPageRoute(builder: (context) => const GameTrackChartPage()),
+          );
+        },
+      ),
+      IconButton(
+        icon: const Icon(Icons.sort),
+        tooltip: _newestFirst
+            ? l10n.tooltipSortOldestFirst
+            : l10n.tooltipSortNewestFirst,
+        onPressed: _toggleSort,
+      ),
+    ];
+
+    final appBarInfo = AppBarInfo(
+      children: [
+        AppBarItem.currentUser(),
+        AppBarItem.text(l10n.labelTrackCount(_records.length)),
+      ],
+    );
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: .start,
-          children: [
-            Text(l10n.gameTrack),
-            _AppBarInfo(trackLength: _records.length),
-          ],
+          children: [Text(l10n.gameTrack), appBarInfo],
         ),
-        actions: [
-          if (!_gameTrackEnabled && _userId != 0 && _records.isNotEmpty)
-            IconButton(
-              icon: const Icon(Icons.warning, color: Colors.orange),
-              tooltip: l10n.dialogWarning,
-              onPressed: () {
-                showDialog(
-                  context: context,
-                  builder: (context) => AlertDialog(
-                    title: Text(l10n.dialogWarning),
-                    content: Text(l10n.dialogGameTrackOff),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(l10n.actionGotIt),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
-          IconButton(
-            icon: const Icon(Icons.show_chart),
-            tooltip: l10n.tooltipViewTrackChart,
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const GameTrackChartPage(),
-                ),
-              );
-            },
-          ),
-          IconButton(
-            icon: const Icon(Icons.sort),
-            tooltip: _newestFirst
-                ? l10n.tooltipSortOldestFirst
-                : l10n.tooltipSortNewestFirst,
-            onPressed: _toggleSort,
-          ),
-        ],
+        actions: appBarActions,
       ),
       body: SafeArea(
         top: false,
@@ -291,21 +296,4 @@ String _formatDuration(Duration value) {
   return '${hours.toString()}:'
       '${minutes.toString().padLeft(2, '0')}:'
       '${seconds.toString().padLeft(2, '0')}';
-}
-
-class _AppBarInfo extends StatelessWidget {
-  final int trackLength;
-
-  const _AppBarInfo({required this.trackLength});
-
-  @override
-  Widget build(BuildContext context) {
-    final TextStyle textStyle = const TextStyle(fontSize: 12.0);
-    final Widget trackInfo = Text(
-      AppLocalizations.of(context).labelTrackCount(trackLength),
-      style: textStyle,
-    );
-    final List<Widget> segments = <Widget>[AppBarItem.currentUser(), trackInfo];
-    return AppBarInfo(children: segments);
-  }
 }

@@ -812,6 +812,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get optionNone => '无';
 
   @override
+  String get optionNotSelected => '未选择';
+
+  @override
   String get optionAutoBattleGoldBreak => '金挂(GAB) / 破挂(FAB)';
 
   @override
@@ -2342,6 +2345,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get optionNone => '無';
+
+  @override
+  String get optionNotSelected => '未選擇';
 
   @override
   String get optionAutoBattleGoldBreak => '金掛(GAB) / 破掛(FAB)';

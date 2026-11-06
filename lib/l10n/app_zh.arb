@@ -526,6 +526,7 @@
   "optionEquipped": "已装备",
   "optionNotEquipped": "未装备",
   "optionNone": "无",
+  "optionNotSelected": "未选择",
   "optionAutoBattleGoldBreak": "金挂(GAB) / 破挂(FAB)",
   "optionAutoBattleTime": "时挂(TAB)",
   "dialogWaveStatusDisclaimer": "数据仅供参考，实际游戏中可能会有较大偏差。",

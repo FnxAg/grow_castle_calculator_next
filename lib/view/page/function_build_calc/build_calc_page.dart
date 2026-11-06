@@ -128,9 +128,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
             FocusManager.instance.primaryFocus?.unfocus();
             setState(() => _viewMode = !_viewMode);
           },
-          tooltip: _viewMode
-              ? l10n.tooltipInputMode
-              : l10n.tooltipViewMode,
+          tooltip: _viewMode ? l10n.tooltipInputMode : l10n.tooltipViewMode,
           child: Icon(_viewMode ? Icons.edit : Icons.visibility),
         ),
         const SizedBox(width: 12),
@@ -154,7 +152,9 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
           : ReorderableListView.builder(
               key: const PageStorageKey('formation_card_list'),
               itemCount: cardIds.length,
-              padding: EdgeInsets.only(bottom: 72 + MediaQuery.of(context).padding.bottom),
+              padding: EdgeInsets.only(
+                bottom: 72 + MediaQuery.of(context).padding.bottom,
+              ),
               proxyDecorator: (child, index, animation) {
                 return AnimatedBuilder(
                   animation: animation,
@@ -193,13 +193,22 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
             ),
     );
 
+    final appBarInfo = AppBarInfo(
+      children: <Widget>[
+        AppBarItem.currentUser(),
+        AppBarItem.currentUserTotalGold(),
+        AppBarItem.currentUserGp(),
+        AppBarItem.currentUserGpCn(),
+      ],
+    );
+
     const Widget formationSummaryBar = FormationSummaryBar();
 
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: .start,
-          children: [Text(l10n.tabFormation), _AppBarInfo()],
+          children: [Text(l10n.tabFormation), appBarInfo],
         ),
         actions: isWide ? appBarActions : null,
       ),
@@ -216,20 +225,5 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
             : Column(children: [formationExpanded]),
       ),
     );
-  }
-}
-
-class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo();
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> segments = <Widget>[
-      AppBarItem.currentUser(),
-      AppBarItem.currentUserTotalGold(),
-      AppBarItem.currentUserGp(),
-      AppBarItem.currentUserGpCn(),
-    ];
-    return AppBarInfo(children: segments);
   }
 }

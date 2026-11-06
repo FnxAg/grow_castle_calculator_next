@@ -14,10 +14,16 @@ abstract class AppBarItem extends ConsumerWidget {
 
   static const TextStyle textStyle = TextStyle(fontSize: 12.0);
 
-  static Widget text(String text, {String? tooltip}) => Tooltip(
-    message: tooltip,
-    child: AnimatedTextSwitcher(child: Text(text, style: textStyle)),
-  );
+  static Widget text(String text, {String? tooltip}) {
+    if (tooltip != null) {
+      return Tooltip(
+        message: tooltip,
+        child: AnimatedTextSwitcher(child: Text(text, style: textStyle)),
+      );
+    } else {
+      return AnimatedTextSwitcher(child: Text(text, style: textStyle));
+    }
+  }
 
   static Widget currentUser() => Consumer(
     builder: (context, ref, child) {

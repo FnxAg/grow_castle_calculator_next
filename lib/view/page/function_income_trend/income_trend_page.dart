@@ -95,6 +95,13 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     final goodColor = Colors.green;
     final badColor = Colors.red;
 
+    final appBarInfo = AppBarInfo(
+      children: <Widget>[
+        AppBarItem.currentUser(),
+        AppBarItem.currentUserGabBonus(),
+      ],
+    );
+
     final timeSelector = Wrap(
       alignment: .center,
       spacing: 8,
@@ -136,7 +143,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: .start,
-          children: [Text(l10n.incomeTrend), _AppBarInfo()],
+          children: [Text(l10n.incomeTrend), appBarInfo],
         ),
       ),
       body: SafeArea(
@@ -330,6 +337,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
   }
 
   Future<int?> _showCustomTimeDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final controller = TextEditingController(
       text: _customTime?.toString() ?? '1',
     );
@@ -338,7 +346,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
       context: context,
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
-          title: Text(AppLocalizations.of(context).incomeTrendCustom),
+          title: Text(l10n.incomeTrendCustom),
           content: TextField(
             controller: controller,
             autofocus: true,
@@ -346,44 +354,31 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
             decoration: InputDecoration(
               suffixText: 'd',
-              hintText: AppLocalizations.of(context).incomeTrendDaysHint,
+              hintText: l10n.incomeTrendDaysHint,
               errorText: error,
             ),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
-              child: Text(AppLocalizations.of(context).actionCancel),
+              child: Text(l10n.actionCancel),
             ),
             FilledButton(
               onPressed: () {
                 final days = int.tryParse(controller.text);
                 if (days == null || days <= 0) {
                   setDialogState(() {
-                    error = AppLocalizations.of(context).incomeTrendDaysInvalid;
+                    error = l10n.incomeTrendDaysInvalid;
                   });
                   return;
                 }
                 Navigator.pop(dialogContext, days);
               },
-              child: Text(AppLocalizations.of(context).actionSave),
+              child: Text(l10n.actionSave),
             ),
           ],
         ),
       ),
     ).whenComplete(controller.dispose);
-  }
-}
-
-class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo();
-
-  @override
-  Widget build(BuildContext context) {
-    final segments = <Widget>[
-      AppBarItem.currentUser(),
-      AppBarItem.currentUserGabBonus(),
-    ];
-    return AppBarInfo(children: segments);
   }
 }

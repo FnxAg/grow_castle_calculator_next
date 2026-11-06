@@ -175,13 +175,14 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     _saveToStore();
   }
 
-  /// 打开一件装备的词条编辑对话框，保存后写回并持久化
+  /// 打开一件装备的词条编辑页，保存后写回并持久化
   Future<void> _editEquip(_EquipInput equip, int index) async {
-    final lines = await showDialog<List<_LineInput>>(
-      context: context,
-      builder: (dialogContext) => _EquipEditDialog(
-        title: AppLocalizations.of(context).labelEquipPiece(index + 1),
-        lines: equip.lines,
+    final lines = await Navigator.of(context).push<List<_LineInput>>(
+      MaterialPageRoute(
+        builder: (context) => _EquipEditPage(
+          title: AppLocalizations.of(context).labelEquipPiece(index + 1),
+          lines: equip.lines,
+        ),
       ),
     );
     if (lines == null || !mounted) return;
@@ -704,12 +705,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     );
   }
 
-  /// 词条摘要：`Damage 8% \n Critical Damage 12%`
-  // String _equipSummary(_EquipInput equip) => dividerText([
-  //   for (final input in equip.lines)
-  //     if (input.line != null) _lineSummary(input.line!, input.value),
-  // ]);
-
   String _equipSummary(_EquipInput equip) {
     final lines = [
       for (final input in equip.lines)
@@ -779,18 +774,18 @@ class _PanelFieldDialogState extends State<_PanelFieldDialog> {
   }
 }
 
-/// 编辑一件装备：增减词条数量，并逐条选择类型、填写数值。
-class _EquipEditDialog extends StatefulWidget {
-  const _EquipEditDialog({required this.title, required this.lines});
+/// 编辑一件装备的词条：三组词条常驻，未选择的组不参与计算
+class _EquipEditPage extends StatefulWidget {
+  const _EquipEditPage({required this.title, required this.lines});
 
   final String title;
   final List<_LineInput> lines;
 
   @override
-  State<_EquipEditDialog> createState() => _EquipEditDialogState();
+  State<_EquipEditPage> createState() => _EquipEditPageState();
 }
 
-/// 对话框内的词条草稿：取消时不影响装备，保存时才写回
+/// 编辑页内的词条草稿：取消时不影响装备，保存时才写回
 class _LineDraft {
   _LineDraft({this.line, String value = ''})
     : valueCtrl = TextEditingController(text: value);
@@ -803,149 +798,116 @@ class _LineDraft {
   _LineInput toInput() => _LineInput(line: line, value: valueCtrl.text);
 }
 
-class _EquipEditDialogState extends State<_EquipEditDialog> {
+class _EquipEditPageState extends State<_EquipEditPage> {
   late final List<_LineDraft> _drafts = [
-    for (final line in widget.lines)
-      _LineDraft(line: line.line, value: line.value),
+    for (var i = 0; i < kMaxLinesPerItem; i++)
+      i < widget.lines.length
+          ? _LineDraft(line: widget.lines[i].line, value: widget.lines[i].value)
+          : _LineDraft(),
   ];
 
-  @override
-  void initState() {
-    super.initState();
-    if (_drafts.isEmpty) _drafts.add(_LineDraft());
-  }
+  late final List<ExpansibleController> _expansionController = [
+    for (var i = 0; i < kMaxLinesPerItem; i++) ExpansibleController(),
+  ];
 
   @override
   void dispose() {
     for (final draft in _drafts) {
       draft.dispose();
     }
+    for (final controller in _expansionController) {
+      controller.dispose();
+    }
     super.dispose();
   }
 
-  void _addLine() {
-    if (_drafts.length >= kMaxLinesPerItem) return;
-    setState(() => _drafts.add(_LineDraft()));
-  }
-
-  void _removeLine(_LineDraft draft) {
-    if (!_drafts.remove(draft)) return;
-    setState(() {});
-    WidgetsBinding.instance.addPostFrameCallback((_) => draft.dispose());
-  }
-
+  /// 仅写回已选择的词条，未选择的组丢弃
   void _save() {
     Navigator.of(context).pop([
       for (final draft in _drafts)
-        if (draft.line != null || draft.valueCtrl.text.trim().isNotEmpty)
-          draft.toInput(),
+        if (draft.line != null) draft.toInput(),
     ]);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(widget.title),
-      content: SizedBox(
-        width: double.maxFinite,
-        child: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              for (var i = 0; i < _drafts.length; i++)
-                Padding(
-                  key: ObjectKey(_drafts[i]),
-                  padding: EdgeInsets.only(top: i == 0 ? 0 : 8),
-                  child: _buildLineField(_drafts[i]),
-                ),
-              if (_drafts.length < kMaxLinesPerItem)
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: TextButton.icon(
-                    onPressed: _addLine,
-                    icon: const Icon(Icons.add, size: 18),
-                    label: Text(l10n.actionAddLine),
-                    style: TextButton.styleFrom(
-                      visualDensity: VisualDensity.compact,
-                      padding: EdgeInsets.zero,
-                      minimumSize: const Size(0, 32),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ),
+    return Scaffold(
+      appBar: AppBar(title: Text(widget.title)),
+      floatingActionButton: FloatingActionButton.extended(
+        onPressed: _save,
+        icon: const Icon(Icons.save),
+        label: Text(l10n.actionSave),
+      ),
+      body: SafeArea(
+        top: false,
+        child: ListView(
+          padding: const EdgeInsets.only(bottom: 88),
+          children: [
+            for (var i = 0; i < _drafts.length; i++) ...[
+              if (i > 0) const Divider(height: 1),
+              _buildLineGroup(i, _drafts[i]),
             ],
-          ),
+          ],
         ),
       ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.actionCancel),
-        ),
-        TextButton(onPressed: _save, child: Text(l10n.actionSave)),
-      ],
     );
   }
 
-  Widget _buildLineField(_LineDraft draft) {
+  Widget _buildLineGroup(int index, _LineDraft draft) {
     final l10n = AppLocalizations.of(context);
-    return ListTile(
-      title: Row(
-        children: [
-          Expanded(
-            child: DropdownButtonFormField<_LineOption>(
-              initialValue: draft.line,
-              isExpanded: true,
-              isDense: true,
-              hint: Text(
-                l10n.hintSelectLineType,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              items: [
-                for (final option in _lineOptions)
-                  DropdownMenuItem(value: option, child: Text(option.label)),
-              ],
-              onChanged: (value) => setState(() => draft.line = value),
-              decoration: const InputDecoration(
-                isDense: true,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12,
-                  vertical: 8,
+    final scheme = Theme.of(context).colorScheme;
+    final selected = draft.line != null;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        ExpansionTile(
+          key: PageStorageKey('item_line_$index'),
+          shape: const Border(),
+          collapsedShape: const Border(),
+          controller: _expansionController[index],
+          title: Text(
+            draft.line?.label ?? l10n.optionNotSelected,
+            style: selected ? null : TextStyle(color: scheme.onSurfaceVariant),
+          ),
+          children: [
+            for (final option in <_LineOption?>[null, ..._lineOptions])
+              ListTile(
+                dense: true,
+                contentPadding: const EdgeInsets.only(left: 32, right: 16),
+                leading: Icon(
+                  draft.line == option
+                      ? Icons.radio_button_checked
+                      : Icons.radio_button_off,
+                  color: draft.line == option
+                      ? scheme.primary
+                      : scheme.onSurfaceVariant,
                 ),
+                title: Text(option?.label ?? l10n.optionNotSelected),
+                onTap: () => setState(() {
+                  draft.line = option;
+                  _expansionController[index].collapse();
+                }),
               ),
+          ],
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
+          child: SelectAllTextField(
+            controller: draft.valueCtrl,
+            enabled: selected,
+            keyboardType: const TextInputType.numberWithOptions(decimal: true),
+            inputFormatters: [
+              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+            ],
+            decoration: InputDecoration(
+              isDense: true,
+              labelText: l10n.hintValue,
+              suffixText: draft.line?.isPercent == true ? '%' : null,
             ),
           ),
-          const SizedBox(width: 8),
-          SizedBox(
-            width: 88,
-            child: SelectAllTextField(
-              controller: draft.valueCtrl,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-              ],
-              decoration: InputDecoration(
-                isDense: true,
-                hintText: l10n.hintValue,
-                suffixText: draft.line?.isPercent == true ? '%' : null,
-              ),
-            ),
-          ),
-        ],
-      ),
-      trailing: IconButton(
-        tooltip: l10n.tooltipDeleteLine,
-        icon: const Icon(Icons.close, size: 18),
-        onPressed: () => _removeLine(draft),
-        padding: EdgeInsets.zero,
-        constraints: const BoxConstraints(minWidth: 32, minHeight: 32),
-        visualDensity: VisualDensity.compact,
-      ),
+        ),
+      ],
     );
   }
 }

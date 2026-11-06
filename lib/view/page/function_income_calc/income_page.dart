@@ -23,7 +23,6 @@ class IncomePage extends ConsumerStatefulWidget {
 
 class _IncomePageState extends ConsumerState<IncomePage> {
   Widget _buildList({required bool wide, required AppLocalizations l10n}) {
-    final scheme = Theme.of(context).colorScheme;
     final wave = ref.watch(currentUserWaveProvider);
     final infiniteColony = ref.watch(
       currentUserProvider.select((u) => u.infiniteColony),
@@ -33,7 +32,9 @@ class _IncomePageState extends ConsumerState<IncomePage> {
     final income = ref.watch(dailyIncomeProvider);
     Widget sectionHeaderTrailing(IconData icon, String text) =>
         PillChip(leading: Icon(icon), text: text);
-    final Widget divider = Divider(height: 1, thickness: 1, color: scheme.primary);
+
+    const Widget divider = Divider(height: 1, thickness: 1);
+
     final list = ListView(
       children: [
         const IncomeEditTile(field: IncomeField.gabTime),
@@ -113,6 +114,11 @@ class _IncomePageState extends ConsumerState<IncomePage> {
     final l10n = AppLocalizations.of(context);
     final wide = context.isWideContent;
     final list = _buildList(wide: wide, l10n: l10n);
+
+    final appBarInfo = AppBarInfo(
+      children: [AppBarItem.currentUser(), AppBarItem.currentUserDailyIncome()],
+    );
+
     final body = wide
         ? Row(
             children: [
@@ -121,35 +127,38 @@ class _IncomePageState extends ConsumerState<IncomePage> {
             ],
           )
         : list;
+
+    final appBarActions = [
+      IconButton(
+        icon: const Icon(Icons.info_outline),
+        tooltip: l10n.tooltipInfo,
+        onPressed: () {
+          showDialog<void>(
+            context: context,
+            builder: (context) {
+              return AlertDialog(
+                title: Text(l10n.tooltipInfo),
+                content: Text(l10n.dialogIncomeNotice),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.actionClose),
+                  ),
+                ],
+              );
+            },
+          );
+        },
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: .start,
-          children: [Text(l10n.tabIncome), _AppBarInfo()],
+          children: [Text(l10n.tabIncome), appBarInfo],
         ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.info_outline),
-            tooltip: l10n.tooltipInfo,
-            onPressed: () {
-              showDialog<void>(
-                context: context,
-                builder: (context) {
-                  return AlertDialog(
-                    title: Text(l10n.tooltipInfo),
-                    content: Text(l10n.dialogIncomeNotice),
-                    actions: [
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        child: Text(l10n.actionClose),
-                      ),
-                    ],
-                  );
-                },
-              );
-            },
-          ),
-        ],
+        actions: appBarActions,
       ),
       body: SafeArea(
         top: false,
@@ -159,18 +168,5 @@ class _IncomePageState extends ConsumerState<IncomePage> {
         ),
       ),
     );
-  }
-}
-
-class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo();
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> segments = [
-      AppBarItem.currentUser(),
-      AppBarItem.currentUserDailyIncome(),
-    ];
-    return AppBarInfo(children: segments);
   }
 }

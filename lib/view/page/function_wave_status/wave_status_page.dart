@@ -47,11 +47,14 @@ class WaveStatusPage extends ConsumerWidget {
     final user = ref.watch(currentUserProvider);
     final wph = ref.watch(theoreticalWphProvider);
     final rwph = ref.watch(theoreticalRwphProvider);
+
+    final appBarInfo = AppBarInfo(children: [AppBarItem.currentUser()]);
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: .start,
-          children: [Text(l10n.waveStatus), _AppBarInfo()],
+          children: [Text(l10n.waveStatus), appBarInfo],
         ),
       ),
       body: SafeArea(
@@ -174,7 +177,6 @@ class WaveStatusPage extends ConsumerWidget {
             // 挂机类型：isGoldAutoBattle
             SwitchListTile(
               title: Text(l10n.labelAutoBattleType),
-              // subtitle: Text(l10n.infoAutoBattleTab),
               subtitle: Text(
                 _autoBattleEntries(l10n)
                     .firstWhere((entry) => entry.$1 == user.isGoldAutoBattle)
@@ -282,15 +284,5 @@ class _HeroMetric extends StatelessWidget {
         ),
       ],
     );
-  }
-}
-
-class _AppBarInfo extends StatelessWidget {
-  const _AppBarInfo();
-
-  @override
-  Widget build(BuildContext context) {
-    final List<Widget> segments = [AppBarItem.currentUser()];
-    return AppBarInfo(children: segments);
   }
 }
