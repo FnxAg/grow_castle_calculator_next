@@ -37,11 +37,12 @@ class CardField extends StatelessWidget {
     final theme = Theme.of(context);
     return Card(
       elevation: 0,
+      margin: UIs.cardMargin,
       color: ListTileTheme.of(context).tileColor,
       shape: UIs.cardShape,
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        padding: UIs.cardFieldPadding,
         child: SelectAllTextField(
           controller: controller,
           focusNode: focusNode,
@@ -53,7 +54,7 @@ class CardField extends StatelessWidget {
           decoration: InputDecoration(
             border: InputBorder.none,
             isDense: true,
-            contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+            contentPadding: UIs.cardFieldContentPadding,
             labelText: title,
             prefixText: prefixText,
             suffixText: suffixText,

@@ -24,11 +24,12 @@ class CardSearchField extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
     return Card(
       elevation: 0,
+      margin: UIs.cardMargin,
       color: ListTileTheme.of(context).tileColor,
       shape: UIs.cardShape,
       clipBehavior: Clip.antiAlias,
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4.0),
+        padding: UIs.cardFieldPadding,
         child: Row(
           children: [
             const Icon(Icons.search),
@@ -47,7 +48,7 @@ class CardSearchField extends StatelessWidget {
                 decoration: InputDecoration(
                   border: InputBorder.none,
                   isDense: true,
-                  contentPadding: const EdgeInsets.symmetric(vertical: 12.0),
+                  contentPadding: UIs.cardFieldContentPadding,
                   hintText: hintText ?? l10n.labelName,
                   counterText: '',
                 ),

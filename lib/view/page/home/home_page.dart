@@ -11,7 +11,6 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
-import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
@@ -25,6 +24,7 @@ import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/rank_board_card.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -397,40 +397,6 @@ class _HomePageState extends ConsumerState<HomePage>
     };
   }
 
-  /// 表格单元格
-  Widget _trailingCell(Widget child) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Padding(padding: const EdgeInsets.only(left: 4.0), child: child),
-    );
-  }
-
-  /// 名次差行：两列共用一条高度动画
-  TableRow _gapRow(
-    Animation<double> animation, {
-    required Widget? rank,
-    required Widget? gap,
-  }) {
-    return TableRow(
-      children: [
-        _trailingCell(
-          SizeTransition(
-            sizeFactor: animation,
-            fixedCrossAxisSizeFactor: 1.0,
-            child: rank,
-          ),
-        ),
-        _trailingCell(
-          SizeTransition(
-            sizeFactor: animation,
-            fixedCrossAxisSizeFactor: 1.0,
-            child: gap,
-          ),
-        ),
-      ],
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
@@ -472,215 +438,98 @@ class _HomePageState extends ConsumerState<HomePage>
       ],
     );
     // 赛季波数
-    final seasonWaveCard = SummaryCard(
-      children: <Widget>[
-        SummaryRow(
-          title: Text(l10n.seasonWave, overflow: TextOverflow.ellipsis),
-          leading: Icon(Icons.eco),
-          trailing: Table(
-            defaultColumnWidth: const IntrinsicColumnWidth(),
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            children: [
-              _gapRow(
-                _anims[AnimSource.playerPrev]!,
-                rank: _playerGapPrev != null
-                    ? PillChip(
-                        text: dividerText([
-                          _playerPrevName ?? '',
-                          '#${_playerRank! - 1}',
-                        ]),
-                      )
-                    : null,
-                gap: _playerGapPrev != null
-                    ? PillChip(
-                        backgroundColor: Colors.red,
-                        foreground: Colors.white,
-                        text: '+${_playerGapPrev!.format()}',
-                      )
-                    : null,
-              ),
-              TableRow(
-                children: [
-                  _trailingCell(
-                    SizeTransition(
-                      sizeFactor: _anims[AnimSource.playerSelf]!,
-                      fixedCrossAxisSizeFactor: 1.0,
-                      child: _playerRank != null
-                          ? PillChip(
-                              text: dividerText([username, '#$_playerRank']),
-                            )
-                          : null,
-                    ),
-                  ),
-                  _trailingCell(SummaryRow.text(seasonWave.format())),
-                ],
-              ),
-              _gapRow(
-                _anims[AnimSource.playerNext]!,
-                rank: _playerGapNext != null
-                    ? PillChip(
-                        text: dividerText([
-                          _playerNextName ?? '',
-                          '#${_playerRank! + 1}',
-                        ]),
-                      )
-                    : null,
-                gap: _playerGapNext != null
-                    ? PillChip(
-                        backgroundColor: Colors.green,
-                        foreground: Colors.white,
-                        text: '-${_playerGapNext!.format()}',
-                      )
-                    : null,
-              ),
-            ],
-          ),
-        ),
-      ],
+    final seasonWaveCard = RankBoardCard(
+      icon: Icons.eco,
+      title: l10n.seasonWave,
+      previous: _playerRank != null && _playerGapPrev != null
+          ? RankBoardRow(
+              rank: _playerRank! - 1,
+              name: _playerPrevName ?? '',
+              gapText: '+${_playerGapPrev!.format()}',
+              gapColor: Colors.red,
+            )
+          : null,
+      current: RankBoardRow(
+        rank: _playerRank,
+        name: username,
+        value: seasonWave.format(),
+        highlight: true,
+      ),
+      next: _playerRank != null && _playerGapNext != null
+          ? RankBoardRow(
+              rank: _playerRank! + 1,
+              name: _playerNextName ?? '',
+              gapText: '-${_playerGapNext!.format()}',
+              gapColor: Colors.green,
+            )
+          : null,
+      previousAnimation: _anims[AnimSource.playerPrev],
+      nextAnimation: _anims[AnimSource.playerNext],
     );
     // 公会
-    final guildCard = SummaryCard(
-      children: <Widget>[
-        SummaryRow(
-          leading: Icon(Icons.flag_circle),
-          title: Text(l10n.guildTotalScore, overflow: TextOverflow.ellipsis),
-          trailing: Table(
-            defaultColumnWidth: const IntrinsicColumnWidth(),
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            children: [
-              _gapRow(
-                _anims[AnimSource.guildPrev]!,
-                rank: _guildGapPrev != null
-                    ? PillChip(
-                        text: dividerText([
-                          _guildPrevName ?? '',
-                          '#${_guildRank! - 1}',
-                        ]),
-                      )
-                    : null,
-                gap: _guildGapPrev != null
-                    ? PillChip(
-                        backgroundColor: Colors.red,
-                        foreground: Colors.white,
-                        text: '+${_guildGapPrev!.format()}',
-                      )
-                    : null,
-              ),
-              TableRow(
-                children: [
-                  _trailingCell(
-                    SizeTransition(
-                      sizeFactor: _anims[AnimSource.guildSelf]!,
-                      fixedCrossAxisSizeFactor: 1.0,
-                      child: _guildRank != null
-                          ? PillChip(text: dividerText([guild, '#$_guildRank']))
-                          : null,
-                    ),
-                  ),
-                  _trailingCell(
-                    SummaryRow.text(guildTotalScore?.format() ?? '—'),
-                  ),
-                ],
-              ),
-              _gapRow(
-                _anims[AnimSource.guildNext]!,
-                rank: _guildGapNext != null
-                    ? PillChip(
-                        text: dividerText([
-                          _guildNextName ?? '',
-                          '#${_guildRank! + 1}',
-                        ]),
-                      )
-                    : null,
-                gap: _guildGapNext != null
-                    ? PillChip(
-                        backgroundColor: Colors.green,
-                        foreground: Colors.white,
-                        text: '-${_guildGapNext!.format()}',
-                      )
-                    : null,
-              ),
-            ],
-          ),
-        ),
-      ],
+    final guildCard = RankBoardCard(
+      icon: Icons.flag_circle,
+      title: l10n.guildTotalScore,
+      previous: _guildRank != null && _guildGapPrev != null
+          ? RankBoardRow(
+              rank: _guildRank! - 1,
+              name: _guildPrevName ?? '',
+              gapText: '+${_guildGapPrev!.format()}',
+              gapColor: Colors.red,
+            )
+          : null,
+      current: RankBoardRow(
+        rank: _guildRank,
+        name: guild,
+        value: guildTotalScore?.format() ?? '—',
+        highlight: true,
+      ),
+      next: _guildRank != null && _guildGapNext != null
+          ? RankBoardRow(
+              rank: _guildRank! + 1,
+              name: _guildNextName ?? '',
+              gapText: '-${_guildGapNext!.format()}',
+              gapColor: Colors.green,
+            )
+          : null,
+      previousAnimation: _anims[AnimSource.guildPrev],
+      nextAnimation: _anims[AnimSource.guildNext],
     );
     // 无尽
-    final hellCard = SummaryCard(
-      children: <Widget>[
-        SummaryRow(
-          leading: Icon(Icons.all_inclusive),
-          title: Text(l10n.hellModeScore, overflow: TextOverflow.ellipsis),
-          trailing: Table(
-            defaultColumnWidth: const IntrinsicColumnWidth(),
-            defaultVerticalAlignment: TableCellVerticalAlignment.middle,
-            children: [
-              _gapRow(
-                _anims[AnimSource.hellPrev]!,
-                rank: _hellGapPrev != null
-                    ? PillChip(
-                        text: dividerText([
-                          _hellPrevName ?? '',
-                          '#${_hellRank! - 1}',
-                        ]),
-                      )
-                    : null,
-                gap: _hellGapPrev != null
-                    ? PillChip(
-                        backgroundColor: Colors.red,
-                        foreground: Colors.white,
-                        text:
-                            '+${_hellGapPrev!.formatCompact(english: english, traditional: traditional)}',
-                      )
-                    : null,
-              ),
-              TableRow(
-                children: [
-                  _trailingCell(
-                    SizeTransition(
-                      sizeFactor: _anims[AnimSource.hellSelf]!,
-                      fixedCrossAxisSizeFactor: 1.0,
-                      child: _hellRank != null
-                          ? PillChip(
-                              text: dividerText([username, '#$_hellRank']),
-                            )
-                          : null,
-                    ),
-                  ),
-                  _trailingCell(
-                    SummaryRow.text(
-                      _hellScore?.formatCompact(
-                            english: english,
-                            traditional: traditional,
-                          ) ??
-                          '—',
-                    ),
-                  ),
-                ],
-              ),
-              _gapRow(
-                _anims[AnimSource.hellNext]!,
-                rank: _hellGapNext != null
-                    ? PillChip(
-                        text: dividerText([
-                          _hellNextName ?? '',
-                          '#${_hellRank! + 1}',
-                        ]),
-                      )
-                    : null,
-                gap: _hellGapNext != null
-                    ? PillChip(
-                        backgroundColor: Colors.green,
-                        foreground: Colors.white,
-                        text:
-                            '-${_hellGapNext!.formatCompact(english: english, traditional: traditional)}',
-                      )
-                    : null,
-              ),
-            ],
-          ),
-        ),
-      ],
+    final hellCard = RankBoardCard(
+      icon: Icons.all_inclusive,
+      title: l10n.hellModeScore,
+      previous: _hellRank != null && _hellGapPrev != null
+          ? RankBoardRow(
+              rank: _hellRank! - 1,
+              name: _hellPrevName ?? '',
+              gapText:
+                  '+${_hellGapPrev!.formatCompact(english: english, traditional: traditional)}',
+              gapColor: Colors.red,
+            )
+          : null,
+      current: RankBoardRow(
+        rank: _hellRank,
+        name: username,
+        value:
+            _hellScore?.formatCompact(
+              english: english,
+              traditional: traditional,
+            ) ??
+            '—',
+        highlight: true,
+      ),
+      next: _hellRank != null && _hellGapNext != null
+          ? RankBoardRow(
+              rank: _hellRank! + 1,
+              name: _hellNextName ?? '',
+              gapText:
+                  '-${_hellGapNext!.formatCompact(english: english, traditional: traditional)}',
+              gapColor: Colors.green,
+            )
+          : null,
+      previousAnimation: _anims[AnimSource.hellPrev],
+      nextAnimation: _anims[AnimSource.hellNext],
     );
     // 奖励
     final rewardCard = SummaryCard(
@@ -772,6 +621,19 @@ class _HomePageState extends ConsumerState<HomePage>
         ),
     ];
 
+    final cardList = [
+      const SizedBox(height: 8.0),
+      totalWaveCard,
+      seasonWaveCard,
+      guildCard,
+      hellCard,
+      SizeTransition(
+        sizeFactor: _anims[AnimSource.rewardCard]!,
+        alignment: .bottomCenter,
+        child: rewardCard,
+      ),
+    ];
+
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -791,20 +653,7 @@ class _HomePageState extends ConsumerState<HomePage>
             return ListView(
               padding: UIs.padding,
               children: [
-                Column(
-                  children: [
-                    totalWaveCard,
-                    seasonWaveCard,
-                    guildCard,
-                    hellCard,
-                    SizeTransition(
-                      sizeFactor: _anims[AnimSource.rewardCard]!,
-                      alignment: .bottomCenter,
-                      child: rewardCard,
-                    ),
-                    ...quickAccess,
-                  ],
-                ),
+                Column(children: [...cardList, ...quickAccess]),
               ],
             );
           }
@@ -818,21 +667,7 @@ class _HomePageState extends ConsumerState<HomePage>
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        Column(
-                          children: [
-                            totalWaveCard,
-                            seasonWaveCard,
-                            guildCard,
-                            hellCard,
-                            SizeTransition(
-                              sizeFactor: _anims[AnimSource.rewardCard]!,
-                              alignment: .bottomCenter,
-                              child: rewardCard,
-                            ),
-                          ],
-                        ),
-                      ],
+                      children: [Column(children: cardList)],
                     ),
                   ),
                   const SizedBox(width: 16.0),

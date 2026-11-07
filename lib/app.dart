@@ -79,16 +79,28 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     }
   }
 
-  ThemeData _themeData(ColorScheme scheme) => ThemeData(
-    useMaterial3: true,
-    colorScheme: scheme,
-    fontFamily: platformFontFamily,
-    fontFamilyFallback: platformFontFallback,
-    listTileTheme: ListTileThemeData(
-      style: ListTileStyle.list,
-      tileColor: scheme.secondaryContainer.withAlpha(UIs.cardTileColorAlpha),
-    ),
-  );
+  ThemeData _themeData(ColorScheme scheme) {
+    final theme = ThemeData(
+      useMaterial3: true,
+      colorScheme: scheme,
+      fontFamily: platformFontFamily,
+      fontFamilyFallback: platformFontFallback,
+    );
+    return theme.copyWith(
+      listTileTheme: ListTileThemeData(
+        style: ListTileStyle.list,
+        tileColor: scheme.secondaryContainer.withAlpha(UIs.cardTileColorAlpha),
+        dense: UIs.cardTileDense,
+        minTileHeight: UIs.cardTileMinHeight,
+        titleTextStyle: theme.textTheme.bodyLarge?.copyWith(
+          fontSize: UIs.cardTitleFontSize,
+        ),
+        subtitleTextStyle: theme.textTheme.bodyMedium?.copyWith(
+          fontSize: UIs.cardSubtitleFontSize,
+        ),
+      ),
+    );
+  }
 
   (ThemeData, ThemeData) _buildThemeData(
     ColorScheme lightDynamic,

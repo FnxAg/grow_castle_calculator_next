@@ -36,6 +36,7 @@ class ExpansionCardTile extends StatelessWidget {
     final tileColor = ListTileTheme.of(context).tileColor;
     return Card(
       elevation: 0,
+      margin: UIs.cardMargin,
       shape: UIs.cardShape,
       clipBehavior: Clip.antiAlias,
       child: ExpansionTile(

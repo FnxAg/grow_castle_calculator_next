@@ -67,22 +67,22 @@ class FunctionPage extends ConsumerWidget {
           ),
           CardTile(
             leading: const Icon(Icons.percent),
-            title: Row(
+            title: Text(
+              l10n.wavePushIncomeCalc,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Text(
-                    l10n.wavePushIncomeCalc,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                const SizedBox(width: 8.0),
                 Text(
                   '${ref.watch(currentUserGabBonusProvider).toStringAsFixed(2)}%',
                   style: style,
                 ),
+                const SizedBox(width: 4.0),
+                const Icon(Icons.chevron_right),
               ],
             ),
-            trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
@@ -93,12 +93,14 @@ class FunctionPage extends ConsumerWidget {
           ),
           CardTile(
             leading: const Icon(Icons.auto_graph),
-            title: Row(
+            title: Text(
+              l10n.tabIncome,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Expanded(
-                  child: Text(l10n.tabIncome, overflow: TextOverflow.ellipsis),
-                ),
-                const SizedBox(width: 8.0),
                 Text(
                   ref
                       .watch(dailyIncomeProvider)
@@ -110,9 +112,10 @@ class FunctionPage extends ConsumerWidget {
                       ),
                   style: style,
                 ),
+                const SizedBox(width: 4.0),
+                const Icon(Icons.chevron_right),
               ],
             ),
-            trailing: const Icon(Icons.chevron_right),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (context) => const IncomePage()),

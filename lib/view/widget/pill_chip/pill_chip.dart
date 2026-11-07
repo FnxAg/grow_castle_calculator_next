@@ -34,9 +34,9 @@ class PillChip extends StatelessWidget {
   /// 前置图标大小：12.0
   static const leadingIconSize = 12.0;
 
-  /// 默认文本样式：字号 11.0，半粗体
+  /// 默认文本样式：字号 10.0，半粗体
   static const defaultTextStyle = TextStyle(
-    fontSize: 11.0,
+    fontSize: 10.0,
     fontWeight: FontWeight.w600,
   );
 

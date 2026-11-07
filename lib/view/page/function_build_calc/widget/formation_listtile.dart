@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -111,12 +112,11 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
         if (widget.id != 1 && widget.id != 2)
           CardTile(
             enabled: widget.id != 1 && widget.id != 2,
-            leading: const Icon(Icons.delete, color: Colors.red),
             title: Text(
               l10n.actionDelete,
               style: const TextStyle(color: Colors.red),
             ),
-            onTap:() => showDialog(
+            onTap: () => showDialog(
               context: context,
               builder: (context) => AlertDialog(
                 title: Text(l10n.actionDelete),
@@ -187,8 +187,13 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
               const SizedBox(width: 8.0),
               AnimatedTextSwitcher(
                 child: Text(
-                  '${level.format()} · '
-                  '${gold.formatCompact(english: !context.isChineseLocale, traditional: context.isTraditionalChineseLocale)}',
+                  dividerText([
+                    (level.format()),
+                    (gold.formatCompact(
+                      english: !context.isChineseLocale,
+                      traditional: context.isTraditionalChineseLocale,
+                    )),
+                  ]),
                   style: TextStyle(
                     fontWeight: FontWeight.bold,
                     color: applied

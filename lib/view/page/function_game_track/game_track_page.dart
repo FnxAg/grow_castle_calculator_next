@@ -182,7 +182,7 @@ class _TrackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textStyle = TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600);
+    final textStyle = TextStyle(fontSize: 14.0);
     final trackInfo = [
       PillChip(
         leading: const Icon(Icons.emoji_events),

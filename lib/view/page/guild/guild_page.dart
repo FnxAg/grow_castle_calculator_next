@@ -13,7 +13,6 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
-import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
@@ -25,7 +24,7 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dar
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:grow_castle_calculator_next/view/widget/summary_row/rank_board_card.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -102,14 +101,6 @@ class _GuildPageState extends ConsumerState<GuildPage>
       textDirection: TextDirection.ltr,
       textScaler: MediaQuery.textScalerOf(context),
     )..layout()).width.ceilToDouble();
-  }
-
-  /// 表格单元格
-  Widget _trailingCell(Widget child) {
-    return Align(
-      alignment: Alignment.centerRight,
-      child: Padding(padding: const EdgeInsets.only(left: 4.0), child: child),
-    );
   }
 
   @override
@@ -661,77 +652,31 @@ class _GuildPageState extends ConsumerState<GuildPage>
                     alignment: Alignment.topCenter,
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
-                      child: SummaryCard(
-                        children: <Widget>[
-                          SummaryRow(
-                            leading: Icon(Icons.flag_circle),
-                            title: Text(l10n.guildTotalScore),
-                            trailing: Table(
-                              defaultColumnWidth: const IntrinsicColumnWidth(),
-                              defaultVerticalAlignment:
-                                  TableCellVerticalAlignment.middle,
-                              children: [
-                                if (_guildGapPrev != null)
-                                  TableRow(
-                                    children: [
-                                      _trailingCell(
-                                        PillChip(
-                                          text: dividerText([
-                                            _guildPrevName ?? '',
-                                            '#${_guildRank! - 1}',
-                                          ]),
-                                        ),
-                                      ),
-                                      _trailingCell(
-                                        PillChip(
-                                          backgroundColor: Colors.red,
-                                          foreground: Colors.white,
-                                          text: '+${_guildGapPrev!.format()}',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                TableRow(
-                                  children: [
-                                    _trailingCell(
-                                      _guildRank != null
-                                          ? PillChip(
-                                              text: dividerText([
-                                                guild,
-                                                '#$_guildRank',
-                                              ]),
-                                            )
-                                          : const SizedBox.shrink(),
-                                    ),
-                                    _trailingCell(
-                                      SummaryRow.text(totalScore.format()),
-                                    ),
-                                  ],
-                                ),
-                                if (_guildGapNext != null)
-                                  TableRow(
-                                    children: [
-                                      _trailingCell(
-                                        PillChip(
-                                          text: dividerText([
-                                            _guildNextName ?? '',
-                                            '#${_guildRank! + 1}',
-                                          ]),
-                                        ),
-                                      ),
-                                      _trailingCell(
-                                        PillChip(
-                                          backgroundColor: Colors.green,
-                                          foreground: Colors.white,
-                                          text: '-${_guildGapNext!.format()}',
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                              ],
-                            ),
-                          ),
-                        ],
+                      child: RankBoardCard(
+                        icon: Icons.flag_circle,
+                        title: l10n.guildTotalScore,
+                        previous: _guildRank != null && _guildGapPrev != null
+                            ? RankBoardRow(
+                                rank: _guildRank! - 1,
+                                name: _guildPrevName ?? '',
+                                gapText: '+${_guildGapPrev!.format()}',
+                                gapColor: Colors.red,
+                              )
+                            : null,
+                        current: RankBoardRow(
+                          rank: _guildRank,
+                          name: guild,
+                          value: totalScore.format(),
+                          highlight: true,
+                        ),
+                        next: _guildRank != null && _guildGapNext != null
+                            ? RankBoardRow(
+                                rank: _guildRank! + 1,
+                                name: _guildNextName ?? '',
+                                gapText: '-${_guildGapNext!.format()}',
+                                gapColor: Colors.green,
+                              )
+                            : null,
                       ),
                     ),
                   ),

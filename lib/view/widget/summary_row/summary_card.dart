@@ -79,7 +79,7 @@ class SummaryRowValueText extends StatelessWidget {
         text,
         key: ValueKey(text),
         style: TextStyle(
-          fontSize: 16.0,
+          fontSize: 14.0,
           fontWeight: FontWeight.bold,
           color: colorScheme.primary,
         ),

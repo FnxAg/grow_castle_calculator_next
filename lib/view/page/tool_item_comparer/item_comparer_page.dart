@@ -503,10 +503,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
         ctrl.text.trim().isEmpty
             ? '—'
             : '${ctrl.text}${type.isPercent ? '%' : ''}',
-        style: TextStyle(
-          fontSize: 14.0,
-          fontWeight: FontWeight.w600,
-        ),
+        style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600),
       ),
       onTap: () => _editPanelField(type),
     );
@@ -834,10 +831,11 @@ class _EquipEditPageState extends State<_EquipEditPage> {
             right: UIs.padding.right,
           ),
           children: [
-            for (var i = 0; i < _drafts.length; i++) ...[
-              if (i > 0) const Divider(height: 1),
-              _buildLineGroup(i, _drafts[i]),
-            ],
+            for (var i = 0; i < _drafts.length; i++)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: _buildLineGroup(i, _drafts[i]),
+              ),
           ],
         ),
       ),
@@ -860,9 +858,7 @@ class _EquipEditPageState extends State<_EquipEditPage> {
           ),
           children: [
             for (final option in <_LineOption?>[null, ..._lineOptions])
-              ListTile(
-                dense: true,
-                contentPadding: const EdgeInsets.only(left: 32, right: 16),
+              CardTile(
                 leading: Icon(
                   draft.line == option
                       ? Icons.radio_button_checked
@@ -879,21 +875,15 @@ class _EquipEditPageState extends State<_EquipEditPage> {
               ),
           ],
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 12),
-          child: SelectAllTextField(
-            controller: draft.valueCtrl,
-            enabled: selected,
-            keyboardType: const TextInputType.numberWithOptions(decimal: true),
-            inputFormatters: [
-              FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
-            ],
-            decoration: InputDecoration(
-              isDense: true,
-              labelText: l10n.hintValue,
-              suffixText: draft.line?.isPercent == true ? '%' : null,
-            ),
-          ),
+        CardField(
+          title: l10n.hintValue,
+          controller: draft.valueCtrl,
+          enabled: selected,
+          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+          inputFormatters: [
+            FilteringTextInputFormatter.allow(RegExp(r'^\d*\.?\d*$')),
+          ],
+          suffixText: draft.line?.isPercent == true ? '%' : null,
         ),
       ],
     );
