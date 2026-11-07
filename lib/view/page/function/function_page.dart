@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function_bonus_gold_calc/bonus_gold_calc_page.dart';
@@ -11,6 +12,7 @@ import 'package:grow_castle_calculator_next/view/page/function_income_trend/inco
 import 'package:grow_castle_calculator_next/view/page/function_wave_status/wave_status_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 当前用户的功能页
@@ -41,8 +43,9 @@ class FunctionPage extends ConsumerWidget {
         ),
       ),
       body: ListView(
+        padding: UIs.padding,
         children: [
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.castle),
             title: Text(l10n.tabFormation),
             trailing: const Icon(Icons.chevron_right),
@@ -52,7 +55,7 @@ class FunctionPage extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.bolt),
             title: Text(l10n.waveStatus),
             trailing: const Icon(Icons.chevron_right),
@@ -62,7 +65,7 @@ class FunctionPage extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.percent),
             title: Row(
               children: [
@@ -88,7 +91,7 @@ class FunctionPage extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.auto_graph),
             title: Row(
               children: [
@@ -116,7 +119,7 @@ class FunctionPage extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.trending_up),
             title: Text(l10n.incomeTrend),
             trailing: const Icon(Icons.chevron_right),
@@ -128,7 +131,7 @@ class FunctionPage extends ConsumerWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.timeline),
             title: Text(l10n.gameTrack),
             trailing: const Icon(Icons.chevron_right),

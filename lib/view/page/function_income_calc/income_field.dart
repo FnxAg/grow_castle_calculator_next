@@ -1,13 +1,11 @@
-import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/model/userdata/user_data.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
-import 'package:material_ui/material_ui.dart';
 
 /// 金挂 / 时挂时间合计超过 24h 的提示
 const String _timeSumError = 'gabTime + tabTime > 24h';
 
-/// 对话框里展示的原始输入值（整数不带小数位）
+/// 输入框里展示的原始输入值（整数不带小数位）
 String _doubleText(double value) => value == value.roundToDouble()
     ? value.toStringAsFixed(0)
     : value.toString();
@@ -63,17 +61,7 @@ enum IncomeField {
     _ => '',
   };
 
-  /// 列表行展示的值
-  String display(UserData user) => switch (this) {
-    infiniteColony => 'Lv.${user.infiniteColony.format()}',
-    icCooldown => user.icCooldownSkill.format(),
-    icGold => user.icGoldSkill.format(),
-    gabBonus => '${user.gabBonus.format(fractionDigits: 2)}%',
-    gabTime => '${user.gabTime.format(fractionDigits: 2)}h',
-    tabTime => '${user.tabTime.format(fractionDigits: 2)}h',
-  };
-
-  /// 对话框的初始文本
+  /// 输入框的初始文本
   String inputText(UserData user) => switch (this) {
     infiniteColony => '${user.infiniteColony}',
     icCooldown => '${user.icCooldownSkill}',
@@ -114,35 +102,4 @@ enum IncomeField {
         users.setCurrentUserTabTime(double.tryParse(text) ?? 0.0);
     }
   }
-
-  /// 对话框附加说明
-  Widget? extraDialogContent(
-    BuildContext context,
-    TextEditingController controller,
-  ) => switch (this) {
-    gabBonus => Padding(
-        padding: const EdgeInsets.only(top: 8.0),
-        child: Text(
-          AppLocalizations.of(context).labelGabBonusNote,
-          style: Theme.of(context).textTheme.bodySmall,
-        ),
-      ),
-    _ => null,
-  };
-
-  /// 对话框附加按钮，通过 [controller] 改写输入内容
-  List<Widget> extraDialogActions(
-    BuildContext context,
-    TextEditingController controller,
-  ) => switch (this) {
-    gabBonus => [
-        TextButton(
-          onPressed: () {
-            controller.text = '0';
-          },
-          child: Text('FAB'),
-        ),
-      ],
-    _ => const [],
-  };
 }

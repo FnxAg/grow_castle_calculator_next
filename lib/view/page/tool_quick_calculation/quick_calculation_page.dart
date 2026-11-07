@@ -7,7 +7,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_selector
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum _Field { wave, gp, gpCN, gold }
@@ -396,29 +396,27 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
   Widget _buildField(AppLocalizations l10n, _Field field) {
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
-    return SelectAllTextField(
+    final value = _valueOf(field);
+    return CardField(
+      title: _labelOf(l10n, field),
       controller: _controllerOf(field),
       enabled: _isFieldEnabled(field),
       keyboardType: field == _Field.wave
           ? TextInputType.number
           : const TextInputType.numberWithOptions(decimal: true),
-      textInputAction: TextInputAction.done,
-      maxLines: 1,
       inputFormatters: field == _Field.wave
           ? [FilteringTextInputFormatter.digitsOnly]
           : const [_DecimalTextInputFormatter()],
-      decoration: InputDecoration(
-        labelText: _labelOf(l10n, field),
-        helperText: _valueOf(field) == null
-            ? '-'
-            : switch (field) {
-                _Field.wave => _valueOf(field)?.format(fractionDigits: 0),
-                _Field.gold => _valueOf(
-                  field,
-                )?.formatCompact(english: english, traditional: traditional),
-                _ => _valueOf(field)?.format(fractionDigits: 3),
-              },
-      ),
+      helperText: value == null
+          ? '-'
+          : switch (field) {
+              _Field.wave => value.format(fractionDigits: 0),
+              _Field.gold => value.formatCompact(
+                english: english,
+                traditional: traditional,
+              ),
+              _ => value.format(fractionDigits: 3),
+            },
     );
   }
 

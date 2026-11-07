@@ -1,12 +1,12 @@
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/page/function_build_calc/widget/formation_input_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 阵容页卡片行
 class FormationCardTile extends ConsumerStatefulWidget {
@@ -18,7 +18,6 @@ class FormationCardTile extends ConsumerStatefulWidget {
     required this.numberController,
     required this.textFocusNode,
     required this.numberFocusNode,
-    required this.viewMode,
     required this.onRemove,
   });
 
@@ -28,7 +27,6 @@ class FormationCardTile extends ConsumerStatefulWidget {
   final TextEditingController numberController;
   final FocusNode textFocusNode;
   final FocusNode numberFocusNode;
-  final bool viewMode;
 
   /// 删除回调
   final ValueChanged<int> onRemove;
@@ -38,81 +36,116 @@ class FormationCardTile extends ConsumerStatefulWidget {
 }
 
 class _FormationCardTileState extends ConsumerState<FormationCardTile> {
-  /// 是否已应用
-  bool get _applied => ref.read(applyFlagProvider(widget.id));
-
-  /// 桌面端指针是否悬停在行上
-  bool _hovered = false;
+  /// 是否展开编辑项
+  bool _expanded = false;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    // 订阅本行的应用标志
+    final l10n = AppLocalizations.of(context);
     final bool applied = ref.watch(applyFlagProvider(widget.id));
-    // 桌面端右键整行也可弹出操作菜单
-    return GestureDetector(
-      onSecondaryTapUp: _showContextMenu,
-      child: ListTile(
-        // 显式拖拽句柄，避免在 TextField 区域长按触发重排
-        leading: Listener(
-          onPointerDown: (_) {
-            // 拖拽时条目会暂时移入 Overlay，先释放输入框焦点避免 Debug
-            // 模式下 EditableText 的焦点与 RenderObject 状态不一致。
-            FocusManager.instance.primaryFocus?.unfocus();
-          },
-          child: ReorderableDragStartListener(
-            index: widget.index,
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 24),
-              child: Container(
-                width: 24,
-                height: 24,
-                alignment: Alignment.center,
-                decoration: BoxDecoration(
-                  color: scheme.primaryContainer,
-                  borderRadius: BorderRadius.circular(999.0),
-                ),
-                child: Text(
-                  (widget.index + 1).toString(),
-                  style: const TextStyle(
-                    fontWeight: FontWeight.bold,
-                    fontSize: 16.0,
-                  ),
-                ),
+    return ExpansionCardTile(
+      // 独立 key：避免展开状态的 bool 与列表滚动位置的 double 共用存储槽
+      key: PageStorageKey('formation_card_${widget.id}'),
+      // 显式拖拽句柄，避免在 TextField 区域长按触发重排
+      leading: Listener(
+        onPointerDown: (_) {
+          // 拖拽时条目会暂时移入 Overlay，先释放输入框焦点避免 Debug
+          // 模式下 EditableText 的焦点与 RenderObject 状态不一致。
+          FocusManager.instance.primaryFocus?.unfocus();
+        },
+        child: ReorderableDragStartListener(
+          index: widget.index,
+          child: CircleAvatar(
+            radius: 14,
+            backgroundColor: applied
+                ? scheme.primaryContainer
+                : scheme.surfaceContainerHighest,
+            child: Text(
+              (widget.index + 1).toString(),
+              style: const TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 12.0,
               ),
             ),
           ),
         ),
-        title: AnimatedSwitcher(
-          duration: const Duration(milliseconds: 220),
-          switchInCurve: Curves.easeOutCubic,
-          switchOutCurve: Curves.easeInCubic,
-          transitionBuilder: (child, animation) => FadeTransition(
-            opacity: animation,
-            child: SizeTransition(
-              sizeFactor: animation,
-              axis: Axis.horizontal,
-              child: child,
+      ),
+      title: _summaryView(applied),
+      trailing: AnimatedRotation(
+        turns: _expanded ? 0.5 : 0.0,
+        duration: const Duration(milliseconds: 200),
+        child: const Icon(Icons.expand_more),
+      ),
+      // PageStorage 恢复展开状态时回调发生在构建期，延后一帧再更新箭头
+      onExpansionChanged: (value) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted && _expanded != value) {
+            setState(() => _expanded = value);
+          }
+        });
+      },
+      expandedCrossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        CardField(
+          // 输入框内部滚动位置也走 PageStorage，需与展开状态的存储槽区分
+          key: PageStorageKey('formation_name_${widget.id}'),
+          title: _nameLabel(l10n),
+          controller: widget.textController,
+          focusNode: widget.textFocusNode,
+          keyboardType: TextInputType.text,
+        ),
+        CardField(
+          key: PageStorageKey('formation_level_${widget.id}'),
+          title: l10n.labelLevel,
+          controller: widget.numberController,
+          focusNode: widget.numberFocusNode,
+          keyboardType: TextInputType.number,
+          inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+        ),
+        SwitchCardTile(
+          title: Text(applied ? l10n.actionApplied : l10n.actionNotApplied),
+          value: applied,
+          onChanged: (value) => ref.users.setApplyFlag(widget.id, value),
+        ),
+        if (widget.id != 1 && widget.id != 2)
+          CardTile(
+            enabled: widget.id != 1 && widget.id != 2,
+            leading: const Icon(Icons.delete, color: Colors.red),
+            title: Text(
+              l10n.actionDelete,
+              style: const TextStyle(color: Colors.red),
+            ),
+            onTap:() => showDialog(
+              context: context,
+              builder: (context) => AlertDialog(
+                title: Text(l10n.actionDelete),
+                content: Text(l10n.dialogDelete),
+                actions: [
+                  TextButton(
+                    onPressed: () => Navigator.of(context).pop(),
+                    child: Text(l10n.actionCancel),
+                  ),
+                  TextButton(
+                    onPressed: () {
+                      widget.onRemove(widget.id);
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(l10n.actionDelete),
+                  ),
+                ],
+              ),
             ),
           ),
-          child: widget.viewMode ? _summaryView(applied) : _inputView(applied),
-        ),
-        trailing: _menuButton(applied),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 8.0),
-      ),
-    );
-  }
-
-  Widget _inputView(bool applied) {
-    return Row(
-      key: const ValueKey('input'),
-      children: [
-        Expanded(flex: 9, child: _nameField(applied)),
-        const SizedBox(width: 8.0),
-        Expanded(flex: 9, child: _levelField(applied)),
       ],
     );
   }
+
+  String _nameLabel(AppLocalizations l10n) => widget.id == 1
+      ? l10n.nameLabelCastle
+      : widget.id == 2
+      ? l10n.nameLabelTownArcher
+      : l10n.nameLabelGeneric;
 
   Widget _summaryView(bool applied) {
     final theme = Theme.of(context);
@@ -132,7 +165,6 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
     );
 
     return Padding(
-      key: const ValueKey('summary'),
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,14 +185,17 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                 ),
               ),
               const SizedBox(width: 8.0),
-              Text(
-                '${level.format()} · '
-                '${gold.formatCompact(english: !context.isChineseLocale, traditional: context.isTraditionalChineseLocale)}',
-                style: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  color: applied
-                      ? theme.colorScheme.primary
-                      : theme.disabledColor,
+              AnimatedTextSwitcher(
+                child: Text(
+                  '${level.format()} · '
+                  '${gold.formatCompact(english: !context.isChineseLocale, traditional: context.isTraditionalChineseLocale)}',
+                  style: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: applied
+                        ? theme.colorScheme.primary
+                        : theme.disabledColor,
+                  ),
+                  key: ValueKey('$level-$gold-${applied ? 1 : 0}'),
                 ),
               ),
             ],
@@ -191,12 +226,15 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
   }
 
   Widget _metric(ThemeData theme, String label, String value, bool applied) {
-    return Text(
-      '$label $value',
-      style: theme.textTheme.bodySmall?.copyWith(
-        color: applied
-            ? theme.colorScheme.onSurfaceVariant
-            : theme.disabledColor,
+    return AnimatedTextSwitcher(
+      child: Text(
+        '$label $value',
+        style: theme.textTheme.bodySmall?.copyWith(
+          color: applied
+              ? theme.colorScheme.onSurfaceVariant
+              : theme.disabledColor,
+        ),
+        key: ValueKey('$label-$value-${applied ? 1 : 0}'),
       ),
     );
   }
@@ -209,129 +247,5 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
         ? 5
         : 3;
     return value.format(fractionDigits: digits);
-  }
-
-  Widget _nameField(bool applied) {
-    final l10n = AppLocalizations.of(context);
-    return FormationInputField(
-      controller: widget.textController,
-      focusNode: widget.textFocusNode,
-      enabled: true,
-      visualDisabled: !applied,
-      labelText: widget.id == 1
-          ? l10n.nameLabelCastle
-          : widget.id == 2
-          ? l10n.nameLabelTownArcher
-          : l10n.nameLabelGeneric,
-      keyboardType: TextInputType.text,
-    );
-  }
-
-  Widget _levelField(bool applied) {
-    return FormationInputField(
-      controller: widget.numberController,
-      focusNode: widget.numberFocusNode,
-      enabled: true,
-      visualDisabled: !applied,
-      labelText: AppLocalizations.of(context).labelLevel,
-      keyboardType: TextInputType.number,
-      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-    );
-  }
-
-  Widget _menuButton(bool applied) {
-    final button = ConstrainedBox(
-      constraints: const BoxConstraints(maxWidth: 24),
-      child: PopupMenuButton(
-        padding: EdgeInsets.zero,
-        iconSize: 20,
-        tooltip: AppLocalizations.of(context).tooltipActions,
-        itemBuilder: (context) => _menuItems(applied),
-      ),
-    );
-    if (!isDesktopPlatform()) return button;
-    return MouseRegion(
-      onEnter: (_) => setState(() => _hovered = true),
-      onExit: (_) => setState(() => _hovered = false),
-      child: IgnorePointer(
-        ignoring: !_hovered,
-        child: AnimatedOpacity(
-          duration: const Duration(milliseconds: 120),
-          opacity: _hovered ? 1.0 : 0.0,
-          child: button,
-        ),
-      ),
-    );
-  }
-
-  /// 操作菜单
-  List<PopupMenuEntry<void>> _menuItems(bool applied) {
-    final l10n = AppLocalizations.of(context);
-    return [
-      PopupMenuItem(
-        onTap: () => _toggleApplied(applied),
-        child: Row(
-          children: [
-            Icon(
-              applied ? Icons.done : Icons.block,
-              color: applied ? Colors.green : Colors.red,
-            ),
-            const SizedBox(width: 8.0),
-            Text(applied ? l10n.actionApplied : l10n.actionNotApplied),
-          ],
-        ),
-      ),
-      // 清除表单
-      PopupMenuItem(
-        onTap: _clear,
-        child: Row(
-          children: [
-            const Icon(Icons.clear),
-            const SizedBox(width: 8.0),
-            Text(l10n.actionClear),
-          ],
-        ),
-      ),
-      PopupMenuItem(
-        enabled: widget.id != 1 && widget.id != 2,
-        onTap: () => widget.onRemove(widget.id),
-        child: Row(
-          children: [
-            const Icon(Icons.delete, color: Colors.red),
-            const SizedBox(width: 8.0),
-            Text(l10n.actionDelete, style: const TextStyle(color: Colors.red)),
-          ],
-        ),
-      ),
-    ];
-  }
-
-  /// 右键整行时在指针位置弹出操作菜单
-  void _showContextMenu(TapUpDetails details) {
-    showMenu<void>(
-      context: context,
-      position: RelativeRect.fromLTRB(
-        details.globalPosition.dx,
-        details.globalPosition.dy,
-        details.globalPosition.dx,
-        details.globalPosition.dy,
-      ),
-      items: _menuItems(_applied),
-    );
-  }
-
-  /// 切换应用标志
-  void _toggleApplied(bool applied) {
-    setState(() {
-      ref.users.setApplyFlag(widget.id, !applied);
-    });
-  }
-
-  /// 清空名称与等级输入
-  void _clear() {
-    setState(() {
-      widget.numberController.clear();
-      widget.textController.clear();
-    });
   }
 }

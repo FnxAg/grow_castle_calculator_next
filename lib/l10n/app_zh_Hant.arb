@@ -449,5 +449,6 @@
   "dialogRemove": "確認刪除？",
   "actionHelp": "說明",
   "labelScore": "分數",
-  "labelSeasonWPH": "賽季波速"
+  "labelSeasonWPH": "賽季波速",
+  "dialogDelete": "確認刪除？"
 }

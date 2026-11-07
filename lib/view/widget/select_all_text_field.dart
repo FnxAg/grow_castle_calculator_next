@@ -24,6 +24,7 @@ class SelectAllTextField extends StatefulWidget {
     this.enabled = true,
     this.onChanged,
     this.autofocus = false,
+    this.style,
   });
 
   final TextEditingController controller;
@@ -39,6 +40,7 @@ class SelectAllTextField extends StatefulWidget {
   final bool enabled;
   final ValueChanged<String>? onChanged;
   final bool autofocus;
+  final TextStyle? style;
 
   @override
   State<SelectAllTextField> createState() => _SelectAllTextFieldState();
@@ -95,6 +97,7 @@ class _SelectAllTextFieldState extends State<SelectAllTextField> {
       enabled: widget.enabled,
       onChanged: widget.onChanged,
       autofocus: widget.autofocus,
+      style: widget.style,
     );
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/services.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
@@ -78,25 +79,22 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     }
   }
 
+  ThemeData _themeData(ColorScheme scheme) => ThemeData(
+    useMaterial3: true,
+    colorScheme: scheme,
+    fontFamily: platformFontFamily,
+    fontFamilyFallback: platformFontFallback,
+    listTileTheme: ListTileThemeData(
+      style: ListTileStyle.list,
+      tileColor: scheme.secondaryContainer.withAlpha(UIs.cardTileColorAlpha),
+    ),
+  );
+
   (ThemeData, ThemeData) _buildThemeData(
     ColorScheme lightDynamic,
     ColorScheme darkDynamic,
   ) {
-    final lightTheme = ThemeData(
-      useMaterial3: true,
-      colorScheme: lightDynamic,
-      fontFamily: platformFontFamily,
-      fontFamilyFallback: platformFontFallback,
-    );
-
-    final darkTheme = ThemeData(
-      useMaterial3: true,
-      colorScheme: darkDynamic,
-      fontFamily: platformFontFamily,
-      fontFamilyFallback: platformFontFallback,
-    );
-
-    return (lightTheme, darkTheme);
+    return (_themeData(lightDynamic), _themeData(darkDynamic));
   }
 
   @override

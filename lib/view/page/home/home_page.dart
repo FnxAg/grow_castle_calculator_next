@@ -12,6 +12,7 @@ import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
@@ -20,6 +21,7 @@ import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
@@ -440,12 +442,6 @@ class _HomePageState extends ConsumerState<HomePage>
     final guild = ref.read(currentUserGuildProvider);
     final wave = ref.watch(currentUserWaveProvider);
     final seasonWave = ref.watch(currentUserSeasonWaveProvider);
-    final totalGold = ref.watch(currentUserTotalGoldProvider);
-    final gp = ref.watch(currentUserGpProvider);
-    final gpCn = ref.watch(currentUserGpCnProvider);
-    final dailyIncome = ref.watch(dailyIncomeProvider).total;
-    final gabBonus = ref.watch(currentUserGabBonusProvider);
-    final infiniteColony = ref.watch(currentUserInfiniteColonyProvider);
     final guildTotalScore = ref.watch(guildTotalScoreProvider);
 
     final crystalIcon = CrystalIcon(
@@ -469,7 +465,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final totalWaveCard = SummaryCard(
       children: <Widget>[
         SummaryRow(
-          title: Text(l10n.totalWave),
+          title: Text(l10n.totalWave, overflow: TextOverflow.ellipsis),
           leading: Icon(Icons.emoji_events),
           trailing: SummaryRow.text(wave.format()),
         ),
@@ -479,7 +475,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final seasonWaveCard = SummaryCard(
       children: <Widget>[
         SummaryRow(
-          title: Text(l10n.seasonWave),
+          title: Text(l10n.seasonWave, overflow: TextOverflow.ellipsis),
           leading: Icon(Icons.eco),
           trailing: Table(
             defaultColumnWidth: const IntrinsicColumnWidth(),
@@ -542,69 +538,12 @@ class _HomePageState extends ConsumerState<HomePage>
         ),
       ],
     );
-    // 经济
-    final economyCard = SummaryCard(
-      children: <Widget>[
-        SummaryRow(
-          leading: Icon(Icons.monetization_on),
-          title: Text(l10n.totalGold),
-          trailing: SummaryRow.text(
-            totalGold.formatCompact(
-              fractionDigits: 2,
-              english: english,
-              traditional: traditional,
-            ),
-          ),
-        ),
-        SummaryRow(
-          leading: Icon(Icons.star),
-          title: Row(mainAxisSize: MainAxisSize.min, children: [Text(l10n.gp)]),
-          trailing: SummaryRow.text(gp.format(fractionDigits: 3)),
-        ),
-        SummaryRow(
-          leading: Icon(Icons.star),
-          title: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [Text(l10n.gpCN)],
-          ),
-          trailing: SummaryRow.text(gpCn.format(fractionDigits: 3)),
-        ),
-        SummaryRow(
-          leading: Icon(Icons.auto_graph),
-          title: Text(l10n.income),
-          trailing: Row(
-            children: [
-              PillChip(text: '${gabBonus.toStringAsFixed(2)}%'),
-              const SizedBox(width: 8.0),
-              SummaryRow.text(
-                dailyIncome.formatCompact(
-                  fractionDigits: 2,
-                  english: english,
-                  traditional: traditional,
-                ),
-              ),
-            ],
-          ),
-        ),
-        SummaryRow(
-          leading: Icon(Icons.flag),
-          title: Text(l10n.infiniteColony),
-          trailing: Row(
-            children: [
-              PillChip(text: (infiniteColony * 1000 / wave).toStringAsFixed(2)),
-              const SizedBox(width: 8.0),
-              SummaryRow.text('Lv.${infiniteColony.format()}'),
-            ],
-          ),
-        ),
-      ],
-    );
     // 公会
     final guildCard = SummaryCard(
       children: <Widget>[
         SummaryRow(
           leading: Icon(Icons.flag_circle),
-          title: Text(l10n.guildTotalScore),
+          title: Text(l10n.guildTotalScore, overflow: TextOverflow.ellipsis),
           trailing: Table(
             defaultColumnWidth: const IntrinsicColumnWidth(),
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -671,7 +610,7 @@ class _HomePageState extends ConsumerState<HomePage>
       children: <Widget>[
         SummaryRow(
           leading: Icon(Icons.all_inclusive),
-          title: Text(l10n.hellModeScore),
+          title: Text(l10n.hellModeScore, overflow: TextOverflow.ellipsis),
           trailing: Table(
             defaultColumnWidth: const IntrinsicColumnWidth(),
             defaultVerticalAlignment: TableCellVerticalAlignment.middle,
@@ -780,7 +719,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final quickAccess = <Widget>[
       SectionHeader(l10n.sectionQuickAccess),
       if (!isDefaultUser)
-        ListTile(
+        CardTile(
           leading: const Icon(Icons.view_compact),
           title: Text(l10n.tabCheckCurrentUserWph),
           trailing: const Icon(Icons.chevron_right),
@@ -795,7 +734,7 @@ class _HomePageState extends ConsumerState<HomePage>
             );
           },
         ),
-      ListTile(
+      CardTile(
         leading: const Icon(Icons.castle),
         title: Text(l10n.tabFormation),
         trailing: const Icon(Icons.chevron_right),
@@ -805,7 +744,7 @@ class _HomePageState extends ConsumerState<HomePage>
           );
         },
       ),
-      ListTile(
+      CardTile(
         leading: const Icon(Icons.group),
         title: Text(l10n.settingsUserManagement),
         trailing: const Icon(Icons.chevron_right),
@@ -847,34 +786,31 @@ class _HomePageState extends ConsumerState<HomePage>
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
-          const padding = EdgeInsets.all(16.0);
           // 窄屏
           if (constraints.maxWidth < Breakpoints.sideBySide) {
             return ListView(
+              padding: UIs.padding,
               children: [
-                Padding(
-                  padding: padding,
-                  child: Column(
-                    children: [
-                      totalWaveCard,
-                      seasonWaveCard,
-                      economyCard,
-                      guildCard,
-                      hellCard,
-                      SizeTransition(
-                        sizeFactor: _anims[AnimSource.rewardCard]!,
-                        alignment: .bottomCenter,
-                        child: rewardCard,
-                      ),
-                    ],
-                  ),
+                Column(
+                  children: [
+                    totalWaveCard,
+                    seasonWaveCard,
+                    guildCard,
+                    hellCard,
+                    SizeTransition(
+                      sizeFactor: _anims[AnimSource.rewardCard]!,
+                      alignment: .bottomCenter,
+                      child: rewardCard,
+                    ),
+                    ...quickAccess,
+                  ],
                 ),
-                ...quickAccess,
               ],
             );
           }
           // 宽屏
           return ListView(
+            padding: UIs.padding,
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -883,22 +819,18 @@ class _HomePageState extends ConsumerState<HomePage>
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.stretch,
                       children: [
-                        Padding(
-                          padding: padding,
-                          child: Column(
-                            children: [
-                              totalWaveCard,
-                              seasonWaveCard,
-                              economyCard,
-                              guildCard,
-                              hellCard,
-                              SizeTransition(
-                                sizeFactor: _anims[AnimSource.rewardCard]!,
-                                alignment: .bottomCenter,
-                                child: rewardCard,
-                              ),
-                            ],
-                          ),
+                        Column(
+                          children: [
+                            totalWaveCard,
+                            seasonWaveCard,
+                            guildCard,
+                            hellCard,
+                            SizeTransition(
+                              sizeFactor: _anims[AnimSource.rewardCard]!,
+                              alignment: .bottomCenter,
+                              child: rewardCard,
+                            ),
+                          ],
                         ),
                       ],
                     ),

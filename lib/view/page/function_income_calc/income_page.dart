@@ -2,13 +2,14 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_edit_tile.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_field.dart';
-import 'package:grow_castle_calculator_next/view/page/function_income_calc/summary_bar.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:material_ui/material_ui.dart';
@@ -23,23 +24,17 @@ class IncomePage extends ConsumerStatefulWidget {
 
 class _IncomePageState extends ConsumerState<IncomePage> {
   Widget _buildList({required bool wide, required AppLocalizations l10n}) {
-    final wave = ref.watch(currentUserWaveProvider);
-    final infiniteColony = ref.watch(
-      currentUserProvider.select((u) => u.infiniteColony),
-    );
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
     final income = ref.watch(dailyIncomeProvider);
     Widget sectionHeaderTrailing(IconData icon, String text) =>
         PillChip(leading: Icon(icon), text: text);
 
-    const Widget divider = Divider(height: 1, thickness: 1);
-
     final list = ListView(
+      padding: UIs.padding,
       children: [
         const IncomeEditTile(field: IncomeField.gabTime),
         const IncomeEditTile(field: IncomeField.tabTime),
-        divider,
         SectionHeader(
           l10n.tabIncomeWave,
           trailing: sectionHeaderTrailing(
@@ -51,7 +46,6 @@ class _IncomePageState extends ConsumerState<IncomePage> {
           ),
         ),
         const IncomeEditTile(field: IncomeField.gabBonus),
-        divider,
         SectionHeader(
           l10n.tabIncomeColony,
           trailing: sectionHeaderTrailing(
@@ -62,28 +56,19 @@ class _IncomePageState extends ConsumerState<IncomePage> {
             ),
           ),
         ),
-        IncomeEditTile(
-          field: IncomeField.infiniteColony,
-          titleTrailing: Tooltip(
-            message: l10n.tooltipInfiniteColonyRatio,
-            child: PillChip(
-              text: wave > 0 ? (infiniteColony / wave * 1000).format() : '0',
-            ),
-          ),
-        ),
+        const IncomeEditTile(field: IncomeField.infiniteColony),
         const IncomeEditTile(field: IncomeField.icCooldown),
         const IncomeEditTile(field: IncomeField.icGold),
-        SwitchListTile(
+        SwitchCardTile(
           title: Text(l10n.labelWheel),
           value: ref.watch(currentUserProvider.select((u) => u.equipWheel)),
           onChanged: ref.users.setCurrentUserEquipWheel,
         ),
-        SwitchListTile(
+        SwitchCardTile(
           title: Text(l10n.labelWhip),
           value: ref.watch(currentUserProvider.select((u) => u.equipWhip)),
           onChanged: ref.users.setCurrentUserEquipWhip,
         ),
-        divider,
         SectionHeader(
           l10n.tabIncomeOther,
           trailing: sectionHeaderTrailing(
@@ -94,12 +79,12 @@ class _IncomePageState extends ConsumerState<IncomePage> {
             ),
           ),
         ),
-        SwitchListTile(
+        SwitchCardTile(
           title: Text(l10n.labelSeasonColony),
           value: ref.watch(currentUserProvider.select((u) => u.seasonColony)),
           onChanged: ref.users.setCurrentUserSeasonColony,
         ),
-        SwitchListTile(
+        SwitchCardTile(
           title: Text(l10n.labelGoldenTree),
           value: ref.watch(currentUserProvider.select((u) => u.goldenTree)),
           onChanged: ref.users.setCurrentUserGoldenTree,
@@ -119,14 +104,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
       children: [AppBarItem.currentUser(), AppBarItem.currentUserDailyIncome()],
     );
 
-    final body = wide
-        ? Row(
-            children: [
-              Expanded(flex: 6, child: list),
-              const Expanded(flex: 4, child: IncomeSummaryBar()),
-            ],
-          )
-        : list;
+    final body = list;
 
     final appBarActions = [
       IconButton(

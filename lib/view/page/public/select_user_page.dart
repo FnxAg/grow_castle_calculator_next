@@ -11,6 +11,8 @@ import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart';
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SelectUserPage extends ConsumerStatefulWidget {
@@ -75,6 +77,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
       body: SafeArea(
         top: false,
         child: ListView.builder(
+          padding: UIs.padding,
           itemCount: userList.length,
           itemBuilder: (ctx, index) {
             final String username = userList[index];
@@ -82,7 +85,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
             final String guild = user?.guild ?? '';
             return GestureDetector(
               onSecondaryTapUp: (_) => _showUnitSummary(username),
-              child: ListTile(
+              child: CardTile(
                 title: Wrap(
                   spacing: 8.0,
                   crossAxisAlignment: WrapCrossAlignment.center,

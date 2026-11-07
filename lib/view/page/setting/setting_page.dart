@@ -5,10 +5,12 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
 import 'package:grow_castle_calculator_next/view/page/setting_about/about_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting_backup/backup_page.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -218,7 +220,7 @@ class _SettingPageState extends State<SettingPage> {
     final currentLabel = options
         .firstWhere((option) => option.$1 == current)
         .$2;
-    return ListTile(
+    return CardTile(
       leading: Icon(leading),
       title: Text(title),
       subtitle: Text(currentLabel),
@@ -236,7 +238,7 @@ class _SettingPageState extends State<SettingPage> {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   for (final (value, label, icon) in options)
-                    RadioListTile<T>(
+                    RadioCardTile<T>(
                       value: value,
                       secondary: icon,
                       title: Text(label),
@@ -265,8 +267,9 @@ class _SettingPageState extends State<SettingPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tabSettings)),
       body: ListView(
+        padding: UIs.padding,
         children: [
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.group),
             title: Text(l10n.settingsUserManagement),
             subtitle: const _CurrentUsernameSubtitle(),
@@ -315,18 +318,15 @@ class _SettingPageState extends State<SettingPage> {
               onSelected: appSettingsStore.setLanguage,
             ),
           ),
-          ExpansionTile(
+          ExpansionCardTile(
             leading: const Icon(Icons.api),
             title: Text(l10n.settingsThirdPartyApi),
             subtitle: Text(l10n.settingsThirdPartyApiSubtitle),
-            childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
-            shape: const Border(),
-            collapsedShape: const Border(),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.thirdPartyApiEnabledNotifier,
                 builder: (context, enabled, _) {
-                  return SwitchListTile(
+                  return SwitchCardTile(
                     value: enabled,
                     onChanged: appSettingsStore.setThirdPartyApiEnabled,
                     title: Text(l10n.settingsEnabled),
@@ -336,7 +336,7 @@ class _SettingPageState extends State<SettingPage> {
               ValueListenableBuilder<String>(
                 valueListenable: appSettingsStore.apiUrlNotifier,
                 builder: (context, url, _) {
-                  return ListTile(
+                  return CardTile(
                     title: Text(l10n.labelApiUrl),
                     subtitle: Text(url),
                     onTap: () => _showApiUrlDialog(context, appSettingsStore),
@@ -345,18 +345,15 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ],
           ),
-          ExpansionTile(
+          ExpansionCardTile(
             leading: const Icon(Icons.schedule),
             title: Text(l10n.settingsAutoLastOnline),
             subtitle: Text(l10n.settingsAutoLastOnlineSubtitle),
-            childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
-            shape: const Border(),
-            collapsedShape: const Border(),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
                 builder: (context, enabled, _) {
-                  return SwitchListTile(
+                  return SwitchCardTile(
                     value: enabled,
                     onChanged: appSettingsStore.setAutoLastOnlineEnabled,
                     title: Text(l10n.settingsEnabled),
@@ -366,7 +363,7 @@ class _SettingPageState extends State<SettingPage> {
               ValueListenableBuilder<int>(
                 valueListenable: appSettingsStore.lastOnlineConcurrencyNotifier,
                 builder: (context, concurrency, _) {
-                  return ListTile(
+                  return CardTile(
                     title: Text(l10n.settingsQueryConcurrency),
                     subtitle: Text('$concurrency'),
                     onTap: () =>
@@ -376,18 +373,15 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ],
           ),
-          ExpansionTile(
+          ExpansionCardTile(
             leading: const Icon(Icons.timeline),
             title: Text(l10n.settingsGameTrack),
             subtitle: Text(l10n.settingsGameTrackSubtitle),
-            childrenPadding: const EdgeInsets.only(left: 16.0, right: 16.0),
-            shape: const Border(),
-            collapsedShape: const Border(),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.gameTrackEnabledNotifier,
                 builder: (context, enabled, _) {
-                  return SwitchListTile(
+                  return SwitchCardTile(
                     value: enabled,
                     onChanged: appSettingsStore.setGameTrackEnabled,
                     title: Text(l10n.settingsEnabled),
@@ -398,7 +392,7 @@ class _SettingPageState extends State<SettingPage> {
                 valueListenable:
                     appSettingsStore.gameTrackIntervalMinutesNotifier,
                 builder: (context, minutes, _) {
-                  return ListTile(
+                  return CardTile(
                     title: Text(l10n.settingsGameTrackMinInterval),
                     subtitle: Text(
                       l10n.settingsGameTrackIntervalValue(minutes),
@@ -410,7 +404,7 @@ class _SettingPageState extends State<SettingPage> {
               ),
             ],
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.cloud_outlined),
             title: Text(l10n.settingsDataBackup),
             subtitle: Text(l10n.settingsDataBackupSubtitle),
@@ -422,7 +416,7 @@ class _SettingPageState extends State<SettingPage> {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.system_update_alt),
             title: Text(l10n.settingsCheckUpdate),
             subtitle: currentVersion == null
@@ -437,7 +431,7 @@ class _SettingPageState extends State<SettingPage> {
                 : null,
             onTap: _checking ? null : _checkUpdate,
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.info_outline),
             title: Text(l10n.settingsAbout),
             trailing: const Icon(Icons.chevron_right),

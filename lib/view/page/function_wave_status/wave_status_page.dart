@@ -1,9 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 跳波状态页
@@ -60,22 +62,16 @@ class WaveStatusPage extends ConsumerWidget {
       body: SafeArea(
         top: false,
         child: ListView(
+          padding: UIs.padding,
           children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
-            ),
+            _ResultCard(wph: wph, rwph: rwph, wps: wph * 120),
             // 游戏速度：gameSpeed
-            ExpansionTile(
+            ExpansionCardTile(
               title: Text(l10n.labelGameSpeed),
               subtitle: Text(
                 _gameSpeedEntries(l10n)
                     .firstWhere((entry) => entry.$1 == user.gameSpeed)
                     .$2,
-              ),
-              childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
               ),
               children: [
                 RadioGroup<int>(
@@ -88,23 +84,19 @@ class WaveStatusPage extends ConsumerWidget {
                   child: Column(
                     children: [
                       for (final (value, label) in _gameSpeedEntries(l10n))
-                        RadioListTile<int>(title: Text(label), value: value),
+                        RadioCardTile<int>(title: Text(label), value: value),
                     ],
                   ),
                 ),
               ],
             ),
             // 闹钟转职：chronoClass
-            ExpansionTile(
+            ExpansionCardTile(
               title: Text(l10n.labelChronoType),
               subtitle: Text(
                 _chronoEntries(l10n)
                     .firstWhere((entry) => entry.$1 == user.chronoClass)
                     .$2,
-              ),
-              childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
               ),
               children: [
                 RadioGroup<int>(
@@ -117,14 +109,14 @@ class WaveStatusPage extends ConsumerWidget {
                   child: Column(
                     children: [
                       for (final (value, label) in _chronoEntries(l10n))
-                        RadioListTile<int>(title: Text(label), value: value),
+                        RadioCardTile<int>(title: Text(label), value: value),
                     ],
                   ),
                 ),
               ],
             ),
             // 10%角：horn
-            SwitchListTile(
+            SwitchCardTile(
               title: Text(l10n.labelHorn10),
               subtitle: Text(
                 _equipEntries(l10n)
@@ -135,7 +127,7 @@ class WaveStatusPage extends ConsumerWidget {
               onChanged: (value) => ref.users.setCurrentUserHorn(value),
             ),
             // 30%角：goldenHorn
-            SwitchListTile(
+            SwitchCardTile(
               title: Text(l10n.labelHorn30),
               subtitle: Text(
                 _equipEntries(l10n)
@@ -146,16 +138,12 @@ class WaveStatusPage extends ConsumerWidget {
               onChanged: (value) => ref.users.setCurrentUserGoldenHorn(value),
             ),
             // 恶魔号角跳波数：devilHornSkip
-            ExpansionTile(
+            ExpansionCardTile(
               title: Text(l10n.labelDevilHornSkip),
               subtitle: Text(
                 _devilHornEntries(l10n)
                     .firstWhere((entry) => entry.$1 == user.devilHornSkip)
                     .$2,
-              ),
-              childrenPadding: const EdgeInsets.symmetric(horizontal: 16),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(8.0),
               ),
               children: [
                 RadioGroup<int>(
@@ -168,14 +156,14 @@ class WaveStatusPage extends ConsumerWidget {
                   child: Column(
                     children: [
                       for (final (value, label) in _devilHornEntries(l10n))
-                        RadioListTile<int>(title: Text(label), value: value),
+                        RadioCardTile<int>(title: Text(label), value: value),
                     ],
                   ),
                 ),
               ],
             ),
             // 挂机类型：isGoldAutoBattle
-            SwitchListTile(
+            SwitchCardTile(
               title: Text(l10n.labelAutoBattleType),
               subtitle: Text(
                 _autoBattleEntries(l10n)
@@ -217,32 +205,35 @@ class _ResultCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    return Card(
-      margin: EdgeInsets.zero,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-        child: Row(
-          children: [
-            Expanded(
-              child: _HeroMetric(label: 'RWPH', value: '$rwph'),
-            ),
-            Container(
-              width: 1,
-              height: 36,
-              color: colorScheme.onPrimaryContainer.withAlpha(40),
-            ),
-            Expanded(
-              child: _HeroMetric(label: 'WPH', value: '$wph'),
-            ),
-            Container(
-              width: 1,
-              height: 36,
-              color: colorScheme.onPrimaryContainer.withAlpha(40),
-            ),
-            Expanded(
-              child: _HeroMetric(label: 'WPS', value: '$wps'),
-            ),
-          ],
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 8.0),
+      child: Card(
+        margin: EdgeInsets.zero,
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+          child: Row(
+            children: [
+              Expanded(
+                child: _HeroMetric(label: 'RWPH', value: '$rwph'),
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: colorScheme.onPrimaryContainer.withAlpha(40),
+              ),
+              Expanded(
+                child: _HeroMetric(label: 'WPH', value: '$wph'),
+              ),
+              Container(
+                width: 1,
+                height: 36,
+                color: colorScheme.onPrimaryContainer.withAlpha(40),
+              ),
+              Expanded(
+                child: _HeroMetric(label: 'WPS', value: '$wps'),
+              ),
+            ],
+          ),
         ),
       ),
     );

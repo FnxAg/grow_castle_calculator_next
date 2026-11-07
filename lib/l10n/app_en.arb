@@ -450,5 +450,6 @@
   "dialogRemove": "Are you sure you want to remove this item?",
   "actionHelp": "Help",
   "labelScore": "Score",
-  "labelSeasonWPH": "Season WPH"
+  "labelSeasonWPH": "Season WPH",
+  "dialogDelete": "Confirm delete?"
 }

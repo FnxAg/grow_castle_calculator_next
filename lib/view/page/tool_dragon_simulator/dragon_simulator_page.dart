@@ -9,6 +9,7 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_dragon_simulator/item_rule_edit_page.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 const _rollBatchSize = 500;
@@ -267,35 +268,32 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                                     style: TextStyle(color: scheme.onPrimary),
                                   ),
                                   duration: const Duration(seconds: 5),
-                                  showCloseIcon: true,
                                   backgroundColor: scheme.primary,
                                 ),
                               );
                             }
                           }
                         : null,
-                    child: DropdownButtonFormField<ItemSource>(
-                      initialValue: _source,
-                      isExpanded: true,
-                      decoration: InputDecoration(
-                        labelText: l10n.labelItemSource,
-                        isDense: true,
-                      ),
+                    child: CardDropdown<ItemSource>(
+                      title: l10n.labelItemSource,
+                      value: _source,
                       items: [
                         for (final source in ItemSource.values)
                           DropdownMenuItem(
                             value: source,
                             child: Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
-                                Text(
-                                  _sourceLabel(
-                                    l10n,
-                                    source,
-                                    easterEgg: showEasterEggNames,
+                                Expanded(
+                                  child: Text(
+                                    _sourceLabel(
+                                      l10n,
+                                      source,
+                                      easterEgg: showEasterEggNames,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
                                   ),
-                                  overflow: TextOverflow.ellipsis,
                                 ),
+                                const SizedBox(width: 8.0),
                                 Text(
                                   _dropRatesText(source, _bonus),
                                   style: theme.textTheme.bodySmall?.copyWith(
@@ -312,53 +310,57 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                     ),
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    spacing: 12,
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<int>(
-                          initialValue: _count,
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            labelText: l10n.labelRollBatchSize,
-                            isDense: true,
-                          ),
-                          items: [
-                            for (final count in _countOptions)
-                              DropdownMenuItem(
-                                value: count,
-                                child: Text('$count'),
+                  LayoutBuilder(
+                    builder: (context, constraints) {
+                      final countField = CardDropdown<int>(
+                        title: l10n.labelRollBatchSize,
+                        value: _count,
+                        items: [
+                          for (final count in _countOptions)
+                            DropdownMenuItem(
+                              value: count,
+                              child: Text('$count'),
+                            ),
+                        ],
+                        onChanged: (count) {
+                          if (count != null) setState(() => _count = count);
+                        },
+                      );
+                      final bonusField = CardDropdown<double>(
+                        title: l10n.labelHighestTierBonus,
+                        value: _bonus,
+                        items: [
+                          for (final bonus in _bonusOptions)
+                            DropdownMenuItem(
+                              value: bonus,
+                              child: Text(
+                                '+${(bonus * 100).toStringAsFixed(1)}%',
                               ),
+                            ),
+                        ],
+                        onChanged: (bonus) {
+                          if (bonus != null) setState(() => _bonus = bonus);
+                        },
+                      );
+                      // 窄屏两张卡片并排太挤，改为上下堆叠
+                      if (constraints.maxWidth < 420) {
+                        return Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            countField,
+                            const SizedBox(height: 12),
+                            bonusField,
                           ],
-                          onChanged: (count) {
-                            if (count != null) setState(() => _count = count);
-                          },
-                        ),
-                      ),
-                      Expanded(
-                        child: DropdownButtonFormField<double>(
-                          initialValue: _bonus,
-                          isExpanded: true,
-                          decoration: InputDecoration(
-                            labelText: l10n.labelHighestTierBonus,
-                            isDense: true,
-                          ),
-                          items: [
-                            for (final bonus in _bonusOptions)
-                              DropdownMenuItem(
-                                value: bonus,
-                                child: Text(
-                                  '+${(bonus * 100).toStringAsFixed(1)}%',
-                                ),
-                              ),
-                          ],
-                          onChanged: (bonus) {
-                            if (bonus != null) setState(() => _bonus = bonus);
-                          },
-                        ),
-                      ),
-                    ],
+                        );
+                      }
+                      return Row(
+                        children: [
+                          Expanded(child: countField),
+                          const SizedBox(width: 12),
+                          Expanded(child: bonusField),
+                        ],
+                      );
+                    },
                   ),
                   const SizedBox(height: 12),
                   Row(

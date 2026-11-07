@@ -15,6 +15,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
@@ -24,8 +25,8 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dar
 import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 公会页
@@ -540,6 +541,10 @@ class _GuildPageState extends ConsumerState<GuildPage>
               Positioned.fill(
                 child: ListView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
+                  padding: EdgeInsets.only(
+                    left: UIs.padding.left,
+                    right: wide ? 0.0 : UIs.padding.right,
+                  ),
                   itemCount: _members.length,
                   itemBuilder: (context, index) {
                     final member = _members[index];
@@ -551,7 +556,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
                         getRedCrystalFromPlayerRank(seasonRank ?? 0) +
                         getRedCrystalFromHellModeRank(hellRank ?? 0);
                     final lastOnline = _lastOnlineByLower[lowerName];
-                    return ListTile(
+                    return CardTile(
                       selected: wide && member.name == _selectedMember,
                       onTap: () => _openMember(member),
                       leading: CircleAvatar(
@@ -568,37 +573,38 @@ class _GuildPageState extends ConsumerState<GuildPage>
                           ),
                         ),
                       ),
-                      title: Text(
-                        member.name,
-                        style: TextStyle(
-                          fontWeight: isSelf ? FontWeight.bold : null,
-                          color: isSelf ? scheme.primary : null,
-                        ),
+                      title: Wrap(
+                        spacing: 4.0,
+                        crossAxisAlignment: WrapCrossAlignment.center,
+                        children: [
+                          Text(
+                            member.name,
+                            style: TextStyle(
+                              fontWeight: isSelf ? FontWeight.bold : null,
+                              color: isSelf ? scheme.primary : null,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          if (reward != 0)
+                            PillChip(
+                              text: '$reward',
+                              leading: CrystalIcon(
+                                size: 12.0,
+                                color: scheme.primary,
+                              ),
+                            ),
+                          if (seasonRank != null)
+                            PillChip(
+                              text: '#$seasonRank',
+                              leading: Icon(Icons.eco),
+                            ),
+                          if (hellRank != null)
+                            PillChip(
+                              text: '#$hellRank',
+                              leading: Icon(Icons.all_inclusive),
+                            ),
+                        ],
                       ),
-                      subtitle: (seasonRank != null || hellRank != null)
-                          ? SubtitlePillWrap(
-                              children: [
-                                if (reward != 0)
-                                  PillChip(
-                                    text: '$reward',
-                                    leading: CrystalIcon(
-                                      size: 12.0,
-                                      color: scheme.primary,
-                                    ),
-                                  ),
-                                if (seasonRank != null)
-                                  PillChip(
-                                    text: '#$seasonRank',
-                                    leading: Icon(Icons.eco),
-                                  ),
-                                if (hellRank != null)
-                                  PillChip(
-                                    text: '#$hellRank',
-                                    leading: Icon(Icons.all_inclusive),
-                                  ),
-                              ],
-                            )
-                          : null,
                       trailing: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [

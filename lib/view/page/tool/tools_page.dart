@@ -1,4 +1,5 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_best_line_calc/best_line_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_dragon_simulator/dragon_simulator_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_item_comparer/item_comparer_page.dart';
@@ -6,6 +7,7 @@ import 'package:grow_castle_calculator_next/view/page/tool_quick_calculation/qui
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_page.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_search/search_page.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 工具页
@@ -18,9 +20,10 @@ class ToolsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tabTools)),
       body: ListView(
+        padding: UIs.padding,
         children: [
           for (final kind in RankingKind.values)
-            ListTile(
+            CardTile(
               leading: Icon(kind.icon),
               title: Text(rankingKindLabel(l10n, kind)),
               trailing: const Icon(Icons.chevron_right),
@@ -33,7 +36,7 @@ class ToolsPage extends StatelessWidget {
                 );
               },
             ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.calculate),
             title: Text(l10n.toolQuickCalculation),
             trailing: const Icon(Icons.chevron_right),
@@ -46,7 +49,7 @@ class ToolsPage extends StatelessWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.search),
             title: Text(l10n.toolSearch),
             trailing: const Icon(Icons.chevron_right),
@@ -57,7 +60,7 @@ class ToolsPage extends StatelessWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.casino_outlined),
             title: Text(l10n.toolDragonSimulator),
             trailing: const Icon(Icons.chevron_right),
@@ -70,7 +73,7 @@ class ToolsPage extends StatelessWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.compare_arrows),
             title: Text(l10n.toolItemComparer),
             trailing: const Icon(Icons.chevron_right),
@@ -83,7 +86,7 @@ class ToolsPage extends StatelessWidget {
               );
             },
           ),
-          ListTile(
+          CardTile(
             leading: const Icon(Icons.thumb_up),
             title: Text(l10n.toolBestLineCalc),
             trailing: const Icon(Icons.chevron_right),

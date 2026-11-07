@@ -5,6 +5,7 @@ import 'package:grow_castle_calculator_next/data/store/game_track.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
@@ -148,7 +149,7 @@ class _GameTrackPageState extends ConsumerState<GameTrackPage> {
                 ? Expanded(child: Center(child: Text(l10n.emptyGameTrack)))
                 : Expanded(
                     child: ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(12, 0, 12, 12),
+                      padding: UIs.padding,
                       itemCount: _records.length * 2 - 1,
                       itemBuilder: (context, index) {
                         if (index.isOdd) {

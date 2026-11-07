@@ -1,7 +1,9 @@
 import 'package:grow_castle_calculator_next/icon/icons.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -106,9 +108,7 @@ class _AboutPageState extends State<AboutPage> {
         onTap: () => showLicensePage(
           context: context,
           applicationName: _packageInfo?.appName ?? 'GCC Next',
-          applicationIcon: AppIcons.icon(
-            size: 72.0,
-          ),
+          applicationIcon: AppIcons.icon(size: 72.0),
         ),
       ),
       _AboutEntry(
@@ -128,6 +128,7 @@ class _AboutPageState extends State<AboutPage> {
       body: SafeArea(
         top: false,
         child: ListView(
+          padding: UIs.padding,
           children: [
             _buildHeader(context),
             SectionHeader(l10n.sectionInfo),
@@ -149,7 +150,7 @@ class _AboutPageState extends State<AboutPage> {
     final l10n = AppLocalizations.of(context);
     final info = _packageInfo;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 32, 16, 16),
+      padding: const EdgeInsets.only(top: 32, bottom: 16),
       child: Column(
         children: [
           GestureDetector(
@@ -190,7 +191,7 @@ class _AboutPageState extends State<AboutPage> {
     final scheme = Theme.of(context).colorScheme;
     final textTheme = Theme.of(context).textTheme;
     return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 24, 16, 32),
+      padding: const EdgeInsets.only(top: 24, bottom: 32),
       child: Column(
         children: [
           GestureDetector(
@@ -296,7 +297,7 @@ class _AboutEntry extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final clickable = tappable && onTap != null;
-    return ListTile(
+    return CardTile(
       enabled: clickable || !tappable,
       leading: Icon(icon),
       title: Text(title),

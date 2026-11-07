@@ -10,7 +10,9 @@ import 'package:grow_castle_calculator_next/core/service/webdav_backup_client.da
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/webdav_config.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/service_error_l10n.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
 
@@ -54,6 +56,7 @@ class _BackupPageState extends State<BackupPage> {
       body: SafeArea(
         top: false,
         child: ListView(
+          padding: UIs.padding,
           children: [
             SectionHeader(l10n.sectionWebdavBackup),
             // 服务器配置行（手动备份与云端恢复共用）
@@ -63,7 +66,7 @@ class _BackupPageState extends State<BackupPage> {
               valueListenable: _service.busyNotifier,
               builder: (context, busy, _) => Column(
                 children: [
-                  ListTile(
+                  CardTile(
                     leading: const Icon(Icons.cloud_upload_outlined),
                     title: Text(l10n.actionBackupNow),
                     subtitle: Text(
@@ -75,7 +78,7 @@ class _BackupPageState extends State<BackupPage> {
                     enabled: !busy && !_remoteBusy,
                     onTap: _onManualBackup,
                   ),
-                  ListTile(
+                  CardTile(
                     leading: const Icon(Icons.cloud_download_outlined),
                     title: Text(l10n.actionRestoreFromCloud),
                     subtitle: Text(l10n.backupRestoreSubtitle),
@@ -88,13 +91,13 @@ class _BackupPageState extends State<BackupPage> {
             ),
             _buildStatusArea(),
             SectionHeader(l10n.sectionLocalFiles),
-            ListTile(
+            CardTile(
               leading: const Icon(Icons.file_upload_outlined),
               title: Text(l10n.actionExportToFile),
               subtitle: Text(l10n.backupExportSubtitle),
               onTap: _onExportFile,
             ),
-            ListTile(
+            CardTile(
               leading: const Icon(Icons.file_download_outlined),
               title: Text(l10n.actionImportFile),
               subtitle: Text(l10n.backupImportSubtitle),
@@ -129,7 +132,7 @@ class _BackupPageState extends State<BackupPage> {
       children: [
         ValueListenableBuilder<String>(
           valueListenable: _config.urlNotifier,
-          builder: (context, url, _) => ListTile(
+          builder: (context, url, _) => CardTile(
             leading: const Icon(Icons.link),
             title: Text(l10n.labelServerAddress),
             subtitle: Text(url.isEmpty ? l10n.labelNotSet : url),
@@ -139,7 +142,7 @@ class _BackupPageState extends State<BackupPage> {
         ),
         ValueListenableBuilder<String>(
           valueListenable: _config.usernameNotifier,
-          builder: (context, username, _) => ListTile(
+          builder: (context, username, _) => CardTile(
             leading: const Icon(Icons.person_outline),
             title: Text(l10n.labelAccount),
             subtitle: Text(username.isEmpty ? l10n.labelNotSet : username),
@@ -149,7 +152,7 @@ class _BackupPageState extends State<BackupPage> {
         ),
         ValueListenableBuilder<String>(
           valueListenable: _config.passwordNotifier,
-          builder: (context, password, _) => ListTile(
+          builder: (context, password, _) => CardTile(
             leading: const Icon(Icons.key_outlined),
             title: Text(l10n.labelPassword),
             subtitle: Text(password.isEmpty ? l10n.labelNotSet : '••••••'),

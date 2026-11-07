@@ -3,10 +3,12 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 单条收入相对金挂成本的收益率，成本非正时记 0
@@ -178,8 +180,10 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     );
 
     final Widget list = ListView.builder(
-      padding: EdgeInsetsGeometry.only(
+      padding: EdgeInsets.only(
         bottom: 72 + MediaQuery.of(context).padding.bottom,
+        left: UIs.padding.left,
+        right: UIs.padding.right,
       ),
       itemCount: _incomes.length,
       itemBuilder: (context, index) {
@@ -231,18 +235,21 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
       ),
       body: SafeArea(
         top: false,
-        child: Builder(
-          builder: (context) {
-            if (_incomes.isEmpty) {
-              return Center(
-                child: Text(
-                  l10n.emptyIncomeSamples,
-                  style: const TextStyle(color: Colors.grey),
-                ),
-              );
-            }
-            return list;
-          },
+        child: Padding(
+          padding: UIs.padding,
+          child: Builder(
+            builder: (context) {
+              if (_incomes.isEmpty) {
+                return Center(
+                  child: Text(
+                    l10n.emptyIncomeSamples,
+                    style: const TextStyle(color: Colors.grey),
+                  ),
+                );
+              }
+              return list;
+            },
+          ),
         ),
       ),
       floatingActionButton: floatingActionButton,
@@ -272,27 +279,26 @@ class _IncomeTile extends StatelessWidget {
       color: Theme.of(context).colorScheme.primary,
       fontWeight: FontWeight.w600,
     );
-    return ListTile(
-      leading: Container(
-        width: 24,
-        height: 24,
-        alignment: Alignment.center,
-        decoration: BoxDecoration(
-          color: scheme.primaryContainer,
-          borderRadius: BorderRadius.circular(999.0),
-        ),
+    return CardTile(
+      leading: CircleAvatar(
+        radius: 12.0,
+        backgroundColor: scheme.primaryContainer,
         child: Text(
           '${index + 1}',
           style: TextStyle(
             fontWeight: FontWeight.bold,
-            fontSize: 16.0,
+            fontSize: 12.0,
             color: scheme.onPrimaryContainer,
           ),
         ),
       ),
       title: Text(
         income.format(),
-        style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16.0),
+        style: const TextStyle(
+          fontWeight: FontWeight.w600,
+          fontSize: 16.0,
+          overflow: TextOverflow.ellipsis,
+        ),
       ),
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
@@ -301,10 +307,7 @@ class _IncomeTile extends StatelessWidget {
           PopupMenuButton<Action>(
             tooltip: l10n.actionEdit,
             itemBuilder: (context) => [
-              PopupMenuItem(
-                value: Action.edit,
-                child: Text(l10n.actionEdit),
-              ),
+              PopupMenuItem(value: Action.edit, child: Text(l10n.actionEdit)),
               PopupMenuItem(
                 value: Action.remove,
                 child: Text(l10n.actionRemove),

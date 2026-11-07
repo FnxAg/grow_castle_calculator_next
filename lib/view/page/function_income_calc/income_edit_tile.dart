@@ -5,159 +5,99 @@ import 'package:grow_castle_calculator_next/model/userdata/user_data.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_field.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
-/// 收入参数行：显示当前值，点击后弹出对话框编辑
-class IncomeEditTile extends ConsumerWidget {
-  const IncomeEditTile({super.key, required this.field, this.titleTrailing});
+/// 收入参数行：卡片内直接编辑，输入合法即保存，失焦时回退非法输入
+class IncomeEditTile extends ConsumerStatefulWidget {
+  const IncomeEditTile({super.key, required this.field});
 
   final IncomeField field;
-  final Widget? titleTrailing;
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    final l10n = AppLocalizations.of(context);
-    final scheme = Theme.of(context).colorScheme;
-    final user = ref.watch(currentUserProvider);
-    final error = field.error(user);
-    final label = Text(field.label(l10n));
-    return ListTile(
-      title: titleTrailing == null
-          ? label
-          : Row(children: [label, const Spacer(), titleTrailing!]),
-      subtitle: error == null
-          ? null
-          : Text(error, style: TextStyle(color: scheme.error)),
-      trailing: Text(
-        field.display(user),
-        style: TextStyle(
-          fontSize: 16.0,
-          fontWeight: FontWeight.w600,
-          color: scheme.primary,
-        ),
-      ),
-      onTap: () => showIncomeEditDialog(
-        context,
-        field: field,
-        user: user,
-        onSave: (text) => field.save(ref.read(usersProvider.notifier), text),
-      ),
-    );
-  }
+  ConsumerState<IncomeEditTile> createState() => _IncomeEditTileState();
 }
 
-/// 弹出数值编辑对话框，确认后把输入文本交给 [onSave]
-Future<void> showIncomeEditDialog(
-  BuildContext context, {
-  required IncomeField field,
-  required UserData user,
-  required ValueChanged<String> onSave,
-}) {
-  return showDialog<void>(
-    context: context,
-    builder: (context) =>
-        _IncomeEditDialog(field: field, user: user, onSave: onSave),
-  );
-}
-
-class _IncomeEditDialog extends StatefulWidget {
-  const _IncomeEditDialog({
-    required this.field,
-    required this.user,
-    required this.onSave,
-  });
-
-  final IncomeField field;
-  final UserData user;
-  final ValueChanged<String> onSave;
-
-  @override
-  State<_IncomeEditDialog> createState() => _IncomeEditDialogState();
-}
-
-class _IncomeEditDialogState extends State<_IncomeEditDialog> {
-  late final TextEditingController _controller = TextEditingController(
-    text: widget.field.inputText(widget.user),
-  );
+class _IncomeEditTileState extends ConsumerState<IncomeEditTile> {
+  late final TextEditingController _controller;
+  late final FocusNode _focusNode;
   String? _error;
+
+  IncomeField get field => widget.field;
 
   @override
   void initState() {
     super.initState();
-    // 附加按钮可能改写输入内容，用监听而不是 onChanged
-    _controller.addListener(_clearError);
+    _controller = TextEditingController(
+      text: field.inputText(ref.read(currentUserProvider)),
+    );
+    _focusNode = FocusNode()..addListener(_onFocusChanged);
   }
 
   @override
   void dispose() {
-    _controller.removeListener(_clearError);
+    _focusNode.dispose();
     _controller.dispose();
     super.dispose();
   }
 
-  void _clearError() {
-    if (_error != null) setState(() => _error = null);
+  void _onFocusChanged() {
+    if (!_focusNode.hasFocus) _commit(revertOnError: true);
   }
 
-  void _submit() {
-    final field = widget.field;
+  /// 校验并保存；[revertOnError] 时非法输入回退为已保存的值
+  void _commit({bool revertOnError = false}) {
+    final user = ref.read(currentUserProvider);
     final text = _controller.text.trim();
-    // 小数输入没有输入限制，需要自行校验
-    if (!field.digitsOnly && text.isNotEmpty && double.tryParse(text) == null) {
-      setState(() => _error = AppLocalizations.of(context).errorValueNotNumber);
+    if (text.isEmpty) {
+      if (revertOnError) _reset(user);
       return;
     }
-    final error = field.validate(widget.user, text);
+    final String? error;
+    if (!field.digitsOnly && double.tryParse(text) == null) {
+      error = AppLocalizations.of(context).errorValueNotNumber;
+    } else {
+      error = field.validate(user, text);
+    }
     if (error != null) {
       setState(() => _error = error);
+      if (revertOnError) _reset(user);
       return;
     }
-    widget.onSave(text);
-    Navigator.of(context).pop();
+    setState(() => _error = null);
+    field.save(ref.read(usersProvider.notifier), text);
+  }
+
+  void _reset(UserData user) {
+    _controller.text = field.inputText(user);
+    setState(() => _error = null);
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final field = widget.field;
-    final extraContent = field.extraDialogContent(context, _controller);
-    final extraActions = field.extraDialogActions(context, _controller);
-    return AlertDialog(
-      title: Text(field.label(l10n)),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          SelectAllTextField(
-            controller: _controller,
-            autofocus: true,
-            keyboardType: TextInputType.numberWithOptions(
-              decimal: !field.digitsOnly,
-            ),
-            inputFormatters: field.digitsOnly
-                ? [FilteringTextInputFormatter.digitsOnly]
-                : null,
-            decoration: InputDecoration(
-              prefixText: field.prefixText.isEmpty ? null : field.prefixText,
-              suffixText: field.suffixText.isEmpty ? null : field.suffixText,
-              errorText: _error,
-            ),
-          ),
-          if (extraContent != null) ...[
-            const SizedBox(height: 12.0),
-            extraContent,
-          ],
-        ],
-      ),
-      actions: [
-        ...extraActions,
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.actionCancel),
-        ),
-        TextButton(onPressed: _submit, child: Text(l10n.actionSave)),
-      ],
+    final user = ref.watch(currentUserProvider);
+    // 外部改动（非本框编辑）时同步显示值
+    ref.listen(currentUserProvider, (previous, next) {
+      if (_focusNode.hasFocus) return;
+      final text = field.inputText(next);
+      if (_controller.text != text) {
+        _controller.text = text;
+        if (_error != null) setState(() => _error = null);
+      }
+    });
+    return CardField(
+      title: field.label(l10n),
+      controller: _controller,
+      focusNode: _focusNode,
+      keyboardType: TextInputType.numberWithOptions(decimal: !field.digitsOnly),
+      inputFormatters: field.digitsOnly
+          ? [FilteringTextInputFormatter.digitsOnly]
+          : null,
+      prefixText: field.prefixText.isEmpty ? null : field.prefixText,
+      suffixText: field.suffixText.isEmpty ? null : field.suffixText,
+      errorText: _error ?? field.error(user),
+      onChanged: (_) => _commit(),
     );
   }
 }

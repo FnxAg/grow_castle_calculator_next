@@ -7,10 +7,12 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/item_comparer_store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 装备对比
@@ -383,7 +385,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
     final Widget list = ListView(
       key: const PageStorageKey('item_comparer_list'),
-      // padding: EdgeInsets.only(bottom: 16.0, left: 16.0, right: 16.0),
+      padding: UIs.padding,
       children: [
         SectionHeader(
           l10n.labelNoItemPanel,
@@ -495,7 +497,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   Widget _panelField(AttributeType type) {
     final ctrl = _ctrl(type);
-    return ListTile(
+    return CardTile(
       title: Text(type.label),
       trailing: Text(
         ctrl.text.trim().isEmpty
@@ -504,7 +506,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
         style: TextStyle(
           fontSize: 14.0,
           fontWeight: FontWeight.w600,
-          color: Theme.of(context).colorScheme.primary,
         ),
       ),
       onTap: () => _editPanelField(type),
@@ -575,61 +576,46 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
     return Padding(
       padding: const EdgeInsets.all(8.0),
-      child: Card(
-        margin: EdgeInsets.zero,
-        elevation: 0,
-        clipBehavior: Clip.antiAlias,
-        color: scheme.surfaceContainerLow,
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: BorderSide(
-            color: winning ? scheme.primary : scheme.outlineVariant,
-            width: winning ? 1.5 : 1,
+      child: Column(
+        children: [
+          SectionHeader(
+            l10n.labelItemNumber(side),
+            trailing: PillChip(
+              leading: !ready || itemDps == otherDps
+                  ? null
+                  : Icon(winning ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+              backgroundColor: winning ? Colors.green : null,
+              text: gainText,
+            ),
           ),
-        ),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(vertical: 4),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
-                child: Row(
-                  children: [
-                    Expanded(
-                      child: Text(
-                        l10n.labelItemNumber(side),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.titleSmall?.copyWith(
-                          color: scheme.primary,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    PillChip(
-                      leading: !ready || itemDps == otherDps
-                          ? null
-                          : Icon(
-                              winning
-                                  ? Icons.arrow_drop_up
-                                  : Icons.arrow_drop_down,
-                            ),
-                      backgroundColor: winning ? Colors.green : null,
-                      text: gainText,
-                    ),
-                  ],
-                ),
+          Card(
+            margin: EdgeInsets.zero,
+            elevation: 0,
+            clipBehavior: Clip.antiAlias,
+            color: ListTileTheme.of(context).tileColor,
+            shape: RoundedRectangleBorder(
+              borderRadius: UIs.cardShape.borderRadius,
+              side: BorderSide(
+                color: winning ? scheme.primary : scheme.outlineVariant,
+                width: winning ? 1.5 : 1,
               ),
-              for (var i = 0; i < equips.length; i++) ...[
-                if (i > 0) const Divider(height: 1, indent: 16, endIndent: 16),
-                _buildEquipRow(equips, otherEquips, side, i),
-              ],
-            ],
+            ),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  for (var i = 0; i < equips.length; i++) ...[
+                    if (i > 0)
+                      const Divider(height: 1, indent: 16, endIndent: 16),
+                    _buildEquipRow(equips, otherEquips, side, i),
+                  ],
+                ],
+              ),
+            ),
           ),
-        ),
+        ],
       ),
     );
   }
@@ -645,7 +631,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     final scheme = theme.colorScheme;
     final equip = equips[index];
     final summary = _equipSummary(equip);
-    return ListTile(
+    return CardTile(
       leading: CircleAvatar(
         radius: 14.0,
         backgroundColor: scheme.primaryContainer,
@@ -842,7 +828,11 @@ class _EquipEditPageState extends State<_EquipEditPage> {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.only(bottom: 88),
+          padding: EdgeInsets.only(
+            bottom: 88,
+            left: UIs.padding.left,
+            right: UIs.padding.right,
+          ),
           children: [
             for (var i = 0; i < _drafts.length; i++) ...[
               if (i > 0) const Divider(height: 1),
@@ -861,10 +851,8 @@ class _EquipEditPageState extends State<_EquipEditPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        ExpansionTile(
+        ExpansionCardTile(
           key: PageStorageKey('item_line_$index'),
-          shape: const Border(),
-          collapsedShape: const Border(),
           controller: _expansionController[index],
           title: Text(
             draft.line?.label ?? l10n.optionNotSelected,

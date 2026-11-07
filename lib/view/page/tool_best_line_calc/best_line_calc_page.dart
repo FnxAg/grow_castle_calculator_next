@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 词条数量搭配：(Damage, Critical Chance, Critical Damage, Attack Speed) 各几条。
@@ -255,7 +256,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
             }
             final (_, combo, gain) = ranked[index - 2];
             final best = index == 2;
-            return ListTile(
+            return CardTile(
               dense: true,
               contentPadding: const EdgeInsets.symmetric(horizontal: 8),
               selected: best,

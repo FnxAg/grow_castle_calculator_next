@@ -1538,6 +1538,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelSeasonWPH => '赛季波速';
+
+  @override
+  String get dialogDelete => '确认删除？';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -3073,4 +3076,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get labelSeasonWPH => '賽季波速';
+
+  @override
+  String get dialogDelete => '確認刪除？';
 }

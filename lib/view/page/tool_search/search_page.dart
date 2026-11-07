@@ -1,7 +1,7 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/page/guild/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
-import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SearchPage extends StatefulWidget {
@@ -38,13 +38,7 @@ class _SearchPageState extends State<SearchPage> {
         child: ListView(
           padding: const EdgeInsets.all(16),
           children: [
-            NameTextField(
-              controller: _controller,
-              labelText: l10n.labelName,
-              onChanged: (value) {
-                setState(() {});
-              },
-            ),
+            CardSearchField(controller: _controller, hintText: l10n.labelName),
             const SizedBox(height: 16),
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceEvenly,

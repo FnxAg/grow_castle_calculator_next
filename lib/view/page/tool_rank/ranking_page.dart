@@ -8,6 +8,7 @@ import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/guild/guild_page.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
@@ -18,7 +19,7 @@ import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 榜单页
@@ -169,17 +170,16 @@ class _RankingPageState extends State<RankingPage> {
           ),
           content: SizedBox(
             width: 420,
-            child: ListView.separated(
+            child: ListView.builder(
               shrinkWrap: true,
               itemCount: _milestoneRanks.length,
-              separatorBuilder: (_, _) => const Divider(height: 1),
               itemBuilder: (context, index) {
                 final rank = _milestoneRanks[index];
                 final row = _rows.cast<RankRow?>().firstWhere(
                   (item) => item?.rank == rank,
                   orElse: () => null,
                 );
-                return ListTile(
+                return CardTile(
                   leading: CircleAvatar(
                     radius: 14,
                     child: Text('$rank', style: const TextStyle(fontSize: 11)),
@@ -407,6 +407,8 @@ class _RankingPageState extends State<RankingPage> {
       child: ListView.builder(
         padding: EdgeInsets.only(
           bottom: 72.0 + MediaQuery.of(context).padding.bottom,
+          left: UIs.padding.left,
+          right: wide ? 0.0 : UIs.padding.right,
         ),
         itemCount: _rows.length,
         itemBuilder: (context, index) {
@@ -424,7 +426,34 @@ class _RankingPageState extends State<RankingPage> {
             RankingKind.hell => CrystalIcon(size: 12.0, color: scheme.primary),
             RankingKind.guild => BoxIcon(size: 12.0, color: scheme.primary),
           };
-          return ListTile(
+          final wph = switch (widget.kind) {
+            RankingKind.player =>
+              row.score /
+                  RankingCache.playerSeasonProgress()! /
+                  RankingCache.playerSeasonDuration()!,
+            RankingKind.guild =>
+              row.score /
+                  RankingCache.guildSeasonProgress()! /
+                  RankingCache.guildSeasonDuration()!,
+            RankingKind.hell => row.score,
+          }.toDouble();
+          final wphGap = switch (widget.kind) {
+            RankingKind.player =>
+              row.gapPrev != null
+                  ? row.gapPrev! /
+                        RankingCache.playerSeasonProgress()! /
+                        RankingCache.playerSeasonDuration()!
+                  : null,
+            RankingKind.guild =>
+              row.gapPrev != null
+                  ? row.gapPrev! /
+                        RankingCache.guildSeasonProgress()! /
+                        RankingCache.guildSeasonDuration()!
+                  : null,
+            RankingKind.hell => row.gapPrev,
+          }?.toDouble();
+
+          return CardTile(
             selected: wide && row.name == _selectedName,
             onTap: () => _openRow(row),
             leading: CircleAvatar(
@@ -435,22 +464,31 @@ class _RankingPageState extends State<RankingPage> {
                 style: const TextStyle(fontSize: 12.0),
               ),
             ),
-            title: Text(row.name, style: const TextStyle(fontSize: 14.0)),
-            subtitle: (reward != 0 || crossRank != null)
-                ? SubtitlePillWrap(
-                    children: [
-                      if (reward != 0) ...[
-                        PillChip(text: '$reward', leading: rewardIcon),
-                      ],
-                      if (crossRank != null) ...[
-                        PillChip(
-                          text: '#$crossRank',
-                          leading: Icon(widget.kind.crossIcon!),
-                        ),
-                      ],
-                    ],
-                  )
-                : null,
+            title: Wrap(
+              spacing: 4.0,
+              crossAxisAlignment: WrapCrossAlignment.center,
+              children: [
+                Text(row.name, overflow: TextOverflow.ellipsis),
+                if (reward != 0) PillChip(text: '$reward', leading: rewardIcon),
+                if (crossRank != null)
+                  PillChip(
+                    text: '#$crossRank',
+                    leading: Icon(widget.kind.crossIcon!),
+                  ),
+              ],
+            ),
+            // subtitle: (crossRank != null)
+            //     ? SubtitlePillWrap(
+            //         children: [
+            //           ...[
+            //             PillChip(
+            //               text: '#$crossRank',
+            //               leading: Icon(widget.kind.crossIcon!),
+            //             ),
+            //           ],
+            //         ],
+            //       )
+            //     : null,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
@@ -464,17 +502,11 @@ class _RankingPageState extends State<RankingPage> {
                       RankingKind.player =>
                         !_viewWPHMode
                             ? row.gapPrev!.format()
-                            : (row.gapPrev! /
-                                      RankingCache.playerSeasonProgress()! /
-                                      RankingCache.playerSeasonDuration()!)
-                                  .format(),
+                            : wphGap!.format(),
                       RankingKind.guild =>
                         !_viewWPHMode
                             ? row.gapPrev!.format()
-                            : (row.gapPrev! /
-                                      RankingCache.guildSeasonProgress()! /
-                                      RankingCache.guildSeasonDuration()!)
-                                  .format(),
+                            : wphGap!.format(),
                     },
                     leading: Icon(Icons.arrow_upward_outlined),
                   ),
@@ -488,24 +520,13 @@ class _RankingPageState extends State<RankingPage> {
                         traditional: traditional,
                       ),
                       RankingKind.player =>
-                        !_viewWPHMode
-                            ? row.score.format()
-                            : (row.score /
-                                      RankingCache.playerSeasonProgress()! /
-                                      RankingCache.playerSeasonDuration()!)
-                                  .format(),
+                        !_viewWPHMode ? row.score.format() : wph.format(),
                       RankingKind.guild =>
-                        !_viewWPHMode
-                            ? row.score.format()
-                            : (row.score /
-                                      RankingCache.guildSeasonProgress()! /
-                                      RankingCache.guildSeasonDuration()!)
-                                  .format(),
+                        !_viewWPHMode ? row.score.format() : wph.format(),
                     },
                     style: TextStyle(
                       fontSize: 14.0,
                       fontWeight: FontWeight.bold,
-                      color: scheme.primary,
                     ),
                     key: ValueKey<bool>(_viewWPHMode),
                   ),

@@ -1644,4 +1644,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelSeasonWPH => 'Season WPH';
+
+  @override
+  String get dialogDelete => 'Confirm delete?';
 }

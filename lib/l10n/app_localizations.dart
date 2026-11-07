@@ -2801,6 +2801,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'赛季波速'**
   String get labelSeasonWPH;
+
+  /// No description provided for @dialogDelete.
+  ///
+  /// In zh, this message translates to:
+  /// **'确认删除？'**
+  String get dialogDelete;
 }
 
 class _AppLocalizationsDelegate

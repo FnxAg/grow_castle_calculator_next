@@ -1,10 +1,10 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/page/function_build_calc/widget/formation_listtile.dart';
-import 'package:grow_castle_calculator_next/view/page/function_build_calc/widget/formation_summary_bar.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -22,7 +22,6 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
   final Map<int, TextEditingController> _textControllers = {};
-  static bool _viewMode = false;
 
   FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
     return cache.putIfAbsent(id, () => FocusNode());
@@ -105,93 +104,68 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
 
     final List<Widget> appBarActions = <Widget>[
       IconButton(
-        icon: Icon(_viewMode ? Icons.edit : Icons.visibility),
-        tooltip: _viewMode ? l10n.tooltipInputMode : l10n.tooltipViewMode,
-        onPressed: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          setState(() => _viewMode = !_viewMode);
-        },
-      ),
-      IconButton(
         icon: const Icon(Icons.add),
         tooltip: l10n.tooltipAddEntry,
         onPressed: () => ref.users.addNewCard(),
       ),
     ];
 
-    final Widget floatingActions = Row(
-      mainAxisSize: MainAxisSize.min,
-      crossAxisAlignment: CrossAxisAlignment.end,
-      children: [
-        FloatingActionButton.small(
-          onPressed: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            setState(() => _viewMode = !_viewMode);
-          },
-          tooltip: _viewMode ? l10n.tooltipInputMode : l10n.tooltipViewMode,
-          child: Icon(_viewMode ? Icons.edit : Icons.visibility),
-        ),
-        const SizedBox(width: 12),
-        FloatingActionButton.small(
-          onPressed: () => ref.users.addNewCard(),
-          tooltip: l10n.tooltipAddEntry,
-          child: const Icon(Icons.add),
-        ),
-      ],
+    final Widget floatingActions = FloatingActionButton(
+      onPressed: () => ref.users.addNewCard(),
+      tooltip: l10n.tooltipAddEntry,
+      child: const Icon(Icons.add),
     );
 
-    final Widget formationExpanded = Expanded(
-      flex: isWide ? 6 : 1,
-      child: cardIds.isEmpty
-          ? Center(
-              child: Text(
-                l10n.emptyFormationHint,
-                style: const TextStyle(color: Colors.grey),
-              ),
-            )
-          : ReorderableListView.builder(
-              key: const PageStorageKey('formation_card_list'),
-              itemCount: cardIds.length,
-              padding: EdgeInsets.only(
-                bottom: 72 + MediaQuery.of(context).padding.bottom,
-              ),
-              proxyDecorator: (child, index, animation) {
-                return AnimatedBuilder(
-                  animation: animation,
-                  builder: (context, child) {
-                    final double elevation = 4.0 * animation.value;
-                    return Material(
-                      elevation: elevation,
-                      shadowColor: Colors.black26,
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: IgnorePointer(child: child),
-                    );
-                  },
-                  child: child,
-                );
-              },
-              onReorderItem: (oldIndex, newIndex) {
-                FocusManager.instance.primaryFocus?.unfocus();
-                ref.users.reorderCard(oldIndex, newIndex);
-              },
-              itemBuilder: (context, index) {
-                final id = cardIds[index];
-                return FormationCardTile(
-                  key: ValueKey(id),
-                  id: id,
-                  index: index,
-                  textController: _textControllerFor(id),
-                  numberController: _numberControllerFor(id),
-                  textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                  numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                  viewMode: _viewMode,
-                  onRemove: _removeCard,
-                );
-              },
-              buildDefaultDragHandles: false,
-              scrollDirection: .vertical,
+    final Widget formationExpanded = cardIds.isEmpty
+        ? Center(
+            child: Text(
+              l10n.emptyFormationHint,
+              style: const TextStyle(color: Colors.grey),
             ),
-    );
+          )
+        : ReorderableListView.builder(
+            key: const PageStorageKey('formation_card_list'),
+            itemCount: cardIds.length,
+            padding: EdgeInsets.only(
+              bottom: 72 + MediaQuery.of(context).padding.bottom,
+              left: UIs.padding.left,
+              right: UIs.padding.right,
+            ),
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  final double elevation = 4.0 * animation.value;
+                  return Material(
+                    elevation: elevation,
+                    shadowColor: Colors.black26,
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: IgnorePointer(child: child),
+                  );
+                },
+                child: child,
+              );
+            },
+            onReorderItem: (oldIndex, newIndex) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              ref.users.reorderCard(oldIndex, newIndex);
+            },
+            itemBuilder: (context, index) {
+              final id = cardIds[index];
+              return FormationCardTile(
+                key: ValueKey(id),
+                id: id,
+                index: index,
+                textController: _textControllerFor(id),
+                numberController: _numberControllerFor(id),
+                textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                onRemove: _removeCard,
+              );
+            },
+            buildDefaultDragHandles: false,
+            scrollDirection: .vertical,
+          );
 
     final appBarInfo = AppBarInfo(
       children: <Widget>[
@@ -202,8 +176,6 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
       ],
     );
 
-    const Widget formationSummaryBar = FormationSummaryBar();
-
     return Scaffold(
       appBar: AppBar(
         title: Column(
@@ -213,17 +185,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
         actions: isWide ? appBarActions : null,
       ),
       floatingActionButton: isWide ? null : floatingActions,
-      body: SafeArea(
-        top: false,
-        child: isWide
-            ? Row(
-                children: [
-                  formationExpanded,
-                  const Expanded(flex: 4, child: formationSummaryBar),
-                ],
-              )
-            : Column(children: [formationExpanded]),
-      ),
+      body: SafeArea(top: false, child: formationExpanded),
     );
   }
 }
