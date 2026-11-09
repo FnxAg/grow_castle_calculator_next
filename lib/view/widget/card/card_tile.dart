@@ -34,21 +34,18 @@ class CardTile extends StatelessWidget {
       margin: UIs.cardMargin,
       shape: UIs.cardShape,
       clipBehavior: Clip.antiAlias,
-      child: ConstrainedBox(
-        constraints: const BoxConstraints(minHeight: UIs.cardTileMinHeight),
-        child: ListTile(
-          leading: leading,
-          title: title,
-          subtitle: subtitle,
-          trailing: trailing,
-          onTap: onTap,
-          onLongPress: onLongPress,
-          selected: selected,
-          enabled: enabled,
-          dense: dense,
-          contentPadding: contentPadding,
-          style: ListTileStyle.list,
-        ),
+      child: ListTile(
+        leading: leading,
+        title: title,
+        subtitle: subtitle,
+        trailing: trailing,
+        onTap: onTap,
+        onLongPress: onLongPress,
+        selected: selected,
+        enabled: enabled,
+        dense: dense,
+        contentPadding: contentPadding,
+        style: ListTileStyle.list,
       ),
     );
   }
