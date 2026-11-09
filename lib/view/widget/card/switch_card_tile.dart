@@ -26,13 +26,16 @@ class SwitchCardTile extends StatelessWidget {
       margin: UIs.cardMargin,
       shape: UIs.cardShape,
       clipBehavior: Clip.antiAlias,
-      child: SwitchListTile(
-        title: title,
-        subtitle: subtitle,
-        onChanged: onChanged,
-        value: value,
-        selected: selected,
-        contentPadding: contentPadding,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: UIs.cardTileMinHeight),
+        child: SwitchListTile(
+          title: title,
+          subtitle: subtitle,
+          onChanged: onChanged,
+          value: value,
+          selected: selected,
+          contentPadding: contentPadding,
+        ),
       ),
     );
   }

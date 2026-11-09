@@ -36,18 +36,21 @@ class RadioCardTile<T> extends StatelessWidget {
       margin: UIs.cardMargin,
       shape: UIs.cardShape,
       clipBehavior: Clip.antiAlias,
-      child: RadioListTile<T>(
-        value: value,
-        title: title,
-        subtitle: subtitle,
-        secondary: secondary,
-        selected: selected,
-        dense: dense,
-        enabled: enabled,
-        toggleable: toggleable,
-        contentPadding: contentPadding,
-        controlAffinity: controlAffinity,
-        activeColor: activeColor,
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(minHeight: UIs.cardTileMinHeight),
+        child: RadioListTile<T>(
+          value: value,
+          title: title,
+          subtitle: subtitle,
+          secondary: secondary,
+          selected: selected,
+          dense: dense,
+          enabled: enabled,
+          toggleable: toggleable,
+          contentPadding: contentPadding,
+          controlAffinity: controlAffinity,
+          activeColor: activeColor,
+        ),
       ),
     );
   }
