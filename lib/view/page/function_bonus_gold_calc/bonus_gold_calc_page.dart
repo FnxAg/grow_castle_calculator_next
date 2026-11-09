@@ -183,8 +183,6 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     final Widget list = ListView.builder(
       padding: EdgeInsets.only(
         bottom: 72 + MediaQuery.of(context).padding.bottom,
-        left: UIs.padding.left,
-        right: UIs.padding.right,
       ),
       itemCount: _incomes.length,
       itemBuilder: (context, index) {
