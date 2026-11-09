@@ -24,24 +24,24 @@ class SelectUserPage extends ConsumerStatefulWidget {
 
 class _SelectUserPageState extends ConsumerState<SelectUserPage>
     with SingleTickerProviderStateMixin {
-  bool _settingState = false;
-  late final AnimationController _ctrl;
-  late final CurvedAnimation _animation;
+  // bool _settingState = false;
+  // late final AnimationController _ctrl;
+  // late final CurvedAnimation _animation;
 
   @override
   void initState() {
     super.initState();
-    _ctrl = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-      value: 1.0,
-    );
-    _animation = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOutCubic);
+    // _ctrl = AnimationController(
+    //   vsync: this,
+    //   duration: const Duration(milliseconds: 300),
+    //   value: 1.0,
+    // );
+    // _animation = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOutCubic);
   }
 
   @override
   void dispose() {
-    _ctrl.dispose();
+    // _ctrl.dispose();
     super.dispose();
   }
 
@@ -55,24 +55,6 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
     return Scaffold(
       appBar: AppBar(
         title: Text(l10n.settingsUserManagement),
-        actions: [
-          IconButton(
-            icon: AnimatedIcon(
-              icon: AnimatedIcons.close_menu,
-              progress: _animation,
-            ),
-            onPressed: () {
-              setState(() {
-                _settingState = !_settingState;
-                if (_settingState) {
-                  _ctrl.reverse();
-                } else {
-                  _ctrl.forward();
-                }
-              });
-            },
-          ),
-        ],
       ),
       body: SafeArea(
         top: false,
@@ -83,6 +65,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
             final String username = userList[index];
             final user = state.findByUsername(username);
             final String guild = user?.guild ?? '';
+            final isDefaultUser = state.findId(username) == 0;
             return GestureDetector(
               onSecondaryTapUp: (_) => _showUnitSummary(username),
               child: CardTile(
@@ -114,39 +97,40 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
                 leading: currentUsername == username
                     ? Icon(Icons.check, color: scheme.primary)
                     : const SizedBox(width: 24.0),
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    SizeTransition(
-                      sizeFactor: ReverseAnimation(_animation),
-                      axis: Axis.horizontal,
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          if (state.findId(username) != 0) ...[
-                            IconButton(
-                              icon: const Icon(Icons.edit),
-                              onPressed: () => _renameDialog(username),
-                            ),
-                            IconButton(
-                              icon: const Icon(Icons.delete, color: Colors.red),
-                              onPressed: () {
-                                showDialog<void>(
-                                  context: context,
-                                  builder: (context) =>
-                                      _DeleteUserDialog(userId: username),
-                                );
-                              },
-                            ),
-                          ],
-                        ],
-                      ),
+                trailing: PopupMenuButton<String>(
+                  onSelected: (value) {
+                    switch (value) {
+                      case 'rename':
+                        _renameDialog(username);
+                        break;
+                      case 'delete':
+                        showDialog<void>(
+                          context: context,
+                          builder: (context) =>
+                              _DeleteUserDialog(userId: username),
+                        );
+                        break;
+                      case 'summary':
+                        _showUnitSummary(username);
+                        break;
+                    }
+                  },
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: 'rename',
+                      child: Text(l10n.actionRename),
                     ),
-                    if (isDesktop)
-                      IconButton(
-                        icon: const Icon(Icons.info_outline, size: 20),
-                        tooltip: l10n.tooltipDetails,
-                        onPressed: () => _showUnitSummary(username),
+                    PopupMenuItem(
+                      value: 'summary',
+                      child: Text(l10n.tooltipDetails),
+                    ),
+                    if (!isDefaultUser)
+                      PopupMenuItem(
+                        value: 'delete',
+                        child: Text(
+                          l10n.actionDelete,
+                          style: const TextStyle(color: Colors.red),
+                        ),
                       ),
                   ],
                 ),

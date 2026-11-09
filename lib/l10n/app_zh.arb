@@ -1011,5 +1011,6 @@
   "actionHelp": "帮助",
   "labelScore": "分数",
   "labelSeasonWPH": "赛季波速",
-  "dialogDelete": "确认删除？"
+  "dialogDelete": "确认删除？",
+  "actionRename": "重命名"
 }

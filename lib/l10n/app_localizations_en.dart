@@ -1647,4 +1647,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dialogDelete => 'Confirm delete?';
+
+  @override
+  String get actionRename => 'Rename';
 }

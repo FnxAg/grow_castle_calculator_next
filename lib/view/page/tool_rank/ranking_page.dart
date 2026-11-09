@@ -466,6 +466,7 @@ class _RankingPageState extends State<RankingPage> {
             ),
             title: Wrap(
               spacing: 4.0,
+              runSpacing: 1.0,
               crossAxisAlignment: WrapCrossAlignment.center,
               children: [
                 Text(row.name, overflow: TextOverflow.ellipsis),

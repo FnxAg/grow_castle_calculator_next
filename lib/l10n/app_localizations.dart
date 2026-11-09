@@ -2807,6 +2807,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'确认删除？'**
   String get dialogDelete;
+
+  /// No description provided for @actionRename.
+  ///
+  /// In zh, this message translates to:
+  /// **'重命名'**
+  String get actionRename;
 }
 
 class _AppLocalizationsDelegate

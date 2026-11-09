@@ -451,5 +451,6 @@
   "actionHelp": "Help",
   "labelScore": "Score",
   "labelSeasonWPH": "Season WPH",
-  "dialogDelete": "Confirm delete?"
+  "dialogDelete": "Confirm delete?",
+  "actionRename": "Rename"
 }
