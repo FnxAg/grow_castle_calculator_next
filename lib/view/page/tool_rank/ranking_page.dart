@@ -477,18 +477,6 @@ class _RankingPageState extends State<RankingPage> {
                   ),
               ],
             ),
-            // subtitle: (crossRank != null)
-            //     ? SubtitlePillWrap(
-            //         children: [
-            //           ...[
-            //             PillChip(
-            //               text: '#$crossRank',
-            //               leading: Icon(widget.kind.crossIcon!),
-            //             ),
-            //           ],
-            //         ],
-            //       )
-            //     : null,
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               children: [

@@ -16,6 +16,7 @@ abstract class UIs extends StatelessWidget {
   /// 卡片主标题 / 副标题字号
   static const double cardTitleFontSize = 16.0;
   static const double cardSubtitleFontSize = 14.0;
+  static Color cardSubtitleColor = Colors.grey[600]!;
 
   /// 卡片外边距（压缩卡片之间以及卡片内部的垂直间距）
   static const EdgeInsets cardMargin = EdgeInsets.symmetric(

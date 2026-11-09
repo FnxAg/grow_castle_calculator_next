@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
@@ -303,7 +304,7 @@ class _IncomeTile extends StatelessWidget {
       trailing: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
-          Text('${rate.format(fractionDigits: 2)}%', style: style),
+          PillChip(text: '${rate.format(fractionDigits: 2)}%'),
           PopupMenuButton<Action>(
             tooltip: l10n.actionEdit,
             itemBuilder: (context) => [

@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -172,22 +173,10 @@ class _GapChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 1.0),
-      decoration: BoxDecoration(
-        color: color ?? Theme.of(context).colorScheme.primary,
-        borderRadius: BorderRadius.circular(999.0),
-      ),
-      child: Text(
-        text,
-        maxLines: 1,
-        overflow: TextOverflow.ellipsis,
-        style: const TextStyle(
-          fontSize: 10.0,
-          fontWeight: FontWeight.w600,
-          color: Colors.white,
-        ),
-      ),
+    return PillChip(
+      text: text,
+      backgroundColor: color ?? Theme.of(context).colorScheme.primary,
+      textStyle: const TextStyle(fontSize: 10.0),
     );
   }
 }

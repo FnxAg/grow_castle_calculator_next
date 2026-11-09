@@ -27,8 +27,8 @@ class _IncomePageState extends ConsumerState<IncomePage> {
     final english = !context.isChineseLocale;
     final traditional = context.isTraditionalChineseLocale;
     final income = ref.watch(dailyIncomeProvider);
-    Widget sectionHeaderTrailing(IconData icon, String text) =>
-        PillChip(leading: Icon(icon), text: text);
+    Widget sectionHeaderTrailing(_, String text) =>
+        PillChip(text: text);
 
     final list = ListView(
       padding: UIs.padding,

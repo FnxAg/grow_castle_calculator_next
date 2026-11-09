@@ -97,6 +97,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         ),
         subtitleTextStyle: theme.textTheme.bodyMedium?.copyWith(
           fontSize: UIs.cardSubtitleFontSize,
+          color: UIs.cardSubtitleColor,
         ),
       ),
     );

@@ -42,7 +42,17 @@ class ExpansionCardTile extends StatelessWidget {
       child: ExpansionTile(
         leading: leading,
         title: title,
-        subtitle: subtitle,
+        subtitle: (subtitle is Text)
+            ? Text(
+                (subtitle as Text).data ?? '',
+                style:
+                    (subtitle as Text).style?.copyWith(
+                      color: UIs.cardSubtitleColor,
+                    ) ??
+                    DefaultTextStyle.of(context).style
+                        .copyWith(color: UIs.cardSubtitleColor),
+              )
+            : subtitle,
         trailing: trailing,
         controller: controller,
         initiallyExpanded: initiallyExpanded,
