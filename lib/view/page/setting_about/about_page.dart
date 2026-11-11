@@ -1,5 +1,6 @@
 import 'package:grow_castle_calculator_next/icon/icons.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:material_ui/material_ui.dart';
@@ -199,7 +200,7 @@ class _AboutPageState extends State<AboutPage> {
             child: Text.rich(
               TextSpan(
                 children: [
-                  const TextSpan(text: 'GCC Next · by '),
+                  TextSpan(text: dividerText(['GCC Next', 'by '])),
                   TextSpan(
                     text: 'FnxAg',
                     style: const TextStyle(color: Colors.blueAccent),

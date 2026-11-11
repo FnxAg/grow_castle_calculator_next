@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 阵容页卡片行
@@ -206,23 +207,33 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
             ],
           ),
           const SizedBox(height: 2.0),
-          Row(
+          Wrap(
+            spacing: 4.0,
+            runSpacing: 1.0,
             children: [
-              _metric(
-                theme,
-                l10n.metricShare,
-                '${_formatMetric(share)}%',
-                applied,
+              Tooltip(
+                message: l10n.metricShare,
+                child: PillChip(
+                  text: '${share.format(fractionDigits: 2)}%',
+                  backgroundColor: applied
+                      ? null
+                      : theme.disabledColor,
+                ),
               ),
-              const SizedBox(width: 10.0),
-              _metric(
-                theme,
-                l10n.metricOneOverRatio,
-                _formatMetric(oneOverRatio),
-                applied,
+              Tooltip(
+                message: l10n.metricOneOverRatio,
+                child: PillChip(
+                  text: oneOverRatio.format(fractionDigits: 3),
+                  backgroundColor: applied ? Colors.green : theme.disabledColor,
+                ),
               ),
-              const SizedBox(width: 10.0),
-              _metric(theme, l10n.metricRatio, _formatMetric(ratio), applied),
+              Tooltip(
+                message: l10n.metricRatio,
+                child: PillChip(
+                  text: ratio.format(fractionDigits: 2),
+                  backgroundColor: applied ? Colors.orange : theme.disabledColor,
+                ),
+              ),
             ],
           ),
         ],

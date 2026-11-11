@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
@@ -101,31 +102,41 @@ class _RankRow extends StatelessWidget {
           children: [
             SizedBox(
               width: 48.0,
-              child: Text(
-                row.rank == null ? '—' : '#${row.rank}',
-                textAlign: TextAlign.right,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 12.0,
-                  fontWeight: FontWeight.w600,
-                  color: row.highlight
-                      ? scheme.onPrimaryContainer
-                      : scheme.onSurfaceVariant,
+              child: AnimatedTextSwitcher(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  row.rank == null ? '—' : '#${row.rank}',
+                  textAlign: TextAlign.right,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 12.0,
+                    fontWeight: FontWeight.w600,
+                    color: row.highlight
+                        ? scheme.onPrimaryContainer
+                        : scheme.onSurfaceVariant,
+                  ),
+                  key: ValueKey(row.rank == null ? '—' : '#${row.rank}'),
                 ),
               ),
             ),
             const SizedBox(width: 10.0),
             Expanded(
               flex: 3,
-              child: Text(
-                row.name,
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  fontSize: 13.0,
-                  fontWeight: row.highlight ? FontWeight.w600 : FontWeight.w400,
-                  color: row.highlight ? scheme.onPrimaryContainer : null,
+              child: AnimatedTextSwitcher(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  row.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 13.0,
+                    fontWeight: row.highlight
+                        ? FontWeight.w600
+                        : FontWeight.w400,
+                    color: row.highlight ? scheme.onPrimaryContainer : null,
+                  ),
+                  key: ValueKey(row.name),
                 ),
               ),
             ),
@@ -137,17 +148,21 @@ class _RankRow extends StatelessWidget {
                       alignment: Alignment.centerRight,
                       child: _GapChip(text: row.gapText!, color: row.gapColor),
                     )
-                  : Text(
-                      row.value ?? '',
-                      textAlign: TextAlign.end,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                        fontSize: 14.0,
-                        fontWeight: FontWeight.bold,
-                        color: row.highlight
-                            ? scheme.onPrimaryContainer
-                            : scheme.primary,
+                  : AnimatedTextSwitcher(
+                      alignment: Alignment.centerRight,
+                      child: Text(
+                        row.value ?? '',
+                        textAlign: TextAlign.end,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 14.0,
+                          fontWeight: FontWeight.bold,
+                          color: row.highlight
+                              ? scheme.onPrimaryContainer
+                              : scheme.primary,
+                        ),
+                        key: ValueKey(row.value),
                       ),
                     ),
             ),
