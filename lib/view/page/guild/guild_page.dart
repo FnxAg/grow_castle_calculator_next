@@ -532,10 +532,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
               Positioned.fill(
                 child: ListView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: EdgeInsets.only(
-                    left: UIs.padding.left,
-                    right: wide ? 0.0 : UIs.padding.right,
-                  ),
+                  padding: UIs.padding,
                   itemCount: _members.length,
                   itemBuilder: (context, index) {
                     final member = _members[index];

@@ -405,10 +405,8 @@ class _RankingPageState extends State<RankingPage> {
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
       child: ListView.builder(
-        padding: EdgeInsets.only(
+        padding: UIs.padding.copyWith(
           bottom: 72.0 + MediaQuery.of(context).padding.bottom,
-          left: UIs.padding.left,
-          right: wide ? 0.0 : UIs.padding.right,
         ),
         itemCount: _rows.length,
         itemBuilder: (context, index) {

@@ -5,7 +5,6 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
@@ -24,25 +23,9 @@ class SelectUserPage extends ConsumerStatefulWidget {
 
 class _SelectUserPageState extends ConsumerState<SelectUserPage>
     with SingleTickerProviderStateMixin {
-  // bool _settingState = false;
-  // late final AnimationController _ctrl;
-  // late final CurvedAnimation _animation;
-
   @override
   void initState() {
     super.initState();
-    // _ctrl = AnimationController(
-    //   vsync: this,
-    //   duration: const Duration(milliseconds: 300),
-    //   value: 1.0,
-    // );
-    // _animation = CurvedAnimation(parent: _ctrl, curve: Curves.easeInOutCubic);
-  }
-
-  @override
-  void dispose() {
-    // _ctrl.dispose();
-    super.dispose();
   }
 
   @override
@@ -53,9 +36,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.settingsUserManagement),
-      ),
+      appBar: AppBar(title: Text(l10n.settingsUserManagement)),
       body: SafeArea(
         top: false,
         child: ListView.builder(
