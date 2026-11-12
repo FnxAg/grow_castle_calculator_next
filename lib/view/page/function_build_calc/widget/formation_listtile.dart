@@ -4,6 +4,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -159,11 +160,6 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
     final share = applied && totalGold > 0 ? gold / totalGold * 100 : 0.0;
     final oneOverRatio = level / wave;
     final ratio = 1 / oneOverRatio;
-    final nameStyle = TextStyle(
-      fontWeight: FontWeight.w600,
-      decoration: applied ? null : TextDecoration.lineThrough,
-      color: applied ? theme.colorScheme.primary : theme.disabledColor,
-    );
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
@@ -182,7 +178,14 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                       ? l10n.unitNameTownArcher
                       : l10n.unitNameGeneric(widget.id),
                   overflow: TextOverflow.ellipsis,
-                  style: nameStyle,
+                  style: TextStyle(
+                    fontSize: UIs.cardTitleFontSize,
+                    fontWeight: FontWeight.w600,
+                    decoration: applied ? null : TextDecoration.lineThrough,
+                    color: applied
+                        ? theme.colorScheme.primary
+                        : theme.disabledColor,
+                  ),
                 ),
               ),
               const SizedBox(width: 8.0),
@@ -196,6 +199,7 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                     )),
                   ]),
                   style: TextStyle(
+                    fontSize: UIs.cardSubtitleFontSize,
                     fontWeight: FontWeight.bold,
                     color: applied
                         ? theme.colorScheme.primary
@@ -208,16 +212,14 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
           ),
           const SizedBox(height: 2.0),
           Wrap(
-            spacing: 4.0,
+            spacing: 2.0,
             runSpacing: 1.0,
             children: [
               Tooltip(
                 message: l10n.metricShare,
                 child: PillChip(
                   text: '${share.format(fractionDigits: 2)}%',
-                  backgroundColor: applied
-                      ? null
-                      : theme.disabledColor,
+                  backgroundColor: applied ? null : theme.disabledColor,
                 ),
               ),
               Tooltip(
@@ -231,7 +233,9 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                 message: l10n.metricRatio,
                 child: PillChip(
                   text: ratio.format(fractionDigits: 2),
-                  backgroundColor: applied ? Colors.orange : theme.disabledColor,
+                  backgroundColor: applied
+                      ? Colors.orange
+                      : theme.disabledColor,
                 ),
               ),
             ],
