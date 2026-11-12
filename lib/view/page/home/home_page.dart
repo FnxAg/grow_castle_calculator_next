@@ -401,7 +401,7 @@ class _HomePageState extends ConsumerState<HomePage>
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     final l10n = AppLocalizations.of(context);
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final isDefaultUser = ref.watch(currentUserIdProvider) == 0;
     final username = ref.read(currentUsernameProvider);

@@ -373,7 +373,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final baseResult = _computeItemResult(const []);
     final item1Result = _computeItemResult(_equip1);

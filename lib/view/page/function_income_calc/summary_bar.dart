@@ -13,7 +13,7 @@ class IncomeSummaryBar extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final income = ref.watch(dailyIncomeProvider);
     return Padding(

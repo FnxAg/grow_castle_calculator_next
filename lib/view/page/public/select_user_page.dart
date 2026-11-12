@@ -87,7 +87,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
                     PillChip(
                       text: (user?.totalGold ?? 0.0).formatCompact(
                         fractionDigits: 2,
-                        english: !context.isChineseLocale,
+                        english: context.isCompactUnitEnglish,
                         traditional: context.isTraditionalChineseLocale,
                       ),
                       leading: Icon(Icons.monetization_on),

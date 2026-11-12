@@ -161,7 +161,7 @@ class _GameTrackChartPageState extends ConsumerState<GameTrackChartPage> {
           l10n.totalEconomy,
           (GameTrackRecord r) => r.totalGold,
           (double value) => value.formatCompact(
-            english: !context.isChineseLocale,
+            english: context.isCompactUnitEnglish,
             traditional: context.isTraditionalChineseLocale,
           ),
         ),

@@ -400,7 +400,7 @@ class _RankingPageState extends State<RankingPage> {
   /// 榜单列表
   Widget _buildList({required bool wide}) {
     final scheme = Theme.of(context).colorScheme;
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     return RefreshIndicator(
       onRefresh: () => _load(force: true),

@@ -61,7 +61,7 @@ abstract class AppBarItem extends ConsumerWidget {
           child: Text(
             totalGold.formatCompact(
               fractionDigits: 2,
-              english: !context.isChineseLocale,
+              english: context.isCompactUnitEnglish,
               traditional: context.isTraditionalChineseLocale,
             ),
             style: textStyle,
@@ -99,7 +99,7 @@ abstract class AppBarItem extends ConsumerWidget {
           child: Text(
             dailyIncome.formatCompact(
               fractionDigits: 2,
-              english: !context.isChineseLocale,
+              english: context.isCompactUnitEnglish,
               traditional: context.isTraditionalChineseLocale,
             ),
             style: textStyle,

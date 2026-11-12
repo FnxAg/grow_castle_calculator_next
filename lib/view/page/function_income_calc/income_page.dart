@@ -24,7 +24,7 @@ class IncomePage extends ConsumerStatefulWidget {
 
 class _IncomePageState extends ConsumerState<IncomePage> {
   Widget _buildList({required bool wide, required AppLocalizations l10n}) {
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final income = ref.watch(dailyIncomeProvider);
     Widget sectionHeaderTrailing(_, String text) =>

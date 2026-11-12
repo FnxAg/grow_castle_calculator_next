@@ -107,7 +107,7 @@ class FunctionPage extends ConsumerWidget {
                       .total
                       .formatCompact(
                         fractionDigits: 2,
-                        english: !context.isChineseLocale,
+                        english: context.isCompactUnitEnglish,
                         traditional: context.isTraditionalChineseLocale,
                       ),
                   style: style,

@@ -161,6 +161,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get languageEnglish => 'English';
 
   @override
+  String get settingsCompactUnit => '缩写单位';
+
+  @override
+  String get compactUnitChinese => '中文（万/亿）';
+
+  @override
+  String get compactUnitEnglish => '英文（K/M/B）';
+
+  @override
   String get itemSourceDragon1 => '一龙（绿龙）';
 
   @override
@@ -1700,6 +1709,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get languageEnglish => 'English';
+
+  @override
+  String get settingsCompactUnit => '縮寫單位';
+
+  @override
+  String get compactUnitChinese => '中文（萬/億）';
+
+  @override
+  String get compactUnitEnglish => '英文（K/M/B）';
 
   @override
   String get itemSourceDragon1 => '一龍（綠龍）';

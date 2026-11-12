@@ -381,6 +381,24 @@ abstract class AppLocalizations {
   /// **'English'**
   String get languageEnglish;
 
+  /// No description provided for @settingsCompactUnit.
+  ///
+  /// In zh, this message translates to:
+  /// **'缩写单位'**
+  String get settingsCompactUnit;
+
+  /// No description provided for @compactUnitChinese.
+  ///
+  /// In zh, this message translates to:
+  /// **'中文（万/亿）'**
+  String get compactUnitChinese;
+
+  /// No description provided for @compactUnitEnglish.
+  ///
+  /// In zh, this message translates to:
+  /// **'英文（K/M/B）'**
+  String get compactUnitEnglish;
+
   /// No description provided for @itemSourceDragon1.
   ///
   /// In zh, this message translates to:

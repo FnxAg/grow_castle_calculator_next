@@ -7,6 +7,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/shell/main_shell.dart';
 
@@ -148,6 +149,11 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
             Widget content = GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),
               child: child!,
+            );
+            // 数字缩写单位设置变化时，让读取 isCompactUnitEnglish 的界面重建
+            content = CompactUnitScope(
+              notifier: appSettings.compactUnitEnglishNotifier,
+              child: content,
             );
             if (isDesktopPlatform()) {
               content = Overlay.wrap(

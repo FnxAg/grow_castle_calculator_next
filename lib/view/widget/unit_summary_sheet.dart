@@ -233,7 +233,7 @@ class _OverviewPanel extends StatelessWidget {
                 child: _OverviewValue(
                   label: l10n.totalGold,
                   value: data.totalGold.formatCompact(
-                    english: !context.isChineseLocale,
+                    english: context.isCompactUnitEnglish,
                     traditional: context.isTraditionalChineseLocale,
                   ),
                 ),
@@ -356,7 +356,10 @@ class _UnitSummaryRow extends StatelessWidget {
                 ),
                 const SizedBox(width: 12.0),
                 Text(
-                  gold.formatCompact(english: !context.isChineseLocale),
+                  gold.formatCompact(
+                    english: context.isCompactUnitEnglish,
+                    traditional: context.isTraditionalChineseLocale,
+                  ),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.primary,
                     fontWeight: FontWeight.bold,

@@ -162,6 +162,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get languageEnglish => 'English';
 
   @override
+  String get settingsCompactUnit => 'Abbreviated units';
+
+  @override
+  String get compactUnitChinese => 'Chinese (万/亿)';
+
+  @override
+  String get compactUnitEnglish => 'English (K/M/B)';
+
+  @override
   String get itemSourceDragon1 => 'Green Dragon';
 
   @override

@@ -191,7 +191,7 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                   dividerText([
                     (level.format()),
                     (gold.formatCompact(
-                      english: !context.isChineseLocale,
+                      english: context.isCompactUnitEnglish,
                       traditional: context.isTraditionalChineseLocale,
                     )),
                   ]),
@@ -239,29 +239,5 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
         ],
       ),
     );
-  }
-
-  Widget _metric(ThemeData theme, String label, String value, bool applied) {
-    return AnimatedTextSwitcher(
-      child: Text(
-        '$label $value',
-        style: theme.textTheme.bodySmall?.copyWith(
-          color: applied
-              ? theme.colorScheme.onSurfaceVariant
-              : theme.disabledColor,
-        ),
-        key: ValueKey('$label-$value-${applied ? 1 : 0}'),
-      ),
-    );
-  }
-
-  String _formatMetric(double value) {
-    if (value == 0) return '0';
-    final digits = value.abs() < 0.0001
-        ? 6
-        : value.abs() < 0.01
-        ? 5
-        : 3;
-    return value.format(fractionDigits: digits);
   }
 }

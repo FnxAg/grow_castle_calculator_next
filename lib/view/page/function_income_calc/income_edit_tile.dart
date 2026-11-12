@@ -1,11 +1,13 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/model/userdata/user_data.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 收入参数行：卡片内直接编辑，输入合法即保存，失焦时回退非法输入
@@ -96,6 +98,9 @@ class _IncomeEditTileState extends ConsumerState<IncomeEditTile> {
           : null,
       prefixText: field.prefixText.isEmpty ? null : field.prefixText,
       suffixText: field.suffixText.isEmpty ? null : field.suffixText,
+      suffix: field == IncomeField.infiniteColony
+          ? PillChip(text: (user.infiniteColony * 1000 / user.wave).format())
+          : null,
       errorText: _error ?? field.error(user),
       onChanged: (_) => _commit(),
     );

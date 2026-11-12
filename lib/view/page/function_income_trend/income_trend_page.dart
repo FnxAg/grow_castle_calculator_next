@@ -43,7 +43,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final afterTime = _selectedOptionIndex == _customOptionIndex
         ? _customTime! * 1440

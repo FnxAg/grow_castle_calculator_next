@@ -13,6 +13,7 @@ class CardField extends StatelessWidget {
     this.errorText,
     this.prefixText,
     this.suffixText,
+    this.suffix,
     this.keyboardType,
     this.inputFormatters,
     this.focusNode,
@@ -26,6 +27,7 @@ class CardField extends StatelessWidget {
   final String? errorText;
   final String? prefixText;
   final String? suffixText;
+  final Widget? suffix;
   final TextInputType? keyboardType;
   final List<TextInputFormatter>? inputFormatters;
   final FocusNode? focusNode;
@@ -62,6 +64,7 @@ class CardField extends StatelessWidget {
             helperMaxLines: 2,
             errorText: errorText,
             errorMaxLines: 3,
+            suffix: suffix,
           ),
         ),
       ),

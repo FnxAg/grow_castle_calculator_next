@@ -124,7 +124,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final wave = ref.watch(currentUserWaveProvider);
     final gabCost = _gabCost(wave);

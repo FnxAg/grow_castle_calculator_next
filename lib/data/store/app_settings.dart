@@ -24,6 +24,7 @@ class AppSettingsStore {
   static const String _boxName = 'app_meta';
   static const String _themeModeKey = 'themeMode';
   static const String _languageKey = 'language';
+  static const String _compactUnitEnglishKey = 'compactUnitEnglish';
   static const String _apiUrlKey = 'apiUrl';
   static const String _thirdPartyApiEnabledKey = 'thirdPartyApiEnabled';
   static const String _autoLastOnlineEnabledKey = 'autoLastOnlineEnabled';
@@ -40,6 +41,9 @@ class AppSettingsStore {
   final Box _box;
   final ValueNotifier<ThemeMode> themeModeNotifier;
   final ValueNotifier<AppLanguage> languageNotifier;
+
+  /// 中文界面下数字缩写是否使用英文单位（K/M/B），默认中文（万/亿）
+  final ValueNotifier<bool> compactUnitEnglishNotifier;
   final ValueNotifier<String> apiUrlNotifier;
   final ValueNotifier<bool> thirdPartyApiEnabledNotifier;
   final ValueNotifier<bool> autoLastOnlineEnabledNotifier;
@@ -55,6 +59,9 @@ class AppSettingsStore {
       ),
       languageNotifier = ValueNotifier<AppLanguage>(
         _readLanguage(Hive.box(_boxName)),
+      ),
+      compactUnitEnglishNotifier = ValueNotifier<bool>(
+        _readCompactUnitEnglish(Hive.box(_boxName)),
       ),
       apiUrlNotifier = ValueNotifier<String>(_readApiUrl(Hive.box(_boxName))),
       thirdPartyApiEnabledNotifier = ValueNotifier<bool>(
@@ -104,11 +111,25 @@ class AppSettingsStore {
     _box.put(_languageKey, language.name);
   }
 
+  static bool _readCompactUnitEnglish(Box box) {
+    final raw = box.get(_compactUnitEnglishKey);
+    return raw is bool ? raw : false;
+  }
+
+  void setCompactUnitEnglish(bool english) {
+    if (compactUnitEnglishNotifier.value == english) {
+      return;
+    }
+    compactUnitEnglishNotifier.value = english;
+    _box.put(_compactUnitEnglishKey, english);
+  }
+
   /// 重新从 box 读取全部设置并刷新各 notifier（数据恢复/导入后调用；
   /// ValueNotifier 等值不触发通知，安全）
   void reload() {
     themeModeNotifier.value = _readThemeMode(_box);
     languageNotifier.value = _readLanguage(_box);
+    compactUnitEnglishNotifier.value = _readCompactUnitEnglish(_box);
     apiUrlNotifier.value = _readApiUrl(_box);
     thirdPartyApiEnabledNotifier.value = _readThirdPartyApiEnabled(_box);
     autoLastOnlineEnabledNotifier.value = _readAutoLastOnlineEnabled(_box);

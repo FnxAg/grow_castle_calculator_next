@@ -394,7 +394,7 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
   }
 
   Widget _buildField(AppLocalizations l10n, _Field field) {
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final value = _valueOf(field);
     return CardField(

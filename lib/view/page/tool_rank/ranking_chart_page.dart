@@ -169,7 +169,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
 
   LineChartData _chartData(List<RankRow> rows, int minScore, int maxScore) {
     final scheme = Theme.of(context).colorScheme;
-    final english = !context.isChineseLocale;
+    final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final scoreRange = (maxScore - minScore).abs();
     final chartMinY = (minScore - scoreRange * 0.08).clamp(0, double.infinity);

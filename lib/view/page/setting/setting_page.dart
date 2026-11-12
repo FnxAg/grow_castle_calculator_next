@@ -6,6 +6,7 @@ import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
 import 'package:grow_castle_calculator_next/view/page/setting_about/about_page.dart';
@@ -318,6 +319,21 @@ class _SettingPageState extends State<SettingPage> {
               onSelected: appSettingsStore.setLanguage,
             ),
           ),
+          // 非中文界面固定英文缩写单位，该选项只对中文界面有意义
+          if (context.isChineseLocale)
+            ValueListenableBuilder<bool>(
+              valueListenable: appSettingsStore.compactUnitEnglishNotifier,
+              builder: (context, englishUnit, _) => _choiceTile<bool>(
+                leading: Icons.numbers,
+                title: l10n.settingsCompactUnit,
+                current: englishUnit,
+                options: [
+                  (false, l10n.compactUnitChinese, null),
+                  (true, l10n.compactUnitEnglish, null),
+                ],
+                onSelected: appSettingsStore.setCompactUnitEnglish,
+              ),
+            ),
           ExpansionCardTile(
             leading: const Icon(Icons.api),
             title: Text(l10n.settingsThirdPartyApi),
