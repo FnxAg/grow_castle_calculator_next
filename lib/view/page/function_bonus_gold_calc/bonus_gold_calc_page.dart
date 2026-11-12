@@ -392,6 +392,11 @@ class _AddIncomeDialogState extends State<_AddIncomeDialog> {
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
         decoration: InputDecoration(
           helperText: int.tryParse(_controller.text.trim())?.format() ?? '-',
+          suffix: TextButton(
+            onPressed: () =>
+                setState(() => _controller.text = '${_controller.text}000'),
+            child: Text('+000'),
+          ),
         ),
         onChanged: (_) => setState(() {}),
         autofocus: true,
