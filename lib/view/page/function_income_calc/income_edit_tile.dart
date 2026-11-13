@@ -89,15 +89,16 @@ class _IncomeEditTileState extends ConsumerState<IncomeEditTile> {
       }
     });
     return CardField(
-      title: field.label(l10n),
+      title:
+          field.label(l10n) +
+          (field.suffixText.isEmpty ? '' : ' (${field.suffixText})') +
+          (field.prefixText.isEmpty ? '' : ' (${field.prefixText})'),
       controller: _controller,
       focusNode: _focusNode,
       keyboardType: TextInputType.numberWithOptions(decimal: !field.digitsOnly),
       inputFormatters: field.digitsOnly
           ? [FilteringTextInputFormatter.digitsOnly]
           : null,
-      prefixText: field.prefixText.isEmpty ? null : field.prefixText,
-      suffixText: field.suffixText.isEmpty ? null : field.suffixText,
       suffix: field == IncomeField.infiniteColony
           ? PillChip(text: (user.infiniteColony * 1000 / user.wave).format())
           : null,

@@ -28,12 +28,12 @@ enum Actions { reset, help }
 /// 无装备面板中的一个属性
 enum AttributeType {
   baseAttack('Base Attack', isPercent: false),
-  increasedDmg('Increased Damage'),
-  moreDmg('More Damage'),
-  critChance('Critical Chance'),
-  critDmg('Critical Damage'),
+  increasedDmg('Increased Damage (%)'),
+  moreDmg('More Damage (%)'),
+  critChance('Critical Chance (%)'),
+  critDmg('Critical Damage (%)'),
   baseAps('Attacks Per Second', isPercent: false),
-  increasedSpeed('Increased Speed');
+  increasedSpeed('Increased Speed (%)');
 
   const AttributeType(this.label, {this.isPercent = true});
 
@@ -385,7 +385,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
     final Widget list = ListView(
       key: const PageStorageKey('item_comparer_list'),
-      padding: UIs.padding,
+      padding: UIs.padding.copyWith(bottom: 16.0),
       children: [
         SectionHeader(
           l10n.labelNoItemPanel,
@@ -397,7 +397,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
           ),
         ),
         ..._buildPanelCard(),
-        const SizedBox(height: 20),
         _buildCompareCards(
           ready: ready,
           baseDps: baseDps,
@@ -497,26 +496,11 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   Widget _panelField(AttributeType type) {
     final ctrl = _ctrl(type);
-    return CardTile(
-      title: Text(type.label),
-      trailing: Text(
-        ctrl.text.trim().isEmpty
-            ? '—'
-            : '${ctrl.text}${type.isPercent ? '%' : ''}',
-        style: TextStyle(fontSize: 14.0, fontWeight: FontWeight.w600),
-      ),
-      onTap: () => _editPanelField(type),
+    return CardField(
+      title: type.label,
+      controller: ctrl,
+      onChanged: (_) => _onInputChanged(),
     );
-  }
-
-  Future<void> _editPanelField(AttributeType type) async {
-    final ctrl = _ctrl(type);
-    final text = await showDialog<String>(
-      context: context,
-      builder: (dialogContext) =>
-          _PanelFieldDialog(attribute: type, initialValue: ctrl.text),
-    );
-    if (text != null) ctrl.text = text;
   }
 
   Widget _buildCompareCards({
@@ -571,49 +555,46 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
         ? '${((itemDps / baseDps - 1) * 100).toStringAsFixed(2)}%'
         : '—';
 
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Column(
-        children: [
-          SectionHeader(
-            l10n.labelItemNumber(side),
-            trailing: PillChip(
-              leading: !ready || itemDps == otherDps
-                  ? null
-                  : Icon(winning ? Icons.arrow_drop_up : Icons.arrow_drop_down),
-              backgroundColor: winning ? Colors.green : null,
-              text: gainText,
+    return Column(
+      children: [
+        SectionHeader(
+          l10n.labelItemNumber(side),
+          trailing: PillChip(
+            leading: !ready || itemDps == otherDps
+                ? null
+                : Icon(winning ? Icons.arrow_drop_up : Icons.arrow_drop_down),
+            backgroundColor: winning ? Colors.green : null,
+            text: gainText,
+          ),
+        ),
+        Card(
+          margin: EdgeInsets.zero,
+          elevation: 0,
+          clipBehavior: Clip.antiAlias,
+          color: ListTileTheme.of(context).tileColor,
+          shape: RoundedRectangleBorder(
+            borderRadius: UIs.cardShape.borderRadius,
+            side: BorderSide(
+              color: winning ? scheme.primary : scheme.outlineVariant,
+              width: winning ? 1.5 : 1,
             ),
           ),
-          Card(
-            margin: EdgeInsets.zero,
-            elevation: 0,
-            clipBehavior: Clip.antiAlias,
-            color: ListTileTheme.of(context).tileColor,
-            shape: RoundedRectangleBorder(
-              borderRadius: UIs.cardShape.borderRadius,
-              side: BorderSide(
-                color: winning ? scheme.primary : scheme.outlineVariant,
-                width: winning ? 1.5 : 1,
-              ),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(vertical: 4),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  for (var i = 0; i < equips.length; i++) ...[
-                    if (i > 0)
-                      const Divider(height: 1, indent: 16, endIndent: 16),
-                    _buildEquipRow(equips, otherEquips, side, i),
-                  ],
+          child: Padding(
+            padding: const EdgeInsets.symmetric(vertical: 4),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                for (var i = 0; i < equips.length; i++) ...[
+                  if (i > 0)
+                    const Divider(height: 1, indent: 16, endIndent: 16),
+                  _buildEquipRow(equips, otherEquips, side, i),
                 ],
-              ),
+              ],
             ),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 

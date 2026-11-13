@@ -4,6 +4,7 @@ import 'package:grow_castle_calculator_next/core/calc/quick_calc.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
@@ -330,7 +331,7 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
       body: SafeArea(
         top: false,
         child: ListView(
-          padding: const EdgeInsets.all(16.0),
+          padding: UIs.padding.copyWith(top: 16.0),
           children: [
             Text(
               l10n.quickCalcHint,
@@ -346,7 +347,6 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
                   _buildFillButton(l10n, field),
                 ],
               ),
-              if (field != _Field.values.last) const SizedBox(height: 12.0),
             ],
           ],
         ),

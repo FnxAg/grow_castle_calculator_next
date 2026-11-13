@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
@@ -246,7 +247,7 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
       body: SafeArea(
         top: false,
         child: ListView.builder(
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 16),
+          padding: UIs.padding,
           itemCount: ranked.length + 2,
           itemBuilder: (context, index) {
             if (index == 0) {
@@ -290,26 +291,25 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         SectionHeader(l10n.labelPanelWithoutItem),
-        SummaryCard(
-          children: <Widget>[
-            _baseField('Increased Dmg', _increasedDmgCtrl),
-            _baseField('Critical Chance', _critChanceCtrl),
-            _baseField('Critical Dmg', _critDmgCtrl),
-            _baseField(
-              'Increased Speed',
-              _speedCtrl,
-              prefix: SizedBox(
-                width: 24,
-                height: 24,
-                child: Checkbox(
-                  value: _speedEnabled,
-                  onChanged: (v) => setState(() {
-                    _speedEnabled = v!;
-                    _saveToSessionCache();
-                  }),
-                ),
+        CardField(title: 'Increased Damage (%)', controller: _increasedDmgCtrl),
+        CardField(title: 'Critical Chance (%)', controller: _critChanceCtrl),
+        CardField(title: 'Critical Damage (%)', controller: _critDmgCtrl),
+        Row(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Expanded(
+              child: CardField(
+                title: 'Increased Speed (%)',
+                controller: _speedCtrl,
+                enabled: _speedEnabled,
               ),
-              enabled: _speedEnabled,
+            ),
+            Switch(
+              value: _speedEnabled,
+              onChanged: (v) => setState(() {
+                _speedEnabled = v;
+                _saveToSessionCache();
+              }),
             ),
           ],
         ),
