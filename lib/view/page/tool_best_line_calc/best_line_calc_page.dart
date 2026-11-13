@@ -1,4 +1,3 @@
-import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
@@ -6,7 +5,6 @@ import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
@@ -357,42 +355,6 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
           ],
         ),
       ],
-    );
-  }
-
-  Widget _baseField(
-    String label,
-    TextEditingController ctrl, {
-    Widget? prefix,
-    bool enabled = true,
-  }) {
-    final theme = Theme.of(context);
-    return Padding(
-      padding: const EdgeInsets.only(top: 8),
-      child: Row(
-        children: [
-          SizedBox(
-            width: 120,
-            child: Text(label, style: theme.textTheme.bodyMedium),
-          ),
-          Spacer(),
-          if (prefix != null) ...[prefix, const SizedBox(width: 16)],
-          SizedBox(
-            width: 80,
-            child: SelectAllTextField(
-              controller: ctrl,
-              enabled: enabled,
-              keyboardType: const TextInputType.numberWithOptions(
-                decimal: true,
-              ),
-              inputFormatters: [
-                FilteringTextInputFormatter.allow(RegExp(r'[\d.]')),
-              ],
-              decoration: InputDecoration(isDense: true, suffixText: '%'),
-            ),
-          ),
-        ],
-      ),
     );
   }
 
