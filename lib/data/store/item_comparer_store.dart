@@ -25,11 +25,11 @@ class ItemComparerLineInput {
   String value;
 
   Map<String, dynamic> toJson() => {
-        'line': line?.name,
-        'isMoreDmg': isMoreDmg,
-        'isElementDamage': isElementDamage,
-        'value': value,
-      };
+    'line': line?.name,
+    'isMoreDmg': isMoreDmg,
+    'isElementDamage': isElementDamage,
+    'value': value,
+  };
 
   /// 词条名非法（词条池调整过）时按未选择处理
   static ItemComparerLineInput fromJson(Map<String, dynamic> json) {

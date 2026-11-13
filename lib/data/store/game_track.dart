@@ -20,10 +20,10 @@ class GameTrackUnit {
   }
 
   Map<String, dynamic> toMap() => {
-        'name': name,
-        'level': level,
-        'enabled': enabled,
-      };
+    'name': name,
+    'level': level,
+    'enabled': enabled,
+  };
 }
 
 class GameTrackRecord {
@@ -49,7 +49,8 @@ class GameTrackRecord {
     final rawUnits = map['units'];
     return GameTrackRecord(
       id: map['id']?.toString() ?? '',
-      recordedAt: DateTime.tryParse(map['recordedAt']?.toString() ?? '') ??
+      recordedAt:
+          DateTime.tryParse(map['recordedAt']?.toString() ?? '') ??
           DateTime.fromMillisecondsSinceEpoch(0),
       wave: _asInt(map['wave']),
       totalGold: _asDouble(map['totalGold']),
@@ -57,22 +58,22 @@ class GameTrackRecord {
       gpCN: _asDouble(map['gpCN']),
       units: rawUnits is List
           ? rawUnits
-              .whereType<Map>()
-              .map(GameTrackUnit.fromMap)
-              .toList(growable: false)
+                .whereType<Map>()
+                .map(GameTrackUnit.fromMap)
+                .toList(growable: false)
           : const [],
     );
   }
 
   Map<String, dynamic> toMap() => {
-        'id': id,
-        'recordedAt': recordedAt.toIso8601String(),
-        'wave': wave,
-        'totalGold': totalGold,
-        'gp': gp,
-        'gpCN': gpCN,
-        'units': units.map((unit) => unit.toMap()).toList(),
-      };
+    'id': id,
+    'recordedAt': recordedAt.toIso8601String(),
+    'wave': wave,
+    'totalGold': totalGold,
+    'gp': gp,
+    'gpCN': gpCN,
+    'units': units.map((unit) => unit.toMap()).toList(),
+  };
 }
 
 class GameTrackStore {
@@ -85,10 +86,10 @@ class GameTrackStore {
     final raw = _box.get('$_recordsPrefix$userId');
     final records = raw is List
         ? raw
-            .whereType<Map>()
-            .map(GameTrackRecord.fromMap)
-            .where((record) => record.id.isNotEmpty)
-            .toList()
+              .whereType<Map>()
+              .map(GameTrackRecord.fromMap)
+              .where((record) => record.id.isNotEmpty)
+              .toList()
         : <GameTrackRecord>[];
     records.sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
     return records;
@@ -106,7 +107,8 @@ class GameTrackStore {
 
   bool canRecord(int userId, DateTime now, Duration interval) {
     final records = getRecords(userId);
-    return records.isEmpty || now.difference(records.last.recordedAt) >= interval;
+    return records.isEmpty ||
+        now.difference(records.last.recordedAt) >= interval;
   }
 
   Future<void> addRecord(int userId, GameTrackRecord record) async {
@@ -141,9 +143,8 @@ class GameTrackStore {
   }
 }
 
-int _asInt(Object? value) => value is num
-    ? value.toInt()
-    : int.tryParse(value?.toString() ?? '') ?? 0;
+int _asInt(Object? value) =>
+    value is num ? value.toInt() : int.tryParse(value?.toString() ?? '') ?? 0;
 
 double _asDouble(Object? value) => value is num
     ? value.toDouble()

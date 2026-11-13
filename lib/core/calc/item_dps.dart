@@ -111,5 +111,10 @@ ItemDpsResult computeItemDps({
     dps *= aps;
   }
 
-  return ItemDpsResult(normalHit: normalHit, critHit: critHit, dps: dps, aps: aps);
+  return ItemDpsResult(
+    normalHit: normalHit,
+    critHit: critHit,
+    dps: dps,
+    aps: aps,
+  );
 }

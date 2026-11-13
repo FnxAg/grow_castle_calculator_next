@@ -32,4 +32,6 @@ abstract class UIs extends StatelessWidget {
   static const EdgeInsets cardFieldContentPadding = EdgeInsets.symmetric(
     vertical: 8.0,
   );
+
+  const UIs({super.key});
 }

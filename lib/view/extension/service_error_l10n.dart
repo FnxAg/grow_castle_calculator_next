@@ -48,19 +48,21 @@ String _dataSectionText(AppLocalizations l10n, DataSection section) =>
     };
 
 /// 备份/恢复失败 -> 文案
-String backupFailureText(AppLocalizations l10n, BackupFailure failure) =>
-    switch (failure) {
-      BackupBusyFailure() => l10n.backupBusy,
-      BackupNotConfiguredFailure() => l10n.backupNotConfigured,
-      BackupGenericFailure() => l10n.backupFailed,
-      BackupNoDataFailure() => l10n.backupNoRestorableData,
-      BackupWebDavFailure(:final statusCode) => webdavErrorText(l10n, statusCode),
-      BackupArchiveFailure(:final error) => archiveErrorText(l10n, error),
-      BackupPartialRestoreFailure(:final sections) =>
-        l10n.backupRestorePartialFailure(
-          sections.map((s) => _dataSectionText(l10n, s)).join(l10n.listSeparator),
-        ),
-    };
+String backupFailureText(
+  AppLocalizations l10n,
+  BackupFailure failure,
+) => switch (failure) {
+  BackupBusyFailure() => l10n.backupBusy,
+  BackupNotConfiguredFailure() => l10n.backupNotConfigured,
+  BackupGenericFailure() => l10n.backupFailed,
+  BackupNoDataFailure() => l10n.backupNoRestorableData,
+  BackupWebDavFailure(:final statusCode) => webdavErrorText(l10n, statusCode),
+  BackupArchiveFailure(:final error) => archiveErrorText(l10n, error),
+  BackupPartialRestoreFailure(:final sections) =>
+    l10n.backupRestorePartialFailure(
+      sections.map((s) => _dataSectionText(l10n, s)).join(l10n.listSeparator),
+    ),
+};
 
 /// 持久化下来的失败 id（[BackupFailure.id]）-> 文案
 String storedBackupFailureText(AppLocalizations l10n, String id) {

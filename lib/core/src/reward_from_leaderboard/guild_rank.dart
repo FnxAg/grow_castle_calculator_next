@@ -1,6 +1,6 @@
 int getItemBoxFromGuildRank(int rank) {
   return switch (rank) {
-    1 => 20, 
+    1 => 20,
     2 => 15,
     3 => 10,
     >= 4 && <= 5 => 7,

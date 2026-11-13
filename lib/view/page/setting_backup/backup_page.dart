@@ -418,8 +418,9 @@ class _BackupPageState extends State<BackupPage> {
     try {
       preview = await _service.fetchRemotePreview();
     } on WebDavException catch (e) {
-      if (mounted)
+      if (mounted) {
         _snack(l10n.snackFetchRemoteFailed(webdavExceptionText(l10n, e)));
+      }
     } on DataArchiveException catch (e) {
       if (mounted) {
         _snack(l10n.snackInvalidCloudFile(archiveExceptionText(l10n, e)));

@@ -428,10 +428,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
         child: ListView(
           padding: UIs.padding,
           children: [
-            CardField(
-              title: l10n.labelHintText,
-              controller: _hintController,
-            ),
+            CardField(title: l10n.labelHintText, controller: _hintController),
             const SizedBox(height: 8),
             SwitchCardTile(
               title: Text(l10n.labelPinToTop),
@@ -470,9 +467,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                 LineColor.yellow => l10n.lineColorGold,
                 LineColor.purple => l10n.lineColorPurple,
               }),
-              for (final line in ItemLine.values.where(
-                (l) => l.color == color,
-              ))
+              for (final line in ItemLine.values.where((l) => l.color == color))
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -484,29 +479,22 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                           _counts.containsKey(line) &&
                                   line.color == LineColor.white
                               ? Padding(
-                                  padding: const EdgeInsets.only(
-                                    left: 8,
-                                  ),
+                                  padding: const EdgeInsets.only(left: 8),
                                   child: SegmentedButton<int>(
                                     segments: [
                                       ButtonSegment(
                                         value: 1,
-                                        label: Text(
-                                          l10n.labelLineCount(1),
-                                        ),
+                                        label: Text(l10n.labelLineCount(1)),
                                       ),
                                       ButtonSegment(
                                         value: 2,
-                                        label: Text(
-                                          l10n.labelLineCount(2),
-                                        ),
+                                        label: Text(l10n.labelLineCount(2)),
                                       ),
                                     ],
                                     selected: {_counts[line] ?? 1},
                                     showSelectedIcon: false,
                                     style: const ButtonStyle(
-                                      visualDensity:
-                                          VisualDensity.compact,
+                                      visualDensity: VisualDensity.compact,
                                     ),
                                     onSelectionChanged: (s) =>
                                         _setWhiteCount(line, s.first),
@@ -517,16 +505,12 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                       ),
                       value: _counts.containsKey(line),
                       // 白色词条合计 3 条时禁止勾选红色词条
-                      onChanged:
-                          line.color == LineColor.red &&
-                              _whiteSum >= 3
+                      onChanged: line.color == LineColor.red && _whiteSum >= 3
                           ? null
-                          : (checked) =>
-                                _toggleLine(line, checked ?? false),
+                          : (checked) => _toggleLine(line, checked ?? false),
                     ),
                     // 数值范围
-                    if (_counts.containsKey(line) &&
-                        _hasValueRange(line))
+                    if (_counts.containsKey(line) && _hasValueRange(line))
                       Padding(
                         padding: const EdgeInsets.all(8.0),
                         child: Row(
@@ -552,8 +536,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                     isMin: true,
                                   ),
                                   suffixText:
-                                      line.numType ==
-                                          LineNumType.percent
+                                      line.numType == LineNumType.percent
                                       ? '%'
                                       : null,
                                 ),
@@ -584,8 +567,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
                                     isMin: false,
                                   ),
                                   suffixText:
-                                      line.numType ==
-                                          LineNumType.percent
+                                      line.numType == LineNumType.percent
                                       ? '%'
                                       : null,
                                 ),

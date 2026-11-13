@@ -46,12 +46,12 @@ class WebDavBackupClient {
     required String url,
     required String username,
     required String password,
-  })  : _dirPath = dirPathOf(url),
-        _client = dav.WebdavClient.basicAuth(
-          url: originOf(url),
-          user: username,
-          pwd: password,
-        ) {
+  }) : _dirPath = dirPathOf(url),
+       _client = dav.WebdavClient.basicAuth(
+         url: originOf(url),
+         user: username,
+         pwd: password,
+       ) {
     _client.setHeaders({'accept-charset': 'utf-8'});
     _client.setConnectTimeout(_timeoutMs);
     _client.setSendTimeout(_timeoutMs);
@@ -146,7 +146,9 @@ class WebDavBackupClient {
       }
       return WebDavFileInfo(
         exists: true,
-        lastModified: parseLastModified(response.headers.value('last-modified')),
+        lastModified: parseLastModified(
+          response.headers.value('last-modified'),
+        ),
         contentLength: int.tryParse(
           response.headers.value('content-length') ?? '',
         ),

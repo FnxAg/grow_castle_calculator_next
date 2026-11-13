@@ -96,9 +96,8 @@ final numberValueProvider = Provider.family<String, int>(
 );
 
 final unitGoldProvider = Provider.family<double, int>(
-  (ref, id) => ref.watch(
-    usersProvider.select((s) => s.currentUser.unitGold[id] ?? 0.0),
-  ),
+  (ref, id) =>
+      ref.watch(usersProvider.select((s) => s.currentUser.unitGold[id] ?? 0.0)),
 );
 
 /// 指定用户的完整数据，不存在时为 null
@@ -109,8 +108,7 @@ final userByNameProvider = Provider.family<UserData?, String>(
 
 /// 指定用户的 userId（大小写不敏感），不存在时为 -1
 final userIdProvider = Provider.family<int, String>(
-  (ref, username) =>
-      ref.watch(usersProvider.select((s) => s.findId(username))),
+  (ref, username) => ref.watch(usersProvider.select((s) => s.findId(username))),
 );
 
 // 派生值
@@ -141,28 +139,28 @@ final theoreticalRwphProvider = Provider<int>((ref) {
 
 /// 当前用户每日收入分项
 final dailyIncomeProvider =
-    Provider<({double colony, double autoBattle, double other, double total})>(
-  (ref) {
-    final u = ref.watch(currentUserProvider);
-    return getDailyIncomeBreakdown(
-      wave: u.wave,
-      gameSpeed: u.gameSpeed,
-      chronoBonus: u.chronoClass,
-      equipHorn: u.horn,
-      equipGoldenHorn: u.goldenHorn,
-      infiniteColony: u.infiniteColony,
-      icCooldownSkill: u.icCooldownSkill,
-      icGoldSkill: u.icGoldSkill,
-      equipWheel: u.equipWheel,
-      equipWhip: u.equipWhip,
-      gabTime: u.gabTime,
-      gabBonus: u.gabBonus,
-      tabTime: u.tabTime,
-      seasonColony: u.seasonColony,
-      goldenTree: u.goldenTree,
-    );
-  },
-);
+    Provider<({double colony, double autoBattle, double other, double total})>((
+      ref,
+    ) {
+      final u = ref.watch(currentUserProvider);
+      return getDailyIncomeBreakdown(
+        wave: u.wave,
+        gameSpeed: u.gameSpeed,
+        chronoBonus: u.chronoClass,
+        equipHorn: u.horn,
+        equipGoldenHorn: u.goldenHorn,
+        infiniteColony: u.infiniteColony,
+        icCooldownSkill: u.icCooldownSkill,
+        icGoldSkill: u.icGoldSkill,
+        equipWheel: u.equipWheel,
+        equipWhip: u.equipWhip,
+        gabTime: u.gabTime,
+        gabBonus: u.gabBonus,
+        tabTime: u.tabTime,
+        seasonColony: u.seasonColony,
+        goldenTree: u.goldenTree,
+      );
+    });
 
 // 重载信号
 
@@ -176,11 +174,7 @@ final userReloadSignalProvider = Provider<UserReloadSignal>((ref) {
 });
 
 /// [userReloadSignalProvider] 的值类型
-typedef UserReloadSignal = ({
-  String username,
-  String guild,
-  int dataVersion,
-});
+typedef UserReloadSignal = ({String username, String guild, int dataVersion});
 
 /// 让 `store.setXxx` 形式的 tear-off 保持一个 token 的长度：`ref.users.setXxx`。
 ///

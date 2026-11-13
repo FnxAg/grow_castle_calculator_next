@@ -3,7 +3,8 @@ import 'package:material_ui/material_ui.dart';
 /// AppBar 显示当前页面底部的加载进度条
 class LoadingIndicatorAppBar extends StatelessWidget
     implements PreferredSizeWidget {
-  const LoadingIndicatorAppBar({super.key, 
+  const LoadingIndicatorAppBar({
+    super.key,
     required this.bottom,
     required this.isLoading,
   });

@@ -69,10 +69,10 @@ class UserDataRepository {
     final savedCurrentUserId = _metaBox.get(metaCurrentUserIdKey);
     final currentUserId =
         savedCurrentUserId is int && users.containsKey(savedCurrentUserId)
-            ? savedCurrentUserId
-            : users.containsKey(0)
-                ? 0
-                : users.keys.first;
+        ? savedCurrentUserId
+        : users.containsKey(0)
+        ? 0
+        : users.keys.first;
 
     return UserSnapshot(
       users: users,

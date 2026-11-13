@@ -13,7 +13,9 @@ class AppIconHalf extends StatelessWidget {
       'assets/svg/icon_half.svg',
       width: size,
       height: size,
-      colorFilter: color != null ? ColorFilter.mode(color!, BlendMode.srcIn) : null,
+      colorFilter: color != null
+          ? ColorFilter.mode(color!, BlendMode.srcIn)
+          : null,
     );
   }
 }

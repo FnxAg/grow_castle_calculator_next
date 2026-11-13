@@ -24,18 +24,18 @@ class LineCondition {
   }
 
   Map<String, dynamic> toJson() => {
-        'count': count,
-        'minValue': minValue,
-        'maxValue': maxValue,
-      };
+    'count': count,
+    'minValue': minValue,
+    'maxValue': maxValue,
+  };
 
   factory LineCondition.fromJson(Map<String, dynamic> json) => LineCondition(
-        count: json['count'] is int && json['count'] >= 1
-            ? json['count'] as int
-            : 1,
-        minValue: (json['minValue'] as num?)?.toDouble(),
-        maxValue: (json['maxValue'] as num?)?.toDouble(),
-      );
+    count: json['count'] is int && json['count'] >= 1
+        ? json['count'] as int
+        : 1,
+    minValue: (json['minValue'] as num?)?.toDouble(),
+    maxValue: (json['maxValue'] as num?)?.toDouble(),
+  );
 
   @override
   bool operator ==(Object other) =>
@@ -113,15 +113,14 @@ class UserHighlightRule {
     bool? pinToTop,
     bool? enabled,
     Set<ItemType>? types,
-  }) =>
-      UserHighlightRule(
-        id: id,
-        hint: hint ?? this.hint,
-        lines: lines ?? this.lines,
-        pinToTop: pinToTop ?? this.pinToTop,
-        enabled: enabled ?? this.enabled,
-        types: types ?? this.types,
-      );
+  }) => UserHighlightRule(
+    id: id,
+    hint: hint ?? this.hint,
+    lines: lines ?? this.lines,
+    pinToTop: pinToTop ?? this.pinToTop,
+    enabled: enabled ?? this.enabled,
+    types: types ?? this.types,
+  );
 
   Map<String, dynamic> toJson() {
     final types = this.types;

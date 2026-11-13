@@ -26,7 +26,8 @@ double getWph({
   required bool equipHorn,
   required bool equipGoldenHorn,
 }) {
-  return (baseSpeed * devilHornSkip + (isGoldAutoBattle ? 0 : baseTabExtraWave)) *
+  return (baseSpeed * devilHornSkip +
+          (isGoldAutoBattle ? 0 : baseTabExtraWave)) *
       gameSpeedRatio[gameSpeed] *
       chronoBonusRatio[chronoBonus] *
       (equipHorn ? hornRatio : 1) *

@@ -21,27 +21,34 @@ class WebDavConfigStore {
   final ValueNotifier<String> urlNotifier;
   final ValueNotifier<String> usernameNotifier;
   final ValueNotifier<String> passwordNotifier;
+
   /// 上次成功备份时间（epoch ms）；从未成功过为 null
   final ValueNotifier<int?> lastSuccessAtNotifier;
   final ValueNotifier<int?> lastErrorAtNotifier;
   final ValueNotifier<String?> lastErrorNotifier;
 
   WebDavConfigStore()
-      : _box = Hive.box(boxName),
-        urlNotifier = ValueNotifier<String>(_readString(Hive.box(boxName), urlKey)),
-        usernameNotifier = ValueNotifier<String>(_readString(Hive.box(boxName), usernameKey)),
-        passwordNotifier = ValueNotifier<String>(_readString(Hive.box(boxName), passwordKey)),
-        lastSuccessAtNotifier = ValueNotifier<int?>(
-          _readEpoch(Hive.box(boxName), lastSuccessAtKey),
-        ),
-        lastErrorAtNotifier = ValueNotifier<int?>(
-          _readEpoch(Hive.box(boxName), lastErrorAtKey),
-        ),
-        lastErrorNotifier = ValueNotifier<String?>(
-          Hive.box(boxName).get(lastErrorKey) is String
-              ? Hive.box(boxName).get(lastErrorKey) as String
-              : null,
-        );
+    : _box = Hive.box(boxName),
+      urlNotifier = ValueNotifier<String>(
+        _readString(Hive.box(boxName), urlKey),
+      ),
+      usernameNotifier = ValueNotifier<String>(
+        _readString(Hive.box(boxName), usernameKey),
+      ),
+      passwordNotifier = ValueNotifier<String>(
+        _readString(Hive.box(boxName), passwordKey),
+      ),
+      lastSuccessAtNotifier = ValueNotifier<int?>(
+        _readEpoch(Hive.box(boxName), lastSuccessAtKey),
+      ),
+      lastErrorAtNotifier = ValueNotifier<int?>(
+        _readEpoch(Hive.box(boxName), lastErrorAtKey),
+      ),
+      lastErrorNotifier = ValueNotifier<String?>(
+        Hive.box(boxName).get(lastErrorKey) is String
+            ? Hive.box(boxName).get(lastErrorKey) as String
+            : null,
+      );
 
   static String _readString(Box box, String key) {
     final raw = box.get(key);

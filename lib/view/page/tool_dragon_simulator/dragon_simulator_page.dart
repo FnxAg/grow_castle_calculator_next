@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/core/src/item/item_generator.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_dragon_simulator/item_rule_edit_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -438,6 +439,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                   return ListView.builder(
                     padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
                     itemCount: items.length,
+                    itemExtent: 200,
                     itemBuilder: (context, index) {
                       final item = items[index];
                       return _ItemCard(
@@ -471,12 +473,13 @@ class _ItemCard extends StatelessWidget {
     final rule = this.rule;
     final highlight = rule != null;
     return Card(
-      elevation: 3.0,
-      margin: const EdgeInsets.only(bottom: 8),
+      elevation: 0,
+      margin: UIs.cardMargin,
       // 命中特殊规则时整体高亮
-      color: highlight ? theme.colorScheme.primaryContainer : null,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
+      color: highlight
+          ? theme.colorScheme.primaryContainer
+          : ListTileTheme.of(context).tileColor,
+      shape: UIs.cardShape.copyWith(
         side: highlight
             ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
             : BorderSide.none,

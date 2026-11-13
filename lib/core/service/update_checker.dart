@@ -61,11 +61,13 @@ class UpdateChecker {
 
   static Future<ReleaseInfo?> _tryFetch(String url) async {
     try {
-      final response = await http.get(
-        Uri.parse(url),
-        // GitHub API 对无 User-Agent 的请求返回 403
-        headers: const {'User-Agent': 'grow_castle_calculator_next'},
-      ).timeout(_timeout);
+      final response = await http
+          .get(
+            Uri.parse(url),
+            // GitHub API 对无 User-Agent 的请求返回 403
+            headers: const {'User-Agent': 'grow_castle_calculator_next'},
+          )
+          .timeout(_timeout);
       if (response.statusCode != 200) return null;
       final body = json.decode(utf8.decode(response.bodyBytes));
       if (body is! Map<String, dynamic>) return null;
@@ -105,6 +107,8 @@ class UpdateChecker {
   static List<int> _versionParts(String version) {
     final core = version.trim().replaceFirst(RegExp(r'^[vV]'), '');
     final withoutBuild = core.split('+').first;
-    return [for (final part in withoutBuild.split('.')) int.tryParse(part) ?? 0];
+    return [
+      for (final part in withoutBuild.split('.')) int.tryParse(part) ?? 0,
+    ];
   }
 }

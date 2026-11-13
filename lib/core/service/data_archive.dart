@@ -181,7 +181,9 @@ abstract final class DataArchive {
     final rawUserMeta = data['userMeta'];
     if (rawUserMeta is Map) {
       userMeta = Map<String, dynamic>.from(rawUserMeta);
-      final maxKey = userData.isEmpty ? -1 : userData.keys.reduce((a, b) => a > b ? a : b);
+      final maxKey = userData.isEmpty
+          ? -1
+          : userData.keys.reduce((a, b) => a > b ? a : b);
       final rawNext = userMeta[_metaNextUserIdKey];
       final next = rawNext is num
           ? rawNext.toInt()

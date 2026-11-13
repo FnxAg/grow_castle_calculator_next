@@ -80,10 +80,8 @@ class RankingCache {
 
   static final Map<String, SeasonQueryResult<GuildMember>> _guildDetails = {};
 
-  static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */> guildDetail(
-    String guildName, {
-    bool force = false,
-  }) async {
+  static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */>
+  guildDetail(String guildName, {bool force = false}) async {
     final cached = _guildDetails[guildName];
     if (!force && cached != null) return cached;
     final inflight = _inflight['guild:$guildName'];
@@ -114,7 +112,8 @@ class RankingCache {
   static SeasonQueryResult<RankInfo>? _hell;
   static DateTime? _hellAt;
 
-  static Future<Object> guildRanking({bool force = false}) => _cachedList<RankInfo>(
+  static Future<Object> guildRanking({bool force = false}) =>
+      _cachedList<RankInfo>(
         'guilds',
         () => _guilds,
         (v) {
@@ -127,7 +126,8 @@ class RankingCache {
         force: force,
       );
 
-  static Future<Object> playerRanking({bool force = false}) => _cachedList<RankInfo>(
+  static Future<Object> playerRanking({bool force = false}) =>
+      _cachedList<RankInfo>(
         'players',
         () => _players,
         (v) {
@@ -140,7 +140,8 @@ class RankingCache {
         force: force,
       );
 
-  static Future<Object> hellRanking({bool force = false}) => _cachedList<RankInfo>(
+  static Future<Object> hellRanking({bool force = false}) =>
+      _cachedList<RankInfo>(
         'hell',
         () => _hell,
         (v) {
@@ -175,12 +176,14 @@ class RankingCache {
         if (inflight == null) {
           final future = fetch();
           _inflight[key] = future;
-          future.then((result) {
-            if (result is SeasonQueryResult<T>) {
-              write(result);
-              writeAt(DateTime.now());
-            }
-          }, onError: (_) {}).whenComplete(() => _inflight.remove(key));
+          future
+              .then((result) {
+                if (result is SeasonQueryResult<T>) {
+                  write(result);
+                  writeAt(DateTime.now());
+                }
+              }, onError: (_) {})
+              .whenComplete(() => _inflight.remove(key));
         }
       }
       return cached;

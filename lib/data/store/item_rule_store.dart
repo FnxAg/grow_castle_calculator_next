@@ -14,23 +14,23 @@ class ItemRuleStore {
   final ValueNotifier<List<UserHighlightRule>> rulesNotifier;
 
   ItemRuleStore()
-      : _box = Hive.box(_boxName),
-        rulesNotifier = ValueNotifier<List<UserHighlightRule>>(
-          _load(Hive.box(_boxName)),
-        );
+    : _box = Hive.box(_boxName),
+      rulesNotifier = ValueNotifier<List<UserHighlightRule>>(
+        _load(Hive.box(_boxName)),
+      );
 
   List<UserHighlightRule> get rules => rulesNotifier.value;
 
   /// 首次使用预置示例规则：白 cd + 红 cd + 加强
   static UserHighlightRule _exampleRule() => UserHighlightRule(
-        id: 'example-red-white-quality',
-        hint: '红白加强',
-        lines: {
-          ItemLine.cooldown: const LineCondition(),
-          ItemLine.redCooldown: const LineCondition(),
-          ItemLine.itemQuality: const LineCondition(),
-        },
-      );
+    id: 'example-red-white-quality',
+    hint: '红白加强',
+    lines: {
+      ItemLine.cooldown: const LineCondition(),
+      ItemLine.redCooldown: const LineCondition(),
+      ItemLine.itemQuality: const LineCondition(),
+    },
+  );
 
   static List<UserHighlightRule> _load(Box box) {
     final raw = box.get(_rulesKey);
@@ -56,9 +56,7 @@ class ItemRuleStore {
   }
 
   void updateRule(UserHighlightRule rule) {
-    rulesNotifier.value = [
-      for (final r in rules) r.id == rule.id ? rule : r,
-    ];
+    rulesNotifier.value = [for (final r in rules) r.id == rule.id ? rule : r];
     _persist();
   }
 

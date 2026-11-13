@@ -109,17 +109,18 @@ class BackupPartialRestoreFailure extends BackupFailure {
 
 /// 备份/恢复编排
 class BackupService {
-  BackupService({WebDavBackupClientFactory? clientFactory, ProviderContainer? container})
-      : _clientFactory = clientFactory ?? _defaultClientFactory,
-        // ignore: prefer_initializing_formals
-        _container = container;
+  BackupService({
+    WebDavBackupClientFactory? clientFactory,
+    ProviderContainer? container,
+  }) : _clientFactory = clientFactory ?? _defaultClientFactory,
+       // ignore: prefer_initializing_formals
+       _container = container;
 
   static WebDavBackupClient _defaultClientFactory({
     required String url,
     required String username,
     required String password,
-  }) =>
-      WebDavBackupClient(url: url, username: username, password: password);
+  }) => WebDavBackupClient(url: url, username: username, password: password);
 
   /// 跨时钟比较容差
   static const Duration remoteNewerTolerance = Duration(minutes: 5);
@@ -150,10 +151,10 @@ class BackupService {
   WebDavConfigStore get _config => Stores.webDavConfigStore;
 
   WebDavBackupClient _createClient() => _clientFactory(
-        url: _config.urlNotifier.value,
-        username: _config.usernameNotifier.value,
-        password: _config.passwordNotifier.value,
-      );
+    url: _config.urlNotifier.value,
+    username: _config.usernameNotifier.value,
+    password: _config.passwordNotifier.value,
+  );
 
   /// 云端与本机记录的新旧判定
   static RemoteBackupRelation compareRemoteBackup({
@@ -225,14 +226,16 @@ class BackupService {
     } catch (_) {
       // 拿不到版本号不影响备份
     }
-    return jsonEncode(DataArchive.encode(
-      userDataBox: snapshot('user_data'),
-      userMetaBox: snapshot('user_meta'),
-      appMetaBox: snapshot('app_meta'),
-      itemRulesBox: snapshot('item_rules'),
-      gameTrackBox: snapshot('game_track'),
-      appVersion: appVersion,
-    ));
+    return jsonEncode(
+      DataArchive.encode(
+        userDataBox: snapshot('user_data'),
+        userMetaBox: snapshot('user_meta'),
+        appMetaBox: snapshot('app_meta'),
+        itemRulesBox: snapshot('item_rules'),
+        gameTrackBox: snapshot('game_track'),
+        appVersion: appVersion,
+      ),
+    );
   }
 
   /// 下载并解析云端备份文件
@@ -243,7 +246,10 @@ class BackupService {
       return null;
     }
     final text = await client.download(fileName: kBackupFileName);
-    return RemoteBackupPreview(fileInfo: info, contents: DataArchive.decode(text));
+    return RemoteBackupPreview(
+      fileInfo: info,
+      contents: DataArchive.decode(text),
+    );
   }
 
   /// 覆盖式恢复
@@ -298,8 +304,8 @@ class BackupService {
         try {
           // 保留本地 webdav* 配置
           final keys = box.keys.whereType<String>().where(
-                (key) => !key.startsWith(DataArchive.appConfigExcludePrefix),
-              );
+            (key) => !key.startsWith(DataArchive.appConfigExcludePrefix),
+          );
           for (final key in keys.toList()) {
             await box.delete(key);
           }
