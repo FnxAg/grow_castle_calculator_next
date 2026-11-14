@@ -216,7 +216,7 @@ class _BackupPageState extends State<BackupPage> {
       builder: (_) => SettingEditDialog(
         title: l10n.labelServerAddress,
         initialValue: _config.urlNotifier.value,
-        decoration: InputDecoration(labelText: l10n.labelServerUrlExample),
+        labelText: l10n.labelServerUrlExample,
         onSubmit: _config.setUrl,
       ),
     );
@@ -230,7 +230,7 @@ class _BackupPageState extends State<BackupPage> {
       builder: (_) => SettingEditDialog(
         title: l10n.labelAccount,
         initialValue: _config.usernameNotifier.value,
-        decoration: InputDecoration(labelText: l10n.labelWebdavAccount),
+        labelText: l10n.labelWebdavAccount,
         onSubmit: _config.setUsername,
       ),
     );
@@ -244,7 +244,7 @@ class _BackupPageState extends State<BackupPage> {
       builder: (_) => SettingEditDialog(
         title: l10n.labelPassword,
         initialValue: _config.passwordNotifier.value,
-        decoration: InputDecoration(labelText: l10n.labelWebdavPassword),
+        labelText: l10n.labelWebdavPassword,
         obscureText: true,
         showVisibilityToggle: true,
         onSubmit: _config.setPassword,

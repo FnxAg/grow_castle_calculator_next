@@ -8,7 +8,6 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -67,14 +66,83 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     setState(() => _incomes[index] = gold);
   }
 
-  void _showIncomeDialog(int index) {
+  void _showIncomeDialog([int? index]) {
+    final l10n = AppLocalizations.of(context);
+    final initialIncome = index == null ? null : _incomes[index];
+    final controller = TextEditingController(
+      text: initialIncome?.toString() ?? '',
+    );
     showDialog<void>(
       context: context,
-      builder: (dialogContext) => _AddIncomeDialog(
-        initialIncome: _incomes[index],
-        onAdd: (gold) => _editIncome(index, gold),
+      builder: (dialogContext) => StatefulBuilder(
+        builder: (_, setDialogState) {
+          void submit() {
+            final gold = int.tryParse(controller.text);
+            if (gold != null) {
+              if (index == null) {
+                _addIncome(gold);
+              } else {
+                _editIncome(index, gold);
+              }
+            }
+            Navigator.of(dialogContext).pop();
+          }
+
+          return AlertDialog(
+            title: Text(
+              initialIncome == null
+                  ? l10n.dialogInputWaveIncome
+                  : l10n.actionEdit,
+            ),
+            content: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Expanded(
+                  child: CardField(
+                    title: 'Income',
+                    controller: controller,
+                    keyboardType: TextInputType.number,
+                    inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    helperText:
+                        int.tryParse(controller.text.trim())?.format() ?? '-',
+                    suffixIcon: TextButton(
+                      onPressed: () => setDialogState(
+                        () => controller.text = '${controller.text}000',
+                      ),
+                      style: TextButton.styleFrom(
+                        padding: EdgeInsets.zero,
+                        minimumSize: const Size(36, 18),
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Text('+000'),
+                    ),
+                    onChanged: (_) => setDialogState(() {}),
+                    autofocus: true,
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.of(dialogContext).pop(),
+                child: Text(l10n.actionCancel),
+              ),
+              TextButton(
+                onPressed: controller.text.trim().isEmpty
+                    ? null
+                    : initialIncome != null &&
+                          initialIncome.toString() == controller.text
+                    ? null
+                    : submit,
+                child: Text(
+                  initialIncome == null ? l10n.actionAdd : l10n.actionSave,
+                ),
+              ),
+            ],
+          );
+        },
       ),
-    );
+    ).whenComplete(controller.dispose);
   }
 
   void _overwrite(double percent) {
@@ -114,13 +182,6 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     );
   }
 
-  void _addIncomeDialog() {
-    showDialog<void>(
-      context: context,
-      builder: (dialogContext) => _AddIncomeDialog(onAdd: _addIncome),
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -131,7 +192,8 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     final safeCost = gabCost > 0 ? gabCost : 0.0;
     final avgIncome = _incomes.isEmpty
         ? 0.0
-        : _incomes.reduce((a, b) => a + b) / _incomes.length;
+        : _incomes.fold<double>(0, (sum, income) => sum + income) /
+              _incomes.length;
     final percent = _incomes.isEmpty ? 0.0 : _sampleRate(avgIncome, safeCost);
 
     final Widget popupMenuButton = PopupMenuButton<Action>(
@@ -175,7 +237,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     );
 
     final Widget floatingActionButton = FloatingActionButton(
-      onPressed: _addIncomeDialog,
+      onPressed: () => _showIncomeDialog(),
       tooltip: l10n.actionAdd,
       child: const Icon(Icons.add),
     );
@@ -337,86 +399,6 @@ class _IncomeTile extends StatelessWidget {
           ),
         ],
       ),
-    );
-  }
-}
-
-/// 每波金币收入输入对话框
-class _AddIncomeDialog extends StatefulWidget {
-  const _AddIncomeDialog({this.initialIncome, required this.onAdd});
-
-  final int? initialIncome;
-  final ValueChanged<int> onAdd;
-
-  @override
-  State<_AddIncomeDialog> createState() => _AddIncomeDialogState();
-}
-
-class _AddIncomeDialogState extends State<_AddIncomeDialog> {
-  late final TextEditingController _controller;
-
-  @override
-  void initState() {
-    super.initState();
-    _controller = TextEditingController(
-      text: widget.initialIncome?.toString() ?? '',
-    );
-  }
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _submit() {
-    final gold = int.tryParse(_controller.text);
-    if (gold != null) {
-      widget.onAdd(gold);
-    }
-    Navigator.of(context).pop();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(
-        widget.initialIncome == null
-            ? l10n.dialogInputWaveIncome
-            : l10n.actionEdit,
-      ),
-      content: SelectAllTextField(
-        controller: _controller,
-        keyboardType: TextInputType.number,
-        inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(
-          helperText: int.tryParse(_controller.text.trim())?.format() ?? '-',
-          suffix: TextButton(
-            onPressed: () =>
-                setState(() => _controller.text = '${_controller.text}000'),
-            child: Text('+000'),
-          ),
-        ),
-        onChanged: (_) => setState(() {}),
-        autofocus: true,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.actionCancel),
-        ),
-        TextButton(
-          onPressed: _controller.text.trim().isEmpty
-              ? null
-              : widget.initialIncome.toString() == _controller.text
-              ? null
-              : _submit,
-          child: Text(
-            widget.initialIncome == null ? l10n.actionAdd : l10n.actionSave,
-          ),
-        ),
-      ],
     );
   }
 }

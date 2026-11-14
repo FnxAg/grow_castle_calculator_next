@@ -119,14 +119,16 @@ double getDailyIncome({
   ).total;
 }
 
-int gabCost(int wave) {
-  return 456 * wave - 29264;
+double gabCost(num wave) {
+  return 456.0 * wave - 29264;
 }
 
 double calcGp({required num wave, required num gold}) {
-  return gold / (0.5 * (310 + wave * 310) * wave) * 100;
+  final w = wave.toDouble();
+  return gold / (0.5 * (310 + w * 310) * w) * 100;
 }
 
 double calcGpCN({required num wave, required num gold}) {
-  return gold / (wave * wave);
+  final w = wave.toDouble();
+  return gold / (w * w);
 }

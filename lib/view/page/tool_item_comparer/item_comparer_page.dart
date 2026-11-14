@@ -11,7 +11,6 @@ import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -715,14 +714,12 @@ class _PanelFieldDialogState extends State<_PanelFieldDialog> {
     final l10n = AppLocalizations.of(context);
     return AlertDialog(
       title: Text(widget.attribute.label),
-      content: SelectAllTextField(
+      content: CardField(
         controller: _controller,
         autofocus: true,
         keyboardType: const TextInputType.numberWithOptions(decimal: true),
         inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
-        decoration: InputDecoration(
-          suffixText: widget.attribute.isPercent ? '%' : null,
-        ),
+        suffixText: widget.attribute.isPercent ? '%' : null,
       ),
       actions: [
         TextButton(

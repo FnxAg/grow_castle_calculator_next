@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/card_field.dart';
 
 /// 用户名/公会输入框
 class NameTextField extends StatelessWidget {
@@ -23,9 +23,10 @@ class NameTextField extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    return SelectAllTextField(
+    return CardField(
       controller: controller,
-      maxLines: 1,
+      title: labelText ?? l10n.labelUsername,
+      helperText: helperText ?? l10n.labelUsernameHint,
       maxLength: 14,
       maxLengthEnforcement: MaxLengthEnforcement.enforced,
       autofocus: autofocus,
@@ -33,10 +34,6 @@ class NameTextField extends StatelessWidget {
       inputFormatters: [
         FilteringTextInputFormatter.allow(RegExp(r'[a-zA-Z0-9-_ ]')),
       ],
-      decoration: InputDecoration(
-        labelText: labelText ?? l10n.labelUsername,
-        helperText: helperText ?? l10n.labelUsernameHint,
-      ),
     );
   }
 }

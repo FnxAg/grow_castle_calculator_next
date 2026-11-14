@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/view/widget/select_all_text_field.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/card_field.dart';
 
 /// 设置项通用编辑弹窗
 class SettingEditDialog extends StatefulWidget {
@@ -9,7 +9,8 @@ class SettingEditDialog extends StatefulWidget {
     super.key,
     required this.title,
     required this.initialValue,
-    required this.decoration,
+    this.labelText,
+    this.helperText,
     required this.onSubmit,
     this.keyboardType = TextInputType.text,
     this.inputFormatters = const [],
@@ -20,9 +21,10 @@ class SettingEditDialog extends StatefulWidget {
 
   final String title;
   final String initialValue;
+  final String? labelText;
+  final String? helperText;
   final TextInputType keyboardType;
   final List<TextInputFormatter> inputFormatters;
-  final InputDecoration decoration;
   final bool obscureText;
   final bool showVisibilityToggle;
   final ValueChanged<String> onSubmit;
@@ -52,31 +54,29 @@ class _SettingEditDialogState extends State<SettingEditDialog> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    var decoration = widget.decoration;
-    if (widget.showVisibilityToggle) {
-      decoration = decoration.copyWith(
-        suffixIcon: IconButton(
-          icon: Icon(
-            _obscured
-                ? Icons.visibility_off_outlined
-                : Icons.visibility_outlined,
-          ),
-          tooltip: _obscured
-              ? l10n.tooltipShowPassword
-              : l10n.tooltipHidePassword,
-          onPressed: () => setState(() => _obscured = !_obscured),
-        ),
-      );
-    }
     return AlertDialog(
       title: Text(widget.title),
-      content: SelectAllTextField(
+      content: CardField(
         controller: _controller,
+        title: widget.labelText,
+        helperText: widget.helperText,
         autofocus: true,
         keyboardType: widget.keyboardType,
         inputFormatters: widget.inputFormatters,
         obscureText: _obscured,
-        decoration: decoration,
+        suffixIcon: widget.showVisibilityToggle
+            ? IconButton(
+                icon: Icon(
+                  _obscured
+                      ? Icons.visibility_off_outlined
+                      : Icons.visibility_outlined,
+                ),
+                tooltip: _obscured
+                    ? l10n.tooltipShowPassword
+                    : l10n.tooltipHidePassword,
+                onPressed: () => setState(() => _obscured = !_obscured),
+              )
+            : null,
       ),
       actions: [
         if (widget.actionButtons != null) ...widget.actionButtons!,

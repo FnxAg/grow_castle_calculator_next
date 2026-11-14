@@ -143,7 +143,7 @@ class _SettingPageState extends State<SettingPage> {
       builder: (context) => SettingEditDialog(
         title: l10n.settingsThirdPartyApi,
         initialValue: store.apiUrlNotifier.value,
-        decoration: InputDecoration(labelText: l10n.labelApiUrl),
+        labelText: l10n.labelApiUrl,
         onSubmit: store.setApiUrl,
         actionButtons: [
           TextButton(
@@ -170,11 +170,8 @@ class _SettingPageState extends State<SettingPage> {
         initialValue: '${store.lastOnlineConcurrencyNotifier.value}',
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(
-          labelText: l10n.labelConcurrency,
-          helperText: '1-10',
-          isDense: true,
-        ),
+        labelText: l10n.labelConcurrency,
+        helperText: '1-10',
         onSubmit: (text) {
           final value = int.tryParse(text);
           if (value != null) store.setLastOnlineConcurrency(value);
@@ -196,11 +193,8 @@ class _SettingPageState extends State<SettingPage> {
         initialValue: '${store.gameTrackIntervalMinutesNotifier.value}',
         keyboardType: TextInputType.number,
         inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-        decoration: InputDecoration(
-          labelText: l10n.labelMinutes,
-          helperText: '1-43200',
-          isDense: true,
-        ),
+        labelText: l10n.labelMinutes,
+        helperText: '1-43200',
         onSubmit: (text) {
           final value = int.tryParse(text);
           if (value != null) store.setGameTrackIntervalMinutes(value);

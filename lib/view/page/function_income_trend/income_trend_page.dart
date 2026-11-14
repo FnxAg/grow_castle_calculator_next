@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_selector
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
@@ -46,7 +47,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final afterTime = _selectedOptionIndex == _customOptionIndex
-        ? _customTime! * 1440
+        ? _customTime! * 1440.0
         : _trendMinutesOptions[_selectedOptionIndex];
     final user = ref.watch(currentUserProvider);
     final startWave = user.wave;
@@ -56,7 +57,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     final wph = ref.watch(theoreticalWphProvider);
     final rwph = ref.watch(theoreticalRwphProvider);
     final passedWave = afterTime / 60 * wph * (gabTime + tabTime) / 24;
-    final endWave = startWave + passedWave.toInt();
+    final endWave = startWave + passedWave;
     final startWaveGabCost = gabCost(startWave);
     final endWaveGabCost = gabCost(endWave);
     final startWaveTotalGold = user.totalGold;
@@ -215,7 +216,9 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                             text: passedWave.format(),
                           ),
                           const SizedBox(width: 8),
-                          SummaryRow.text(endWave.format()),
+                          SummaryRow.text(
+                            endWave.format(fractionDigits: 0),
+                          ),
                         ],
                       ),
                     ),
@@ -347,23 +350,20 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
       builder: (dialogContext) => StatefulBuilder(
         builder: (context, setDialogState) => AlertDialog(
           title: Text(l10n.incomeTrendCustom),
-          content: TextField(
+          content: CardField(
             controller: controller,
             autofocus: true,
             keyboardType: TextInputType.number,
             inputFormatters: [FilteringTextInputFormatter.digitsOnly],
-            decoration: InputDecoration(
-              suffixText: 'd',
-              hintText: l10n.incomeTrendDaysHint,
-              errorText: error,
-            ),
+            suffixText: 'd',
+            errorText: error,
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.pop(dialogContext),
               child: Text(l10n.actionCancel),
             ),
-            FilledButton(
+            TextButton(
               onPressed: () {
                 final days = int.tryParse(controller.text);
                 if (days == null || days <= 0) {
