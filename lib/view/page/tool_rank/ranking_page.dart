@@ -497,7 +497,7 @@ class _RankingPageState extends State<RankingPage> {
                     },
                     leading: Icon(Icons.arrow_upward_outlined),
                   ),
-                  const SizedBox(width: 8.0),
+                  const SizedBox(width: 4.0),
                 ],
                 AnimatedTextSwitcher(
                   child: Text(
