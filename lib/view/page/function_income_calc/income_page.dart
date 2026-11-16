@@ -27,12 +27,12 @@ class _IncomePageState extends ConsumerState<IncomePage> {
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
     final income = ref.watch(dailyIncomeProvider);
-    Widget sectionHeaderTrailing(_, String text) =>
-        PillChip(text: text);
+    Widget sectionHeaderTrailing(_, String text) => PillChip(text: text);
 
     final list = ListView(
       padding: UIs.padding,
       children: [
+        SectionHeader('Idle time'),
         const IncomeEditTile(field: IncomeField.gabTime),
         const IncomeEditTile(field: IncomeField.tabTime),
         SectionHeader(

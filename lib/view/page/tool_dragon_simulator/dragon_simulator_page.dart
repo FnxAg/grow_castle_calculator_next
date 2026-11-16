@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/core/src/item/item_generator.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_dragon_simulator/item_rule_edit_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -250,7 +251,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
+              padding: UIs.padding.copyWith(bottom: 8),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
@@ -309,7 +310,6 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 12),
                   LayoutBuilder(
                     builder: (context, constraints) {
                       final countField = CardDropdown<int>(
@@ -348,7 +348,6 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             countField,
-                            const SizedBox(height: 12),
                             bonusField,
                           ],
                         );
@@ -363,28 +362,31 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                     },
                   ),
                   const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: FilledButton.icon(
-                          onPressed: _generate,
-                          icon: const Icon(Icons.casino_outlined),
-                          label: Text(l10n.actionRollOnce),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: FilledButton.tonalIcon(
-                          onPressed: _rolling
-                              ? _stopRollToHit
-                              : _startRollToHit,
-                          icon: Icon(_rolling ? Icons.stop : Icons.autorenew),
-                          label: Text(
-                            _rolling ? l10n.actionStop : l10n.actionRollToHit,
+                  Padding(
+                    padding: UIs.padding,
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: FilledButton.icon(
+                            onPressed: _generate,
+                            icon: const Icon(Icons.casino_outlined),
+                            label: Text(l10n.actionRollOnce),
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: FilledButton.tonalIcon(
+                            onPressed: _rolling
+                                ? _stopRollToHit
+                                : _startRollToHit,
+                            icon: Icon(_rolling ? Icons.stop : Icons.autorenew),
+                            label: Text(
+                              _rolling ? l10n.actionStop : l10n.actionRollToHit,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                   // roll到死 状态提示
                   if (_rolling || _rollResult != null)
@@ -436,7 +438,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                       return b.level.index.compareTo(a.level.index);
                     });
                   return ListView.builder(
-                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+                    padding: UIs.padding.copyWith(bottom: 16),
                     itemCount: items.length,
                     itemBuilder: (context, index) {
                       final item = items[index];
