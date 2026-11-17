@@ -74,10 +74,7 @@ class _GuildDetailPageState extends State<GuildDetailPage> {
           children: [
             Text(widget.guildName),
             if (date != null)
-              Text(
-                formatHistoryDate(date),
-                style: const TextStyle(fontSize: 12.0),
-              ),
+              AppBarItem.text(formatHistoryDate(date)),
           ],
         ),
         actions: [

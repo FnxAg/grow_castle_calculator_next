@@ -7,6 +7,7 @@ import 'package:grow_castle_calculator_next/utils/date.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 排行榜分数趋势图
@@ -102,7 +103,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
           children: [
             Text(trendLabel),
             if (date != null)
-              Text(formatHistoryDate(date), style: TextStyle(fontSize: 12.0)),
+              AppBarItem.text(formatHistoryDate(date)),
           ],
         ),
       ),

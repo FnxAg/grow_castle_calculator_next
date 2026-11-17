@@ -32,7 +32,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
     final list = ListView(
       padding: UIs.padding,
       children: [
-        SectionHeader(l10n.labelIncome),
+        SectionHeader(l10n.labelTime),
         const IncomeEditTile(field: IncomeField.gabTime),
         const IncomeEditTile(field: IncomeField.tabTime),
         SectionHeader(

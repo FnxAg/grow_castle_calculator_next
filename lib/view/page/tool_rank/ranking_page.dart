@@ -19,6 +19,7 @@ import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_chart_pa
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/history_date_actions.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -341,10 +342,7 @@ class _RankingPageState extends State<RankingPage> {
             AppBarInfo(
               children: [
                 if (date != null)
-                  Text(
-                    formatHistoryDate(date),
-                    style: const TextStyle(fontSize: 12.0),
-                  ),
+                  AppBarItem.text(formatHistoryDate(date)),
                 SeasonIndicator(notifier: _activeSeasonNotifier),
               ],
             ),
