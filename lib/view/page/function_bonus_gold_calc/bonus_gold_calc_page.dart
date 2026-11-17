@@ -99,7 +99,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
               children: [
                 Expanded(
                   child: CardField(
-                    title: 'Income',
+                    title: l10n.labelIncome,
                     controller: controller,
                     keyboardType: TextInputType.number,
                     inputFormatters: [FilteringTextInputFormatter.digitsOnly],

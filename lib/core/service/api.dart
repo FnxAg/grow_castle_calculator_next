@@ -123,10 +123,12 @@ class PlayerApiService {
   static const _s3 = '382D30283C3E2C2B333A70';
   static const _s4 = '2D3A2C2B3E2F3670';
   static const _s5 = '2C3A3E2C303170313028702F333E263A2D2C70';
-  static const _s6 = '2C3A3E2C303170313028702F333E263A2D2C';
-  static const _s7 = '2C3A3E2C30317031302870382A36333B2C';
-  static const _s8 = '2C3A3E2C30317031302870382A36333B2C70';
-  static const _s9 = '2C3A3E2C30317031302870373A3333';
+  static const _s6 = '2C3A3E2C303170';
+  static const _s7 = '313028';
+  static const _s8 = '702F333E263A2D2C';
+  static const _s9 = '70382A36333B2C';
+  static const _s10 = '70373A3333';
+  static const _s11 = '70382A36333B2C70';
 
   // ── URL builders ──────────────────────────────────────────────────────
 
@@ -134,20 +136,27 @@ class PlayerApiService {
     return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s5)}${Uri.encodeComponent(playerName)}';
   }
 
-  static String _buildGuildsUrl() {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s7)}';
+  static String _buildGuildsUrl({DateTime? seasonDate}) {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s9)}';
   }
 
-  static String _buildPlayerRankingUrl() {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}';
+  static String _buildPlayerRankingUrl({DateTime? seasonDate}) {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s8)}';
   }
 
-  static String _buildGuildDetailUrl(String guildName) {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s8)}${Uri.encodeComponent(guildName)}';
+  static String _buildGuildDetailUrl(String guildName, {DateTime? seasonDate}) {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s11)}${Uri.encodeComponent(guildName)}';
   }
 
-  static String _buildHellRankingUrl() {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s9)}';
+  static String _buildHellRankingUrl({DateTime? seasonDate}) {
+    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s10)}';
+  }
+
+  /// 赛季路径段：默认 `now`，历史查询为 `yyyyMMdd`
+  static String _seasonSegment(DateTime? date) {
+    if (date == null) return _d(_s7);
+    String two(int v) => v.toString().padLeft(2, '0');
+    return '${date.year}${two(date.month)}${two(date.day)}';
   }
 
   // ── Public API ─────────────────────────────────────────────────────────
@@ -218,13 +227,14 @@ class PlayerApiService {
     }
   }
 
-  /// Fetches the player leaderboard for the current season.
+  /// Fetches the player leaderboard for the current season, or for the
+  /// season containing [seasonDate] (the API only supports the last 90 days).
   ///
   /// Returns a [SeasonQueryResult] of [RankInfo] on success,
   /// or a [QueryError] on failure.
   static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
-  queryPlayerRanking() async {
-    final uri = Uri.parse(_buildPlayerRankingUrl());
+  queryPlayerRanking({DateTime? seasonDate}) async {
+    final uri = Uri.parse(_buildPlayerRankingUrl(seasonDate: seasonDate));
 
     try {
       final response = await ApiClient.get(uri).timeout(_timeout);
@@ -264,13 +274,14 @@ class PlayerApiService {
     }
   }
 
-  /// Fetches the hell-mode leaderboard for the current season.
+  /// Fetches the hell-mode leaderboard for the current season, or for the
+  /// season containing [seasonDate].
   ///
   /// Returns a [SeasonQueryResult] of [RankInfo] on success,
   /// or a [QueryError] on failure.
   static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
-  queryHellRanking() async {
-    final uri = Uri.parse(_buildHellRankingUrl());
+  queryHellRanking({DateTime? seasonDate}) async {
+    final uri = Uri.parse(_buildHellRankingUrl(seasonDate: seasonDate));
 
     try {
       final response = await ApiClient.get(uri).timeout(_timeout);
@@ -310,13 +321,14 @@ class PlayerApiService {
     }
   }
 
-  /// Fetches the guild leaderboard for the current season.
+  /// Fetches the guild leaderboard for the current season, or for the
+  /// season containing [seasonDate].
   ///
   /// Returns a [SeasonQueryResult] of [RankInfo] on success,
   /// or a [QueryError] on failure.
   static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
-  queryGuildRanking() async {
-    final uri = Uri.parse(_buildGuildsUrl());
+  queryGuildRanking({DateTime? seasonDate}) async {
+    final uri = Uri.parse(_buildGuildsUrl(seasonDate: seasonDate));
 
     try {
       final response = await ApiClient.get(uri).timeout(_timeout);
@@ -361,8 +373,10 @@ class PlayerApiService {
   /// Returns a [SeasonQueryResult] of [GuildMember] sorted by score descending,
   /// or a [QueryError] on failure. Members with null names are excluded.
   static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */>
-  queryGuildDetail(String guildName) async {
-    final uri = Uri.parse(_buildGuildDetailUrl(guildName.trim()));
+  queryGuildDetail(String guildName, {DateTime? seasonDate}) async {
+    final uri = Uri.parse(
+      _buildGuildDetailUrl(guildName.trim(), seasonDate: seasonDate),
+    );
 
     try {
       final response = await ApiClient.get(uri).timeout(_timeout);

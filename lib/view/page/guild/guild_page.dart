@@ -13,6 +13,7 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/date.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
@@ -21,35 +22,77 @@ import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/history_date_actions.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/rank_board_card.dart';
-import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 公会页
 class GuildPage extends ConsumerStatefulWidget {
-  const GuildPage({super.key, this.guildName, this.userHeader = true});
+  const GuildPage({
+    super.key,
+    this.guildName,
+    this.userHeader = true,
+    this.initialDate,
+  });
 
   final String? guildName;
   final bool userHeader;
+
+  /// 初始历史日期；null 表示当前赛季
+  final DateTime? initialDate;
 
   @override
   ConsumerState<GuildPage> createState() => _GuildPageState();
 }
 
 /// 公会成员详情页
-class GuildDetailPage extends StatelessWidget {
-  const GuildDetailPage({super.key, required this.guildName});
+class GuildDetailPage extends StatefulWidget {
+  const GuildDetailPage({super.key, required this.guildName, this.initialDate});
 
   final String guildName;
 
+  /// 初始历史日期；null 表示当前赛季
+  final DateTime? initialDate;
+
+  @override
+  State<GuildDetailPage> createState() => _GuildDetailPageState();
+}
+
+class _GuildDetailPageState extends State<GuildDetailPage> {
+  late DateTime? _date = widget.initialDate;
+
   @override
   Widget build(BuildContext context) {
+    final date = _date;
     return Scaffold(
-      appBar: AppBar(title: Text(guildName)),
-      body: GuildPage(guildName: guildName, userHeader: false),
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(widget.guildName),
+            if (date != null)
+              Text(
+                formatHistoryDate(date),
+                style: const TextStyle(fontSize: 12.0),
+              ),
+          ],
+        ),
+        actions: [
+          HistoryDateActions(
+            date: date,
+            onChanged: (value) => setState(() => _date = value),
+          ),
+        ],
+      ),
+      body: GuildPage(
+        key: ValueKey(date),
+        guildName: widget.guildName,
+        userHeader: false,
+        initialDate: date,
+      ),
     );
   }
 }
@@ -73,6 +116,16 @@ class _GuildPageState extends ConsumerState<GuildPage>
   int? _guildGapNext;
   String? _guildNextName;
   List<GuildMember> _members = const [];
+
+  /// 历史模式所选日期；null 表示当前赛季
+  DateTime? _historyDate;
+
+  /// 历史数据返回的赛季
+  final ValueNotifier<SeasonRange?> _historySeasonNotifier =
+      ValueNotifier<SeasonRange?>(null);
+
+  /// 丢弃过期请求的结果（快速切换日期时）
+  int _loadToken = 0;
 
   Map<String, int> _playerRankByName = {};
   Map<String, int> _hellRankByName = {};
@@ -106,6 +159,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
   @override
   void initState() {
     super.initState();
+    _historyDate = widget.initialDate;
     _cardController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 300),
@@ -156,9 +210,28 @@ class _GuildPageState extends ConsumerState<GuildPage>
 
   @override
   void dispose() {
+    _historySeasonNotifier.dispose();
     _cardController.dispose();
     _cardAnimation.dispose();
     super.dispose();
+  }
+
+  /// 切换历史日期（null 回到当前赛季）
+  void _onHistoryChanged(DateTime? date) {
+    setState(() {
+      _historyDate = date;
+      _members = const [];
+      _selectedMember = null;
+      _playerRankByName = {};
+      _hellRankByName = {};
+      _guildRank = null;
+      _guildGapPrev = null;
+      _guildPrevName = null;
+      _guildGapNext = null;
+      _guildNextName = null;
+      _historySeasonNotifier.value = null;
+    });
+    _load();
   }
 
   /// 切换用户
@@ -175,6 +248,8 @@ class _GuildPageState extends ConsumerState<GuildPage>
     final String rawGuild =
         widget.guildName ?? ref.read(currentUserGuildProvider);
     final guild = rawGuild.trim();
+    final date = _historyDate;
+    final token = ++_loadToken;
     final hasContent = _members.isNotEmpty;
     setState(() {
       _loading = true;
@@ -195,19 +270,31 @@ class _GuildPageState extends ConsumerState<GuildPage>
     }
 
     final (detail, guilds, players, hell) = await (
-      RankingCache.guildDetail(guild, force: hasContent || force),
-      RankingCache.guildRanking(force: force),
-      RankingCache.playerRanking(force: force),
-      RankingCache.hellRanking(force: force),
+      date == null
+          ? RankingCache.guildDetail(guild, force: hasContent || force)
+          : RankingCache.guildDetailAt(guild, date, force: force),
+      date == null
+          ? RankingCache.guildRanking(force: force)
+          : RankingCache.guildRankingAt(date, force: force),
+      date == null
+          ? RankingCache.playerRanking(force: force)
+          : RankingCache.playerRankingAt(date, force: force),
+      date == null
+          ? RankingCache.hellRanking(force: force)
+          : RankingCache.hellRankingAt(date, force: force),
     ).wait;
 
-    if (!mounted) return;
+    if (!mounted || token != _loadToken) return;
     final l10n = AppLocalizations.of(context);
+    // 历史模式没有"上次在线"
+    final lastOnlineEnabled =
+        date == null &&
+        Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
 
     String? refreshFailure;
     var membersLoaded = false;
     setState(() {
-      if (!Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value) {
+      if (!lastOnlineEnabled) {
         _loading = false;
       }
       _firstLoading = false;
@@ -230,8 +317,9 @@ class _GuildPageState extends ConsumerState<GuildPage>
         members.sort((a, b) => b.score.compareTo(a.score));
         _members = members;
         _error = null;
-        final lastOnlineEnabled =
-            Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
+        if (date != null) {
+          _historySeasonNotifier.value = detail.season;
+        }
         _scoreColumnWidth = members.fold<double>(0, (max, m) {
           final w = _textWidth('9,999,999', _scoreStyle);
           return w > max ? w : max;
@@ -275,7 +363,8 @@ class _GuildPageState extends ConsumerState<GuildPage>
       }
     });
 
-    if (membersLoaded && widget.guildName == null) {
+    // 历史数据不写入当前用户的总分统计
+    if (membersLoaded && widget.guildName == null && date == null) {
       ref.read(guildTotalScoreProvider.notifier).publishFromMembers(_members);
     }
 
@@ -287,15 +376,13 @@ class _GuildPageState extends ConsumerState<GuildPage>
     }
 
     // 成员列表加载成功且开关开启才发起各成员"上次在线"查询
-    final loadLastOnline =
-        membersLoaded &&
-        Stores.appSettingsStore.autoLastOnlineEnabledNotifier.value;
+    final loadLastOnline = membersLoaded && lastOnlineEnabled;
     if (loadLastOnline) {
       await Future.wait([
         for (final m in _members)
           if (force || _lastOnlineAttempted.add(m.name.toLowerCase()))
             LastOnlineCache.fetch(m.name, force: force).then<void>((value) {
-              if (!mounted || value == null) return;
+              if (!mounted || token != _loadToken || value == null) return;
               final key = m.name.toLowerCase();
               final valueWidth = _textWidth(value, _timeStyle);
               setState(() {
@@ -307,7 +394,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
             }, onError: (_, _) {}),
       ]);
     }
-    if (mounted) {
+    if (mounted && token == _loadToken) {
       setState(() {
         _loading = false;
       });
@@ -319,17 +406,20 @@ class _GuildPageState extends ConsumerState<GuildPage>
     final String rawGuild =
         widget.guildName ?? ref.read(currentUserGuildProvider);
     final guild = rawGuild.trim();
-    final result = await ref.read(usersProvider.notifier).syncCurrentUser();
-    if (!mounted) return;
-    final l10n = AppLocalizations.of(context);
-    if (result is QueryError) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
+    // 历史模式只刷新历史数据，不同步当前用户
+    if (_historyDate == null) {
+      final result = await ref.read(usersProvider.notifier).syncCurrentUser();
+      if (!mounted) return;
+      final l10n = AppLocalizations.of(context);
+      if (result is QueryError) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
+            ),
           ),
-        ),
-      );
+        );
+      }
     }
     // 强制刷新公会成员与三榜单
     await _load(force: true);
@@ -346,13 +436,19 @@ class _GuildPageState extends ConsumerState<GuildPage>
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final date = _historyDate;
 
     final appBarInfo = AppBarInfo(
       children: <Widget>[
         AppBarItem.currentUser(),
-        AppBarItem.currentUserLastOnline(),
         AppBarItem.currentUserGuild(),
-        SeasonIndicator(notifier: RankingCache.guildSeasonNotifier),
+        if (date != null)
+          Text(formatHistoryDate(date), style: const TextStyle(fontSize: 12.0)),
+        SeasonIndicator(
+          notifier: date == null
+              ? RankingCache.guildSeasonNotifier
+              : _historySeasonNotifier,
+        ),
       ],
     );
 
@@ -394,21 +490,20 @@ class _GuildPageState extends ConsumerState<GuildPage>
           crossAxisAlignment: .start,
           children: [Text(l10n.tabGuild), appBarInfo],
         ),
-        bottom: LoadingIndicatorAppBar(bottom: null, isLoading: _loading),
         actions: [
-          isDesktop
-              ? IconButton(
-                  onPressed: _refresh,
-                  tooltip: l10n.tooltipFetchData,
-                  icon: !_loading
-                      ? Icon(Icons.cloud_sync)
-                      : SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(strokeWidth: 2.0),
-                        ),
-                )
-              : SizedBox.shrink(),
+          if (isDesktop)
+            IconButton(
+              onPressed: _refresh,
+              tooltip: l10n.tooltipFetchData,
+              icon: !_loading
+                  ? Icon(Icons.cloud_sync)
+                  : SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(strokeWidth: 2.0),
+                    ),
+            ),
+          HistoryDateActions(date: date, onChanged: _onHistoryChanged),
         ],
       ),
       body: SafeArea(top: false, child: body),

@@ -306,6 +306,9 @@
   "dialogRankMilestones": "{kind}名次",
   "tooltipViewScoreTrend": "檢視分數趨勢",
   "tooltipViewMilestoneRanks": "檢視特殊名次",
+  "tooltipHistoryData": "查詢歷史資料",
+  "tooltipBackToCurrentSeason": "返回目前賽季",
+  "historyDateHelp": "選擇日期",
   "hintSelectPlayerDetail": "點擊左側項目檢視玩家詳情",
   "actionRetry": "重試",
   "snackNeedEnabledRule": "請先在「高亮規則」中啟用至少一條規則",
@@ -454,5 +457,7 @@
   "labelScore": "分數",
   "labelSeasonWPH": "賽季波速",
   "dialogDelete": "確認刪除？",
-  "actionRename": "重新命名"
+  "actionRename": "重新命名",
+  "labelTime": "時間",
+  "labelIncome": "收入"
 }

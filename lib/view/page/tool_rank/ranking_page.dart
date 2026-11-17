@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
@@ -7,6 +8,7 @@ import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/pla
 import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/date.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
@@ -17,9 +19,10 @@ import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_chart_pa
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
+import 'package:grow_castle_calculator_next/view/widget/app_bar/history_date_actions.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
-import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 榜单页
@@ -36,6 +39,8 @@ class _RankingPageState extends State<RankingPage> {
   static const List<int> _milestoneRanks = [1, 3, 5, 10, 50, 100, 200, 300];
 
   bool _firstLoading = true;
+  bool _loading = false;
+  bool get _isLoading => _firstLoading || _loading;
   String? _error;
   List<RankRow> _rows = const [];
 
@@ -45,38 +50,83 @@ class _RankingPageState extends State<RankingPage> {
 
   String? _selectedName;
 
+  /// 历史模式所选日期；null 表示当前赛季
+  DateTime? _historyDate;
+
+  /// 历史榜单返回的赛季
+  final ValueNotifier<SeasonRange?> _historySeasonNotifier =
+      ValueNotifier<SeasonRange?>(null);
+
   @override
   void initState() {
     super.initState();
     _load();
   }
 
+  @override
+  void dispose() {
+    _historySeasonNotifier.dispose();
+    super.dispose();
+  }
+
+  /// 当前展示榜单的赛季来源
+  ValueListenable<SeasonRange?> get _activeSeasonNotifier =>
+      _historyDate == null
+      ? switch (widget.kind) {
+          RankingKind.player => RankingCache.playerSeasonNotifier,
+          RankingKind.guild => RankingCache.guildSeasonNotifier,
+          RankingKind.hell => RankingCache.hellSeasonNotifier,
+        }
+      : _historySeasonNotifier;
+
+  /// 丢弃过期请求的结果（快速切换日期时）
+  int _loadToken = 0;
+
   Future<void> _load({bool force = false}) async {
+    final token = ++_loadToken;
     final hasContent = _rows.isNotEmpty;
     setState(() {
       _firstLoading = !hasContent;
+      _loading = true;
       _error = null;
     });
 
+    final date = _historyDate;
     final (result, cross) = await (
       switch (widget.kind) {
-        RankingKind.player => RankingCache.playerRanking(force: force),
-        RankingKind.guild => RankingCache.guildRanking(force: force),
-        RankingKind.hell => RankingCache.hellRanking(force: force),
+        RankingKind.player =>
+          date == null
+              ? RankingCache.playerRanking(force: force)
+              : RankingCache.playerRankingAt(date, force: force),
+        RankingKind.guild =>
+          date == null
+              ? RankingCache.guildRanking(force: force)
+              : RankingCache.guildRankingAt(date, force: force),
+        RankingKind.hell =>
+          date == null
+              ? RankingCache.hellRanking(force: force)
+              : RankingCache.hellRankingAt(date, force: force),
       },
       switch (widget.kind) {
-        RankingKind.player => RankingCache.hellRanking(force: force),
-        RankingKind.hell => RankingCache.playerRanking(force: force),
+        RankingKind.player =>
+          date == null
+              ? RankingCache.hellRanking(force: force)
+              : RankingCache.hellRankingAt(date, force: force),
+        RankingKind.hell =>
+          date == null
+              ? RankingCache.playerRanking(force: force)
+              : RankingCache.playerRankingAt(date, force: force),
         RankingKind.guild => Future<Object?>.value(null),
       },
     ).wait;
 
-    if (!mounted) return;
+    if (!mounted || token != _loadToken) return;
     final l10n = AppLocalizations.of(context);
 
     String? refreshFailure;
     setState(() {
       _firstLoading = false;
+      _loading = false;
       _error = null;
 
       final rows = switch (widget.kind) {
@@ -122,6 +172,9 @@ class _RankingPageState extends State<RankingPage> {
       if (result is! QueryError) {
         // 成功获取
         _rows = rows;
+        if (date != null && result is SeasonQueryResult<RankInfo>) {
+          _historySeasonNotifier.value = result.season;
+        }
       } else if (hasContent) {
         // 已有内容
         refreshFailure = _errorMessage(l10n, result);
@@ -157,6 +210,18 @@ class _RankingPageState extends State<RankingPage> {
       TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };
+  }
+
+  /// 切换历史日期（null 回到当前赛季）
+  void _onHistoryChanged(DateTime? date) {
+    setState(() {
+      _historyDate = date;
+      _rows = const [];
+      _crossRanks = {};
+      _selectedName = null;
+      _historySeasonNotifier.value = null;
+    });
+    _load();
   }
 
   void _showMilestoneRanks() {
@@ -212,23 +277,7 @@ class _RankingPageState extends State<RankingPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    final appBarInfo = AppBarInfo(
-      children: [
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(rankingKindLabel(l10n, widget.kind)),
-            SeasonIndicator(
-              notifier: switch (widget.kind) {
-                RankingKind.player => RankingCache.playerSeasonNotifier,
-                RankingKind.guild => RankingCache.guildSeasonNotifier,
-                RankingKind.hell => RankingCache.hellSeasonNotifier,
-              },
-            ),
-          ],
-        ),
-      ],
-    );
+    final date = _historyDate;
 
     final floatingActionButton = FloatingActionButton.extended(
       onPressed: () => setState(() => _viewWPHMode = !_viewWPHMode),
@@ -244,7 +293,13 @@ class _RankingPageState extends State<RankingPage> {
     final List<Widget> appBarActions = <Widget>[
       if (isDesktop) ...[
         IconButton(
-          icon: const Icon(Icons.cloud_sync),
+          icon: _isLoading
+              ? const SizedBox(
+                  width: 20.0,
+                  height: 20.0,
+                  child: CircularProgressIndicator(strokeWidth: 2.0),
+                )
+              : const Icon(Icons.cloud_sync),
           tooltip: l10n.tooltipFetchData,
           onPressed: () => _load(force: true),
         ),
@@ -263,7 +318,8 @@ class _RankingPageState extends State<RankingPage> {
         onPressed: () {
           Navigator.of(context).push(
             MaterialPageRoute(
-              builder: (context) => RankingChartPage(kind: widget.kind),
+              builder: (context) =>
+                  RankingChartPage(kind: widget.kind, date: date),
             ),
           );
         },
@@ -273,10 +329,29 @@ class _RankingPageState extends State<RankingPage> {
         tooltip: l10n.tooltipViewMilestoneRanks,
         onPressed: _rows.isEmpty ? null : _showMilestoneRanks,
       ),
+      HistoryDateActions(date: date, onChanged: _onHistoryChanged),
     ];
 
     return Scaffold(
-      appBar: AppBar(title: appBarInfo, actions: appBarActions),
+      appBar: AppBar(
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(rankingKindLabel(l10n, widget.kind)),
+            AppBarInfo(
+              children: [
+                if (date != null)
+                  Text(
+                    formatHistoryDate(date),
+                    style: const TextStyle(fontSize: 12.0),
+                  ),
+                SeasonIndicator(notifier: _activeSeasonNotifier),
+              ],
+            ),
+          ],
+        ),
+        actions: appBarActions,
+      ),
       body: SafeArea(top: false, child: _buildBody()),
       floatingActionButton: switch (widget.kind) {
         RankingKind.player ||
@@ -327,7 +402,10 @@ class _RankingPageState extends State<RankingPage> {
     Navigator.of(context).push(
       MaterialPageRoute(
         builder: (context) => switch (widget.kind) {
-          RankingKind.guild => GuildDetailPage(guildName: row.name),
+          RankingKind.guild => GuildDetailPage(
+            guildName: row.name,
+            initialDate: _historyDate,
+          ),
           RankingKind.player ||
           RankingKind.hell => PlayerDetailPage(playerName: row.name),
         },
@@ -402,6 +480,10 @@ class _RankingPageState extends State<RankingPage> {
     final scheme = Theme.of(context).colorScheme;
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final season = _activeSeasonNotifier.value;
+    // 赛季信息缺失时退回分数显示
+    final progress = RankingCache.seasonProgress(season) ?? 1.0;
+    final duration = RankingCache.seasonDuration(season) ?? 1;
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
       child: ListView.builder(
@@ -425,29 +507,15 @@ class _RankingPageState extends State<RankingPage> {
             RankingKind.guild => BoxIcon(size: 12.0, color: scheme.primary),
           };
           final wph = switch (widget.kind) {
-            RankingKind.player =>
-              row.score /
-                  RankingCache.playerSeasonProgress()! /
-                  RankingCache.playerSeasonDuration()!,
-            RankingKind.guild =>
-              row.score /
-                  RankingCache.guildSeasonProgress()! /
-                  RankingCache.guildSeasonDuration()!,
+            RankingKind.player => row.score / progress / duration,
+            RankingKind.guild => row.score / progress / duration,
             RankingKind.hell => row.score,
           }.toDouble();
           final wphGap = switch (widget.kind) {
             RankingKind.player =>
-              row.gapPrev != null
-                  ? row.gapPrev! /
-                        RankingCache.playerSeasonProgress()! /
-                        RankingCache.playerSeasonDuration()!
-                  : null,
+              row.gapPrev != null ? row.gapPrev! / progress / duration : null,
             RankingKind.guild =>
-              row.gapPrev != null
-                  ? row.gapPrev! /
-                        RankingCache.guildSeasonProgress()! /
-                        RankingCache.guildSeasonDuration()!
-                  : null,
+              row.gapPrev != null ? row.gapPrev! / progress / duration : null,
             RankingKind.hell => row.gapPrev,
           }?.toDouble();
 

@@ -1055,6 +1055,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltipViewMilestoneRanks => '查看特殊名次';
 
   @override
+  String get tooltipHistoryData => '查询历史数据';
+
+  @override
+  String get tooltipBackToCurrentSeason => '返回当前赛季';
+
+  @override
+  String get historyDateHelp => '选择日期';
+
+  @override
   String get hintSelectPlayerDetail => '点击左侧条目查看玩家详情';
 
   @override
@@ -1553,6 +1562,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get actionRename => '重命名';
+
+  @override
+  String get labelTime => '时间';
+
+  @override
+  String get labelIncome => '收入';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -2605,6 +2620,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get tooltipViewMilestoneRanks => '檢視特殊名次';
 
   @override
+  String get tooltipHistoryData => '查詢歷史資料';
+
+  @override
+  String get tooltipBackToCurrentSeason => '返回目前賽季';
+
+  @override
+  String get historyDateHelp => '選擇日期';
+
+  @override
   String get hintSelectPlayerDetail => '點擊左側項目檢視玩家詳情';
 
   @override
@@ -3103,4 +3127,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get actionRename => '重新命名';
+
+  @override
+  String get labelTime => '時間';
+
+  @override
+  String get labelIncome => '收入';
 }

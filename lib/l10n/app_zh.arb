@@ -685,6 +685,9 @@
   },
   "tooltipViewScoreTrend": "查看分数趋势",
   "tooltipViewMilestoneRanks": "查看特殊名次",
+  "tooltipHistoryData": "查询历史数据",
+  "tooltipBackToCurrentSeason": "返回当前赛季",
+  "historyDateHelp": "选择日期",
   "hintSelectPlayerDetail": "点击左侧条目查看玩家详情",
   "actionRetry": "重试",
   "snackNeedEnabledRule": "请先在“高亮规则”中启用至少一条规则",
@@ -1015,5 +1018,7 @@
   "labelScore": "分数",
   "labelSeasonWPH": "赛季波速",
   "dialogDelete": "确认删除？",
-  "actionRename": "重命名"
+  "actionRename": "重命名",
+  "labelTime": "时间",
+  "labelIncome": "收入"
 }

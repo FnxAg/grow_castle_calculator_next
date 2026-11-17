@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/utils/date.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
@@ -10,9 +11,12 @@ import 'package:material_ui/material_ui.dart';
 
 /// 排行榜分数趋势图
 class RankingChartPage extends StatefulWidget {
-  const RankingChartPage({super.key, required this.kind});
+  const RankingChartPage({super.key, required this.kind, this.date});
 
   final RankingKind kind;
+
+  /// 历史榜单日期；null 表示当前赛季
+  final DateTime? date;
 
   @override
   State<RankingChartPage> createState() => _RankingChartPageState();
@@ -35,10 +39,20 @@ class _RankingChartPageState extends State<RankingChartPage> {
       _loading = true;
       _error = null;
     });
+    final date = widget.date;
     final result = await switch (widget.kind) {
-      RankingKind.player => RankingCache.playerRanking(),
-      RankingKind.guild => RankingCache.guildRanking(),
-      RankingKind.hell => RankingCache.hellRanking(),
+      RankingKind.player =>
+        date == null
+            ? RankingCache.playerRanking()
+            : RankingCache.playerRankingAt(date),
+      RankingKind.guild =>
+        date == null
+            ? RankingCache.guildRanking()
+            : RankingCache.guildRankingAt(date),
+      RankingKind.hell =>
+        date == null
+            ? RankingCache.hellRanking()
+            : RankingCache.hellRankingAt(date),
     };
     if (!mounted) return;
     final l10n = AppLocalizations.of(context);
@@ -77,10 +91,19 @@ class _RankingChartPageState extends State<RankingChartPage> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final trendLabel = l10n.labelRankingTrend(
+      rankingKindLabel(l10n, widget.kind),
+    );
+    final date = widget.date;
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          l10n.labelRankingTrend(rankingKindLabel(l10n, widget.kind)),
+        title: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(trendLabel),
+            if (date != null)
+              Text(formatHistoryDate(date), style: TextStyle(fontSize: 12.0)),
+          ],
         ),
       ),
       body: SafeArea(top: false, child: _buildBody()),

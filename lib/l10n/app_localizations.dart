@@ -1938,6 +1938,24 @@ abstract class AppLocalizations {
   /// **'查看特殊名次'**
   String get tooltipViewMilestoneRanks;
 
+  /// No description provided for @tooltipHistoryData.
+  ///
+  /// In zh, this message translates to:
+  /// **'查询历史数据'**
+  String get tooltipHistoryData;
+
+  /// No description provided for @tooltipBackToCurrentSeason.
+  ///
+  /// In zh, this message translates to:
+  /// **'返回当前赛季'**
+  String get tooltipBackToCurrentSeason;
+
+  /// No description provided for @historyDateHelp.
+  ///
+  /// In zh, this message translates to:
+  /// **'选择日期'**
+  String get historyDateHelp;
+
   /// No description provided for @hintSelectPlayerDetail.
   ///
   /// In zh, this message translates to:
@@ -2831,6 +2849,18 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'重命名'**
   String get actionRename;
+
+  /// No description provided for @labelTime.
+  ///
+  /// In zh, this message translates to:
+  /// **'时间'**
+  String get labelTime;
+
+  /// No description provided for @labelIncome.
+  ///
+  /// In zh, this message translates to:
+  /// **'收入'**
+  String get labelIncome;
 }
 
 class _AppLocalizationsDelegate

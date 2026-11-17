@@ -306,6 +306,9 @@
   "dialogRankMilestones": "{kind} Ranks",
   "tooltipViewScoreTrend": "View score trend",
   "tooltipViewMilestoneRanks": "View milestone ranks",
+  "tooltipHistoryData": "View historical data",
+  "tooltipBackToCurrentSeason": "Back to current season",
+  "historyDateHelp": "Select date",
   "hintSelectPlayerDetail": "Select a player on the left to view details",
   "actionRetry": "Retry",
   "snackNeedEnabledRule": "Enable at least one rule in \"Highlight Rules\" first",
@@ -455,5 +458,7 @@
   "labelScore": "Score",
   "labelSeasonWPH": "Season WPH",
   "dialogDelete": "Confirm delete?",
-  "actionRename": "Rename"
+  "actionRename": "Rename",
+  "labelTime": "Time",
+  "labelIncome": "Income"
 }

@@ -19,7 +19,6 @@ import 'package:grow_castle_calculator_next/view/page/public/select_user_page.da
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/loading_indicator_app_bar.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
@@ -330,7 +329,7 @@ class _HomePageState extends ConsumerState<HomePage>
 
   /// 执行查询
   Future<void> _performQuery({bool silent = false}) async {
-    if (!silent) setState(() => _querying = true);
+    setState(() => _querying = true);
     try {
       final name = ref.read(currentUsernameProvider);
       final result = await ref.read(usersProvider.notifier).syncCurrentUser();
@@ -381,7 +380,7 @@ class _HomePageState extends ConsumerState<HomePage>
         }
       }
     } finally {
-      if (!silent && mounted) setState(() => _querying = false);
+      if (mounted) setState(() => _querying = false);
     }
   }
 
@@ -639,10 +638,6 @@ class _HomePageState extends ConsumerState<HomePage>
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [Text(l10n.tabHome), appBarInfo],
-        ),
-        bottom: LoadingIndicatorAppBar(
-          bottom: null,
-          isLoading: _querying || _loadingRanks,
         ),
         actions: appBarActions,
       ),

@@ -1129,6 +1129,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltipViewMilestoneRanks => 'View milestone ranks';
 
   @override
+  String get tooltipHistoryData => 'View historical data';
+
+  @override
+  String get tooltipBackToCurrentSeason => 'Back to current season';
+
+  @override
+  String get historyDateHelp => 'Select date';
+
+  @override
   String get hintSelectPlayerDetail =>
       'Select a player on the left to view details';
 
@@ -1659,4 +1668,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get actionRename => 'Rename';
+
+  @override
+  String get labelTime => 'Time';
+
+  @override
+  String get labelIncome => 'Income';
 }
