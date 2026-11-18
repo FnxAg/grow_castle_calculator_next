@@ -2,9 +2,7 @@ import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
-import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/guild_rank.dart';
-import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
-import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
+import 'package:grow_castle_calculator_next/core/src/reward/reward.dart';
 import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
@@ -341,8 +339,7 @@ class _RankingPageState extends State<RankingPage> {
             Text(rankingKindLabel(l10n, widget.kind)),
             AppBarInfo(
               children: [
-                if (date != null)
-                  AppBarItem.text(formatHistoryDate(date)),
+                if (date != null) AppBarItem.text(formatHistoryDate(date)),
                 SeasonIndicator(notifier: _activeSeasonNotifier),
               ],
             ),

@@ -1,19 +1,18 @@
 import 'package:flutter/rendering.dart';
-import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_hell_mode_rank.dart';
-import 'package:grow_castle_calculator_next/core/src/reward_from_leaderboard/player_rank.dart';
-import 'package:grow_castle_calculator_next/icon/box.dart';
-import 'package:grow_castle_calculator_next/icon/crystal.dart';
-import 'package:material_ui/material_ui.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/calc/wave_speed.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/core/src/reward/reward.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
+import 'package:grow_castle_calculator_next/icon/box.dart';
+import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// 玩家详情页
 class PlayerDetailPage extends ConsumerStatefulWidget {
