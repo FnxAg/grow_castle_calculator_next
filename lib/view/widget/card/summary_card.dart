@@ -1,17 +1,20 @@
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SummaryCard extends StatelessWidget {
-  const SummaryCard({super.key, required this.children});
+  const SummaryCard({super.key, required this.children, this.cardType = CardType.normal});
 
   final List<Widget> children;
+  final CardType cardType;
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 3.0,
+    return CardX(
+      cardType: cardType,
       child: Padding(
-        padding: const EdgeInsets.fromLTRB(16.0, 8.0, 16.0, 8.0),
+        padding: UIs.inCardPadding,
         child: Column(mainAxisSize: MainAxisSize.min, children: children),
       ),
     );

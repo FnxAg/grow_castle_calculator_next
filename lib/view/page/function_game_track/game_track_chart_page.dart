@@ -1,5 +1,6 @@
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/card_x.dart';
 import 'package:material_ui/material_ui.dart';
 
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
@@ -240,8 +241,7 @@ class _ChartPanel extends StatelessWidget {
     final maximumX = points.last.x;
     final scheme = Theme.of(context).colorScheme;
 
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
+    return CardX(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(12, 12, 20, 12),
         child: Column(

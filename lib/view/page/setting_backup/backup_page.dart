@@ -418,8 +418,9 @@ class _BackupPageState extends State<BackupPage> {
     try {
       preview = await _service.fetchRemotePreview();
     } on WebDavException catch (e) {
-      if (mounted)
+      if (mounted) {
         _snack(l10n.snackFetchRemoteFailed(webdavExceptionText(l10n, e)));
+      }
     } on DataArchiveException catch (e) {
       if (mounted) {
         _snack(l10n.snackInvalidCloudFile(archiveExceptionText(l10n, e)));
@@ -502,8 +503,6 @@ class _BackupPageState extends State<BackupPage> {
       fileName: 'gcc_backup_$stamp.json',
       bytes: bytes,
       mimeType: 'application/json',
-      type: FileType.custom,
-      allowedExtensions: ['json'],
       dialogTitle: l10n.dialogTitleExportBackup,
     );
     if (!mounted) return;

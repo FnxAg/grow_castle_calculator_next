@@ -99,7 +99,7 @@ class _IncomeEditTileState extends ConsumerState<IncomeEditTile> {
       inputFormatters: field.digitsOnly
           ? [FilteringTextInputFormatter.digitsOnly]
           : null,
-      suffix: field == IncomeField.infiniteColony
+      trailing: field == IncomeField.infiniteColony
           ? PillChip(text: (user.infiniteColony * 1000 / user.wave).format())
           : null,
       errorText: _error ?? field.error(user),

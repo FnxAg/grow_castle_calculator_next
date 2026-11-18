@@ -11,9 +11,9 @@ import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 玩家详情页
@@ -332,6 +332,9 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: SummaryCard(
+                    cardType: _wphHistory != null && _wphHistory!.isNotEmpty
+                        ? CardType.floating
+                        : CardType.normal,
                     children: <Widget>[
                       SummaryRow(
                         leading: Icon(Icons.emoji_events),
@@ -454,9 +457,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                           height: 28.0,
                           alignment: rows[r][i] == null ? .center : .centerLeft,
                           decoration: BoxDecoration(
-                            color: schema.primaryContainer.withAlpha(
-                              UIs.cardTileColorAlpha,
-                            ),
+                            color: schema.primaryContainer.withAlpha(127),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(

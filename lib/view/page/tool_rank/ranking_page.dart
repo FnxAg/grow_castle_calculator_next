@@ -290,7 +290,7 @@ class _RankingPageState extends State<RankingPage> {
     );
 
     final List<Widget> appBarActions = <Widget>[
-      if (isDesktop) ...[
+      if (isDesktop && date == null) ...[
         IconButton(
           icon: _isLoading
               ? const SizedBox(

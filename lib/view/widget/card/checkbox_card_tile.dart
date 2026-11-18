@@ -1,4 +1,4 @@
-import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/card_x.dart';
 import 'package:material_ui/material_ui.dart';
 
 class CheckboxCardTile extends StatelessWidget {
@@ -35,11 +35,7 @@ class CheckboxCardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      margin: UIs.cardMargin,
-      shape: UIs.cardShape,
-      clipBehavior: Clip.antiAlias,
+    return CardX(
       child: CheckboxListTile(
         value: value,
         onChanged: onChanged,

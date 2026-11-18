@@ -545,8 +545,6 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     required double baseDps,
     required bool ready,
   }) {
-    final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
     final winning = ready && itemDps > otherDps;
     final hasGain = baseDps > 0;
@@ -566,18 +564,9 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
             text: gainText,
           ),
         ),
-        Card(
-          margin: EdgeInsets.zero,
-          elevation: 0,
-          clipBehavior: Clip.antiAlias,
-          color: ListTileTheme.of(context).tileColor,
-          shape: RoundedRectangleBorder(
-            borderRadius: UIs.cardShape.borderRadius,
-            side: BorderSide(
-              color: winning ? scheme.primary : scheme.outlineVariant,
-              width: winning ? 1.5 : 1,
-            ),
-          ),
+        CardX(
+          cardType: CardType.normal,
+          cardShape: winning ? CardShape.highlight : CardShape.normal,
           child: Padding(
             padding: const EdgeInsets.symmetric(vertical: 4),
             child: Column(

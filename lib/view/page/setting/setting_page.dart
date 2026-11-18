@@ -301,14 +301,14 @@ class _SettingPageState extends State<SettingPage> {
               title: l10n.settingsLanguage,
               current: language,
               options: [
-                (AppLanguage.system, l10n.languageSystem, Text("System")),
-                (AppLanguage.zhHans, l10n.languageChinese, Text("zh-CN")),
+                (AppLanguage.system, l10n.languageSystem, Text('System')),
+                (AppLanguage.zhHans, l10n.languageChinese, Text('zh-CN')),
                 (
                   AppLanguage.zhHant,
                   l10n.languageTraditionalChinese,
-                  Text("zh-TW"),
+                  Text('zh-TW'),
                 ),
-                (AppLanguage.en, l10n.languageEnglish, Text("en")),
+                (AppLanguage.en, l10n.languageEnglish, Text('en')),
               ],
               onSelected: appSettingsStore.setLanguage,
             ),

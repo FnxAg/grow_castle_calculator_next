@@ -1,6 +1,7 @@
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 排名面板中的一行数据
@@ -46,6 +47,7 @@ class RankBoardCard extends StatelessWidget {
     this.next,
     this.previousAnimation,
     this.nextAnimation,
+    this.cardType = CardType.normal,
   });
 
   final IconData icon;
@@ -55,26 +57,33 @@ class RankBoardCard extends StatelessWidget {
   final RankBoardRow? next;
   final Animation<double>? previousAnimation;
   final Animation<double>? nextAnimation;
+  final CardType cardType;
 
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    return SummaryCard(
-      children: [
-        Row(
+    return CardX(
+      cardType: cardType,
+      child: Padding(
+        padding: UIs.inCardPadding,
+        child: Column(
           children: [
-            Icon(icon, size: SummaryRow.leadingIconSize, color: scheme.primary),
-            const SizedBox(width: 8.0),
-            Expanded(
-              child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+            Row(
+              children: [
+                Icon(icon, size: SummaryRow.leadingIconSize, color: scheme.primary),
+                const SizedBox(width: 8.0),
+                Expanded(
+                  child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
+                ),
+              ],
             ),
+            if (previous != null)
+              _RankRow(row: previous!, animation: previousAnimation),
+            if (current != null) _RankRow(row: current!),
+            if (next != null) _RankRow(row: next!, animation: nextAnimation),
           ],
         ),
-        if (previous != null)
-          _RankRow(row: previous!, animation: previousAnimation),
-        if (current != null) _RankRow(row: current!),
-        if (next != null) _RankRow(row: next!, animation: nextAnimation),
-      ],
+      ),
     );
   }
 }

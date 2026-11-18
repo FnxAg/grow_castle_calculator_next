@@ -472,17 +472,8 @@ class _ItemCard extends StatelessWidget {
     final theme = Theme.of(context);
     final rule = this.rule;
     final highlight = rule != null;
-    return Card(
-      elevation: 3.0,
-      margin: const EdgeInsets.only(bottom: 8),
-      // 命中特殊规则时整体高亮
-      color: highlight ? theme.colorScheme.primaryContainer : null,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: highlight
-            ? BorderSide(color: theme.colorScheme.primary, width: 1.5)
-            : BorderSide.none,
-      ),
+    return CardX(
+      cardShape: highlight ? CardShape.highlight : CardShape.normal,
       child: Padding(
         padding: const EdgeInsets.all(12),
         child: Column(

@@ -90,7 +90,10 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
     return theme.copyWith(
       listTileTheme: ListTileThemeData(
         style: ListTileStyle.list,
-        tileColor: scheme.secondaryContainer.withAlpha(UIs.cardTileColorAlpha),
+        tileColor: Color.alphaBlend(
+          Colors.white.withValues(alpha: 0.55),
+          scheme.primaryContainer,
+        ),
         dense: UIs.cardTileDense,
         minTileHeight: UIs.cardTileMinHeight,
         titleTextStyle: theme.textTheme.bodyLarge?.copyWith(

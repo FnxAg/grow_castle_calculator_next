@@ -21,8 +21,6 @@ import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/rank_board_card.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum AnimSource {

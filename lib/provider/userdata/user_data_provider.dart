@@ -492,6 +492,7 @@ class Users extends _$Users {
 
   String getCurrentUserGuild() => state.currentUser.guild;
 
+  // ignore: riverpod_lint/avoid_public_notifier_properties
   /// 当前用户的完整数据快照
   Map<String, dynamic> get currentUserData => state.currentUser.toMap();
 

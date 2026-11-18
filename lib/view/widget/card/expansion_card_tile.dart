@@ -1,4 +1,5 @@
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/card_x.dart';
 import 'package:material_ui/material_ui.dart';
 
 class ExpansionCardTile extends StatelessWidget {
@@ -34,11 +35,7 @@ class ExpansionCardTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final tileColor = ListTileTheme.of(context).tileColor;
-    return Card(
-      elevation: 0,
-      margin: UIs.cardMargin,
-      shape: UIs.cardShape,
-      clipBehavior: Clip.antiAlias,
+    return CardX(
       child: ExpansionTile(
         leading: leading,
         title: title,

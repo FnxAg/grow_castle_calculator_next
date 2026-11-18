@@ -1,4 +1,4 @@
-import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SwitchCardTile extends StatelessWidget {
@@ -21,11 +21,7 @@ class SwitchCardTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      elevation: 0,
-      margin: UIs.cardMargin,
-      shape: UIs.cardShape,
-      clipBehavior: Clip.antiAlias,
+    return CardX(
       child: SwitchListTile(
         title: title,
         subtitle: subtitle,

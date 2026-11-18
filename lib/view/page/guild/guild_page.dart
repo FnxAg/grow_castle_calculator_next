@@ -25,7 +25,6 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/history_date_act
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/rank_board_card.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 公会页
@@ -740,6 +739,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
                     child: Padding(
                       padding: const EdgeInsets.all(8.0),
                       child: RankBoardCard(
+                        cardType: CardType.floating,
                         icon: Icons.flag_circle,
                         title: l10n.guildTotalScore,
                         previous: _guildRank != null && _guildGapPrev != null

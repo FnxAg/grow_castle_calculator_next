@@ -10,6 +10,7 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -182,7 +183,11 @@ class _TrackCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final textStyle = TextStyle(fontSize: 12, color: theme.colorScheme.primary);
+    final textStyle = TextStyle(
+      fontSize: 12,
+      color: theme.colorScheme.primary,
+      fontWeight: FontWeight.w500,
+    );
     final trackInfo = [
       PillChip(
         leading: const Icon(Icons.emoji_events),
@@ -206,7 +211,7 @@ class _TrackCard extends StatelessWidget {
         textStyle: textStyle,
       ),
     ];
-    return Card(
+    return CardX(
       child: Padding(
         padding: const EdgeInsets.fromLTRB(16, 12, 8, 12),
         child: Column(
@@ -276,7 +281,11 @@ class _TrackDelta extends StatelessWidget {
       padding: const EdgeInsets.symmetric(vertical: 6),
       child: Center(
         child: Text(
-          '${_formatDuration(duration)}  ·  +${waveDelta.format()}  ·  ${waveSpeed.format(fractionDigits: 2)}',
+          dividerText([
+            _formatDuration(duration),
+            '+${waveDelta.format()}',
+            waveSpeed.format(fractionDigits: 2),
+          ]),
           style: Theme.of(context).textTheme.bodySmall,
         ),
       ),

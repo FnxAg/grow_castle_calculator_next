@@ -104,8 +104,6 @@ class _IncomePageState extends ConsumerState<IncomePage> {
       children: [AppBarItem.currentUser(), AppBarItem.currentUserDailyIncome()],
     );
 
-    final body = list;
-
     final appBarActions = [
       IconButton(
         icon: const Icon(Icons.info_outline),
@@ -142,7 +140,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
         top: false,
         child: KeyedSubtree(
           key: ValueKey(ref.watch(userReloadSignalProvider)),
-          child: body,
+          child: list,
         ),
       ),
     );

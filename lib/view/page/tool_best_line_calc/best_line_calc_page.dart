@@ -5,7 +5,6 @@ import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
-import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -292,24 +291,16 @@ class _BestLineCalcPageState extends State<BestLineCalcPage> {
         CardField(title: 'Increased Damage (%)', controller: _increasedDmgCtrl),
         CardField(title: 'Critical Chance (%)', controller: _critChanceCtrl),
         CardField(title: 'Critical Damage (%)', controller: _critDmgCtrl),
-        Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Expanded(
-              child: CardField(
-                title: 'Increased Speed (%)',
-                controller: _speedCtrl,
-                enabled: _speedEnabled,
-              ),
-            ),
-            Switch(
-              value: _speedEnabled,
-              onChanged: (v) => setState(() {
-                _speedEnabled = v;
-                _saveToSessionCache();
-              }),
-            ),
-          ],
+        CardField(
+          title: 'Increased Speed (%)',
+          controller: _speedCtrl,
+          trailing: Switch(
+            value: _speedEnabled,
+            onChanged: (v) => setState(() {
+              _speedEnabled = v;
+              _saveToSessionCache();
+            }),
+          ),
         ),
         // 装备词条期望值
         SectionHeader(l10n.labelExpectedValueOfEachLine),

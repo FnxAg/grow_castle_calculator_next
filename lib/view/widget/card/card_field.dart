@@ -1,6 +1,7 @@
 import 'package:flutter/services.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/card_x.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 卡片输入框：标题与输入框都在卡片内
@@ -128,12 +129,7 @@ class _CardFieldState extends State<CardField> {
       ),
     );
 
-    return Card(
-      elevation: 0,
-      margin: UIs.cardMargin,
-      color: ListTileTheme.of(context).tileColor,
-      shape: UIs.cardShape,
-      clipBehavior: Clip.antiAlias,
+    return CardX(
       child: Padding(
         padding: UIs.cardFieldPadding,
         child: widget.leading == null && widget.trailing == null

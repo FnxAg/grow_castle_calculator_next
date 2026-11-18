@@ -7,8 +7,6 @@ abstract class UIs extends StatelessWidget {
     borderRadius: BorderRadius.all(Radius.circular(16.0)),
   );
 
-  static const cardTileColorAlpha = 127;
-
   /// 卡片内 ListTile 的最小高度与紧凑程度
   static const double cardTileMinHeight = 44.0;
   static const bool cardTileDense = false;
@@ -32,4 +30,12 @@ abstract class UIs extends StatelessWidget {
   static const EdgeInsets cardFieldContentPadding = EdgeInsets.symmetric(
     vertical: 8.0,
   );
+
+  /// 卡片内的内容内边距
+  static const EdgeInsets inCardPadding = EdgeInsets.symmetric(
+    horizontal: 16.0,
+    vertical: 8.0,
+  );
+
+  const UIs({super.key});
 }
