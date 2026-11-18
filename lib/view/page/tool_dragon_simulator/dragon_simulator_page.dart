@@ -355,7 +355,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                       return Row(
                         children: [
                           Expanded(child: countField),
-                          const SizedBox(width: 12),
+                          const SizedBox(width: 8),
                           Expanded(child: bonusField),
                         ],
                       );
