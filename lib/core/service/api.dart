@@ -3,7 +3,15 @@ import 'dart:convert';
 
 import 'package:dio/dio.dart';
 
+import 'package:grow_castle_calculator_next/core/service/api/api_guild.dart'
+    as guild_api;
+import 'package:grow_castle_calculator_next/core/service/api/api_leaderboard.dart'
+    as leaderboard_api;
+import 'package:grow_castle_calculator_next/core/service/api/api_player.dart'
+    as player_api;
 import 'package:grow_castle_calculator_next/core/service/api_client.dart';
+
+enum Api { lbPlayer, lbGuild, lbHell, player, guild, playerWph }
 
 class SeasonRange {
   final DateTime? start;
@@ -25,14 +33,12 @@ class PlayerQueryResult {
   final int seasonalScore;
   final String queryDate;
   final SeasonRange season;
-  final Map<String, dynamic> rawResult;
 
   const PlayerQueryResult({
     required this.wave,
     required this.seasonalScore,
     required this.queryDate,
     required this.season,
-    required this.rawResult,
   });
 }
 
@@ -122,104 +128,89 @@ class PlayerApiService {
   static const _s2 = '713C303270';
   static const _s3 = '382D30283C3E2C2B333A70';
   static const _s4 = '2D3A2C2B3E2F3670';
-  static const _s5 = '2C3A3E2C303170313028702F333E263A2D2C70';
-  static const _s6 = '2C3A3E2C303170';
-  static const _s7 = '313028';
-  static const _s8 = '702F333E263A2D2C';
-  static const _s9 = '70382A36333B2C';
-  static const _s10 = '70373A3333';
-  static const _s11 = '70382A36333B2C70';
+  static const _s5 = '2C3A3E2C303170';
+  static const _s6 = '313028';
+  static const _s7 = '702F333E263A2D2C';
+  static const _s8 = '70382A36333B2C';
+  static const _s9 = '70373A3333';
 
   // ── URL builders ──────────────────────────────────────────────────────
 
-  static String _buildPlayerNowUrl(String playerName) {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s5)}${Uri.encodeComponent(playerName)}';
+  static String get _officialBase =>
+      '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}';
+
+  /// 接口地址；[name] 为玩家名/公会名
+  static String _url(
+    Api api, {
+    DateTime? seasonDate,
+    String? name,
+    String? baseUrl,
+  }) {
+    final suffix = name == null ? '' : '/${Uri.encodeComponent(name)}';
+    final seasonBase = '$_officialBase${_d(_s5)}${_seasonSegment(seasonDate)}';
+    return switch (api) {
+      Api.playerWph => '${_trimSlash(baseUrl!)}/season/all/players$suffix',
+      Api.lbPlayer || Api.player => '$seasonBase${_d(_s7)}$suffix',
+      Api.lbGuild || Api.guild => '$seasonBase${_d(_s8)}$suffix',
+      Api.lbHell => '$seasonBase${_d(_s9)}$suffix',
+    };
   }
 
-  static String _buildGuildsUrl({DateTime? seasonDate}) {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s9)}';
-  }
-
-  static String _buildPlayerRankingUrl({DateTime? seasonDate}) {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s8)}';
-  }
-
-  static String _buildGuildDetailUrl(String guildName, {DateTime? seasonDate}) {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s11)}${Uri.encodeComponent(guildName)}';
-  }
-
-  static String _buildHellRankingUrl({DateTime? seasonDate}) {
-    return '${_d(_s0)}${_d(_s1)}${_d(_s2)}${_d(_s3)}${_d(_s4)}${_d(_s6)}${_seasonSegment(seasonDate)}${_d(_s10)}';
-  }
+  static String _trimSlash(String url) =>
+      url.endsWith('/') ? url.substring(0, url.length - 1) : url;
 
   /// 赛季路径段：默认 `now`，历史查询为 `yyyyMMdd`
   static String _seasonSegment(DateTime? date) {
-    if (date == null) return _d(_s7);
+    if (date == null) return _d(_s6);
     String two(int v) => v.toString().padLeft(2, '0');
     return '${date.year}${two(date.month)}${two(date.day)}';
   }
 
-  // ── Public API ─────────────────────────────────────────────────────────
+  static Future<Object> query(String playerName) => _query(
+    Api.player,
+    _parsePlayer,
+    name: playerName.trim(),
+    nameNotFound: true,
+  );
 
-  /// Fetches player info for [playerName] from the current season.
-  ///
-  /// Returns a [PlayerQueryResult] on success, or a [QueryError] on failure.
-  static Future<Object /* PlayerQueryResult | QueryError */> query(
-    String playerName,
-  ) async {
-    return _queryPlayer(_buildPlayerNowUrl(playerName.trim()));
-  }
+  static Future<Object> queryPlayerRanking({DateTime? seasonDate}) =>
+      _query(Api.lbPlayer, _parseLeaderboard, seasonDate: seasonDate);
 
-  /// Common player query logic shared by now/last season endpoints.
-  static Future<Object /* PlayerQueryResult | QueryError */> _queryPlayer(
-    String url,
-  ) async {
-    final uri = Uri.parse(url);
+  static Future<Object> queryHellRanking({DateTime? seasonDate}) =>
+      _query(Api.lbHell, _parseLeaderboard, seasonDate: seasonDate);
 
+  static Future<Object> queryGuildRanking({DateTime? seasonDate}) =>
+      _query(Api.lbGuild, _parseLeaderboard, seasonDate: seasonDate);
+
+  static Future<Object> queryGuildDetail(
+    String guildName, {
+    DateTime? seasonDate,
+  }) => _query(
+    Api.guild,
+    _parseGuildDetail,
+    seasonDate: seasonDate,
+    name: guildName.trim(),
+  );
+
+  // ── Request / parse ────────────────────────────────────────────────────
+
+  /// 发起 GET 并解析；网络/解析异常统一映射为 [QueryError]
+  static Future<Object> _get(
+    Uri uri,
+    Object Function(Object? json) parse, {
+    Options? options,
+    Object Function(int status)? onHttpError,
+  }) async {
     try {
-      final response = await ApiClient.get(uri).timeout(_timeout);
-      if (response.statusCode != 200) {
-        return const NameNotFound();
+      final response = await ApiClient.get(
+        uri,
+        options: options,
+      ).timeout(_timeout);
+      final status = response.statusCode ?? 0;
+      if (status != 200) {
+        return onHttpError?.call(status) ?? NetworkError('HTTP $status');
       }
-
-      final decoded = json.decode(response.data ?? '');
-      if (decoded is! Map<String, dynamic>) {
-        return const NameNotFound();
-      }
-      final body = decoded;
-
-      // code — may come as int or String.
-      final code = _parseInt(body['code']);
-      if (code != 200) {
-        return const NameNotFound();
-      }
-
-      final result = body['result'];
-      if (result is! Map<String, dynamic>) {
-        return const NameNotFound();
-      }
-
-      final list = result['list'];
-      if (list is! List<dynamic> || list.isEmpty) {
-        return const NameNotFound();
-      }
-
-      final player = list[0];
-      if (player is! Map<String, dynamic>) {
-        return const NameNotFound();
-      }
-
-      final wave = _parseInt(player['wave']);
-      final score = _parseInt(player['score']);
-      final lastOnline = (player['date'] as String?) ?? '';
-
-      return PlayerQueryResult(
-        wave: wave,
-        seasonalScore: score,
-        queryDate: lastOnline,
-        season: _parseSeason(result['date']),
-        rawResult: Map<String, dynamic>.from(result),
-      );
+      return parse(json.decode(response.data ?? ''));
     } on TimeoutException {
       return const TimeoutError();
     } catch (e) {
@@ -227,206 +218,70 @@ class PlayerApiService {
     }
   }
 
-  /// Fetches the player leaderboard for the current season, or for the
-  /// season containing [seasonDate] (the API only supports the last 90 days).
-  ///
-  /// Returns a [SeasonQueryResult] of [RankInfo] on success,
-  /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
-  queryPlayerRanking({DateTime? seasonDate}) async {
-    final uri = Uri.parse(_buildPlayerRankingUrl(seasonDate: seasonDate));
-
-    try {
-      final response = await ApiClient.get(uri).timeout(_timeout);
-      if (response.statusCode != 200) {
-        return NetworkError('HTTP ${response.statusCode}');
+  /// 官方接口：请求、校验 code 并解析
+  static Future<Object> _query(
+    Api api,
+    Object Function(Map<String, dynamic> json) parse, {
+    DateTime? seasonDate,
+    String? name,
+    bool nameNotFound = false,
+  }) {
+    final uri = Uri.parse(_url(api, seasonDate: seasonDate, name: name));
+    return _get(uri, (json) {
+      if (json is! Map<String, dynamic>) {
+        return nameNotFound
+            ? const NameNotFound()
+            : const NetworkError('Invalid response format');
       }
-
-      final decoded = json.decode(response.data ?? '');
-      if (decoded is! Map<String, dynamic>) {
-        return const NetworkError('Invalid response format');
+      final code = _readCode(json);
+      if (code != null && code != 200) {
+        return nameNotFound
+            ? const NameNotFound()
+            : NetworkError('API code: $code');
       }
-      final body = decoded;
-
-      final code = _parseInt(body['code']);
-      if (code != 200) {
-        return NetworkError('API code: $code');
-      }
-
-      final result = body['result'];
-      if (result is! Map<String, dynamic>) {
-        return const NetworkError('Missing result');
-      }
-
-      final list = result['list'];
-      if (list is! List<dynamic>) {
-        return const NetworkError('Missing player list');
-      }
-
-      return SeasonQueryResult(
-        items: _parseRankList(list),
-        season: _parseSeason(result['date']),
-      );
-    } on TimeoutException {
-      return const TimeoutError();
-    } catch (e) {
-      return _mapNetworkError(e);
-    }
+      return parse(json);
+    }, onHttpError: nameNotFound ? (_) => const NameNotFound() : null);
   }
 
-  /// Fetches the hell-mode leaderboard for the current season, or for the
-  /// season containing [seasonDate].
-  ///
-  /// Returns a [SeasonQueryResult] of [RankInfo] on success,
-  /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
-  queryHellRanking({DateTime? seasonDate}) async {
-    final uri = Uri.parse(_buildHellRankingUrl(seasonDate: seasonDate));
-
-    try {
-      final response = await ApiClient.get(uri).timeout(_timeout);
-      if (response.statusCode != 200) {
-        return NetworkError('HTTP ${response.statusCode}');
-      }
-
-      final decoded = json.decode(response.data ?? '');
-      if (decoded is! Map<String, dynamic>) {
-        return const NetworkError('Invalid response format');
-      }
-      final body = decoded;
-
-      final code = _parseInt(body['code']);
-      if (code != 200) {
-        return NetworkError('API code: $code');
-      }
-
-      final result = body['result'];
-      if (result is! Map<String, dynamic>) {
-        return const NetworkError('Missing result');
-      }
-
-      final list = result['list'];
-      if (list is! List<dynamic>) {
-        return const NetworkError('Missing player list');
-      }
-
-      return SeasonQueryResult(
-        items: _parseRankList(list),
-        season: _parseSeason(result['date']),
-      );
-    } on TimeoutException {
-      return const TimeoutError();
-    } catch (e) {
-      return _mapNetworkError(e);
-    }
-  }
-
-  /// Fetches the guild leaderboard for the current season, or for the
-  /// season containing [seasonDate].
-  ///
-  /// Returns a [SeasonQueryResult] of [RankInfo] on success,
-  /// or a [QueryError] on failure.
-  static Future<Object /* SeasonQueryResult<RankInfo> | QueryError */>
-  queryGuildRanking({DateTime? seasonDate}) async {
-    final uri = Uri.parse(_buildGuildsUrl(seasonDate: seasonDate));
-
-    try {
-      final response = await ApiClient.get(uri).timeout(_timeout);
-      if (response.statusCode != 200) {
-        return NetworkError('HTTP ${response.statusCode}');
-      }
-
-      final decoded = json.decode(response.data ?? '');
-      if (decoded is! Map<String, dynamic>) {
-        return const NetworkError('Invalid response format');
-      }
-      final body = decoded;
-
-      final code = _parseInt(body['code']);
-      if (code != 200) {
-        return NetworkError('API code: $code');
-      }
-
-      final result = body['result'];
-      if (result is! Map<String, dynamic>) {
-        return const NetworkError('Missing result');
-      }
-
-      final list = result['list'];
-      if (list is! List<dynamic>) {
-        return const NetworkError('Missing guild list');
-      }
-
-      return SeasonQueryResult(
-        items: _parseRankList(list),
-        season: _parseSeason(result['date']),
-      );
-    } on TimeoutException {
-      return const TimeoutError();
-    } catch (e) {
-      return _mapNetworkError(e);
-    }
-  }
-
-  /// Fetches the member list for a specific guild.
-  ///
-  /// Returns a [SeasonQueryResult] of [GuildMember] sorted by score descending,
-  /// or a [QueryError] on failure. Members with null names are excluded.
-  static Future<Object /* SeasonQueryResult<GuildMember> | QueryError */>
-  queryGuildDetail(String guildName, {DateTime? seasonDate}) async {
-    final uri = Uri.parse(
-      _buildGuildDetailUrl(guildName.trim(), seasonDate: seasonDate),
+  static Object _parseLeaderboard(Map<String, dynamic> json) {
+    final parsed = leaderboard_api.ApiLeaderboardResponse.fromJson(json);
+    return SeasonQueryResult(
+      items: _leaderboardRanks(parsed.result.list),
+      season: _seasonRange(
+        parsed.result.date.seasonStart,
+        parsed.result.date.seasonEnd,
+      ),
     );
+  }
 
-    try {
-      final response = await ApiClient.get(uri).timeout(_timeout);
-      if (response.statusCode != 200) {
-        return NetworkError('HTTP ${response.statusCode}');
-      }
+  static Object _parsePlayer(Map<String, dynamic> json) {
+    final parsed = player_api.ApiPlayerResponse.fromJson(json);
+    if (parsed.result.list.isEmpty) return const NameNotFound();
+    final player = parsed.result.list.first;
+    return PlayerQueryResult(
+      wave: player.wave ?? 0,
+      seasonalScore: player.score,
+      queryDate: player.lastOnline?.toIso8601String() ?? '',
+      season: _seasonRange(
+        parsed.result.date.seasonStart,
+        parsed.result.date.seasonEnd,
+      ),
+    );
+  }
 
-      final decoded = json.decode(response.data ?? '');
-      if (decoded is! Map<String, dynamic>) {
-        return const NetworkError('Invalid response format');
-      }
-      final body = decoded;
-
-      final code = _parseInt(body['code']);
-      if (code != 200) {
-        return NetworkError('API code: $code');
-      }
-
-      final result = body['result'];
-      if (result is! Map<String, dynamic>) {
-        return const NetworkError('Missing result');
-      }
-
-      final list = result['list'];
-      if (list is! List<dynamic>) {
-        return const NetworkError('Missing member list');
-      }
-
-      final members = <GuildMember>[];
-      for (final item in list) {
-        if (item is! Map<String, dynamic>) continue;
-        final name = item['name'];
-        if (name == null) continue; // skip null names
-        members.add(
-          GuildMember(name: name.toString(), score: _parseInt(item['score'])),
-        );
-      }
-
-      // Sort by score descending.
-      members.sort((a, b) => b.score.compareTo(a.score));
-
-      return SeasonQueryResult(
-        items: members,
-        season: _parseSeason(result['date']),
-      );
-    } on TimeoutException {
-      return const TimeoutError();
-    } catch (e) {
-      return _mapNetworkError(e);
-    }
+  static Object _parseGuildDetail(Map<String, dynamic> json) {
+    final parsed = guild_api.ApiGuildResponse.fromJson(json);
+    final members = <GuildMember>[
+      for (final item in parsed.result.list)
+        GuildMember(name: item.guildName, score: item.score),
+    ]..sort((a, b) => b.score.compareTo(a.score));
+    return SeasonQueryResult(
+      items: members,
+      season: _seasonRange(
+        parsed.result.date.seasonStart,
+        parsed.result.date.seasonEnd,
+      ),
+    );
   }
 
   /// Fetches the player's per-season wph history from the custom third-party
@@ -437,68 +292,46 @@ class PlayerApiService {
   /// (keeping the API's newest-first order within each season). Returns the
   /// seasons ordered newest first, or a [QueryError]. Player without
   /// third-party data (404/empty list) yields an empty list.
-  static Future<Object /* List<SeasonWphGroup> | QueryError */>
-  queryPlayerWphHistory(
+  static Future<Object> queryPlayerWphHistory(
     String playerName,
     String baseUrl, {
     required String username,
     required String guild,
   }) async {
-    final base = baseUrl.endsWith('/')
-        ? baseUrl.substring(0, baseUrl.length - 1)
-        : baseUrl;
-    final uri = Uri.parse(
-      '$base/season/all/players/${Uri.encodeComponent(playerName.trim())}',
+    final options = await ApiClient.thirdPartyOptions(
+      baseUrl,
+      username: username,
+      guild: guild,
     );
-
-    try {
-      final response = await ApiClient.get(
-        uri,
-        // 默认第三方 API 附带 `User`（当前用户）与 UA；自建地址不带
-        options: await ApiClient.thirdPartyOptions(
-          baseUrl,
-          username: username,
-          guild: guild,
-        ),
-      ).timeout(_timeout);
-      if (response.statusCode == 404) return const <SeasonWphGroup>[];
-      if (response.statusCode != 200) {
-        return NetworkError('HTTP ${response.statusCode}');
-      }
-
-      final decoded = json.decode(response.data ?? '');
-      if (decoded is! List<dynamic>) {
-        return const NetworkError('Invalid response format');
-      }
-
-      // 按赛季分组（保持接口快照顺序），只保留 season 与 wph 两个字段
-      final bySeason = <String, List<int?>>{};
-      for (final item in decoded) {
-        if (item is! Map<String, dynamic>) continue;
-        final season = (item['season'] as String?) ?? '';
-        if (season.isEmpty) continue;
-        final wphValue = item['wph'];
-        bySeason
-            .putIfAbsent(season, () => <int?>[])
-            .add(wphValue is num ? wphValue.toInt() : null);
-      }
-
-      final result =
-          bySeason.entries
-              .map((e) => SeasonWphGroup(season: e.key, wphs: e.value))
-              .toList()
-            ..sort((a, b) => b.season.compareTo(a.season));
-      return result;
-    } on TimeoutException {
-      return const TimeoutError();
-    } catch (e) {
-      return _mapNetworkError(e);
-    }
+    return _get(
+      Uri.parse(_url(Api.playerWph, baseUrl: baseUrl, name: playerName.trim())),
+      (json) {
+        if (json is! List<dynamic>) {
+          return const NetworkError('Invalid response format');
+        }
+        // 按赛季分组（保持接口快照顺序），只保留 season 与 wph 两个字段
+        final bySeason = <String, List<int?>>{};
+        for (final item in json) {
+          if (item is! Map<String, dynamic>) continue;
+          final season = (item['season'] as String?) ?? '';
+          if (season.isEmpty) continue;
+          final wphValue = item['wph'];
+          bySeason
+              .putIfAbsent(season, () => <int?>[])
+              .add(wphValue is num ? wphValue.toInt() : null);
+        }
+        return bySeason.entries
+            .map((e) => SeasonWphGroup(season: e.key, wphs: e.value))
+            .toList()
+          ..sort((a, b) => b.season.compareTo(a.season));
+      },
+      options: options,
+      onHttpError: (status) => status == 404
+          ? const <SeasonWphGroup>[]
+          : NetworkError('HTTP $status'),
+    );
   }
 
-  /// Formats the time elapsed since [rawDate] (ISO 8601 UTC).
-  ///
-  /// Returns e.g. "30s", "5min", "6h", "3d". Units are locale-independent.
   static String formatLastOnline(String rawDate, DateTime now) {
     if (rawDate.isEmpty) return '';
     try {
@@ -514,14 +347,18 @@ class PlayerApiService {
     }
   }
 
-  /// Formats the time remaining until [end] (season end) as "Xd Xh Xm",
-  /// e.g. "2d 3h 45m". Returns null once the season has ended — the "ended"
-  /// wording is the UI's business (l10n `seasonEnded`), this layer stays
-  /// language-neutral.
   static String? formatSeasonRemaining(DateTime end, DateTime now) {
     final diff = end.difference(now);
     if (diff.isNegative) return null;
     return '${diff.inDays}d ${diff.inHours % 24}h ${diff.inMinutes % 60}m';
+  }
+
+  /// 读取响应 code；兼容数字与字符串
+  static int? _readCode(Map<String, dynamic> json) {
+    final value = json['code'];
+    if (value is num) return value.toInt();
+    if (value is String) return int.tryParse(value);
+    return null;
   }
 
   /// 请求阶段的异常映射为 [QueryError]
@@ -535,34 +372,24 @@ class PlayerApiService {
       }
       return const NetworkError('Network connection failed');
     }
+    if (e is FormatException || e is TypeError) {
+      return const NetworkError('Invalid response format');
+    }
     return NetworkError(e.toString());
   }
 
-  /// Parses [value] to int, handling both `int` and `String` representations.
-  static int _parseInt(dynamic value) {
-    if (value is int) return value;
-    if (value is String) return int.tryParse(value) ?? 0;
-    if (value is double) return value.toInt();
-    return 0;
+  /// 榜单接口已按名次排序，不再重排；相邻分差按返回顺序计算
+  static List<RankInfo> _leaderboardRanks(
+    List<leaderboard_api.ApiResponseResultList> list,
+  ) {
+    return _withGaps([
+      for (final item in list)
+        RankInfo(rank: item.rank, name: item.name, score: item.score),
+    ]);
   }
 
-  /// 解析榜单列表并计算相邻名次差值
-  static List<RankInfo> _parseRankList(List<dynamic> list) {
-    final items = <RankInfo>[
-      for (final item in list)
-        if (item is Map<String, dynamic>)
-          RankInfo(
-            rank: _parseInt(item['rank']),
-            name: (item['name'] as String?) ?? '',
-            score: _parseInt(item['score']),
-          ),
-    ];
-    // 接口不保证顺序，按分数降序（同分再按名次升序）确定相邻关系
-    items.sort(
-      (a, b) => a.score != b.score
-          ? b.score.compareTo(a.score)
-          : a.rank.compareTo(b.rank),
-    );
+  /// 按顺序补充相邻名次的分差
+  static List<RankInfo> _withGaps(List<RankInfo> items) {
     return <RankInfo>[
       for (var i = 0; i < items.length; i++)
         RankInfo(
@@ -579,20 +406,23 @@ class PlayerApiService {
     ];
   }
 
-  /// 解析 result.date
-  static SeasonRange _parseSeason(Object? date) {
-    if (date is! Map) return const SeasonRange();
-    return SeasonRange(
-      start: _parseSeasonTime(date['start']),
-      end: _parseSeasonTime(date['end']),
-    );
-  }
+  static SeasonRange _seasonRange(DateTime start, DateTime end) => SeasonRange(
+    start: _toLocalSeasonTime(start),
+    end: _toLocalSeasonTime(end),
+  );
 
-  /// 解析赛季时间字符串并换算为本地时区
-  static DateTime? _parseSeasonTime(Object? value) {
-    if (value is! String || value.isEmpty) return null;
-    final hasTimezone =
-        value.endsWith('Z') || RegExp(r'[+-]\d{2}:?\d{2}$').hasMatch(value);
-    return DateTime.tryParse(hasTimezone ? value : '${value}Z')?.toLocal();
+  /// 接口时间不带时区时按 UTC 处理
+  static DateTime _toLocalSeasonTime(DateTime value) {
+    if (value.isUtc) return value.toLocal();
+    return DateTime.utc(
+      value.year,
+      value.month,
+      value.day,
+      value.hour,
+      value.minute,
+      value.second,
+      value.millisecond,
+      value.microsecond,
+    ).toLocal();
   }
 }

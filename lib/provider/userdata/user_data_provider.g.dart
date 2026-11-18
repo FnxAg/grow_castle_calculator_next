@@ -96,7 +96,7 @@ final class UsersProvider extends $NotifierProvider<Users, UsersState> {
   }
 }
 
-String _$usersHash() => r'e3b88b96c7e802af09d0ee83c7f9f2f7e396559b';
+String _$usersHash() => r'b8e570e0e5ce9284b8469bce30456db04514cf19';
 
 /// 用户数据状态容器
 

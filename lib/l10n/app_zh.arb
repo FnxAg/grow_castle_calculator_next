@@ -948,15 +948,6 @@
       }
     }
   },
-  "labelWphHistory": "每小时波速（第三方 API）",
-  "labelSeason": "赛季 {season}",
-  "@labelSeason": {
-    "placeholders": {
-      "season": {
-        "type": "String"
-      }
-    }
-  },
   "hellModeScore": "无尽分数",
   "lastOnline": "上次在线",
   "unitEnabledCount": "{enabled}/{total} 启用",
@@ -1007,6 +998,7 @@
   "incomeTrendDaysHint": "请输入天数",
   "incomeTrendDaysInvalid": "请输入大于 0 的整数",
   "dataDisclaimer": "数据仅供参考",
+  "thirdPartyApiDisclaimer": "数据来自第三方 API，仅供参考",
   "fromDev": "欢迎加入 POC 谢谢喵！",
   "labelGabBonusNote": "破挂请点击「FAB」按钮后保存，金挂收益将被视为 0%",
   "dailyIncome": "每日收入",

@@ -1502,14 +1502,6 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
-  String get labelWphHistory => 'Waves per hour (third-party API)';
-
-  @override
-  String labelSeason(String season) {
-    return 'Season $season';
-  }
-
-  @override
   String get hellModeScore => 'Hell Mode score';
 
   @override
@@ -1631,6 +1623,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dataDisclaimer => 'Data is for reference only';
+
+  @override
+  String get thirdPartyApiDisclaimer =>
+      'Data is from a third-party API and is for reference only';
 
   @override
   String get fromDev => 'Welcome to join POC!';

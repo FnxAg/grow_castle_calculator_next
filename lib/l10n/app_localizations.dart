@@ -2526,18 +2526,6 @@ abstract class AppLocalizations {
   /// **'玩家「{name}」已被封禁'**
   String errorPlayerBanned(String name);
 
-  /// No description provided for @labelWphHistory.
-  ///
-  /// In zh, this message translates to:
-  /// **'每小时波速（第三方 API）'**
-  String get labelWphHistory;
-
-  /// No description provided for @labelSeason.
-  ///
-  /// In zh, this message translates to:
-  /// **'赛季 {season}'**
-  String labelSeason(String season);
-
   /// No description provided for @hellModeScore.
   ///
   /// In zh, this message translates to:
@@ -2777,6 +2765,12 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'数据仅供参考'**
   String get dataDisclaimer;
+
+  /// No description provided for @thirdPartyApiDisclaimer.
+  ///
+  /// In zh, this message translates to:
+  /// **'数据来自第三方 API，仅供参考'**
+  String get thirdPartyApiDisclaimer;
 
   /// No description provided for @fromDev.
   ///

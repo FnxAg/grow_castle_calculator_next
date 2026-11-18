@@ -1398,14 +1398,6 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get labelWphHistory => '每小时波速（第三方 API）';
-
-  @override
-  String labelSeason(String season) {
-    return '赛季 $season';
-  }
-
-  @override
   String get hellModeScore => '无尽分数';
 
   @override
@@ -1526,6 +1518,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dataDisclaimer => '数据仅供参考';
+
+  @override
+  String get thirdPartyApiDisclaimer => '数据来自第三方 API，仅供参考';
 
   @override
   String get fromDev => '欢迎加入 POC 谢谢喵！';
@@ -2963,14 +2958,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get labelWphHistory => '每小時波速（第三方 API）';
-
-  @override
-  String labelSeason(String season) {
-    return '賽季 $season';
-  }
-
-  @override
   String get hellModeScore => '無盡分數';
 
   @override
@@ -3091,6 +3078,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get dataDisclaimer => '資料僅供參考';
+
+  @override
+  String get thirdPartyApiDisclaimer => '資料來自第三方 API，僅供參考';
 
   @override
   String get fromDev => '歡迎加入 POC 謝謝喵！';

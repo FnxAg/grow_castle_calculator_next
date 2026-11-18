@@ -10,7 +10,9 @@ import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
+import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/summary_row/summary_card.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -192,7 +194,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
         Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 8, 0),
+          padding: UIs.padding,
           child: Row(
             children: [
               Expanded(
@@ -295,33 +297,24 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
           Positioned.fill(
             child: ListView(
               controller: _scrollController,
-              padding: EdgeInsets.all(16.0),
+              padding: UIs.padding,
               children: <Widget>[
                 if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 4.0),
-                    child: Text(
-                      l10n.labelWphHistory,
-                      style: Theme.of(context).textTheme.titleSmall
-                          ?.copyWith(color: scheme.onSurfaceVariant),
-                    ),
-                  ),
                   for (final group in _wphHistory!) ...[
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0),
-                      child: Text(
-                        l10n.labelSeason(group.season),
-                        style: const TextStyle(fontWeight: FontWeight.w600),
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.only(top: 8.0, bottom: 4.0),
-                      child: _wphGrid(
-                        group.wphs,
-                        isCurrentUser ? wph : _inferPassiveWph(group.wphs),
-                      ),
+                    SectionHeader(group.season),
+                    _wphGrid(
+                      group.wphs,
+                      isCurrentUser ? wph : _inferPassiveWph(group.wphs),
                     ),
                   ],
+                  const SizedBox(height: 8.0),
+                  Center(
+                    child: Text(
+                      l10n.thirdPartyApiDisclaimer,
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                  ),
+                  const SizedBox(height: 32.0),
                 ],
               ],
             ),
@@ -461,7 +454,9 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                           height: 28.0,
                           alignment: rows[r][i] == null ? .center : .centerLeft,
                           decoration: BoxDecoration(
-                            color: schema.primaryContainer,
+                            color: schema.primaryContainer.withAlpha(
+                              UIs.cardTileColorAlpha,
+                            ),
                             borderRadius: BorderRadius.circular(8.0),
                           ),
                           child: Text(
