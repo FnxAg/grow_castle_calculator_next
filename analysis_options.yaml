@@ -37,6 +37,8 @@ linter:
     prefer_is_empty: true
     use_build_context_synchronously: true
     no_logic_in_create_state: true
+    await_only_futures: true
+    always_use_package_imports: true
 
 # Additional information about this file can be found at
 # https://dart.dev/guides/language/analysis-options
