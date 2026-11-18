@@ -91,7 +91,10 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       listTileTheme: ListTileThemeData(
         style: ListTileStyle.list,
         tileColor: Color.alphaBlend(
-          Colors.white.withValues(alpha: 0.55),
+          (scheme.brightness == Brightness.dark
+              ? Colors.black.withValues(alpha: 0.45)
+              : Colors.white.withValues(alpha: 0.55)),
+          // .withValues(alpha: 0.55),
           scheme.primaryContainer,
         ),
         dense: UIs.cardTileDense,
