@@ -52,10 +52,10 @@ Map<String, dynamic> _$ApiResponseResultDateToJson(
 ApiResponseResultList _$ApiResponseResultListFromJson(
   Map<String, dynamic> json,
 ) => ApiResponseResultList(
-  guildName: json['name'] as String,
+  username: json['name'] as String?,
   score: (json['score'] as num).toInt(),
 );
 
 Map<String, dynamic> _$ApiResponseResultListToJson(
   ApiResponseResultList instance,
-) => <String, dynamic>{'name': instance.guildName, 'score': instance.score};
+) => <String, dynamic>{'name': instance.username, 'score': instance.score};

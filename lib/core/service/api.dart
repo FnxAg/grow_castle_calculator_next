@@ -273,7 +273,8 @@ class PlayerApiService {
     final parsed = guild_api.ApiGuildResponse.fromJson(json);
     final members = <GuildMember>[
       for (final item in parsed.result.list)
-        GuildMember(name: item.guildName, score: item.score),
+        if (item.username != null && item.username!.isNotEmpty)
+          GuildMember(name: item.username!, score: item.score),
     ]..sort((a, b) => b.score.compareTo(a.score));
     return SeasonQueryResult(
       items: members,

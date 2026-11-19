@@ -53,7 +53,7 @@ class ApiResponseResultDate {
 
 @JsonSerializable()
 class ApiResponseResultList {
-  ApiResponseResultList({required this.guildName, required this.score});
+  ApiResponseResultList({required this.username, required this.score});
 
   factory ApiResponseResultList.fromJson(Map<String, dynamic> json) =>
       _$ApiResponseResultListFromJson(json);
@@ -61,7 +61,7 @@ class ApiResponseResultList {
   Map<String, dynamic> toJson() => _$ApiResponseResultListToJson(this);
 
   @JsonKey(name: 'name')
-  final String guildName;
+  final String? username;
   @JsonKey(name: 'score')
   final int score;
 }
