@@ -6,7 +6,7 @@ import 'package:grow_castle_calculator_next/app.dart';
 import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:path_provider/path_provider.dart';
 
@@ -39,20 +39,14 @@ Future<void> _initializeHive() async {
   final dir = await getApplicationSupportDirectory();
   await dir.create(recursive: true);
   Hive.init(dir.path);
-  if (!Hive.isBoxOpen('user_data')) {
-    await Hive.openBox('user_data');
-  }
-  if (!Hive.isBoxOpen('user_meta')) {
-    await Hive.openBox('user_meta');
-  }
-  if (!Hive.isBoxOpen('app_meta')) {
-    await Hive.openBox('app_meta');
-  }
-  if (!Hive.isBoxOpen('item_rules')) {
-    await Hive.openBox('item_rules');
-  }
-  if (!Hive.isBoxOpen('game_track')) {
-    await Hive.openBox('game_track');
+  for (final name in const [
+    'user_data',
+    'user_meta',
+    'app_meta',
+    'item_rules',
+    'game_track',
+  ]) {
+    await Hive.openBox(name);
   }
 }
 
@@ -68,8 +62,9 @@ Future<void> _initializeGetIt(ProviderContainer container) async {
 
 Future<(ColorScheme?, ColorScheme?)> _fetchDynamicColorSchemes() async {
   try {
-    final corePalette = await DynamicColorPlugin.getCorePalette()
-        .timeout(const Duration(milliseconds: 500));
+    final corePalette = await DynamicColorPlugin.getCorePalette().timeout(
+      const Duration(milliseconds: 500),
+    );
     if (corePalette != null) {
       return (
         corePalette.toColorScheme(),
@@ -80,8 +75,9 @@ Future<(ColorScheme?, ColorScheme?)> _fetchDynamicColorSchemes() async {
     debugPrint('Failed to fetch dynamic colors: $e');
   }
   try {
-    final accent = await DynamicColorPlugin.getAccentColor()
-        .timeout(const Duration(milliseconds: 500));
+    final accent = await DynamicColorPlugin.getAccentColor().timeout(
+      const Duration(milliseconds: 500),
+    );
     if (accent != null) {
       return (
         ColorScheme.fromSeed(seedColor: accent, brightness: Brightness.light),

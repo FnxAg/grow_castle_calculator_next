@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 /// 界面语言。[system] 表示跟随设备语言（由 MaterialApp 自己解析）
 ///

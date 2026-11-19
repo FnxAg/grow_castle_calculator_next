@@ -2,7 +2,7 @@
 library;
 
 import 'package:grow_castle_calculator_next/model/userdata/user_data.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 /// 一次全量读取的结果
 class UserSnapshot {

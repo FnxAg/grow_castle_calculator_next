@@ -1,4 +1,4 @@
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// WebDAV 备份配置存储：与 AppSettingsStore / ItemComparerStore 共用

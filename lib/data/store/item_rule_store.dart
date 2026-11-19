@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_display_rules.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
-import 'package:hive_flutter/hive_flutter.dart';
+import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
 /// 用户高亮规则存储（全局生效，与应用设置同级，Hive 持久化）
 class ItemRuleStore {
