@@ -387,6 +387,7 @@ class _HomePageState extends ConsumerState<HomePage>
   ) {
     return switch (error) {
       NameNotFound() => l10n.errorSeasonDataNotFound(name),
+      EmptyData() => l10n.emptyData,
       TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };

@@ -1095,6 +1095,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get emptyRankingData => 'No leaderboard data';
 
   @override
+  String get emptyHistoryData => 'No data for this date';
+
+  @override
   String get emptyData => 'No data';
 
   @override

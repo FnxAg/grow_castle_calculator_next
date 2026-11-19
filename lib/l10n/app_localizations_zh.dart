@@ -1021,6 +1021,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get emptyRankingData => '暂无榜单数据';
 
   @override
+  String get emptyHistoryData => '该日期暂无数据';
+
+  @override
   String get emptyData => '暂无数据';
 
   @override
@@ -2579,6 +2582,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get emptyRankingData => '尚無排行榜資料';
+
+  @override
+  String get emptyHistoryData => '該日期暫無資料';
 
   @override
   String get emptyData => '尚無資料';

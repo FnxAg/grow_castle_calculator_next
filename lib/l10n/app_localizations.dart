@@ -1890,6 +1890,12 @@ abstract class AppLocalizations {
   /// **'暂无榜单数据'**
   String get emptyRankingData;
 
+  /// No description provided for @emptyHistoryData.
+  ///
+  /// In zh, this message translates to:
+  /// **'该日期暂无数据'**
+  String get emptyHistoryData;
+
   /// No description provided for @emptyData.
   ///
   /// In zh, this message translates to:

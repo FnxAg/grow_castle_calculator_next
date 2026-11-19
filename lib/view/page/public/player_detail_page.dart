@@ -168,6 +168,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
   String _errorMessage(AppLocalizations l10n, QueryError error) {
     return switch (error) {
       NameNotFound() => l10n.errorSeasonDataNotFound(widget.playerName),
+      EmptyData() => l10n.emptyData,
       TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };

@@ -636,6 +636,7 @@
   "rankingKindGuild": "公会排行榜",
   "rankingKindHell": "无尽排行榜",
   "emptyRankingData": "暂无榜单数据",
+  "emptyHistoryData": "该日期暂无数据",
   "emptyData": "暂无数据",
   "labelRankingTrend": "{kind}趋势",
   "@labelRankingTrend": {

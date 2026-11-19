@@ -422,6 +422,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
   String _errorMessage(AppLocalizations l10n, String guild, QueryError error) {
     return switch (error) {
       NameNotFound() => l10n.errorGuildNotFound(guild),
+      EmptyData() => l10n.emptyHistoryData,
       TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };

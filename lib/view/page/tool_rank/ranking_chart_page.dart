@@ -84,6 +84,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
   String _errorMessage(AppLocalizations l10n, QueryError error) {
     return switch (error) {
       NameNotFound() => l10n.emptyRankingData,
+      EmptyData() => l10n.emptyHistoryData,
       TimeoutError() => l10n.errorQueryTimeout,
       NetworkError(:final message) => message,
     };
@@ -102,8 +103,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(trendLabel),
-            if (date != null)
-              AppBarItem.text(formatHistoryDate(date)),
+            if (date != null) AppBarItem.text(formatHistoryDate(date)),
           ],
         ),
       ),

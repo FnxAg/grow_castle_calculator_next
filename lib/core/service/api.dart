@@ -90,6 +90,10 @@ class NameNotFound extends QueryError {
   const NameNotFound();
 }
 
+class EmptyData extends QueryError {
+  const EmptyData();
+}
+
 class NetworkError extends QueryError {
   final String message;
   const NetworkError(this.message);
@@ -239,7 +243,13 @@ class PlayerApiService {
             ? const NameNotFound()
             : NetworkError('API code: $code');
       }
-      return parse(json);
+      final result = parse(json);
+      if (seasonDate != null &&
+          result is SeasonQueryResult<Object?> &&
+          result.items.isEmpty) {
+        return const EmptyData();
+      }
+      return result;
     }, onHttpError: nameNotFound ? (_) => const NameNotFound() : null);
   }
 

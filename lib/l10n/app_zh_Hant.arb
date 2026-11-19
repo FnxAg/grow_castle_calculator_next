@@ -298,6 +298,7 @@
   "rankingKindGuild": "公會排行榜",
   "rankingKindHell": "無盡排行榜",
   "emptyRankingData": "尚無排行榜資料",
+  "emptyHistoryData": "該日期暫無資料",
   "emptyData": "尚無資料",
   "labelRankingTrend": "{kind}趨勢",
   "labelTopCount": "前 {count}",
