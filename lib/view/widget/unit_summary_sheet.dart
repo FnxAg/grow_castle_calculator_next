@@ -14,6 +14,8 @@ void showUnitSummarySheet(
     context: context,
     isScrollControlled: true,
     useSafeArea: true,
+    // 覆盖整个外壳（分支 Navigator 之上），避免被底部栏裁切
+    useRootNavigator: true,
     backgroundColor: Colors.transparent,
     builder: (context) => Align(
       alignment: Alignment.bottomCenter,

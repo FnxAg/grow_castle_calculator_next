@@ -1,6 +1,5 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
-import 'package:grow_castle_calculator_next/view/page/guild/guild_page.dart';
-import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -51,12 +50,7 @@ class _SearchPageState extends State<SearchPage> {
                         return;
                       }
                       FocusManager.instance.primaryFocus?.unfocus();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              PlayerDetailPage(playerName: _controller.text),
-                        ),
-                      );
+                      context.openPlayerDetail(_controller.text);
                     },
                     label: Text(l10n.toolSearchUser),
                   ),
@@ -70,12 +64,7 @@ class _SearchPageState extends State<SearchPage> {
                         return;
                       }
                       FocusManager.instance.primaryFocus?.unfocus();
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) =>
-                              GuildDetailPage(guildName: _controller.text),
-                        ),
-                      );
+                      context.openGuildDetail(_controller.text);
                     },
                     label: Text(l10n.toolSearchGuild),
                   ),

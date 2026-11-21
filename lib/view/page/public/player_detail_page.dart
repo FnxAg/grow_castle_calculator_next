@@ -18,20 +18,9 @@ import 'package:material_ui/material_ui.dart';
 
 /// 玩家详情页
 class PlayerDetailPage extends ConsumerStatefulWidget {
-  const PlayerDetailPage({
-    super.key,
-    required this.playerName,
-    this.embedded = false,
-    this.onClose,
-  });
+  const PlayerDetailPage({super.key, required this.playerName});
 
   final String playerName;
-
-  /// 嵌入主从两栏右侧面板
-  final bool embedded;
-
-  /// 嵌入模式头部关闭按钮回调（清除列表页的选中态）
-  final VoidCallback? onClose;
 
   @override
   ConsumerState<PlayerDetailPage> createState() => _PlayerDetailPageState();
@@ -176,46 +165,17 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
 
   @override
   Widget build(BuildContext context) {
-    final body = _buildBody();
-    if (!widget.embedded) {
-      return Scaffold(
-        appBar: AppBar(
-          title: Text(widget.playerName),
-          bottom: _loading
-              ? const PreferredSize(
-                  preferredSize: Size.fromHeight(3.0),
-                  child: LinearProgressIndicator(minHeight: 3.0),
-                )
-              : null,
-        ),
-        body: SafeArea(top: false, child: body),
-      );
-    }
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Padding(
-          padding: UIs.padding,
-          child: Row(
-            children: [
-              Expanded(
-                child: Text(
-                  widget.playerName,
-                  overflow: TextOverflow.ellipsis,
-                  style: Theme.of(context).textTheme.titleMedium,
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.close),
-                tooltip: AppLocalizations.of(context).tooltipCloseDetail,
-                onPressed: widget.onClose,
-              ),
-            ],
-          ),
-        ),
-        if (_loading) const LinearProgressIndicator(minHeight: 3.0),
-        Expanded(child: body),
-      ],
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(widget.playerName),
+        bottom: _loading
+            ? const PreferredSize(
+                preferredSize: Size.fromHeight(3.0),
+                child: LinearProgressIndicator(minHeight: 3.0),
+              )
+            : null,
+      ),
+      body: SafeArea(top: false, child: _buildBody()),
     );
   }
 

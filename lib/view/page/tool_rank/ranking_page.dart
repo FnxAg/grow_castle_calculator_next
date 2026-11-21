@@ -10,11 +10,8 @@ import 'package:grow_castle_calculator_next/utils/date.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/guild/guild_page.dart';
-import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_chart_page.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
@@ -46,8 +43,6 @@ class _RankingPageState extends State<RankingPage> {
   bool _viewWPHMode = false;
 
   Map<String, int> _crossRanks = {};
-
-  String? _selectedName;
 
   /// 历史模式所选日期；null 表示当前赛季
   DateTime? _historyDate;
@@ -218,7 +213,6 @@ class _RankingPageState extends State<RankingPage> {
       _historyDate = date;
       _rows = const [];
       _crossRanks = {};
-      _selectedName = null;
       _historySeasonNotifier.value = null;
     });
     _load();
@@ -315,14 +309,8 @@ class _RankingPageState extends State<RankingPage> {
       IconButton(
         icon: const Icon(Icons.show_chart),
         tooltip: l10n.tooltipViewScoreTrend,
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(
-              builder: (context) =>
-                  RankingChartPage(kind: widget.kind, date: date),
-            ),
-          );
-        },
+        onPressed: () =>
+            context.openRankingChart(widget.kind, date: date),
       ),
       IconButton(
         icon: const Icon(Icons.format_list_numbered),
@@ -367,80 +355,18 @@ class _RankingPageState extends State<RankingPage> {
     if (_rows.isEmpty) {
       return Center(child: Text(AppLocalizations.of(context).emptyData));
     }
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final wide =
-            widget.kind != RankingKind.guild &&
-            constraints.maxWidth >= Breakpoints.sideBySide;
-        final list = _buildList(wide: wide);
-        if (!wide) return list;
-        return Row(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [
-            Expanded(child: list),
-            const SizedBox(width: 12),
-            SizedBox(
-              width: Breakpoints.detailPaneWidthFor(constraints.maxWidth),
-              child: _buildDetailPane(),
-            ),
-          ],
-        );
-      },
-    );
+    return _buildList();
   }
 
   void _openRow(RankRow row) {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (widget.kind != RankingKind.guild && context.isWideContent) {
-      setState(() => _selectedName = row.name);
-      return;
+    switch (widget.kind) {
+      case RankingKind.guild:
+        context.openGuildDetail(row.name, date: _historyDate);
+      case RankingKind.player:
+      case RankingKind.hell:
+        context.openPlayerDetail(row.name);
     }
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => switch (widget.kind) {
-          RankingKind.guild => GuildDetailPage(
-            guildName: row.name,
-            initialDate: _historyDate,
-          ),
-          RankingKind.player ||
-          RankingKind.hell => PlayerDetailPage(playerName: row.name),
-        },
-      ),
-    );
-  }
-
-  /// 右侧详情面板
-  Widget _buildDetailPane() {
-    final name = _selectedName;
-    if (name == null) {
-      final scheme = Theme.of(context).colorScheme;
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.touch_app_outlined,
-                size: 36,
-                color: scheme.onSurfaceVariant,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context).hintSelectPlayerDetail,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    return PlayerDetailPage(
-      embedded: true,
-      playerName: name,
-      onClose: () => setState(() => _selectedName = null),
-    );
   }
 
   /// 查询失败提示 + 重试
@@ -472,7 +398,7 @@ class _RankingPageState extends State<RankingPage> {
   }
 
   /// 榜单列表
-  Widget _buildList({required bool wide}) {
+  Widget _buildList() {
     final scheme = Theme.of(context).colorScheme;
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
@@ -516,7 +442,6 @@ class _RankingPageState extends State<RankingPage> {
           }?.toDouble();
 
           return CardTile(
-            selected: wide && row.name == _selectedName,
             onTap: () => _openRow(row),
             leading: CircleAvatar(
               radius: 14.0,

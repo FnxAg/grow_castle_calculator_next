@@ -9,95 +9,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 阵容经济计算页
-class BuildCalcPage extends ConsumerStatefulWidget {
+class BuildCalcPage extends ConsumerWidget {
   const BuildCalcPage({super.key});
 
   @override
-  ConsumerState<BuildCalcPage> createState() => _FormationCalcPageState();
-}
-
-class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
-    with TickerProviderStateMixin {
-  final Map<int, FocusNode> _numberFocusNodes = {};
-  final Map<int, FocusNode> _textFocusNodes = {};
-  final Map<int, TextEditingController> _numberControllers = {};
-  final Map<int, TextEditingController> _textControllers = {};
-
-  FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
-    return cache.putIfAbsent(id, () => FocusNode());
-  }
-
-  TextEditingController _numberControllerFor(int id) {
-    return _numberControllers.putIfAbsent(id, () {
-      final c = TextEditingController(
-        text: ref.read(currentUserProvider).numberValues[id] ?? '',
-      );
-      c.addListener(() => ref.users.setNumberValue(id, c.text));
-      return c;
-    });
-  }
-
-  TextEditingController _textControllerFor(int id) {
-    return _textControllers.putIfAbsent(id, () {
-      final c = TextEditingController(
-        text: ref.read(currentUserProvider).textValues[id] ?? '',
-      );
-      c.addListener(() => ref.users.setTextValue(id, c.text));
-      return c;
-    });
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    ref.listenManual(userReloadSignalProvider, (_, _) {
-      if (!mounted) return;
-      reloadForCurrentUser();
-    });
-  }
-
-  @override
-  void dispose() {
-    _discardCardCaches();
-    super.dispose();
-  }
-
-  /// 丢弃按卡片 id 缓存的控制器与焦点
-  void _discardCardCaches() {
-    for (final node in _numberFocusNodes.values) {
-      node.dispose();
-    }
-    for (final node in _textFocusNodes.values) {
-      node.dispose();
-    }
-    for (final c in _numberControllers.values) {
-      c.dispose();
-    }
-    for (final c in _textControllers.values) {
-      c.dispose();
-    }
-    _numberFocusNodes.clear();
-    _textFocusNodes.clear();
-    _numberControllers.clear();
-    _textControllers.clear();
-  }
-
-  void _removeCard(int id) {
-    _numberFocusNodes.remove(id)?.dispose();
-    _textFocusNodes.remove(id)?.dispose();
-    _numberControllers.remove(id)?.dispose();
-    _textControllers.remove(id)?.dispose();
-    ref.users.removeCard(id);
-  }
-
-  /// 切换用户：先丢弃上一个用户的输入缓存，重建后按新用户取值
-  void reloadForCurrentUser() {
-    _discardCardCaches();
-    setState(() {});
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final isWide = context.isWideContent;
     final l10n = AppLocalizations.of(context);
     final cardIds = ref.watch(currentUserCardIdsProvider);
@@ -147,7 +63,6 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
               );
             },
             onReorderItem: (oldIndex, newIndex) {
-              FocusManager.instance.primaryFocus?.unfocus();
               ref.users.reorderCard(oldIndex, newIndex);
             },
             itemBuilder: (context, index) {
@@ -156,11 +71,6 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage>
                 key: ValueKey(id),
                 id: id,
                 index: index,
-                textController: _textControllerFor(id),
-                numberController: _numberControllerFor(id),
-                textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                onRemove: _removeCard,
               );
             },
             buildDefaultDragHandles: false,

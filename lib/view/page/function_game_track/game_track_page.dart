@@ -7,7 +7,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_selector
 import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_chart_page.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -106,11 +106,7 @@ class _GameTrackPageState extends ConsumerState<GameTrackPage> {
       IconButton(
         icon: const Icon(Icons.show_chart),
         tooltip: l10n.tooltipViewTrackChart,
-        onPressed: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const GameTrackChartPage()),
-          );
-        },
+        onPressed: () => context.openGameTrackChart(),
       ),
       IconButton(
         icon: const Icon(Icons.sort),

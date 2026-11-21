@@ -8,8 +8,8 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_router.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
-import 'package:grow_castle_calculator_next/view/shell/main_shell.dart';
 
 class MyApp extends ConsumerStatefulWidget {
   const MyApp({super.key, this.lightDynamic, this.darkDynamic});
@@ -138,7 +138,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
         appSettings.languageNotifier,
       ]),
       builder: (context, _) {
-        return MaterialApp(
+        return MaterialApp.router(
           title: 'GCC Next',
           theme: lightTheme,
           darkTheme: darkTheme,
@@ -150,7 +150,7 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
           localeListResolutionCallback: _resolveLocale,
           locale: appSettings.languageNotifier.value.locale,
           themeMode: appSettings.themeModeNotifier.value,
-          home: const MainShell(),
+          routerConfig: appRouter,
           builder: (context, child) {
             Widget content = GestureDetector(
               onTap: () => FocusScope.of(context).unfocus(),

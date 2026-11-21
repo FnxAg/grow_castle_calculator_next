@@ -4,12 +4,7 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function_bonus_gold_calc/bonus_gold_calc_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function_income_trend/income_trend_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function_wave_status/wave_status_page.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -49,21 +44,13 @@ class FunctionPage extends ConsumerWidget {
             leading: const Icon(Icons.castle),
             title: Text(l10n.tabFormation),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const BuildCalcPage()),
-              );
-            },
+            onTap: () => context.openBuildCalc(),
           ),
           CardTile(
             leading: const Icon(Icons.bolt),
             title: Text(l10n.waveStatus),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const WaveStatusPage()),
-              );
-            },
+            onTap: () => context.openWaveStatus(),
           ),
           CardTile(
             leading: const Icon(Icons.percent),
@@ -83,13 +70,7 @@ class FunctionPage extends ConsumerWidget {
                 const Icon(Icons.chevron_right),
               ],
             ),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const BonusGoldCalcPage(),
-                ),
-              );
-            },
+            onTap: () => context.openBonusGold(),
           ),
           CardTile(
             leading: const Icon(Icons.auto_graph),
@@ -116,33 +97,19 @@ class FunctionPage extends ConsumerWidget {
                 const Icon(Icons.chevron_right),
               ],
             ),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const IncomePage()),
-              );
-            },
+            onTap: () => context.openIncome(),
           ),
           CardTile(
             leading: const Icon(Icons.trending_up),
             title: Text(l10n.incomeTrend),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const IncomeTrendPage(),
-                ),
-              );
-            },
+            onTap: () => context.openIncomeTrend(),
           ),
           CardTile(
             leading: const Icon(Icons.timeline),
             title: Text(l10n.gameTrack),
             trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const GameTrackPage()),
-              );
-            },
+            onTap: () => context.openGameTrack(),
           ),
         ],
       ),

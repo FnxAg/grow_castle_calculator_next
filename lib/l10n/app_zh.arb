@@ -3,6 +3,7 @@
   "tabFormation": "阵容",
   "emptyFormationHint": "暂无条目，点击右上角 + 添加",
   "tooltipAddEntry": "新增条目",
+  "titleEditFormationEntry": "编辑条目",
   "tooltipInputMode": "输入模式",
   "tooltipViewMode": "查看模式",
   "tooltipShowActions": "展开操作",

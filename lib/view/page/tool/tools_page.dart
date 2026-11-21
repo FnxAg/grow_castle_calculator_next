@@ -1,12 +1,7 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_best_line_calc/best_line_calc_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_dragon_simulator/dragon_simulator_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_item_comparer/item_comparer_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_quick_calculation/quick_calculation_page.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_rank/ranking_page.dart';
-import 'package:grow_castle_calculator_next/view/page/tool_search/search_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -29,11 +24,7 @@ class ToolsPage extends StatelessWidget {
               trailing: const Icon(Icons.chevron_right),
               onTap: () {
                 FocusManager.instance.primaryFocus?.unfocus();
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (context) => RankingPage(kind: kind),
-                  ),
-                );
+                context.openRanking(kind);
               },
             ),
           CardTile(
@@ -42,11 +33,7 @@ class ToolsPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const QuickCalculationPage(),
-                ),
-              );
+              context.openQuickCalc();
             },
           ),
           CardTile(
@@ -55,9 +42,7 @@ class ToolsPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SearchPage()),
-              );
+              context.openSearch();
             },
           ),
           CardTile(
@@ -66,11 +51,7 @@ class ToolsPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const DragonSimulatorPage(),
-                ),
-              );
+              context.openDragonSimulator();
             },
           ),
           CardTile(
@@ -79,11 +60,7 @@ class ToolsPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const ItemComparerPage(),
-                ),
-              );
+              context.openItemComparer();
             },
           ),
           CardTile(
@@ -92,11 +69,7 @@ class ToolsPage extends StatelessWidget {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (context) => const BestLineCalcPage(),
-                ),
-              );
+              context.openBestLine();
             },
           ),
         ],

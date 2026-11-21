@@ -1,4 +1,5 @@
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:grow_castle_calculator_next/core/calc/item_dps.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
@@ -9,6 +10,8 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_routes.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -178,13 +181,9 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
 
   /// 打开一件装备的词条编辑页，保存后写回并持久化
   Future<void> _editEquip(_EquipInput equip, int index) async {
-    final lines = await Navigator.of(context).push<List<_LineInput>>(
-      MaterialPageRoute(
-        builder: (context) => _EquipEditPage(
-          title: AppLocalizations.of(context).labelEquipPiece(index + 1),
-          lines: equip.lines,
-        ),
-      ),
+    final lines = await context.pushLocation<List<_LineInput>>(
+      AppRoutes.itemComparerEquip(index),
+      extra: equip.lines,
     );
     if (lines == null || !mounted) return;
     equip.lines
@@ -674,55 +673,23 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
   }
 }
 
-class _PanelFieldDialog extends StatefulWidget {
-  const _PanelFieldDialog({
-    required this.attribute,
-    required this.initialValue,
-  });
-
-  final AttributeType attribute;
-  final String initialValue;
-
-  @override
-  State<_PanelFieldDialog> createState() => _PanelFieldDialogState();
-}
-
-class _PanelFieldDialogState extends State<_PanelFieldDialog> {
-  late final TextEditingController _controller = TextEditingController(
-    text: widget.initialValue,
-  );
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-    return AlertDialog(
-      title: Text(widget.attribute.label),
-      content: CardField(
-        controller: _controller,
-        autofocus: true,
-        keyboardType: const TextInputType.numberWithOptions(decimal: true),
-        inputFormatters: [FilteringTextInputFormatter.allow(RegExp(r'[\d.]'))],
-        suffixText: widget.attribute.isPercent ? '%' : null,
-      ),
-      actions: [
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(),
-          child: Text(l10n.actionCancel),
-        ),
-        TextButton(
-          onPressed: () => Navigator.of(context).pop(_controller.text),
-          child: Text(l10n.actionSave),
-        ),
-      ],
+/// 装备词条编辑路由（路径相对 item-comparer）
+GoRoute buildItemComparerEquipRoute() => GoRoute(
+  path: 'equip/:index',
+  redirect: (context, state) {
+    final index = int.tryParse(state.pathParameters['index'] ?? '');
+    return (index == null || state.extra is! List<_LineInput>)
+        ? AppRoutes.itemComparer
+        : null;
+  },
+  builder: (context, state) {
+    final index = int.parse(state.pathParameters['index']!);
+    return _EquipEditPage(
+      title: AppLocalizations.of(context).labelEquipPiece(index + 1),
+      lines: state.extra! as List<_LineInput>,
     );
-  }
-}
+  },
+);
 
 /// 编辑一件装备的词条：三组词条常驻，未选择的组不参与计算
 class _EquipEditPage extends StatefulWidget {

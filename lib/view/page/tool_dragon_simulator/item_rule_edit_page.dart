@@ -1,10 +1,13 @@
 import 'package:flutter/services.dart';
+import 'package:go_router/go_router.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_display_rules.dart';
 import 'package:grow_castle_calculator_next/core/src/item/item_lines.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_routes.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:material_ui/material_ui.dart';
@@ -48,6 +51,29 @@ String? _valueRangeHelperText(ItemLine line, {required bool isMin}) {
       : '${min.format(fractionDigits: 1)} ≤ value ≤ ${max.format()}';
 }
 
+UserHighlightRule? _findRule(String? id) {
+  if (id == null) return null;
+  for (final rule in Stores.itemRuleStore.rules) {
+    if (rule.id == id) return rule;
+  }
+  return null;
+}
+
+/// 新增规则路由（路径相对 rules 页）
+GoRoute buildNewItemRuleRoute() => GoRoute(
+  path: 'new',
+  builder: (context, state) => const _RuleFormPage(),
+);
+
+/// 编辑规则路由（路径相对 rules 页）
+GoRoute buildEditItemRuleRoute() => GoRoute(
+  path: 'edit/:id',
+  redirect: (context, state) =>
+      _findRule(state.pathParameters['id']) == null ? AppRoutes.itemRules : null,
+  builder: (context, state) =>
+      _RuleFormPage(initial: _findRule(state.pathParameters['id'])),
+);
+
 /// 高亮规则管理页：查看、新增、编辑、删除用户自定义高亮规则
 class ItemRuleEditPage extends StatelessWidget {
   const ItemRuleEditPage({super.key});
@@ -58,9 +84,7 @@ class ItemRuleEditPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.highlightRules)),
       floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => Navigator.of(
-          context,
-        ).push(MaterialPageRoute(builder: (context) => const _RuleFormPage())),
+        onPressed: () => context.openNewItemRule(),
         icon: const Icon(Icons.add),
         label: Text(l10n.actionAddRule),
       ),
@@ -131,11 +155,7 @@ class _RuleCard extends StatelessWidget {
                   IconButton(
                     icon: const Icon(Icons.edit_outlined, size: 20),
                     tooltip: l10n.actionEdit,
-                    onPressed: () => Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (context) => _RuleFormPage(initial: rule),
-                      ),
-                    ),
+                    onPressed: () => context.openEditItemRule(rule.id),
                   ),
                   IconButton(
                     icon: const Icon(Icons.delete_outline, size: 20),

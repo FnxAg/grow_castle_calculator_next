@@ -7,10 +7,8 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
-import 'package:grow_castle_calculator_next/view/page/setting_about/about_page.dart';
-import 'package:grow_castle_calculator_next/view/page/setting_backup/backup_page.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
@@ -271,9 +269,7 @@ class _SettingPageState extends State<SettingPage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const SelectUserPage()),
-              );
+              context.openUserManagement();
             },
           ),
           ValueListenableBuilder<ThemeMode>(
@@ -421,9 +417,7 @@ class _SettingPageState extends State<SettingPage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const BackupPage()),
-              );
+              context.openBackup();
             },
           ),
           CardTile(
@@ -447,9 +441,7 @@ class _SettingPageState extends State<SettingPage> {
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (context) => const AboutPage()),
-              );
+              context.openAbout();
             },
           ),
         ],

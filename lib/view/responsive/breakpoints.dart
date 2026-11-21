@@ -12,12 +12,8 @@ abstract final class Breakpoints {
   static const double railWidth = 80.0;
   static const double expandedWidth = 240.0;
 
-  /// 内容区并排（主从两栏）阈值
+  /// 内容区并排阈值
   static const double sideBySide = 840.0;
-
-  /// 主从两栏的详情面板宽度
-  static double detailPaneWidthFor(double contentWidth) =>
-      (contentWidth * 0.36).clamp(360.0, 560.0);
 }
 
 /// 外壳形态

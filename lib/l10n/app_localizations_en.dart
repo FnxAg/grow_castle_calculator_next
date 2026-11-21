@@ -19,6 +19,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get tooltipAddEntry => 'Add entry';
 
   @override
+  String get titleEditFormationEntry => 'Edit Entry';
+
+  @override
   String get tooltipInputMode => 'Input mode';
 
   @override

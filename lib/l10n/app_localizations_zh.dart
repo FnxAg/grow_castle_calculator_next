@@ -19,6 +19,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get tooltipAddEntry => '新增条目';
 
   @override
+  String get titleEditFormationEntry => '编辑条目';
+
+  @override
   String get tooltipInputMode => '输入模式';
 
   @override
@@ -1580,6 +1583,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get tooltipAddEntry => '新增項目';
+
+  @override
+  String get titleEditFormationEntry => '編輯項目';
 
   @override
   String get tooltipInputMode => '輸入模式';

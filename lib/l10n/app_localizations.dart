@@ -117,6 +117,12 @@ abstract class AppLocalizations {
   /// **'新增条目'**
   String get tooltipAddEntry;
 
+  /// No description provided for @titleEditFormationEntry.
+  ///
+  /// In zh, this message translates to:
+  /// **'编辑条目'**
+  String get titleEditFormationEntry;
+
   /// No description provided for @tooltipInputMode.
   ///
   /// In zh, this message translates to:

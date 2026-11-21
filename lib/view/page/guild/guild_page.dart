@@ -15,9 +15,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_selector
 import 'package:grow_castle_calculator_next/utils/date.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
-import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
-import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
@@ -215,7 +213,6 @@ class _GuildPageState extends ConsumerState<GuildPage>
     setState(() {
       _historyDate = date;
       _members = const [];
-      _selectedMember = null;
       _playerRankByName = {};
       _hellRankByName = {};
       _guildRank = null;
@@ -232,7 +229,6 @@ class _GuildPageState extends ConsumerState<GuildPage>
   void reloadForCurrentUser() {
     setState(() {
       _members = const [];
-      _selectedMember = null;
     });
     _load();
   }
@@ -456,24 +452,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
     } else if (_members.isEmpty) {
       body = Center(child: Text(l10n.emptyGuildMembers));
     } else {
-      body = LayoutBuilder(
-        builder: (context, constraints) {
-          final wide = constraints.maxWidth >= Breakpoints.sideBySide;
-          final list = _buildMemberList(wide: wide);
-          if (!wide) return list;
-          return Row(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Expanded(child: list),
-              const SizedBox(width: 12),
-              SizedBox(
-                width: Breakpoints.detailPaneWidthFor(constraints.maxWidth),
-                child: _buildDetailPane(),
-              ),
-            ],
-          );
-        },
-      );
+      body = _buildMemberList();
     }
     // 作为公会榜详情页嵌入外层 Scaffold 时，不带用户页外壳
     if (!widget.userHeader) {
@@ -533,11 +512,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
               FilledButton.icon(
                 onPressed: () {
                   FocusManager.instance.primaryFocus?.unfocus();
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const SelectUserPage(),
-                    ),
-                  );
+                  context.openUserManagement();
                 },
                 icon: const Icon(Icons.group),
                 label: Text(l10n.actionGoToUserManagement),
@@ -554,58 +529,13 @@ class _GuildPageState extends ConsumerState<GuildPage>
     );
   }
 
-  /// 主从两栏下选中的成员名
-  String? _selectedMember;
-
   void _openMember(GuildMember member) {
     FocusManager.instance.primaryFocus?.unfocus();
-    if (context.isWideContent) {
-      setState(() => _selectedMember = member.name);
-      return;
-    }
-    Navigator.of(context).push(
-      MaterialPageRoute(
-        builder: (context) => PlayerDetailPage(playerName: member.name),
-      ),
-    );
-  }
-
-  /// 右侧详情面板
-  Widget _buildDetailPane() {
-    final name = _selectedMember;
-    if (name == null) {
-      final scheme = Theme.of(context).colorScheme;
-      return Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Icon(
-                Icons.touch_app_outlined,
-                size: 36,
-                color: scheme.onSurfaceVariant,
-              ),
-              const SizedBox(height: 12),
-              Text(
-                AppLocalizations.of(context).emptySelectMemberHint,
-                textAlign: TextAlign.center,
-                style: TextStyle(color: scheme.onSurfaceVariant),
-              ),
-            ],
-          ),
-        ),
-      );
-    }
-    return PlayerDetailPage(
-      embedded: true,
-      playerName: name,
-      onClose: () => setState(() => _selectedMember = null),
-    );
+    context.openPlayerDetail(member.name);
   }
 
   /// 成员列表，按赛季波数从大到小展示，当前用户高亮
-  Widget _buildMemberList({required bool wide}) {
+  Widget _buildMemberList() {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     final currentUser = ref.read(currentUsernameProvider);
@@ -635,7 +565,6 @@ class _GuildPageState extends ConsumerState<GuildPage>
                         getRedCrystalFromHellModeRank(hellRank ?? 0);
                     final lastOnline = _lastOnlineByLower[lowerName];
                     return CardTile(
-                      selected: wide && member.name == _selectedMember,
                       onTap: () => _openMember(member),
                       leading: CircleAvatar(
                         radius: 14.0,

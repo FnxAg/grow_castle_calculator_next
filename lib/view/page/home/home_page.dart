@@ -11,9 +11,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
-import 'package:grow_castle_calculator_next/view/page/public/player_detail_page.dart';
-import 'package:grow_castle_calculator_next/view/page/public/select_user_page.dart';
+import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
@@ -570,24 +568,14 @@ class _HomePageState extends ConsumerState<HomePage>
           trailing: const Icon(Icons.chevron_right),
           onTap: () {
             FocusManager.instance.primaryFocus?.unfocus();
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => PlayerDetailPage(
-                  playerName: ref.read(currentUsernameProvider),
-                ),
-              ),
-            );
+            context.openPlayerDetail(ref.read(currentUsernameProvider));
           },
         ),
       CardTile(
         leading: const Icon(Icons.castle),
         title: Text(l10n.tabFormation),
         trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const BuildCalcPage()),
-          );
-        },
+        onTap: () => context.openBuildCalc(),
       ),
       CardTile(
         leading: const Icon(Icons.group),
@@ -595,9 +583,7 @@ class _HomePageState extends ConsumerState<HomePage>
         trailing: const Icon(Icons.chevron_right),
         onTap: () {
           FocusManager.instance.primaryFocus?.unfocus();
-          Navigator.of(context).push(
-            MaterialPageRoute(builder: (context) => const SelectUserPage()),
-          );
+          context.openUserManagement();
         },
       ),
     ];

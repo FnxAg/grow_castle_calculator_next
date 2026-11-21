@@ -3,6 +3,7 @@
   "tabFormation": "Build",
   "emptyFormationHint": "No entries yet — tap + in the top right",
   "tooltipAddEntry": "Add entry",
+  "titleEditFormationEntry": "Edit Entry",
   "tooltipInputMode": "Input mode",
   "tooltipViewMode": "View mode",
   "tooltipShowActions": "Show actions",

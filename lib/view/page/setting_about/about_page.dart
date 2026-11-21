@@ -108,6 +108,7 @@ class _AboutPageState extends State<AboutPage> {
         title: l10n.aboutOpenSourceLicenses,
         onTap: () => showLicensePage(
           context: context,
+          useRootNavigator: true,
           applicationName: _packageInfo?.appName ?? 'GCC Next',
           applicationIcon: AppIcons.icon(size: 72.0),
         ),
