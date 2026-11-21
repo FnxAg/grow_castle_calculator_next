@@ -13,7 +13,6 @@ abstract final class AppRoutes {
 
   // 功能
   static const buildCalc = '$function/build-calc';
-  static String formationCard(int id) => '$buildCalc/card/$id';
   static const waveStatus = '$function/wave-status';
   static const bonusGold = '$function/bonus-gold';
   static const income = '$function/income';

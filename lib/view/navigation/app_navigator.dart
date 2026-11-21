@@ -25,8 +25,6 @@ extension AppNavigator on BuildContext {
     }
   }
 
-  void openFormationCard(int id) => appRouter.push(AppRoutes.formationCard(id));
-
   void openWaveStatus() => appRouter.push(AppRoutes.waveStatus);
 
   void openBonusGold() => appRouter.push(AppRoutes.bonusGold);
