@@ -1457,6 +1457,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get guildTotalScore => '公会总分';
 
   @override
+  String get guildWave => '公会波数';
+
+  @override
   String get sectionQuickAccess => '快捷入口';
 
   @override
@@ -3021,6 +3024,9 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get guildTotalScore => '公會總分';
+
+  @override
+  String get guildWave => '公會波數';
 
   @override
   String get sectionQuickAccess => '快捷入口';

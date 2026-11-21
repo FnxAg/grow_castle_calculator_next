@@ -32,6 +32,7 @@ class AppSettingsStore {
   static const String _gameTrackEnabledKey = 'gameTrackEnabled';
   static const String _gameTrackIntervalMinutesKey = 'gameTrackIntervalMinutes';
   static const String _sidebarExpandedKey = 'sidebarExpanded';
+  static const String _guildMemberCardsKey = 'guildMemberCards';
 
   static const String defaultApiUrl = 'https://fnxag.eu.org/gcapi';
 
@@ -51,6 +52,7 @@ class AppSettingsStore {
   final ValueNotifier<bool> gameTrackEnabledNotifier;
   final ValueNotifier<int> gameTrackIntervalMinutesNotifier;
   final ValueNotifier<bool> sidebarExpandedNotifier;
+  final ValueNotifier<bool> guildMemberCardsNotifier;
 
   AppSettingsStore()
     : _box = Hive.box(_boxName),
@@ -81,6 +83,9 @@ class AppSettingsStore {
       ),
       sidebarExpandedNotifier = ValueNotifier<bool>(
         _readSidebarExpanded(Hive.box(_boxName)),
+      ),
+      guildMemberCardsNotifier = ValueNotifier<bool>(
+        _readGuildMemberCards(Hive.box(_boxName)),
       );
 
   static ThemeMode _readThemeMode(Box box) {
@@ -139,6 +144,7 @@ class AppSettingsStore {
       _box,
     );
     sidebarExpandedNotifier.value = _readSidebarExpanded(_box);
+    guildMemberCardsNotifier.value = _readGuildMemberCards(_box);
   }
 
   void setThemeMode(ThemeMode mode) {
@@ -243,5 +249,16 @@ class AppSettingsStore {
     if (sidebarExpandedNotifier.value == expanded) return;
     sidebarExpandedNotifier.value = expanded;
     _box.put(_sidebarExpandedKey, expanded);
+  }
+
+  static bool _readGuildMemberCards(Box box) {
+    final raw = box.get(_guildMemberCardsKey);
+    return raw is bool ? raw : true;
+  }
+
+  void setGuildMemberCards(bool cards) {
+    if (guildMemberCardsNotifier.value == cards) return;
+    guildMemberCardsNotifier.value = cards;
+    _box.put(_guildMemberCardsKey, cards);
   }
 }

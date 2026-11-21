@@ -1561,6 +1561,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get guildTotalScore => 'Guild total score';
 
   @override
+  String get guildWave => 'Guild wave';
+
+  @override
   String get sectionQuickAccess => 'Quick Access';
 
   @override

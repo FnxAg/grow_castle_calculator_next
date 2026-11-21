@@ -2640,6 +2640,12 @@ abstract class AppLocalizations {
   /// **'公会总分'**
   String get guildTotalScore;
 
+  /// No description provided for @guildWave.
+  ///
+  /// In zh, this message translates to:
+  /// **'公会波数'**
+  String get guildWave;
+
   /// No description provided for @sectionQuickAccess.
   ///
   /// In zh, this message translates to:

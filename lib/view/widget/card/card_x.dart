@@ -11,11 +11,13 @@ class CardX extends StatelessWidget {
     required this.child,
     this.cardShape = CardShape.normal,
     this.cardType = CardType.normal,
+    this.margin = UIs.cardMargin,
   });
 
   final Widget child;
   final CardShape cardShape;
   final CardType cardType;
+  final EdgeInsetsGeometry margin;
 
   @override
   Widget build(BuildContext context) {
@@ -37,7 +39,7 @@ class CardX extends StatelessWidget {
           ),
         ),
       },
-      margin: UIs.cardMargin,
+      margin: margin,
       clipBehavior: Clip.antiAlias,
       child: child,
     );
