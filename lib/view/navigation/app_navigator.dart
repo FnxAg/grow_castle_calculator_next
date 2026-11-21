@@ -1,6 +1,7 @@
 import 'package:go_router/go_router.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_routes.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 页面跳转具名入口：跨分支用 go，同分支详情用 push。
@@ -17,7 +18,7 @@ extension AppNavigator on BuildContext {
 
   // 功能页：属于 Function 分支；从其它 tab 打开时切换分支
   void openBuildCalc() {
-    if (currentBranchRoot == AppRoutes.function) {
+    if (currentBranchRoot == AppRoutes.function || !isDesktopPlatform()) {
       appRouter.push(AppRoutes.buildCalc);
     } else {
       appRouter.go(AppRoutes.buildCalc);
@@ -76,7 +77,7 @@ extension AppNavigator on BuildContext {
 
   // 设置
   void openUserManagement() {
-    if (currentBranchRoot == AppRoutes.settings) {
+    if (currentBranchRoot == AppRoutes.settings || !isDesktopPlatform()) {
       appRouter.push(AppRoutes.users);
     } else {
       appRouter.go(AppRoutes.users);

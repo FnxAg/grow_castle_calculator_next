@@ -1,6 +1,6 @@
 import 'package:flutter/services.dart';
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/card_x.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -87,7 +87,7 @@ class _CardFieldState extends State<CardField> {
   /// 首次获得焦点（点击/autofocus 都经由 FocusNode 通知）时全选当前内容，
   /// 之后聚焦不再处理，由 TextField 默认行为放置光标。桌面端保持默认行为。
   void _onFocusChanged() {
-    if (_focusNode.hasFocus && !_selectedOnce && isMobile) {
+    if (_focusNode.hasFocus && !_selectedOnce && !isDesktopPlatform()) {
       _selectedOnce = true;
       widget.controller.selection = TextSelection(
         baseOffset: 0,

@@ -13,7 +13,6 @@ import 'package:grow_castle_calculator_next/provider/guild/guild_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_provider.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/date.dart';
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
@@ -468,7 +467,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
           children: [Text(l10n.tabGuild), appBarInfo],
         ),
         actions: [
-          if (isDesktop)
+          if (isDesktopPlatform())
             IconButton(
               onPressed: _refresh,
               tooltip: l10n.tooltipFetchData,

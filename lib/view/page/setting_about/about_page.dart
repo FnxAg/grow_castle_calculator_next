@@ -1,8 +1,8 @@
 import 'package:grow_castle_calculator_next/icon/icons.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/divider.dart';
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
@@ -167,7 +167,7 @@ class _AboutPageState extends State<AboutPage> {
           if (info != null) ...[
             const SizedBox(height: 4),
             Text(
-              'v${info.version}${isMobile ? ' (${info.buildNumber})' : ''}',
+              'v${info.version}${!isDesktopPlatform() ? ' (${info.buildNumber})' : ''}',
               style: textTheme.bodySmall?.copyWith(
                 color: scheme.onSurfaceVariant,
               ),

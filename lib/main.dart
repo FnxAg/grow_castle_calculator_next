@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:flutter_displaymode/flutter_displaymode.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -5,7 +7,6 @@ import 'package:get_it/get_it.dart';
 import 'package:grow_castle_calculator_next/app.dart';
 import 'package:grow_castle_calculator_next/core/service/backup_service.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:path_provider/path_provider.dart';
@@ -24,7 +25,7 @@ void main() async {
 
 Future<void> _init(ProviderContainer container) async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (isAndroid) {
+  if (Platform.isAndroid) {
     try {
       await FlutterDisplayMode.setHighRefreshRate();
     } catch (e) {

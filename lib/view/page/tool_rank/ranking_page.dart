@@ -7,11 +7,11 @@ import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/date.dart';
-import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
@@ -279,7 +279,7 @@ class _RankingPageState extends State<RankingPage> {
     final date = _historyDate;
 
     final List<Widget> appBarActions = <Widget>[
-      if (isDesktop && date == null)
+      if (isDesktopPlatform() && date == null)
         IconButton(
           icon: _isLoading
               ? const SizedBox(
