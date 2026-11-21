@@ -5,6 +5,7 @@ import 'package:grow_castle_calculator_next/provider/userdata/user_data_selector
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
@@ -38,7 +39,7 @@ class FunctionPage extends ConsumerWidget {
         ),
       ),
       body: ListView(
-        padding: UIs.padding,
+        padding: UIs.padding.copyWith(bottom: context.shellBottomInset),
         children: [
           CardTile(
             leading: const Icon(Icons.castle),

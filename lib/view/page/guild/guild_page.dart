@@ -16,12 +16,14 @@ import 'package:grow_castle_calculator_next/utils/date.dart';
 import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/history_date_actions.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -361,8 +363,11 @@ class _GuildPageState extends ConsumerState<GuildPage>
     // 本地副本
     final failure = refreshFailure;
     if (failure != null) {
-      final text = l10n.snackRefreshFailed(failure);
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(text)));
+      showTopNotice(
+        context,
+        l10n.snackRefreshFailed(failure),
+        isError: true,
+      );
     }
 
     // 成员列表加载成功且开关开启才发起各成员"上次在线"查询
@@ -402,12 +407,10 @@ class _GuildPageState extends ConsumerState<GuildPage>
       if (!mounted) return;
       final l10n = AppLocalizations.of(context);
       if (result is QueryError) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
-            ),
-          ),
+        showTopNotice(
+          context,
+          l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
+          isError: true,
         );
       }
     }
@@ -538,6 +541,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
   Widget _buildMemberList() {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final bottomInset = context.shellBottomInset;
     final currentUser = ref.read(currentUsernameProvider);
     final totalScore = _members.fold<int>(0, (sum, m) => sum + m.score);
     final String guild = widget.guildName ?? ref.read(currentUserGuildProvider);
@@ -552,7 +556,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
               Positioned.fill(
                 child: ListView.builder(
                   physics: const AlwaysScrollableScrollPhysics(),
-                  padding: UIs.padding,
+                  padding: UIs.padding.copyWith(bottom: bottomInset),
                   itemCount: _members.length,
                   itemBuilder: (context, index) {
                     final member = _members[index];
@@ -660,7 +664,7 @@ class _GuildPageState extends ConsumerState<GuildPage>
               Positioned(
                 left: 0,
                 right: 0,
-                bottom: 0,
+                bottom: bottomInset,
                 child: IgnorePointer(
                   ignoring: !_showCard,
                   child: SizeTransition(

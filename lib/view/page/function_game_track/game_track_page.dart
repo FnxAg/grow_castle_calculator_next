@@ -11,6 +11,7 @@ import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -63,18 +64,14 @@ class _GameTrackPageState extends ConsumerState<GameTrackPage> {
     if (!mounted) return;
     setState(_loadRecords);
     final l10n = AppLocalizations.of(context);
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(l10n.snackTrackDeleted),
-        action: SnackBarAction(
-          label: l10n.actionUndo,
-          onPressed: () async {
-            await Stores.gameTrackStore.restoreRecord(userId, record);
-            if (mounted) setState(_loadRecords);
-          },
-        ),
-      ),
+    showTopNotice(
+      context,
+      l10n.snackTrackDeleted,
+      actionLabel: l10n.actionUndo,
+      onAction: () async {
+        await Stores.gameTrackStore.restoreRecord(userId, record);
+        if (mounted) setState(_loadRecords);
+      },
     );
   }
 

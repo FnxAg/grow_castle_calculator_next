@@ -13,6 +13,7 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/service_error_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
 
@@ -258,7 +259,7 @@ class _BackupPageState extends State<BackupPage> {
     final l10n = AppLocalizations.of(context);
     // 未配置守卫必须在探测之前：否则会发出真实网络请求
     if (!_config.isConfigured) {
-      _snack(l10n.backupNotConfigured);
+      _snack(l10n.backupNotConfigured, isError: true);
       return;
     }
     if (_remoteBusy || _service.busyNotifier.value) return; // 防同帧双击
@@ -281,6 +282,7 @@ class _BackupPageState extends State<BackupPage> {
       error == null
           ? l10n.snackBackupSuccess
           : l10n.snackBackupFailed(backupFailureText(l10n, error)),
+      isError: error != null,
     );
   }
 
@@ -293,11 +295,16 @@ class _BackupPageState extends State<BackupPage> {
       return await _service.fetchRemoteInfo();
     } on WebDavException catch (e) {
       if (mounted) {
-        _snack(l10n.snackRemoteProbeFailed(webdavExceptionText(l10n, e)));
+        _snack(
+          l10n.snackRemoteProbeFailed(webdavExceptionText(l10n, e)),
+          isError: true,
+        );
       }
       return null;
     } catch (_) {
-      if (mounted) _snack(l10n.snackRemoteProbeFailedRetry);
+      if (mounted) {
+        _snack(l10n.snackRemoteProbeFailedRetry, isError: true);
+      }
       return null;
     } finally {
       if (mounted) setState(() => _remoteBusy = false);
@@ -409,7 +416,7 @@ class _BackupPageState extends State<BackupPage> {
   Future<void> _onRestoreFromCloud() async {
     final l10n = AppLocalizations.of(context);
     if (!_config.isConfigured) {
-      _snack(l10n.backupNotConfigured);
+      _snack(l10n.backupNotConfigured, isError: true);
       return;
     }
     if (_remoteBusy || _service.busyNotifier.value) return;
@@ -419,11 +426,17 @@ class _BackupPageState extends State<BackupPage> {
       preview = await _service.fetchRemotePreview();
     } on WebDavException catch (e) {
       if (mounted) {
-        _snack(l10n.snackFetchRemoteFailed(webdavExceptionText(l10n, e)));
+        _snack(
+          l10n.snackFetchRemoteFailed(webdavExceptionText(l10n, e)),
+          isError: true,
+        );
       }
     } on DataArchiveException catch (e) {
       if (mounted) {
-        _snack(l10n.snackInvalidCloudFile(archiveExceptionText(l10n, e)));
+        _snack(
+          l10n.snackInvalidCloudFile(archiveExceptionText(l10n, e)),
+          isError: true,
+        );
       }
     } finally {
       if (mounted) setState(() => _remoteBusy = false);
@@ -489,7 +502,9 @@ class _BackupPageState extends State<BackupPage> {
         utf8.encode(await _service.buildArchiveText()),
       );
     } catch (e) {
-      if (mounted) _snack(l10n.snackExportFailed);
+      if (mounted) {
+        _snack(l10n.snackExportFailed, isError: true);
+      }
       return;
     }
     final now = DateTime.now();
@@ -526,10 +541,17 @@ class _BackupPageState extends State<BackupPage> {
       final text = utf8.decode(await file.readAsBytes());
       contents = DataArchive.decode(text);
     } on DataArchiveException catch (e) {
-      if (mounted) _snack(l10n.snackInvalidFile(archiveExceptionText(l10n, e)));
+      if (mounted) {
+        _snack(
+          l10n.snackInvalidFile(archiveExceptionText(l10n, e)),
+          isError: true,
+        );
+      }
       return;
     } catch (e) {
-      if (mounted) _snack(l10n.snackReadFileFailed);
+      if (mounted) {
+        _snack(l10n.snackReadFileFailed, isError: true);
+      }
       return;
     }
     if (!mounted) return;
@@ -594,6 +616,7 @@ class _BackupPageState extends State<BackupPage> {
       error == null
           ? l10n.snackRestoreSuccess
           : l10n.snackRestoreFailed(backupFailureText(l10n, error)),
+      isError: error != null,
     );
   }
 
@@ -619,10 +642,8 @@ class _BackupPageState extends State<BackupPage> {
     return lines.join('\n');
   }
 
-  void _snack(String message) {
-    ScaffoldMessenger.of(context)
-      ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(message)));
+  void _snack(String message, {bool isError = false}) {
+    showTopNotice(context, message, isError: isError);
   }
 
   static String _clockOrUnknown(AppLocalizations l10n, DateTime? time) =>

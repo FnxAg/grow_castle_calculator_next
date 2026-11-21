@@ -36,11 +36,15 @@ class ShellLayout extends InheritedWidget {
     super.key,
     required this.mode,
     required this.contentWidth,
+    this.bottomOverlayInset = 0.0,
     required super.child,
   });
 
   final ShellMode mode;
   final double contentWidth;
+
+  /// 悬浮底栏占用的底部避让高度（未显示时为 0）
+  final double bottomOverlayInset;
 
   bool get isWideContent => contentWidth >= Breakpoints.sideBySide;
 
@@ -49,7 +53,9 @@ class ShellLayout extends InheritedWidget {
 
   @override
   bool updateShouldNotify(ShellLayout oldWidget) =>
-      mode != oldWidget.mode || contentWidth != oldWidget.contentWidth;
+      mode != oldWidget.mode ||
+      contentWidth != oldWidget.contentWidth ||
+      bottomOverlayInset != oldWidget.bottomOverlayInset;
 }
 
 /// 窗口/布局相关读取
@@ -64,6 +70,10 @@ extension ResponsiveContext on BuildContext {
   /// 窗口宽度是否达到侧栏形态
   bool get hasSidebar =>
       MediaQuery.sizeOf(this).width >= Breakpoints.sidebarRail;
+
+  /// 列表/底部浮层需要给悬浮底栏留出的底部高度
+  double get shellBottomInset =>
+      ShellLayout.maybeOf(this)?.bottomOverlayInset ?? 0.0;
 }
 
 bool isDesktopPlatform([TargetPlatform? platform]) {

@@ -130,10 +130,7 @@ class _ShellScaffoldState extends State<ShellScaffold>
 
   void _onDragStart(DragStartDetails details) {
     _settleImmediately();
-    _transition.beginDrag(
-      source: _transition.currentIndex,
-      sourceWasRoot: _isRootLocation,
-    );
+    _transition.beginDrag(source: _transition.currentIndex);
   }
 
   void _onDragUpdate(DragUpdateDetails details) {
@@ -204,7 +201,6 @@ class _ShellScaffoldState extends State<ShellScaffold>
     _transition.beginSwitch(
       from: current,
       to: index,
-      sourceWasRoot: _isRootLocation,
       direction: index > current ? 1 : -1,
     );
     widget.navigationShell.goBranch(index);
@@ -277,9 +273,8 @@ class _ShellScaffoldState extends State<ShellScaffold>
             : desktop || width >= Breakpoints.sidebarRail
             ? ShellMode.rail
             : ShellMode.compact;
-        final showBottomBar =
-            mode == ShellMode.compact &&
-            (_transition.isBusy ? _transition.sourceWasRoot : _isRootLocation);
+        // 悬浮底栏只在 compact 的分支根页显示
+        final barVisible = mode == ShellMode.compact && _isRootLocation;
         // 拖动会话内保持 recognizer 存活；窄屏只在分支根页允许滑动
         final swipeEnabled =
             mode.hasSidebar ||
@@ -288,51 +283,63 @@ class _ShellScaffoldState extends State<ShellScaffold>
             _isRootLocation;
 
         return Scaffold(
-          // 宽屏没有底部栏时 body 不会自动避让系统导航栏；compact 下由底栏处理
-          body: SafeArea(
-            top: false,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: [
-                if (mode.hasSidebar) ...[
-                  AppSidebar(
-                    expanded: mode == ShellMode.expanded,
-                    selectedIndex: _transition.displayIndex,
-                    pages: mainPages,
-                    onSelected: _selectPage,
-                    canToggleExpanded: width >= Breakpoints.sidebarExpanded,
-                    onToggleExpanded: () => appSettings.setSidebarExpanded(
-                      mode != ShellMode.expanded,
-                    ),
-                  ),
-                  const VerticalDivider(width: 0.3, thickness: 1),
-                ],
-                Expanded(
-                  // 固定在 Row 末尾，侧栏出现/消失时复用同一子树（分支栈不重建）
-                  key: const ValueKey('shell_content'),
-                  child: LayoutBuilder(
-                    builder: (context, constraints) {
-                      _transition.pageWidth = constraints.maxWidth;
-                      return ShellLayout(
-                        mode: mode,
-                        contentWidth: constraints.maxWidth,
-                        child: ShellTransitionScope(
-                          transition: _transition,
-                          child: RawGestureDetector(
-                            gestures: swipeEnabled
-                                ? _buildGestures(constraints.maxWidth)
-                                : const <Type, GestureRecognizerFactory>{},
-                            child: widget.navigationShell,
-                          ),
+          // 宽屏没有底部栏时 body 不会自动避让系统导航栏；compact 下由悬浮栏处理
+          body: Stack(
+            children: [
+              Positioned.fill(
+                child: SafeArea(
+                  top: false,
+                  child: Row(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      if (mode.hasSidebar) ...[
+                        AppSidebar(
+                          expanded: mode == ShellMode.expanded,
+                          selectedIndex: _transition.displayIndex,
+                          pages: mainPages,
+                          onSelected: _selectPage,
+                          canToggleExpanded:
+                              width >= Breakpoints.sidebarExpanded,
+                          onToggleExpanded: () => appSettings
+                              .setSidebarExpanded(mode != ShellMode.expanded),
                         ),
-                      );
-                    },
+                        const VerticalDivider(width: 0.3, thickness: 1),
+                      ],
+                      Expanded(
+                        // 固定在 Row 末尾，侧栏出现/消失时复用同一子树（分支栈不重建）
+                        key: const ValueKey('shell_content'),
+                        child: LayoutBuilder(
+                          builder: (context, constraints) {
+                            _transition.pageWidth = constraints.maxWidth;
+                            return ShellLayout(
+                              mode: mode,
+                              contentWidth: constraints.maxWidth,
+                              bottomOverlayInset: barVisible
+                                  ? floatingBarInset
+                                  : 0.0,
+                              child: ShellTransitionScope(
+                                transition: _transition,
+                                child: RawGestureDetector(
+                                  gestures: swipeEnabled
+                                      ? _buildGestures(constraints.maxWidth)
+                                      : const <
+                                          Type,
+                                          GestureRecognizerFactory
+                                        >{},
+                                  child: widget.navigationShell,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            ),
+              ),
+              if (mode == ShellMode.compact) _buildFloatingBar(barVisible),
+            ],
           ),
-          bottomNavigationBar: showBottomBar ? _buildBottomBar() : null,
         );
       },
     );
@@ -359,19 +366,187 @@ class _ShellScaffoldState extends State<ShellScaffold>
     };
   }
 
-  /// 窄屏底部导航
-  Widget _buildBottomBar() {
+  /// 悬浮底部导航：内容从其下方滚过，仅分支根页显示
+  ///
+  /// 自绘胶囊而非 NavigationBar：等宽分段、图标+文字常显，
+  /// 高亮块随 tab 滑动/拖动与页面位移同步。
+  Widget _buildFloatingBar(bool visible) {
     final l10n = AppLocalizations.of(context);
-    return NavigationBar(
-      selectedIndex: _transition.displayIndex,
-      height: kBottomNavigationBarHeight * 1.1,
-      animationDuration: shellAnimationDuration,
-      onDestinationSelected: _selectPage,
-      labelBehavior: NavigationDestinationLabelBehavior.onlyShowSelected,
-      destinations: [
-        for (final page in mainPages)
-          NavigationDestination(icon: Icon(page.icon), label: page.title(l10n)),
-      ],
+    final scheme = Theme.of(context).colorScheme;
+    return Positioned(
+      left: 0,
+      right: 0,
+      bottom: 0,
+      child: SafeArea(
+        top: false,
+        child: IgnorePointer(
+          ignoring: !visible,
+          child: AnimatedSlide(
+            offset: visible ? Offset.zero : const Offset(0, 1.2),
+            duration: floatingBarAnimationDuration,
+            curve: floatingBarAnimationCurve,
+            child: AnimatedOpacity(
+              opacity: visible ? 1.0 : 0.0,
+              duration: floatingBarAnimationDuration,
+              curve: floatingBarAnimationCurve,
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  floatingBarSideMargin,
+                  0.0,
+                  floatingBarSideMargin,
+                  floatingBarBottomMargin,
+                ),
+                child: Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(
+                      maxWidth: floatingBarMaxWidth,
+                    ),
+                    child: Material(
+                      color: scheme.surfaceContainerHigh,
+                      elevation: 6.0,
+                      borderRadius: BorderRadius.circular(
+                        floatingBarHeight / 2,
+                      ),
+                      clipBehavior: Clip.antiAlias,
+                      child: SizedBox(
+                        height: floatingBarHeight,
+                        child: MediaQuery.withClampedTextScaling(
+                          maxScaleFactor: 2.0,
+                          child: Padding(
+                            padding: const EdgeInsets.all(
+                              floatingBarInnerPadding,
+                            ),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final itemWidth =
+                                    constraints.maxWidth / mainPages.length;
+                                return Stack(
+                                  children: [
+                                    Positioned.fill(
+                                      child: AnimatedBuilder(
+                                        animation: _switchController,
+                                        builder: (context, _) {
+                                          final indicatorWidth =
+                                              itemWidth -
+                                              floatingBarIndicatorGap * 2;
+                                          final left =
+                                              itemWidth * _barPosition() +
+                                              floatingBarIndicatorGap;
+                                          // Align 在剩余空间上插值，需由左边界反推
+                                          final alignment =
+                                              2.0 *
+                                                  left /
+                                                  (constraints.maxWidth -
+                                                      indicatorWidth) -
+                                              1.0;
+                                          return Align(
+                                            alignment: Alignment(
+                                              alignment,
+                                              0.0,
+                                            ),
+                                            child: Container(
+                                              width: indicatorWidth,
+                                              height: constraints.maxHeight,
+                                              decoration: BoxDecoration(
+                                                color:
+                                                    scheme.secondaryContainer,
+                                                borderRadius:
+                                                    BorderRadius.circular(
+                                                      constraints.maxHeight / 2,
+                                                    ),
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
+                                    ),
+                                    Positioned.fill(
+                                      child: Row(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.stretch,
+                                        children: [
+                                          for (
+                                            var i = 0;
+                                            i < mainPages.length;
+                                            i++
+                                          )
+                                            Expanded(
+                                              child: _buildBarItem(
+                                                i,
+                                                l10n,
+                                                scheme,
+                                              ),
+                                            ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ),
+      ),
     );
+  }
+
+  Widget _buildBarItem(int index, AppLocalizations l10n, ColorScheme scheme) {
+    final page = mainPages[index];
+    final selected = _transition.displayIndex == index;
+    final foreground = selected
+        ? scheme.onSecondaryContainer
+        : scheme.onSurfaceVariant;
+    return Material(
+      type: MaterialType.transparency,
+      borderRadius: BorderRadius.circular(floatingBarHeight / 2),
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: () => _selectPage(index),
+        borderRadius: BorderRadius.circular(floatingBarHeight / 2),
+        child: Semantics(
+          selected: selected,
+          inMutuallyExclusiveGroup: true,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(
+              horizontal: floatingBarIndicatorGap,
+            ),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(page.icon, size: floatingBarIconSize, color: foreground),
+                const SizedBox(height: 2.0),
+                Text(
+                  page.title(l10n),
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: floatingBarLabelFontSize,
+                    height: 1.0,
+                    color: foreground,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// 高亮块位置（带小数的 tab 索引）：过渡中与页面位移同步
+  double _barPosition() {
+    final incoming = _transition.incomingIndex;
+    if (incoming == null) return _transition.displayIndex.toDouble();
+    final outgoing = _transition.outgoingIndex;
+    final progress = _switchController.value;
+    return outgoing + (incoming - outgoing) * progress;
   }
 }

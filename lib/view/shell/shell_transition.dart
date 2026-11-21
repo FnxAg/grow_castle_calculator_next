@@ -25,9 +25,6 @@ class ShellTransition extends ChangeNotifier {
 
   bool dragging = false;
 
-  /// 过渡开始时 source 是否在分支根页
-  bool sourceWasRoot = true;
-
   int slideDirection = 1;
   double dragDistance = 0.0;
   double pageWidth = 0.0;
@@ -54,30 +51,23 @@ class ShellTransition extends ChangeNotifier {
     currentIndex = index;
   }
 
-  void beginSwitch({
-    required int from,
-    required int to,
-    required bool sourceWasRoot,
-    required int direction,
-  }) {
+  void beginSwitch({required int from, required int to, required int direction}) {
     sourceIndex = from;
     currentIndex = to;
     incomingIndex = to;
     outgoingIndex = from;
     slideDirection = direction;
-    this.sourceWasRoot = sourceWasRoot;
     phase = ShellSwitchPhase.switching;
     notifyListeners();
   }
 
-  void beginDrag({required int source, required bool sourceWasRoot}) {
+  void beginDrag({required int source}) {
     sourceIndex = source;
     currentIndex = source;
     outgoingIndex = source;
     incomingIndex = null;
     dragTarget = null;
     dragging = true;
-    this.sourceWasRoot = sourceWasRoot;
     dragDistance = 0.0;
     phase = ShellSwitchPhase.idle;
     notifyListeners();

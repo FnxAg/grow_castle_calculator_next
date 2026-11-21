@@ -12,6 +12,7 @@ import 'package:grow_castle_calculator_next/view/widget/unit_summary_sheet.dart'
 import 'package:grow_castle_calculator_next/view/widget/username_textfield.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SelectUserPage extends ConsumerStatefulWidget {
@@ -36,11 +37,20 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.settingsUserManagement)),
+      appBar: AppBar(
+        title: Text(l10n.settingsUserManagement),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.person_add_alt_1),
+            tooltip: l10n.actionAddUser,
+            onPressed: _addUserDialog,
+          ),
+        ],
+      ),
       body: SafeArea(
         top: false,
         child: ListView.builder(
-          padding: UIs.padding,
+          padding: UIs.padding.copyWith(bottom: 8.0),
           itemCount: userList.length,
           itemBuilder: (ctx, index) {
             final String username = userList[index];
@@ -125,11 +135,6 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
           },
         ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _addUserDialog,
-        icon: const Icon(Icons.add),
-        label: Text(l10n.actionAddUser),
-      ),
     );
   }
 
@@ -137,12 +142,10 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
   void _showUnitSummary(String username) {
     final data = ref.read(usersProvider).findByUsername(username);
     if (data == null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(
-            AppLocalizations.of(context).errorUserDataNotFound(username),
-          ),
-        ),
+      showTopNotice(
+        context,
+        AppLocalizations.of(context).errorUserDataNotFound(username),
+        isError: true,
       );
       return;
     }
@@ -255,8 +258,7 @@ class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
         ref.users.createUser(username, guild: _guildController.text.trim());
         ref.users.setCurrentUser(username);
       } catch (e) {
-        ScaffoldMessenger.of(context)
-            .showSnackBar(SnackBar(content: Text(e.toString())));
+        showTopNotice(context, e.toString(), isError: true);
       }
     }
     Navigator.of(context).pop();
@@ -349,8 +351,7 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
         );
       }
     } catch (e) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(e.toString())));
+      showTopNotice(context, e.toString(), isError: true);
     }
     Navigator.of(context).pop();
   }

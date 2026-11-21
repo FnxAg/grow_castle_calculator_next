@@ -18,8 +18,11 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dar
 import 'package:grow_castle_calculator_next/view/widget/app_bar/history_date_actions.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/season_indicator.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
+
+enum _RankingMenuAction { chart, milestones }
 
 /// 榜单页
 class RankingPage extends StatefulWidget {
@@ -192,8 +195,10 @@ class _RankingPageState extends State<RankingPage> {
     });
 
     if (refreshFailure != null) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(l10n.snackRefreshFailed(refreshFailure!))),
+      showTopNotice(
+        context,
+        l10n.snackRefreshFailed(refreshFailure!),
+        isError: true,
       );
     }
   }
@@ -273,19 +278,8 @@ class _RankingPageState extends State<RankingPage> {
 
     final date = _historyDate;
 
-    final floatingActionButton = FloatingActionButton.extended(
-      onPressed: () => setState(() => _viewWPHMode = !_viewWPHMode),
-      label: AnimatedTextSwitcher(
-        child: Text(
-          !_viewWPHMode ? l10n.labelScore : l10n.labelSeasonWPH,
-          key: ValueKey<bool>(_viewWPHMode),
-        ),
-      ),
-      icon: Icon(Icons.swap_vert),
-    );
-
     final List<Widget> appBarActions = <Widget>[
-      if (isDesktop && date == null) ...[
+      if (isDesktop && date == null)
         IconButton(
           icon: _isLoading
               ? const SizedBox(
@@ -297,25 +291,33 @@ class _RankingPageState extends State<RankingPage> {
           tooltip: l10n.tooltipFetchData,
           onPressed: () => _load(force: true),
         ),
-        ?switch (widget.kind) {
-          RankingKind.player || RankingKind.guild => IconButton(
-            icon: const Icon(Icons.swap_vert),
-            tooltip: !_viewWPHMode ? l10n.labelScore : l10n.labelSeasonWPH,
-            onPressed: () => setState(() => _viewWPHMode = !_viewWPHMode),
-          ),
-          RankingKind.hell => null,
+      if (widget.kind != RankingKind.hell)
+        IconButton(
+          icon: const Icon(Icons.swap_vert),
+          tooltip: !_viewWPHMode ? l10n.labelScore : l10n.labelSeasonWPH,
+          onPressed: () => setState(() => _viewWPHMode = !_viewWPHMode),
+        ),
+      PopupMenuButton<_RankingMenuAction>(
+        icon: const Icon(Icons.more_vert),
+        onSelected: (action) {
+          switch (action) {
+            case _RankingMenuAction.chart:
+              context.openRankingChart(widget.kind, date: date);
+            case _RankingMenuAction.milestones:
+              _showMilestoneRanks();
+          }
         },
-      ],
-      IconButton(
-        icon: const Icon(Icons.show_chart),
-        tooltip: l10n.tooltipViewScoreTrend,
-        onPressed: () =>
-            context.openRankingChart(widget.kind, date: date),
-      ),
-      IconButton(
-        icon: const Icon(Icons.format_list_numbered),
-        tooltip: l10n.tooltipViewMilestoneRanks,
-        onPressed: _rows.isEmpty ? null : _showMilestoneRanks,
+        itemBuilder: (context) => [
+          PopupMenuItem(
+            value: _RankingMenuAction.chart,
+            child: Text(l10n.tooltipViewScoreTrend),
+          ),
+          PopupMenuItem(
+            value: _RankingMenuAction.milestones,
+            enabled: _rows.isNotEmpty,
+            child: Text(l10n.tooltipViewMilestoneRanks),
+          ),
+        ],
       ),
       HistoryDateActions(date: date, onChanged: _onHistoryChanged),
     ];
@@ -337,11 +339,6 @@ class _RankingPageState extends State<RankingPage> {
         actions: appBarActions,
       ),
       body: SafeArea(top: false, child: _buildBody()),
-      floatingActionButton: switch (widget.kind) {
-        RankingKind.player ||
-        RankingKind.guild => !isDesktop ? floatingActionButton : null,
-        RankingKind.hell => null,
-      },
     );
   }
 
@@ -409,9 +406,7 @@ class _RankingPageState extends State<RankingPage> {
     return RefreshIndicator(
       onRefresh: () => _load(force: true),
       child: ListView.builder(
-        padding: UIs.padding.copyWith(
-          bottom: 72.0 + MediaQuery.of(context).padding.bottom,
-        ),
+        padding: UIs.padding.copyWith(bottom: 8.0),
         itemCount: _rows.length,
         itemBuilder: (context, index) {
           final row = _rows[index];

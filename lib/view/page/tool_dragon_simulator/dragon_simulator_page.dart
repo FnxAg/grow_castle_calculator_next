@@ -11,6 +11,7 @@ import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:material_ui/material_ui.dart';
 
 const _rollBatchSize = 500;
@@ -165,8 +166,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
     if (_rolling) return;
     final l10n = AppLocalizations.of(context);
     if (!Stores.itemRuleStore.rules.any((r) => r.enabled)) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.snackNeedEnabledRule)));
+      showTopNotice(context, l10n.snackNeedEnabledRule, isError: true);
       return;
     }
     setState(() {
@@ -220,7 +220,6 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final scheme = theme.colorScheme;
     final l10n = AppLocalizations.of(context);
     final showEasterEggNames = context.isChineseLocale && _showEasterEggNames;
     final levelCount = <ItemLevel, int>{};
@@ -258,15 +257,10 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                               () => _showEasterEggNames = !_showEasterEggNames,
                             );
                             if (_showEasterEggNames) {
-                              ScaffoldMessenger.of(context).showSnackBar(
-                                SnackBar(
-                                  content: Text(
-                                    l10n.eastereggDragonName,
-                                    style: TextStyle(color: scheme.onPrimary),
-                                  ),
-                                  duration: const Duration(seconds: 5),
-                                  backgroundColor: scheme.primary,
-                                ),
+                              showTopNotice(
+                                context,
+                                l10n.eastereggDragonName,
+                                duration: const Duration(seconds: 5),
                               );
                             }
                           }

@@ -750,17 +750,21 @@ class _EquipEditPageState extends State<_EquipEditPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(widget.title)),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: _save,
-        icon: const Icon(Icons.save),
-        label: Text(l10n.actionSave),
+      appBar: AppBar(
+        title: Text(widget.title),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.save_outlined),
+            tooltip: l10n.actionSave,
+            onPressed: _save,
+          ),
+        ],
       ),
       body: SafeArea(
         top: false,
         child: ListView(
           padding: EdgeInsets.only(
-            bottom: 88,
+            bottom: 8.0,
             left: UIs.padding.left,
             right: UIs.padding.right,
           ),

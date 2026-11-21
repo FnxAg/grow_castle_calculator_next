@@ -16,6 +16,7 @@ import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/subtitle_pill_wrap.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
@@ -310,10 +311,9 @@ class _HomePageState extends ConsumerState<HomePage>
     final now = DateTime.now();
     final last = _lastQueryAt;
     if (last != null && now.difference(last) < _queryCooldown) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).snackQueryTooFrequent),
-        ),
+      showTopNotice(
+        context,
+        AppLocalizations.of(context).snackQueryTooFrequent,
       );
       return;
     }
@@ -335,12 +335,10 @@ class _HomePageState extends ConsumerState<HomePage>
       if (result is PlayerQueryResult) {
         if (result.wave == 0 && result.queryDate.isEmpty) {
           if (!silent) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(
-                  AppLocalizations.of(context).snackUserBanned(name),
-                ),
-              ),
+            showTopNotice(
+              context,
+              AppLocalizations.of(context).snackUserBanned(name),
+              isError: true,
             );
           }
           return;
@@ -349,27 +347,22 @@ class _HomePageState extends ConsumerState<HomePage>
         if (!mounted) return;
         if (!silent) {
           final l10n = AppLocalizations.of(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                l10n.snackQuerySuccess(
-                  name,
-                  result.wave.format(),
-                  result.seasonalScore.format(),
-                ),
-              ),
+          showTopNotice(
+            context,
+            l10n.snackQuerySuccess(
+              name,
+              result.wave.format(),
+              result.seasonalScore.format(),
             ),
           );
         }
       } else if (result is QueryError) {
         if (!silent) {
           final l10n = AppLocalizations.of(context);
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(
-                l10n.snackQueryFailed(_queryErrorMessage(l10n, name, result)),
-              ),
-            ),
+          showTopNotice(
+            context,
+            l10n.snackQueryFailed(_queryErrorMessage(l10n, name, result)),
+            isError: true,
           );
         }
       }
@@ -626,10 +619,11 @@ class _HomePageState extends ConsumerState<HomePage>
       ),
       body: LayoutBuilder(
         builder: (context, constraints) {
+          final bottomInset = context.shellBottomInset;
           // 窄屏
           if (constraints.maxWidth < Breakpoints.sideBySide) {
             return ListView(
-              padding: UIs.padding,
+              padding: UIs.padding.copyWith(bottom: bottomInset),
               children: [
                 Column(children: [...cardList, ...quickAccess]),
               ],
@@ -637,7 +631,7 @@ class _HomePageState extends ConsumerState<HomePage>
           }
           // 宽屏
           return ListView(
-            padding: UIs.padding,
+            padding: UIs.padding.copyWith(bottom: bottomInset),
             children: [
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,

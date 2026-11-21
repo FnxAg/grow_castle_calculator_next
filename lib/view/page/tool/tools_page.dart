@@ -2,6 +2,7 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -15,7 +16,7 @@ class ToolsPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tabTools)),
       body: ListView(
-        padding: UIs.padding,
+        padding: UIs.padding.copyWith(bottom: context.shellBottomInset),
         children: [
           for (final kind in RankingKind.values)
             CardTile(

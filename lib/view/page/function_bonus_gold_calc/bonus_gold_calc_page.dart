@@ -9,6 +9,7 @@ import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dar
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 单条收入相对金挂成本的收益率，成本非正时记 0
@@ -167,12 +168,9 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
             onPressed: () {
               Navigator.of(context).pop();
               ref.users.setCurrentUserGabBonus(filled);
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text(
-                    l10n.snackAppliedGabBonus(filled.format(fractionDigits: 2)),
-                  ),
-                ),
+              showTopNotice(
+                context,
+                l10n.snackAppliedGabBonus(filled.format(fractionDigits: 2)),
               );
             },
             child: Text(l10n.actionConfirm),
@@ -236,16 +234,8 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
       },
     );
 
-    final Widget floatingActionButton = FloatingActionButton(
-      onPressed: () => _showIncomeDialog(),
-      tooltip: l10n.actionAdd,
-      child: const Icon(Icons.add),
-    );
-
     final Widget list = ListView.builder(
-      padding: EdgeInsets.only(
-        bottom: 72 + MediaQuery.of(context).padding.bottom,
-      ),
+      padding: const EdgeInsets.only(bottom: 8.0),
       itemCount: _incomes.length,
       itemBuilder: (context, index) {
         final income = _incomes[index];
@@ -292,7 +282,14 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
           crossAxisAlignment: .start,
           children: [Text(l10n.wavePushIncomeCalc), appBarInfo],
         ),
-        actions: [popupMenuButton],
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: l10n.actionAdd,
+            onPressed: () => _showIncomeDialog(),
+          ),
+          popupMenuButton,
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -313,7 +310,6 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
           ),
         ),
       ),
-      floatingActionButton: floatingActionButton,
     );
   }
 }

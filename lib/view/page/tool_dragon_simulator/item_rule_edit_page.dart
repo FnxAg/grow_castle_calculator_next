@@ -9,6 +9,7 @@ import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_routes.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -82,11 +83,15 @@ class ItemRuleEditPage extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: Text(l10n.highlightRules)),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => context.openNewItemRule(),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.actionAddRule),
+      appBar: AppBar(
+        title: Text(l10n.highlightRules),
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.add),
+            tooltip: l10n.actionAddRule,
+            onPressed: () => context.openNewItemRule(),
+          ),
+        ],
       ),
       body: SafeArea(
         top: false,
@@ -97,7 +102,7 @@ class ItemRuleEditPage extends StatelessWidget {
               return Center(child: Text(l10n.emptyItemRuleHint));
             }
             return ListView.builder(
-              padding: const EdgeInsets.fromLTRB(16, 8, 16, 88),
+              padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
               itemCount: rules.length,
               itemBuilder: (context, index) => _RuleCard(rule: rules[index]),
             );
@@ -353,8 +358,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
   }
 
   void _showHint(String message) {
-    ScaffoldMessenger.of(context)
-        .showSnackBar(SnackBar(content: Text(message)));
+    showTopNotice(context, message, isError: true);
   }
 
   void _save() {

@@ -9,7 +9,9 @@ import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
 import 'package:grow_castle_calculator_next/view/page/setting/widget/setting_edit_dialog.dart';
+import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -54,16 +56,13 @@ class _SettingPageState extends State<SettingPage> {
     setState(() => _checking = false);
 
     if (release == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text(l10n.snackUpdateCheckFailed)));
+      showTopNotice(context, l10n.snackUpdateCheckFailed, isError: true);
       return;
     }
     final current = _currentVersion;
     if (current != null &&
         UpdateChecker.compareVersions(release.tagName, current) <= 0) {
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text(l10n.snackAlreadyLatest(current))));
+      showTopNotice(context, l10n.snackAlreadyLatest(current));
       return;
     }
     final body = release.body;
@@ -125,10 +124,10 @@ class _SettingPageState extends State<SettingPage> {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).snackCannotOpenLink(url)),
-        ),
+      showTopNotice(
+        context,
+        AppLocalizations.of(context).snackCannotOpenLink(url),
+        isError: true,
       );
     }
   }
@@ -260,7 +259,7 @@ class _SettingPageState extends State<SettingPage> {
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tabSettings)),
       body: ListView(
-        padding: UIs.padding,
+        padding: UIs.padding.copyWith(bottom: context.shellBottomInset),
         children: [
           CardTile(
             leading: const Icon(Icons.group),

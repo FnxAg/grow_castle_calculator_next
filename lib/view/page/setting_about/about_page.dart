@@ -5,6 +5,7 @@ import 'package:grow_castle_calculator_next/utils/platform_utils.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -156,12 +157,7 @@ class _AboutPageState extends State<AboutPage> {
       child: Column(
         children: [
           GestureDetector(
-            onLongPress: () => ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text(l10n.fromDev),
-                backgroundColor: scheme.primary,
-              ),
-            ),
+            onLongPress: () => showTopNotice(context, l10n.fromDev),
             child: AppIcons.icon(size: 88.0),
           ),
           Text(
@@ -262,15 +258,15 @@ class _AboutPageState extends State<AboutPage> {
     onTap: () => _launchUrl(url),
   );
 
-  /// 用系统浏览器打开外部链接；失败时 SnackBar 提示
+  /// 用系统浏览器打开外部链接；失败时顶部提示
   Future<void> _launchUrl(String url) async {
     final uri = Uri.parse(url);
     if (!await launchUrl(uri, mode: LaunchMode.externalApplication)) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(AppLocalizations.of(context).snackCannotOpenLink(url)),
-        ),
+      showTopNotice(
+        context,
+        AppLocalizations.of(context).snackCannotOpenLink(url),
+        isError: true,
       );
     }
   }

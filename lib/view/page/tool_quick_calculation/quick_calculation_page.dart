@@ -9,6 +9,7 @@ import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
 import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:material_ui/material_ui.dart';
 
 enum _Field { wave, gp, gpCN, gold }
@@ -112,11 +113,10 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
         _recalculate(field);
       }
     }
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('${_labelOf(l10n, field)} -> $text'),
-        duration: const Duration(seconds: 1),
-      ),
+    showTopNotice(
+      context,
+      '${_labelOf(l10n, field)} -> $text',
+      duration: const Duration(seconds: 1),
     );
     setState(() {});
   }
