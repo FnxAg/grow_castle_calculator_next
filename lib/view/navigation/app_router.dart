@@ -3,7 +3,6 @@ import 'package:grow_castle_calculator_next/view/navigation/app_routes.dart';
 import 'package:grow_castle_calculator_next/view/page/function/function_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function_bonus_gold_calc/bonus_gold_calc_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function_build_calc/build_calc_page.dart';
-import 'package:grow_castle_calculator_next/view/page/function_build_calc/formation_card_edit_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_chart_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function_game_track/game_track_page.dart';
 import 'package:grow_castle_calculator_next/view/page/function_income_calc/income_page.dart';
@@ -76,19 +75,6 @@ GoRouter createAppRouter({String initialLocation = AppRoutes.home}) {
                   GoRoute(
                     path: 'build-calc',
                     builder: (context, state) => const BuildCalcPage(),
-                    routes: <RouteBase>[
-                      GoRoute(
-                        path: 'card/:id',
-                        redirect: (context, state) =>
-                            int.tryParse(state.pathParameters['id'] ?? '') ==
-                                null
-                            ? AppRoutes.buildCalc
-                            : null,
-                        builder: (context, state) => FormationCardEditPage(
-                          id: int.parse(state.pathParameters['id']!),
-                        ),
-                      ),
-                    ],
                   ),
                   GoRoute(
                     path: 'wave-status',

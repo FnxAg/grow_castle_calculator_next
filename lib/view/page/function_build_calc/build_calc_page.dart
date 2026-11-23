@@ -8,11 +8,94 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 阵容经济计算页
-class BuildCalcPage extends ConsumerWidget {
+class BuildCalcPage extends ConsumerStatefulWidget {
   const BuildCalcPage({super.key});
 
   @override
-  Widget build(BuildContext context, WidgetRef ref) {
+  ConsumerState<BuildCalcPage> createState() => _FormationCalcPageState();
+}
+
+class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
+  final Map<int, FocusNode> _numberFocusNodes = {};
+  final Map<int, FocusNode> _textFocusNodes = {};
+  final Map<int, TextEditingController> _numberControllers = {};
+  final Map<int, TextEditingController> _textControllers = {};
+
+  FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
+    return cache.putIfAbsent(id, () => FocusNode());
+  }
+
+  TextEditingController _numberControllerFor(int id) {
+    return _numberControllers.putIfAbsent(id, () {
+      final c = TextEditingController(
+        text: ref.read(currentUserProvider).numberValues[id] ?? '',
+      );
+      c.addListener(() => ref.users.setNumberValue(id, c.text));
+      return c;
+    });
+  }
+
+  TextEditingController _textControllerFor(int id) {
+    return _textControllers.putIfAbsent(id, () {
+      final c = TextEditingController(
+        text: ref.read(currentUserProvider).textValues[id] ?? '',
+      );
+      c.addListener(() => ref.users.setTextValue(id, c.text));
+      return c;
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    ref.listenManual(userReloadSignalProvider, (_, _) {
+      if (!mounted) return;
+      reloadForCurrentUser();
+    });
+  }
+
+  @override
+  void dispose() {
+    _discardCardCaches();
+    super.dispose();
+  }
+
+  /// 丢弃按卡片 id 缓存的控制器与焦点
+  void _discardCardCaches() {
+    for (final node in _numberFocusNodes.values) {
+      node.dispose();
+    }
+    for (final node in _textFocusNodes.values) {
+      node.dispose();
+    }
+    for (final c in _numberControllers.values) {
+      c.dispose();
+    }
+    for (final c in _textControllers.values) {
+      c.dispose();
+    }
+    _numberFocusNodes.clear();
+    _textFocusNodes.clear();
+    _numberControllers.clear();
+    _textControllers.clear();
+  }
+
+  void _removeCard(int id) {
+    _numberFocusNodes.remove(id)?.dispose();
+    _textFocusNodes.remove(id)?.dispose();
+    _numberControllers.remove(id)?.dispose();
+    _textControllers.remove(id)?.dispose();
+    ref.users.removeCard(id);
+  }
+
+  /// 切换用户：先丢弃上一个用户的输入缓存，重建后按新用户取值
+  void reloadForCurrentUser() {
+    _discardCardCaches();
+    setState(() {});
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final cardIds = ref.watch(currentUserCardIdsProvider);
 
@@ -55,6 +138,7 @@ class BuildCalcPage extends ConsumerWidget {
               );
             },
             onReorderItem: (oldIndex, newIndex) {
+              FocusManager.instance.primaryFocus?.unfocus();
               ref.users.reorderCard(oldIndex, newIndex);
             },
             itemBuilder: (context, index) {
@@ -63,6 +147,11 @@ class BuildCalcPage extends ConsumerWidget {
                 key: ValueKey(id),
                 id: id,
                 index: index,
+                textController: _textControllerFor(id),
+                numberController: _numberControllerFor(id),
+                textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                onRemove: _removeCard,
               );
             },
             buildDefaultDragHandles: false,
@@ -77,14 +166,25 @@ class BuildCalcPage extends ConsumerWidget {
         AppBarItem.currentUserGpCn(),
       ],
     );
+    // 随系统字号给出的信息行高度
+    final infoRowHeight =
+        MediaQuery.textScalerOf(context).scale(12.0) * 1.5 + 10.0;
 
     return Scaffold(
       appBar: AppBar(
-        title: Column(
-          crossAxisAlignment: .start,
-          children: [Text(l10n.tabFormation), appBarInfo],
-        ),
+        title: Text(l10n.tabFormation),
         actions: appBarActions,
+        // 信息行独占一整行，避免和标题/返回键/操作按钮抢宽度
+        bottom: PreferredSize(
+          preferredSize: Size.fromHeight(infoRowHeight),
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 8.0),
+            child: Align(
+              alignment: AlignmentDirectional.centerStart,
+              child: appBarInfo,
+            ),
+          ),
+        ),
       ),
       body: SafeArea(top: false, child: formationExpanded),
     );
