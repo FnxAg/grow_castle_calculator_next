@@ -493,14 +493,49 @@ class _GuildPageState extends ConsumerState<GuildPage> {
     context.openPlayerDetail(member.name);
   }
 
-  /// 成员区：公会排名卡嵌在内容顶部，随列表一起滚动
+  /// 成员区：排名卡作为共同头部，仅成员内容整体淡入缩放切换
   Widget _buildMemberView(bool cards) {
     final bottomInset = context.shellBottomInset;
+    final duration = MediaQuery.disableAnimationsOf(context)
+        ? Duration.zero
+        : const Duration(milliseconds: 280);
     return RefreshIndicator(
       onRefresh: _refresh,
-      child: cards
-          ? _buildMemberGrid(bottomInset)
-          : _buildMemberTileList(bottomInset),
+      child: SingleChildScrollView(
+        physics: const AlwaysScrollableScrollPhysics(),
+        padding: UIs.padding.copyWith(bottom: bottomInset),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            _buildRankBoard(),
+            AnimatedSwitcher(
+              duration: duration,
+              switchInCurve: Curves.easeOutCubic,
+              switchOutCurve: Curves.easeInCubic,
+              layoutBuilder: (currentChild, previousChildren) => Stack(
+                alignment: Alignment.topCenter,
+                children: [...previousChildren, ?currentChild],
+              ),
+              transitionBuilder: (child, animation) {
+                return FadeTransition(
+                  opacity: animation,
+                  child: ScaleTransition(
+                    scale: Tween<double>(
+                      begin: 0.98,
+                      end: 1.0,
+                    ).animate(animation),
+                    child: child,
+                  ),
+                );
+              },
+              child: KeyedSubtree(
+                key: ValueKey<bool>(cards),
+                child: cards ? _buildMemberGrid() : _buildMemberTileList(),
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 
@@ -538,141 +573,130 @@ class _GuildPageState extends ConsumerState<GuildPage> {
   }
 
   /// 列表模式：按赛季波数从大到小展示，当前用户高亮
-  Widget _buildMemberTileList(double bottomInset) {
+  Widget _buildMemberTileList() {
     final scheme = Theme.of(context).colorScheme;
     final currentUser = ref.read(currentUsernameProvider);
-    return ListView.builder(
-      physics: const AlwaysScrollableScrollPhysics(),
-      padding: UIs.padding.copyWith(bottom: bottomInset),
-      itemCount: _members.length + 1,
-      itemBuilder: (context, index) {
-        if (index == 0) return _buildRankBoard();
-        final member = _members[index - 1];
-        final lowerName = member.name.toLowerCase();
-        final isSelf = lowerName == currentUser.toLowerCase();
-        final seasonRank = _playerRankByName[lowerName];
-        final hellRank = _hellRankByName[lowerName];
-        final reward =
-            getRedCrystalFromPlayerRank(seasonRank ?? 0) +
-            getRedCrystalFromHellModeRank(hellRank ?? 0);
-        final lastOnline = _playerInfoByLower[lowerName]?.lastOnline;
-        final lastOnlineText = (lastOnline == null || lastOnline.isEmpty)
-            ? '—'
-            : lastOnline;
-        return CardTile(
-          onTap: () => _openMember(member),
-          leading: CircleAvatar(
-            radius: 14.0,
-            backgroundColor: isSelf
-                ? scheme.primaryContainer
-                : scheme.surfaceContainerHighest,
-            child: Text(
-              '$index',
-              style: TextStyle(
-                fontSize: 12.0,
-                fontWeight: FontWeight.bold,
-                color: isSelf ? scheme.onPrimaryContainer : null,
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        for (var index = 0; index < _members.length; index++)
+          _buildMemberTile(index, currentUser, scheme),
+      ],
+    );
+  }
+
+  Widget _buildMemberTile(int index, String currentUser, ColorScheme scheme) {
+    final member = _members[index];
+    final lowerName = member.name.toLowerCase();
+    final isSelf = lowerName == currentUser.toLowerCase();
+    final seasonRank = _playerRankByName[lowerName];
+    final hellRank = _hellRankByName[lowerName];
+    final reward =
+        getRedCrystalFromPlayerRank(seasonRank ?? 0) +
+        getRedCrystalFromHellModeRank(hellRank ?? 0);
+    final lastOnline = _playerInfoByLower[lowerName]?.lastOnline;
+    final lastOnlineText = (lastOnline == null || lastOnline.isEmpty)
+        ? '—'
+        : lastOnline;
+    return CardTile(
+      onTap: () => _openMember(member),
+      leading: CircleAvatar(
+        radius: 14.0,
+        backgroundColor: isSelf
+            ? scheme.primaryContainer
+            : scheme.surfaceContainerHighest,
+        child: Text(
+          '${index + 1}',
+          style: TextStyle(
+            fontSize: 12.0,
+            fontWeight: FontWeight.bold,
+            color: isSelf ? scheme.onPrimaryContainer : null,
+          ),
+        ),
+      ),
+      title: Wrap(
+        spacing: 4.0,
+        crossAxisAlignment: WrapCrossAlignment.center,
+        children: [
+          Text(
+            member.name,
+            style: TextStyle(
+              fontWeight: isSelf ? FontWeight.bold : null,
+              color: isSelf ? scheme.primary : null,
+            ),
+            overflow: TextOverflow.ellipsis,
+          ),
+          if (reward != 0)
+            PillChip(
+              text: '$reward',
+              leading: CrystalIcon(size: 12.0, color: scheme.primary),
+            ),
+          if (seasonRank != null)
+            PillChip(text: '#$seasonRank', leading: Icon(Icons.eco)),
+          if (hellRank != null)
+            PillChip(text: '#$hellRank', leading: Icon(Icons.all_inclusive)),
+        ],
+      ),
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          SizedBox(
+            width: _timeColumnWidth,
+            child: Align(
+              alignment: Alignment.centerRight,
+              child: AnimatedTextSwitcher(
+                alignment: .centerRight,
+                child: Text(
+                  lastOnlineText,
+                  key: ValueKey(lastOnlineText),
+                  style: _timeStyle.copyWith(color: scheme.onSurfaceVariant),
+                  maxLines: 1,
+                ),
               ),
             ),
           ),
-          title: Wrap(
-            spacing: 4.0,
-            crossAxisAlignment: WrapCrossAlignment.center,
-            children: [
-              Text(
-                member.name,
-                style: TextStyle(
-                  fontWeight: isSelf ? FontWeight.bold : null,
+          const SizedBox(width: 6.0),
+          SizedBox(
+            width: _scoreColumnWidth,
+            child: AnimatedTextSwitcher(
+              alignment: .centerRight,
+              child: Text(
+                member.score.format(),
+                key: ValueKey(member.score),
+                textAlign: TextAlign.right,
+                style: _scoreStyle.copyWith(
                   color: isSelf ? scheme.primary : null,
                 ),
-                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
-              if (reward != 0)
-                PillChip(
-                  text: '$reward',
-                  leading: CrystalIcon(size: 12.0, color: scheme.primary),
-                ),
-              if (seasonRank != null)
-                PillChip(text: '#$seasonRank', leading: Icon(Icons.eco)),
-              if (hellRank != null)
-                PillChip(
-                  text: '#$hellRank',
-                  leading: Icon(Icons.all_inclusive),
-                ),
-            ],
+            ),
           ),
-          trailing: Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              SizedBox(
-                width: _timeColumnWidth,
-                child: Align(
-                  alignment: Alignment.centerRight,
-                  child: AnimatedTextSwitcher(
-                    alignment: .centerRight,
-                    child: Text(
-                      lastOnlineText,
-                      key: ValueKey(lastOnlineText),
-                      style: _timeStyle.copyWith(
-                        color: scheme.onSurfaceVariant,
-                      ),
-                      maxLines: 1,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(width: 6.0),
-              SizedBox(
-                width: _scoreColumnWidth,
-                child: AnimatedTextSwitcher(
-                  alignment: .centerRight,
-                  child: Text(
-                    member.score.format(),
-                    key: ValueKey(member.score),
-                    textAlign: TextAlign.right,
-                    style: _scoreStyle.copyWith(
-                      color: isSelf ? scheme.primary : null,
-                    ),
-                    maxLines: 1,
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
-      },
+        ],
+      ),
     );
   }
 
   /// 卡片模式：自适应列数，展示总波数/赛季波数/公会波数/上次在线
-  Widget _buildMemberGrid(double bottomInset) {
+  Widget _buildMemberGrid() {
     final currentUser = ref.read(currentUsernameProvider);
     return LayoutBuilder(
       builder: (context, constraints) {
-        const double spacing = 8.0;
-        const double minCardWidth = 280.0;
-        final available = constraints.maxWidth - UIs.padding.horizontal;
+        final double spacing = UIs.cardFieldPadding.vertical;
+        const double minCardWidth = 240.0;
+        final available = constraints.maxWidth - spacing * 2;
         final columns = (available / minCardWidth).floor().clamp(1, 6).toInt();
         final cardWidth = (available - spacing * (columns - 1)) / columns;
-        return SingleChildScrollView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          padding: UIs.padding.copyWith(bottom: bottomInset),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+        return Padding(
+          padding: EdgeInsets.all(spacing),
+          child: Wrap(
+            spacing: spacing,
+            runSpacing: spacing,
             children: [
-              _buildRankBoard(),
-              const SizedBox(height: 8.0),
-              Wrap(
-                spacing: spacing,
-                runSpacing: spacing,
-                children: [
-                  for (var i = 0; i < _members.length; i++)
-                    SizedBox(
-                      width: cardWidth,
-                      child: _buildMemberCard(i, _members[i], currentUser),
-                    ),
-                ],
-              ),
+              for (var i = 0; i < _members.length; i++)
+                SizedBox(
+                  width: cardWidth,
+                  child: _buildMemberCard(i, _members[i], currentUser),
+                ),
             ],
           ),
         );
@@ -847,7 +871,7 @@ class _MemberViewModeButton extends StatelessWidget {
       valueListenable: store.guildMemberCardsNotifier,
       builder: (context, cards, _) => IconButton(
         tooltip: l10n.tooltipViewMode,
-        icon: Icon(cards ? Icons.view_list_outlined : Icons.grid_view_outlined),
+        icon: Icon(cards ? Icons.grid_view_outlined : Icons.view_list_outlined),
         onPressed: () => store.setGuildMemberCards(!cards),
       ),
     );
