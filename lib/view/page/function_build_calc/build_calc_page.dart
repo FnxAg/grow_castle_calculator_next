@@ -1,10 +1,13 @@
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/page/function_build_calc/widget/formation_listtile.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
+import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 阵容经济计算页
@@ -114,79 +117,140 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
               style: const TextStyle(color: Colors.grey),
             ),
           )
-        : ReorderableListView.builder(
-            key: const PageStorageKey('formation_card_list'),
-            itemCount: cardIds.length,
-            padding: EdgeInsets.only(
-              bottom: 8.0,
-              left: UIs.padding.left,
-              right: UIs.padding.right,
+        : Expanded(
+            child: ReorderableListView.builder(
+              key: const PageStorageKey('formation_card_list'),
+              itemCount: cardIds.length,
+              padding: EdgeInsets.only(
+                bottom: 8.0,
+                left: UIs.padding.left,
+                right: UIs.padding.right,
+              ),
+              proxyDecorator: (child, index, animation) {
+                return AnimatedBuilder(
+                  animation: animation,
+                  builder: (context, child) {
+                    final double elevation = 4.0 * animation.value;
+                    return Material(
+                      elevation: elevation,
+                      shadowColor: Colors.black26,
+                      borderRadius: BorderRadius.circular(8.0),
+                      child: IgnorePointer(child: child),
+                    );
+                  },
+                  child: child,
+                );
+              },
+              onReorderItem: (oldIndex, newIndex) {
+                FocusManager.instance.primaryFocus?.unfocus();
+                ref.users.reorderCard(oldIndex, newIndex);
+              },
+              itemBuilder: (context, index) {
+                final id = cardIds[index];
+                return FormationCardTile(
+                  key: ValueKey(id),
+                  id: id,
+                  index: index,
+                  textController: _textControllerFor(id),
+                  numberController: _numberControllerFor(id),
+                  textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                  numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                  onRemove: _removeCard,
+                );
+              },
+              buildDefaultDragHandles: false,
+              scrollDirection: .vertical,
             ),
-            proxyDecorator: (child, index, animation) {
-              return AnimatedBuilder(
-                animation: animation,
-                builder: (context, child) {
-                  final double elevation = 4.0 * animation.value;
-                  return Material(
-                    elevation: elevation,
-                    shadowColor: Colors.black26,
-                    borderRadius: BorderRadius.circular(8.0),
-                    child: IgnorePointer(child: child),
-                  );
-                },
-                child: child,
-              );
-            },
-            onReorderItem: (oldIndex, newIndex) {
-              FocusManager.instance.primaryFocus?.unfocus();
-              ref.users.reorderCard(oldIndex, newIndex);
-            },
-            itemBuilder: (context, index) {
-              final id = cardIds[index];
-              return FormationCardTile(
-                key: ValueKey(id),
-                id: id,
-                index: index,
-                textController: _textControllerFor(id),
-                numberController: _numberControllerFor(id),
-                textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                onRemove: _removeCard,
-              );
-            },
-            buildDefaultDragHandles: false,
-            scrollDirection: .vertical,
           );
 
-    final appBarInfo = AppBarInfo(
-      children: <Widget>[
-        AppBarItem.currentUser(),
-        AppBarItem.currentUserTotalGold(),
-        AppBarItem.currentUserGp(),
-        AppBarItem.currentUserGpCn(),
-      ],
+    final totalGold = ref.watch(currentUserTotalGoldProvider);
+    final rTotalGold = ref.watch(currentUserRTotalGoldProvider);
+    final gp = ref.watch(currentUserGpProvider);
+    final gpCn = ref.watch(currentUserGpCnProvider);
+    final username = ref.watch(currentUsernameProvider);
+    final tgStr = totalGold.formatCompact(
+      fractionDigits: 2,
+      english: context.isCompactUnitEnglish,
+      traditional: context.isTraditionalChineseLocale,
     );
-    // 随系统字号给出的信息行高度
-    final infoRowHeight =
-        MediaQuery.textScalerOf(context).scale(12.0) * 1.5 + 10.0;
-
+    final rtgStr = rTotalGold.formatCompact(
+      fractionDigits: 2,
+      english: context.isCompactUnitEnglish,
+      traditional: context.isTraditionalChineseLocale,
+    );
     return Scaffold(
-      appBar: AppBar(
-        title: Text(l10n.tabFormation),
-        actions: appBarActions,
-        // 信息行独占一整行，避免和标题/返回键/操作按钮抢宽度
-        bottom: PreferredSize(
-          preferredSize: Size.fromHeight(infoRowHeight),
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 8.0),
-            child: Align(
-              alignment: AlignmentDirectional.centerStart,
-              child: appBarInfo,
+      appBar: AppBar(title: Text(l10n.tabFormation), actions: appBarActions),
+      body: SafeArea(
+        top: false,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
+          children: [
+            Padding(
+              padding: UIs.padding,
+              child: CardTile(
+                title: Text(username),
+                trailing: Wrap(
+                  spacing: 2.0,
+                  children: [
+                    Tooltip(
+                      message: l10n.totalGold,
+                      child: PillChip(
+                        text: totalGold.formatCompact(
+                          fractionDigits: 2,
+                          english: context.isCompactUnitEnglish,
+                          traditional: context.isTraditionalChineseLocale,
+                        ),
+                      ),
+                    ),
+                    Tooltip(
+                      message: l10n.gp,
+                      child: PillChip(text: gp.toStringAsFixed(3)),
+                    ),
+                    Tooltip(
+                      message: l10n.gpCN,
+                      child: PillChip(text: gpCn.toStringAsFixed(3)),
+                    ),
+                  ],
+                ),
+                onTap: () => showTopNotice(
+                  context,
+                  duration: const Duration(seconds: 5),
+                  content: Table(
+                    columnWidths: const {
+                      0: IntrinsicColumnWidth(),
+                      1: IntrinsicColumnWidth(),
+                    },
+                    defaultVerticalAlignment:
+                        TableCellVerticalAlignment.baseline,
+                    textBaseline: TextBaseline.alphabetic,
+                    children: [
+                      TableRow(
+                        children: [
+                          Text('${l10n.totalGold}:'),
+                          Text('$tgStr ($rtgStr)'),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          Text('${l10n.gp}:'),
+                          Text(gp.toStringAsFixed(3)),
+                        ],
+                      ),
+                      TableRow(
+                        children: [
+                          Text('${l10n.gpCN}:'),
+                          Text(gpCn.toStringAsFixed(3)),
+                        ],
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ),
-          ),
+            formationExpanded,
+          ],
         ),
       ),
-      body: SafeArea(top: false, child: formationExpanded),
     );
   }
 }

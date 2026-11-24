@@ -6,15 +6,20 @@ OverlayEntry? _currentEntry;
 
 /// 从顶部弹出的轻提示，替代 SnackBar（悬浮底栏会遮挡底部提示）
 void showTopNotice(
-  BuildContext context,
-  String message, {
+  BuildContext context, {
+  String? message,
   bool isError = false,
   String? actionLabel,
   VoidCallback? onAction,
   Duration duration = const Duration(seconds: 3),
+  Widget? content,
 }) {
   final overlay = Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) return;
+
+  if (message == null && content == null) {
+    throw ArgumentError('Either message or content must be provided.');
+  }
 
   _currentEntry?.remove();
   late final OverlayEntry entry;
@@ -25,6 +30,7 @@ void showTopNotice(
       actionLabel: actionLabel,
       onAction: onAction,
       duration: actionLabel == null ? duration : const Duration(seconds: 5),
+      content: content,
       onDismissed: () {
         entry.remove();
         if (identical(_currentEntry, entry)) _currentEntry = null;
@@ -42,14 +48,16 @@ class _TopNotice extends StatefulWidget {
     required this.actionLabel,
     required this.onAction,
     required this.duration,
+    required this.content,
     required this.onDismissed,
   });
 
-  final String message;
+  final String? message;
   final bool isError;
   final String? actionLabel;
   final VoidCallback? onAction;
   final Duration duration;
+  final Widget? content;
   final VoidCallback onDismissed;
 
   @override
@@ -161,15 +169,17 @@ class _TopNoticeState extends State<_TopNotice> with TickerProviderStateMixin {
                                       padding: const EdgeInsets.symmetric(
                                         vertical: 6.0,
                                       ),
-                                      child: Text(
-                                        widget.message,
-                                        maxLines: 3,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: TextStyle(
-                                          color: foreground,
-                                          fontSize: 14.0,
-                                        ),
-                                      ),
+                                      child:
+                                          widget.content ??
+                                          Text(
+                                            widget.message!,
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: foreground,
+                                              fontSize: 14.0,
+                                            ),
+                                          ),
                                     ),
                                   ),
                                   if (widget.actionLabel != null)
@@ -187,7 +197,6 @@ class _TopNoticeState extends State<_TopNotice> with TickerProviderStateMixin {
                                 ],
                               ),
                             ),
-                            // 底部倒计时条
                             Positioned(
                               left: 0.0,
                               right: 0.0,
@@ -196,11 +205,12 @@ class _TopNoticeState extends State<_TopNotice> with TickerProviderStateMixin {
                               child: ExcludeSemantics(
                                 child: AnimatedBuilder(
                                   animation: _countdown,
-                                  builder: (context, child) => Transform.scale(
-                                    scaleX: 1.0 - _countdown.value,
-                                    alignment: Alignment.centerLeft,
-                                    child: child,
-                                  ),
+                                  builder: (context, child) =>
+                                      Transform.scale(
+                                        scaleX: 1.0 - _countdown.value,
+                                        alignment: Alignment.centerLeft,
+                                        child: child,
+                                      ),
                                   child: ColoredBox(
                                     color: (foreground ?? scheme.onSurface)
                                         .withValues(alpha: 0.35),

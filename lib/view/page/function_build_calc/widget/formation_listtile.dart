@@ -60,7 +60,7 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
         child: ReorderableDragStartListener(
           index: widget.index,
           child: CircleAvatar(
-            radius: 14,
+            radius: 12.0,
             backgroundColor: applied
                 ? scheme.primaryContainer
                 : scheme.surfaceContainerHighest,
@@ -68,7 +68,7 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
               (widget.index + 1).toString(),
               style: const TextStyle(
                 fontWeight: FontWeight.bold,
-                fontSize: 12.0,
+                fontSize: 11.0,
               ),
             ),
           ),
@@ -179,34 +179,27 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                       : l10n.unitNameGeneric(widget.id),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
-                    fontSize: UIs.cardTitleFontSize,
-                    fontWeight: FontWeight.w600,
                     decoration: applied ? null : TextDecoration.lineThrough,
-                    color: applied
-                        ? theme.colorScheme.primary
-                        : theme.disabledColor,
+                    color: applied ? null : theme.disabledColor,
                   ),
                 ),
               ),
               const SizedBox(width: 8.0),
-              AnimatedTextSwitcher(
-                child: Text(
-                  dividerText([
-                    (level.format()),
-                    (gold.formatCompact(
+              Wrap(
+                spacing: 2.0,
+                children: [
+                  PillChip(
+                    text: 'Lv. ${level.format()}',
+                    backgroundColor: applied ? null : theme.disabledColor,
+                  ),
+                  PillChip(
+                    text: gold.formatCompact(
                       english: context.isCompactUnitEnglish,
                       traditional: context.isTraditionalChineseLocale,
-                    )),
-                  ]),
-                  style: TextStyle(
-                    fontSize: UIs.cardSubtitleFontSize,
-                    fontWeight: FontWeight.bold,
-                    color: applied
-                        ? theme.colorScheme.primary
-                        : theme.disabledColor,
+                    ),
+                    backgroundColor: applied ? null : theme.disabledColor,
                   ),
-                  key: ValueKey('$level-$gold-${applied ? 1 : 0}'),
-                ),
+                ],
               ),
             ],
           ),

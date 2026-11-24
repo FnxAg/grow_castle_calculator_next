@@ -45,6 +45,11 @@ final currentUserTotalGoldProvider = Provider<double>(
   (ref) => ref.watch(usersProvider.select((s) => s.currentUser.totalGold)),
 );
 
+/// 当前用户真实总金币（RTotalGold）
+final currentUserRTotalGoldProvider = Provider<double>(
+  (ref) => ref.watch(usersProvider.select((s) => s.currentUser.unitGold.entries.map((e) => (e.value)).fold(0.0, (p, e) => p + e))),
+);
+
 /// 当前用户总波数
 final currentUserWaveProvider = Provider<int>(
   (ref) => ref.watch(usersProvider.select((s) => s.currentUser.wave)),

@@ -16,14 +16,7 @@ extension AppNavigator on BuildContext {
     Object? extra,
   }) => appRouter.push<T>(location, extra: extra);
 
-  // 功能页：属于 Function 分支；从其它 tab 打开时切换分支
-  void openBuildCalc() {
-    if (currentBranchRoot == AppRoutes.function || !isDesktopPlatform()) {
-      appRouter.push(AppRoutes.buildCalc);
-    } else {
-      appRouter.go(AppRoutes.buildCalc);
-    }
-  }
+  void openBuildCalc() => appRouter.push(AppRoutes.buildCalc);
 
   void openWaveStatus() => appRouter.push(AppRoutes.waveStatus);
 
@@ -73,14 +66,7 @@ extension AppNavigator on BuildContext {
 
   void openBestLine() => appRouter.push(AppRoutes.bestLine);
 
-  // 设置
-  void openUserManagement() {
-    if (currentBranchRoot == AppRoutes.settings || !isDesktopPlatform()) {
-      appRouter.push(AppRoutes.users);
-    } else {
-      appRouter.go(AppRoutes.users);
-    }
-  }
+  void openUserManagement() => appRouter.push(AppRoutes.users);
 
   void openBackup() => appRouter.push(AppRoutes.backup);
 

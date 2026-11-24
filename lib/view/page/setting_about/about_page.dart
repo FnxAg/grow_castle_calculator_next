@@ -157,7 +157,7 @@ class _AboutPageState extends State<AboutPage> {
       child: Column(
         children: [
           GestureDetector(
-            onLongPress: () => showTopNotice(context, l10n.fromDev),
+            onLongPress: () => showTopNotice(context, message: l10n.fromDev),
             child: AppIcons.icon(size: 88.0),
           ),
           Text(
@@ -265,7 +265,7 @@ class _AboutPageState extends State<AboutPage> {
       if (!mounted) return;
       showTopNotice(
         context,
-        AppLocalizations.of(context).snackCannotOpenLink(url),
+        message: AppLocalizations.of(context).snackCannotOpenLink(url),
         isError: true,
       );
     }

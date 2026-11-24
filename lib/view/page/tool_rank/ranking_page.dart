@@ -197,7 +197,7 @@ class _RankingPageState extends State<RankingPage> {
     if (refreshFailure != null) {
       showTopNotice(
         context,
-        l10n.snackRefreshFailed(refreshFailure!),
+        message: l10n.snackRefreshFailed(refreshFailure!),
         isError: true,
       );
     }

@@ -358,7 +358,7 @@ class _RuleFormPageState extends State<_RuleFormPage> {
   }
 
   void _showHint(String message) {
-    showTopNotice(context, message, isError: true);
+    showTopNotice(context, message: message, isError: true);
   }
 
   void _save() {

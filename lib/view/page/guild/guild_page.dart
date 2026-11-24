@@ -319,7 +319,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
     // 本地副本
     final failure = refreshFailure;
     if (failure != null) {
-      showTopNotice(context, l10n.snackRefreshFailed(failure), isError: true);
+      showTopNotice(context, message: l10n.snackRefreshFailed(failure), isError: true);
     }
 
     // 成员列表加载成功且开关开启才发起各成员"上次在线"查询
@@ -361,7 +361,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
       if (result is QueryError) {
         showTopNotice(
           context,
-          l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
+          message: l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
           isError: true,
         );
       }

@@ -107,10 +107,11 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
                     }
                   },
                   itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: 'rename',
-                      child: Text(l10n.actionRename),
-                    ),
+                    if (!isDefaultUser)
+                      PopupMenuItem(
+                        value: 'rename',
+                        child: Text(l10n.actionRename),
+                      ),
                     PopupMenuItem(
                       value: 'summary',
                       child: Text(l10n.tooltipDetails),
@@ -144,7 +145,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
     if (data == null) {
       showTopNotice(
         context,
-        AppLocalizations.of(context).errorUserDataNotFound(username),
+        message: AppLocalizations.of(context).errorUserDataNotFound(username),
         isError: true,
       );
       return;
@@ -258,7 +259,7 @@ class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
         ref.users.createUser(username, guild: _guildController.text.trim());
         ref.users.setCurrentUser(username);
       } catch (e) {
-        showTopNotice(context, e.toString(), isError: true);
+        showTopNotice(context, message: e.toString(), isError: true);
       }
     }
     Navigator.of(context).pop();
@@ -351,7 +352,7 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
         );
       }
     } catch (e) {
-      showTopNotice(context, e.toString(), isError: true);
+      showTopNotice(context, message: e.toString(), isError: true);
     }
     Navigator.of(context).pop();
   }

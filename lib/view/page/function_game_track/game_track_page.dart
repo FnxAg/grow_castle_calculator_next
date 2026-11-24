@@ -66,7 +66,7 @@ class _GameTrackPageState extends ConsumerState<GameTrackPage> {
     final l10n = AppLocalizations.of(context);
     showTopNotice(
       context,
-      l10n.snackTrackDeleted,
+      message: l10n.snackTrackDeleted,
       actionLabel: l10n.actionUndo,
       onAction: () async {
         await Stores.gameTrackStore.restoreRecord(userId, record);

@@ -313,7 +313,7 @@ class _HomePageState extends ConsumerState<HomePage>
     if (last != null && now.difference(last) < _queryCooldown) {
       showTopNotice(
         context,
-        AppLocalizations.of(context).snackQueryTooFrequent,
+        message: AppLocalizations.of(context).snackQueryTooFrequent,
       );
       return;
     }
@@ -337,7 +337,7 @@ class _HomePageState extends ConsumerState<HomePage>
           if (!silent) {
             showTopNotice(
               context,
-              AppLocalizations.of(context).snackUserBanned(name),
+              message: AppLocalizations.of(context).snackUserBanned(name),
               isError: true,
             );
           }
@@ -349,7 +349,7 @@ class _HomePageState extends ConsumerState<HomePage>
           final l10n = AppLocalizations.of(context);
           showTopNotice(
             context,
-            l10n.snackQuerySuccess(
+            message: l10n.snackQuerySuccess(
               name,
               result.wave.format(),
               result.seasonalScore.format(),
@@ -361,7 +361,9 @@ class _HomePageState extends ConsumerState<HomePage>
           final l10n = AppLocalizations.of(context);
           showTopNotice(
             context,
-            l10n.snackQueryFailed(_queryErrorMessage(l10n, name, result)),
+            message: l10n.snackQueryFailed(
+              _queryErrorMessage(l10n, name, result),
+            ),
             isError: true,
           );
         }
@@ -564,21 +566,23 @@ class _HomePageState extends ConsumerState<HomePage>
             context.openPlayerDetail(ref.read(currentUsernameProvider));
           },
         ),
-      CardTile(
-        leading: const Icon(Icons.castle),
-        title: Text(l10n.tabFormation),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () => context.openBuildCalc(),
-      ),
-      CardTile(
-        leading: const Icon(Icons.group),
-        title: Text(l10n.settingsUserManagement),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () {
-          FocusManager.instance.primaryFocus?.unfocus();
-          context.openUserManagement();
-        },
-      ),
+      if (!isDesktopPlatform()) ...[
+        CardTile(
+          leading: const Icon(Icons.castle),
+          title: Text(l10n.tabFormation),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () => context.openBuildCalc(),
+        ),
+        CardTile(
+          leading: const Icon(Icons.group),
+          title: Text(l10n.settingsUserManagement),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
+            context.openUserManagement();
+          },
+        ),
+      ],
     ];
 
     final appBarActions = [

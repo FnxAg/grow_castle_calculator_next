@@ -166,7 +166,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
     if (_rolling) return;
     final l10n = AppLocalizations.of(context);
     if (!Stores.itemRuleStore.rules.any((r) => r.enabled)) {
-      showTopNotice(context, l10n.snackNeedEnabledRule, isError: true);
+      showTopNotice(context, message: l10n.snackNeedEnabledRule, isError: true);
       return;
     }
     setState(() {
@@ -259,7 +259,7 @@ class _DragonSimulatorPageState extends State<DragonSimulatorPage> {
                             if (_showEasterEggNames) {
                               showTopNotice(
                                 context,
-                                l10n.eastereggDragonName,
+                                message: l10n.eastereggDragonName,
                                 duration: const Duration(seconds: 5),
                               );
                             }

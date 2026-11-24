@@ -170,7 +170,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
               ref.users.setCurrentUserGabBonus(filled);
               showTopNotice(
                 context,
-                l10n.snackAppliedGabBonus(filled.format(fractionDigits: 2)),
+                message: l10n.snackAppliedGabBonus(filled.format(fractionDigits: 2)),
               );
             },
             child: Text(l10n.actionConfirm),

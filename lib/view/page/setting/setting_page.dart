@@ -56,13 +56,13 @@ class _SettingPageState extends State<SettingPage> {
     setState(() => _checking = false);
 
     if (release == null) {
-      showTopNotice(context, l10n.snackUpdateCheckFailed, isError: true);
+      showTopNotice(context, message: l10n.snackUpdateCheckFailed, isError: true);
       return;
     }
     final current = _currentVersion;
     if (current != null &&
         UpdateChecker.compareVersions(release.tagName, current) <= 0) {
-      showTopNotice(context, l10n.snackAlreadyLatest(current));
+      showTopNotice(context, message: l10n.snackAlreadyLatest(current));
       return;
     }
     final body = release.body;
@@ -126,7 +126,7 @@ class _SettingPageState extends State<SettingPage> {
       if (!mounted) return;
       showTopNotice(
         context,
-        AppLocalizations.of(context).snackCannotOpenLink(url),
+        message: AppLocalizations.of(context).snackCannotOpenLink(url),
         isError: true,
       );
     }
