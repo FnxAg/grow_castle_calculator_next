@@ -1,7 +1,6 @@
 import 'package:go_router/go_router.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_routes.dart';
 import 'package:grow_castle_calculator_next/view/page/tool_rank/models.dart';
-import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 页面跳转具名入口：跨分支用 go，同分支详情用 push。

@@ -1,6 +1,9 @@
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
+import 'package:grow_castle_calculator_next/core/src/ranking/ranking_milestones.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/widget/animated_widget/animated_text_switcher.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
+import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
 
@@ -48,6 +51,9 @@ class RankBoardCard extends StatelessWidget {
     this.previousAnimation,
     this.nextAnimation,
     this.cardType = CardType.normal,
+    this.selfScore,
+    this.milestones,
+    this.formatScore,
   });
 
   final IconData icon;
@@ -59,30 +65,116 @@ class RankBoardCard extends StatelessWidget {
   final Animation<double>? nextAnimation;
   final CardType cardType;
 
+  /// 自己的分数，与里程碑分数求差
+  final int? selfScore;
+
+  /// 里程碑名次 -> 榜单条目（名称与分数）
+  final Map<int, RankMilestone>? milestones;
+
+  /// 分数格式，需与卡片当前数值一致；默认千分位
+  final String Function(int value)? formatScore;
+
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
     return CardX(
       cardType: cardType,
-      child: Padding(
-        padding: UIs.inCardPadding,
-        child: Column(
-          children: [
-            Row(
-              children: [
-                Icon(icon, size: SummaryRow.leadingIconSize, color: scheme.primary),
-                const SizedBox(width: 8.0),
-                Expanded(
-                  child: Text(title, maxLines: 1, overflow: TextOverflow.ellipsis),
-                ),
-              ],
-            ),
-            if (previous != null)
-              _RankRow(row: previous!, animation: previousAnimation),
-            if (current != null) _RankRow(row: current!),
-            if (next != null) _RankRow(row: next!, animation: nextAnimation),
-          ],
+      child: InkWell(
+        onTap: current == null ? null : () => _showSummary(context),
+        child: Padding(
+          padding: UIs.inCardPadding,
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Icon(
+                    icon,
+                    size: SummaryRow.leadingIconSize,
+                    color: scheme.primary,
+                  ),
+                  const SizedBox(width: 8.0),
+                  Expanded(
+                    child: Text(
+                      title,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              if (previous != null)
+                _RankRow(row: previous!, animation: previousAnimation),
+              if (current != null) _RankRow(row: current!),
+              if (next != null) _RankRow(row: next!, animation: nextAnimation),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  String _format(int value) => formatScore?.call(value) ?? value.format();
+
+  void _showSummary(BuildContext context) {
+    showTopNotice(
+      context,
+      duration: const Duration(seconds: 5),
+      content: _buildSummary(),
+    );
+  }
+
+  /// 沿用卡片行样式：上一里程碑 / 自己 / 下一里程碑，右侧显示分数差
+  ///
+  /// 未进榜或排名超过全部里程碑时，上一行仍显示最低里程碑（300）的条目。
+  Widget _buildSummary() {
+    final rank = current?.rank;
+    // 榜单只返回前 300 名，rank 为空即未进榜，按超过全部里程碑处理
+    final effectiveRank =
+        rank ?? (milestones == null ? null : rankMilestoneRanks.last + 1);
+    final (previousMilestone, nextMilestone) = effectiveRank == null
+        ? (null, null)
+        : milestonesAround(effectiveRank);
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        if (previousMilestone != null)
+          _milestoneRow(previousMilestone, isPrevious: true),
+        _RankRow(
+          row: RankBoardRow(
+            rank: rank,
+            name: current?.name ?? '',
+            value: selfScore == null
+                ? current?.value ?? '—'
+                : _format(selfScore!),
+            highlight: true,
+          ),
+        ),
+        if (nextMilestone != null)
+          _milestoneRow(nextMilestone, isPrevious: false),
+      ],
+    );
+  }
+
+  Widget _milestoneRow(int milestone, {required bool isPrevious}) {
+    final entry = milestones?[milestone];
+    final ownScore = selfScore ?? 0;
+    String? gapText;
+    if (entry != null) {
+      final gap = entry.score - ownScore;
+      gapText = gap > 0
+          ? '+${_format(gap)}'
+          : gap < 0
+          ? '-${_format(-gap)}'
+          : _format(0);
+    }
+    return _RankRow(
+      row: RankBoardRow(
+        rank: milestone,
+        name: entry?.name ?? '—',
+        value: gapText == null ? '—' : null,
+        gapText: gapText,
+        gapColor: isPrevious ? Colors.red : Colors.green,
       ),
     );
   }

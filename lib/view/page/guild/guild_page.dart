@@ -3,6 +3,7 @@ import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/last_online_cache.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/core/src/ranking/ranking_milestones.dart';
 import 'package:grow_castle_calculator_next/core/src/reward/reward.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
@@ -102,6 +103,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
   String? _guildPrevName;
   int? _guildGapNext;
   String? _guildNextName;
+  Map<int, RankMilestone>? _guildMilestones;
   List<GuildMember> _members = const [];
 
   /// 历史模式所选日期；null 表示当前赛季
@@ -175,6 +177,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
       _guildPrevName = null;
       _guildGapNext = null;
       _guildNextName = null;
+      _guildMilestones = null;
       _historySeasonNotifier.value = null;
     });
     _load();
@@ -309,6 +312,9 @@ class _GuildPageState extends ConsumerState<GuildPage> {
           }
         }
       }
+      _guildMilestones = guilds is SeasonQueryResult<RankInfo>
+          ? milestonesOf(guilds)
+          : null;
     });
 
     // 历史数据不写入当前用户的总分统计
@@ -319,7 +325,11 @@ class _GuildPageState extends ConsumerState<GuildPage> {
     // 本地副本
     final failure = refreshFailure;
     if (failure != null) {
-      showTopNotice(context, message: l10n.snackRefreshFailed(failure), isError: true);
+      showTopNotice(
+        context,
+        message: l10n.snackRefreshFailed(failure),
+        isError: true,
+      );
     }
 
     // 成员列表加载成功且开关开启才发起各成员"上次在线"查询
@@ -569,6 +579,9 @@ class _GuildPageState extends ConsumerState<GuildPage> {
               gapColor: Colors.green,
             )
           : null,
+      selfScore: totalScore,
+      milestones: _guildMilestones,
+      formatScore: (value) => value.format(),
     );
   }
 

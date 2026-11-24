@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/core/src/ranking/ranking_milestones.dart';
 import 'package:grow_castle_calculator_next/core/src/reward/reward.dart';
 import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
@@ -71,6 +72,9 @@ class _HomePageState extends ConsumerState<HomePage>
   int? _guildGapNext;
   String? _guildNextName;
   int? _hellScore;
+  Map<int, RankMilestone>? _playerMilestones;
+  Map<int, RankMilestone>? _hellMilestones;
+  Map<int, RankMilestone>? _guildMilestones;
   int _redCrystalFromPlayerRank = 0;
   int _redCrystalFromHellModeRank = 0;
   int _crystalReward = 0;
@@ -204,6 +208,15 @@ class _HomePageState extends ConsumerState<HomePage>
     _redCrystalFromHellModeRank = getRedCrystalFromHellModeRank(_hellRank ?? 0);
     _crystalReward = _redCrystalFromPlayerRank + _redCrystalFromHellModeRank;
     _boxReward = getItemBoxFromGuildRank(_guildRank ?? 0);
+    _playerMilestones = players is SeasonQueryResult<RankInfo>
+        ? milestonesOf(players)
+        : null;
+    _hellMilestones = hell is SeasonQueryResult<RankInfo>
+        ? milestonesOf(hell)
+        : null;
+    _guildMilestones = guilds is SeasonQueryResult<RankInfo>
+        ? milestonesOf(guilds)
+        : null;
   }
 
   /// 清空排名，避免展示上一个用户的数据
@@ -224,6 +237,9 @@ class _HomePageState extends ConsumerState<HomePage>
     _guildGapNext = null;
     _guildNextName = null;
     _hellScore = null;
+    _playerMilestones = null;
+    _hellMilestones = null;
+    _guildMilestones = null;
     _crystalReward = 0;
     _boxReward = 0;
     _syncAnimations(animate: false);
@@ -454,6 +470,9 @@ class _HomePageState extends ConsumerState<HomePage>
           : null,
       previousAnimation: _anims[AnimSource.playerPrev],
       nextAnimation: _anims[AnimSource.playerNext],
+      selfScore: seasonWave,
+      milestones: _playerMilestones,
+      formatScore: (value) => value.format(),
     );
     // 公会
     final guildCard = RankBoardCard(
@@ -483,6 +502,9 @@ class _HomePageState extends ConsumerState<HomePage>
           : null,
       previousAnimation: _anims[AnimSource.guildPrev],
       nextAnimation: _anims[AnimSource.guildNext],
+      selfScore: guildTotalScore,
+      milestones: _guildMilestones,
+      formatScore: (value) => value.format(),
     );
     // 无尽
     final hellCard = RankBoardCard(
@@ -519,6 +541,10 @@ class _HomePageState extends ConsumerState<HomePage>
           : null,
       previousAnimation: _anims[AnimSource.hellPrev],
       nextAnimation: _anims[AnimSource.hellNext],
+      selfScore: _hellScore,
+      milestones: _hellMilestones,
+      formatScore: (value) =>
+          value.formatCompact(english: english, traditional: traditional),
     );
     // 奖励
     final rewardCard = SummaryCard(
@@ -566,23 +592,21 @@ class _HomePageState extends ConsumerState<HomePage>
             context.openPlayerDetail(ref.read(currentUsernameProvider));
           },
         ),
-      if (!isDesktopPlatform()) ...[
-        CardTile(
-          leading: const Icon(Icons.castle),
-          title: Text(l10n.tabFormation),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () => context.openBuildCalc(),
-        ),
-        CardTile(
-          leading: const Icon(Icons.group),
-          title: Text(l10n.settingsUserManagement),
-          trailing: const Icon(Icons.chevron_right),
-          onTap: () {
-            FocusManager.instance.primaryFocus?.unfocus();
-            context.openUserManagement();
-          },
-        ),
-      ],
+      CardTile(
+        leading: const Icon(Icons.castle),
+        title: Text(l10n.tabFormation),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () => context.openBuildCalc(),
+      ),
+      CardTile(
+        leading: const Icon(Icons.group),
+        title: Text(l10n.settingsUserManagement),
+        trailing: const Icon(Icons.chevron_right),
+        onTap: () {
+          FocusManager.instance.primaryFocus?.unfocus();
+          context.openUserManagement();
+        },
+      ),
     ];
 
     final appBarActions = [

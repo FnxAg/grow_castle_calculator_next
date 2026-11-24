@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart' show ValueListenable;
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 import 'package:grow_castle_calculator_next/core/service/ranking_cache.dart';
+import 'package:grow_castle_calculator_next/core/src/ranking/ranking_milestones.dart';
 import 'package:grow_castle_calculator_next/core/src/reward/reward.dart';
 import 'package:grow_castle_calculator_next/icon/box.dart';
 import 'package:grow_castle_calculator_next/icon/crystal.dart';
@@ -35,8 +36,6 @@ class RankingPage extends StatefulWidget {
 }
 
 class _RankingPageState extends State<RankingPage> {
-  static const List<int> _milestoneRanks = [1, 3, 5, 10, 50, 100, 200, 300];
-
   bool _firstLoading = true;
   bool _loading = false;
   bool get _isLoading => _firstLoading || _loading;
@@ -236,9 +235,9 @@ class _RankingPageState extends State<RankingPage> {
             width: 420,
             child: ListView.builder(
               shrinkWrap: true,
-              itemCount: _milestoneRanks.length,
+              itemCount: rankMilestoneRanks.length,
               itemBuilder: (context, index) {
-                final rank = _milestoneRanks[index];
+                final rank = rankMilestoneRanks[index];
                 final row = _rows.cast<RankRow?>().firstWhere(
                   (item) => item?.rank == rank,
                   orElse: () => null,
