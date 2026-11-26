@@ -156,14 +156,15 @@ class _TopNoticeState extends State<_TopNotice> with TickerProviderStateMixin {
                               ),
                               child: Row(
                                 children: [
-                                  Icon(
+                                  if (widget.content == null && widget.message != null)
+                                  ...[Icon(
                                     widget.isError
                                         ? Icons.error_outline
                                         : Icons.info_outline,
                                     size: 20.0,
                                     color: foreground,
                                   ),
-                                  const SizedBox(width: 10.0),
+                                  const SizedBox(width: 10.0),],
                                   Expanded(
                                     child: Padding(
                                       padding: const EdgeInsets.symmetric(

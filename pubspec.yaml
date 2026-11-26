@@ -49,9 +49,9 @@ dev_dependencies:
 flutter:
   uses-material-design: true
   generate: true
-  assets:
-    - assets/images/
-    - assets/svg/
+  # assets:
+  #   - assets/images/
+  #   - assets/svg/
 
 flutter_native_splash:
   color: "#ffffff"

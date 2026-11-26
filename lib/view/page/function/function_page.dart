@@ -2,6 +2,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
+import 'package:grow_castle_calculator_next/utils/divider.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_navigator.dart';
@@ -18,10 +19,15 @@ class FunctionPage extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final l10n = AppLocalizations.of(context);
-    final style = Theme.of(context).textTheme.bodyMedium?.copyWith(
-      color: Theme.of(context).colorScheme.primary,
-      fontWeight: FontWeight.w600,
-    );
+    final userdata = ref.watch(currentUserProvider);
+    final dhSkip = switch (userdata.devilHornSkip) {
+      2 => 'DH1',
+      3 => 'DH2',
+      4 => 'DH3',
+      5 => 'DH4',
+      6 => 'DH5',
+      _ => '',
+    };
 
     final appBarInfo = AppBarInfo(
       children: <Widget>[
@@ -44,33 +50,30 @@ class FunctionPage extends ConsumerWidget {
           CardTile(
             leading: const Icon(Icons.castle),
             title: Text(l10n.tabFormation),
+            subtitle: Text(
+              dividerText([
+                (userdata.gp.toStringAsFixed(3)),
+                (userdata.gpCN.toStringAsFixed(3)),
+              ]),
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.openBuildCalc(),
           ),
           CardTile(
             leading: const Icon(Icons.bolt),
             title: Text(l10n.waveStatus),
+            subtitle: Text(
+              (userdata.gameSpeed < 2 ? '2x' : '3x') +
+                  (dhSkip.isNotEmpty ? ' $dhSkip' : ''),
+            ),
             trailing: const Icon(Icons.chevron_right),
             onTap: () => context.openWaveStatus(),
           ),
           CardTile(
             leading: const Icon(Icons.percent),
-            title: Text(
-              l10n.wavePushIncomeCalc,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-            ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  '${ref.watch(currentUserGabBonusProvider).toStringAsFixed(2)}%',
-                  style: style,
-                ),
-                const SizedBox(width: 4.0),
-                const Icon(Icons.chevron_right),
-              ],
-            ),
+            title: Text(l10n.wavePushIncomeCalc),
+            subtitle: Text('${userdata.gabBonus.toStringAsFixed(2)}%'),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () => context.openBonusGold(),
           ),
           CardTile(
@@ -80,24 +83,17 @@ class FunctionPage extends ConsumerWidget {
               maxLines: 1,
               overflow: TextOverflow.ellipsis,
             ),
-            trailing: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Text(
-                  ref
-                      .watch(dailyIncomeProvider)
-                      .total
-                      .formatCompact(
-                        fractionDigits: 2,
-                        english: context.isCompactUnitEnglish,
-                        traditional: context.isTraditionalChineseLocale,
-                      ),
-                  style: style,
-                ),
-                const SizedBox(width: 4.0),
-                const Icon(Icons.chevron_right),
-              ],
+            subtitle: Text(
+              ref
+                  .watch(dailyIncomeProvider)
+                  .total
+                  .formatCompact(
+                    fractionDigits: 2,
+                    english: context.isCompactUnitEnglish,
+                    traditional: context.isTraditionalChineseLocale,
+                  ),
             ),
+            trailing: const Icon(Icons.chevron_right),
             onTap: () => context.openIncome(),
           ),
           CardTile(

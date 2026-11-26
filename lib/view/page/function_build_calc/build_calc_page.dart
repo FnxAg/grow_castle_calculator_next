@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/core/calc/gold_income.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
@@ -168,6 +169,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
     final gp = ref.watch(currentUserGpProvider);
     final gpCn = ref.watch(currentUserGpCnProvider);
     final username = ref.watch(currentUsernameProvider);
+    final wave = ref.watch(currentUserWaveProvider);
     final tgStr = totalGold.formatCompact(
       fractionDigits: 2,
       english: context.isCompactUnitEnglish,
@@ -233,13 +235,17 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
                       TableRow(
                         children: [
                           Text('${l10n.gp}:'),
-                          Text(gp.toStringAsFixed(3)),
+                          Text(
+                            '${gp.toStringAsFixed(3)} (${calcGp(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                          ),
                         ],
                       ),
                       TableRow(
                         children: [
                           Text('${l10n.gpCN}:'),
-                          Text(gpCn.toStringAsFixed(3)),
+                          Text(
+                            '${gpCn.toStringAsFixed(3)} (${calcGpCN(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                          ),
                         ],
                       ),
                     ],
