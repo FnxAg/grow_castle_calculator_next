@@ -1,18 +1,22 @@
 import 'dart:async';
+import 'dart:ui';
 
+import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:material_ui/material_ui.dart';
 
 OverlayEntry? _currentEntry;
 
-/// 从顶部弹出的轻提示，替代 SnackBar（悬浮底栏会遮挡底部提示）
+enum NoticeType { info, content, error }
+
+/// 从顶部弹出的轻提示
 void showTopNotice(
   BuildContext context, {
   String? message,
-  bool isError = false,
   String? actionLabel,
   VoidCallback? onAction,
   Duration duration = const Duration(seconds: 3),
   Widget? content,
+  NoticeType noticeType = NoticeType.info,
 }) {
   final overlay = Overlay.maybeOf(context, rootOverlay: true);
   if (overlay == null) return;
@@ -26,11 +30,11 @@ void showTopNotice(
   entry = OverlayEntry(
     builder: (context) => _TopNotice(
       message: message,
-      isError: isError,
       actionLabel: actionLabel,
       onAction: onAction,
       duration: actionLabel == null ? duration : const Duration(seconds: 5),
       content: content,
+      noticeType: noticeType,
       onDismissed: () {
         entry.remove();
         if (identical(_currentEntry, entry)) _currentEntry = null;
@@ -44,21 +48,21 @@ void showTopNotice(
 class _TopNotice extends StatefulWidget {
   const _TopNotice({
     required this.message,
-    required this.isError,
     required this.actionLabel,
     required this.onAction,
     required this.duration,
     required this.content,
     required this.onDismissed,
+    required this.noticeType,
   });
 
   final String? message;
-  final bool isError;
   final String? actionLabel;
   final VoidCallback? onAction;
   final Duration duration;
   final Widget? content;
   final VoidCallback onDismissed;
+  final NoticeType noticeType;
 
   @override
   State<_TopNotice> createState() => _TopNoticeState();
@@ -106,17 +110,34 @@ class _TopNoticeState extends State<_TopNotice> with TickerProviderStateMixin {
   @override
   Widget build(BuildContext context) {
     final scheme = Theme.of(context).colorScheme;
-    final background = widget.isError
-        ? scheme.errorContainer
-        : ListTileTheme.of(context).tileColor;
-    final foreground = widget.isError
-        ? scheme.onErrorContainer
-        : ListTileTheme.of(context).textColor;
+    final radius = UIs.cardShape.borderRadius;
+    final inkRadius = BorderRadius.circular(UIs.cardRadiusValue);
+    final background = switch (widget.noticeType) {
+      .error => scheme.errorContainer,
+      _ => ListTileTheme.of(context).tileColor,
+    };
+    final glassTint = background ?? scheme.surface;
+    final foreground = switch (widget.noticeType) {
+      .error => scheme.onErrorContainer,
+      _ => ListTileTheme.of(context).textColor,
+    };
     final curved = CurvedAnimation(
       parent: _controller,
       curve: Curves.easeOutCubic,
       reverseCurve: Curves.easeInCubic,
     );
+    final leading = switch (widget.noticeType) {
+      .info => const [
+        Icon(Icons.info_outline, size: 20.0),
+        SizedBox(width: 10.0),
+      ],
+      .error => const [
+        Icon(Icons.error_outline, size: 20.0),
+        SizedBox(width: 10.0),
+      ],
+      _ => null,
+    };
+
     return Positioned(
       left: 0,
       right: 0,
@@ -136,90 +157,120 @@ class _TopNoticeState extends State<_TopNotice> with TickerProviderStateMixin {
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560.0),
                   child: Material(
-                    color: background,
-                    elevation: 4.0,
-                    borderRadius: BorderRadius.circular(14.0),
+                    color: Colors.transparent,
+                    elevation: 10.0,
+                    shadowColor: scheme.shadow.withValues(alpha: 0.2),
+                    borderRadius: radius,
                     clipBehavior: Clip.antiAlias,
-                    child: Semantics(
-                      liveRegion: true,
-                      container: true,
-                      child: InkWell(
-                        onTap: _dismiss,
-                        child: Stack(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(
-                                14.0,
-                                6.0,
-                                6.0,
-                                6.0,
+                    child: ClipRRect(
+                      borderRadius: radius,
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                        child: Ink(
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              begin: Alignment.topLeft,
+                              end: Alignment.bottomRight,
+                              colors: [
+                                glassTint.withValues(alpha: 0.82),
+                                glassTint.withValues(alpha: 0.70),
+                              ],
+                            ),
+                            border: Border.all(
+                              color: scheme.onSurface.withValues(alpha: 0.12),
+                            ),
+                          ),
+                          child: Semantics(
+                            liveRegion: true,
+                            container: true,
+                            child: InkWell(
+                              onTap: _dismiss,
+                              borderRadius: inkRadius,
+                              hoverColor: scheme.onSurface.withValues(
+                                alpha: 0.05,
                               ),
-                              child: Row(
+                              highlightColor: scheme.onSurface.withValues(
+                                alpha: 0.04,
+                              ),
+                              child: Stack(
                                 children: [
-                                  if (widget.content == null && widget.message != null)
-                                  ...[Icon(
-                                    widget.isError
-                                        ? Icons.error_outline
-                                        : Icons.info_outline,
-                                    size: 20.0,
-                                    color: foreground,
-                                  ),
-                                  const SizedBox(width: 10.0),],
-                                  Expanded(
-                                    child: Padding(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 6.0,
-                                      ),
-                                      child:
-                                          widget.content ??
-                                          Text(
-                                            widget.message!,
-                                            maxLines: 3,
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: foreground,
-                                              fontSize: 14.0,
+                                  Padding(
+                                    padding: const EdgeInsets.fromLTRB(
+                                      14.0,
+                                      6.0,
+                                      14.0,
+                                      14.0,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        ...?leading,
+                                        Expanded(
+                                          child: Padding(
+                                            padding: const EdgeInsets.symmetric(
+                                              vertical: 6.0,
                                             ),
+                                            child:
+                                                widget.content ??
+                                                Text(
+                                                  widget.message!,
+                                                  maxLines: 3,
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    color: foreground,
+                                                    fontSize: 14.0,
+                                                  ),
+                                                ),
                                           ),
+                                        ),
+                                        if (widget.actionLabel != null)
+                                          TextButton(
+                                            onPressed: () {
+                                              widget.onAction?.call();
+                                              _dismiss();
+                                            },
+                                            style: TextButton.styleFrom(
+                                              foregroundColor: foreground,
+                                              visualDensity:
+                                                  VisualDensity.compact,
+                                            ),
+                                            child: Text(widget.actionLabel!),
+                                          ),
+                                      ],
                                     ),
                                   ),
-                                  if (widget.actionLabel != null)
-                                    TextButton(
-                                      onPressed: () {
-                                        widget.onAction?.call();
-                                        _dismiss();
-                                      },
-                                      style: TextButton.styleFrom(
-                                        foregroundColor: foreground,
-                                        visualDensity: VisualDensity.compact,
+                                  Positioned(
+                                    left: 14.0,
+                                    right: 14.0,
+                                    bottom: 8.0,
+                                    height: 2.5,
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(2.0),
+                                      child: ColoredBox(
+                                        color: scheme.onSurface.withValues(
+                                          alpha: 0.10,
+                                        ),
+                                        child: AnimatedBuilder(
+                                          animation: _countdown,
+                                          builder: (context, child) =>
+                                              Transform.scale(
+                                                scaleX: 1.0 - _countdown.value,
+                                                alignment: Alignment.centerLeft,
+                                                child: child,
+                                              ),
+                                          child: ColoredBox(
+                                            color:
+                                                (foreground ?? scheme.onSurface)
+                                                    .withValues(alpha: 0.62),
+                                          ),
+                                        ),
                                       ),
-                                      child: Text(widget.actionLabel!),
                                     ),
+                                  ),
                                 ],
                               ),
                             ),
-                            Positioned(
-                              left: 0.0,
-                              right: 0.0,
-                              bottom: 0.0,
-                              height: 2.0,
-                              child: ExcludeSemantics(
-                                child: AnimatedBuilder(
-                                  animation: _countdown,
-                                  builder: (context, child) =>
-                                      Transform.scale(
-                                        scaleX: 1.0 - _countdown.value,
-                                        alignment: Alignment.centerLeft,
-                                        child: child,
-                                      ),
-                                  child: ColoredBox(
-                                    color: (foreground ?? scheme.onSurface)
-                                        .withValues(alpha: 0.35),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       ),
                     ),

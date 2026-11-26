@@ -120,6 +120,7 @@ class RankBoardCard extends StatelessWidget {
       context,
       duration: const Duration(seconds: 5),
       content: _buildSummary(),
+      noticeType: NoticeType.content,
     );
   }
 

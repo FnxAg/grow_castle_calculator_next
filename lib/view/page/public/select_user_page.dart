@@ -146,7 +146,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
       showTopNotice(
         context,
         message: AppLocalizations.of(context).errorUserDataNotFound(username),
-        isError: true,
+        noticeType: NoticeType.error,
       );
       return;
     }
@@ -259,7 +259,11 @@ class _AddUserDialogState extends ConsumerState<_AddUserDialog> {
         ref.users.createUser(username, guild: _guildController.text.trim());
         ref.users.setCurrentUser(username);
       } catch (e) {
-        showTopNotice(context, message: e.toString(), isError: true);
+        showTopNotice(
+          context,
+          message: e.toString(),
+          noticeType: NoticeType.error,
+        );
       }
     }
     Navigator.of(context).pop();
@@ -352,7 +356,11 @@ class _EditUserDialogState extends ConsumerState<_EditUserDialog> {
         );
       }
     } catch (e) {
-      showTopNotice(context, message: e.toString(), isError: true);
+      showTopNotice(
+        context,
+        message: e.toString(),
+        noticeType: NoticeType.error,
+      );
     }
     Navigator.of(context).pop();
   }

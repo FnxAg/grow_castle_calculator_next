@@ -56,7 +56,7 @@ class _SettingPageState extends State<SettingPage> {
     setState(() => _checking = false);
 
     if (release == null) {
-      showTopNotice(context, message: l10n.snackUpdateCheckFailed, isError: true);
+      showTopNotice(context, message: l10n.snackUpdateCheckFailed, noticeType: NoticeType.error);
       return;
     }
     final current = _currentVersion;
@@ -127,7 +127,7 @@ class _SettingPageState extends State<SettingPage> {
       showTopNotice(
         context,
         message: AppLocalizations.of(context).snackCannotOpenLink(url),
-        isError: true,
+        noticeType: NoticeType.error,
       );
     }
   }

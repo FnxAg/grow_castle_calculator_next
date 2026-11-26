@@ -328,7 +328,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
       showTopNotice(
         context,
         message: l10n.snackRefreshFailed(failure),
-        isError: true,
+        noticeType: NoticeType.error,
       );
     }
 
@@ -372,7 +372,7 @@ class _GuildPageState extends ConsumerState<GuildPage> {
         showTopNotice(
           context,
           message: l10n.snackSyncFailed(_errorMessage(l10n, guild, result)),
-          isError: true,
+          noticeType: NoticeType.error,
         );
       }
     }

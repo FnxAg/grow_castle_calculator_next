@@ -4,7 +4,11 @@ import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:material_ui/material_ui.dart';
 
 class SummaryCard extends StatelessWidget {
-  const SummaryCard({super.key, required this.children, this.cardType = CardType.normal});
+  const SummaryCard({
+    super.key,
+    required this.children,
+    this.cardType = CardType.normal,
+  });
 
   final List<Widget> children;
   final CardType cardType;
@@ -24,7 +28,7 @@ class SummaryCard extends StatelessWidget {
 class SummaryRow extends StatelessWidget {
   const SummaryRow({
     super.key,
-    required this.leading,
+    this.leading,
     required this.title,
     this.actions = const [],
     required this.trailing,
@@ -32,7 +36,7 @@ class SummaryRow extends StatelessWidget {
 
   static Widget text(String text) => SummaryRowValueText(text: text);
 
-  final Widget leading;
+  final Widget? leading;
   final Widget title;
   final List<Widget> actions;
   final Widget trailing;
@@ -44,7 +48,7 @@ class SummaryRow extends StatelessWidget {
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
     final icon = leading is Icon ? (leading as Icon).icon : null;
-    final Widget leadingWidget = icon == null
+    final Widget? leadingWidget = icon == null
         ? leading
         : Icon(
             icon,
@@ -53,8 +57,10 @@ class SummaryRow extends StatelessWidget {
           );
     return Row(
       children: [
-        leadingWidget,
-        const SizedBox(width: 8.0),
+        if (leadingWidget != null) ...[
+          leadingWidget,
+          const SizedBox(width: 8.0),
+        ],
         title,
         const SizedBox(width: 8.0),
         for (var i = 0; i < actions.length; i++) ...[

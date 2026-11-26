@@ -116,7 +116,7 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
     showTopNotice(
       context,
       message: '${_labelOf(l10n, field)} -> $text',
-      duration: const Duration(seconds: 1),
+      duration: const Duration(seconds: 3),
     );
     setState(() {});
   }

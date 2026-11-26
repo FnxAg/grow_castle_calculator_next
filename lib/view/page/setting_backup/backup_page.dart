@@ -643,7 +643,7 @@ class _BackupPageState extends State<BackupPage> {
   }
 
   void _snack(String message, {bool isError = false}) {
-    showTopNotice(context, message: message, isError: isError);
+    showTopNotice(context, message: message, noticeType: isError ? NoticeType.error : NoticeType.info);
   }
 
   static String _clockOrUnknown(AppLocalizations l10n, DateTime? time) =>

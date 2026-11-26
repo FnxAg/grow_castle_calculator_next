@@ -266,7 +266,7 @@ class _AboutPageState extends State<AboutPage> {
       showTopNotice(
         context,
         message: AppLocalizations.of(context).snackCannotOpenLink(url),
-        isError: true,
+        noticeType: NoticeType.error,
       );
     }
   }

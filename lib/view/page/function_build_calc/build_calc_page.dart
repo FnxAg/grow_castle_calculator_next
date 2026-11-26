@@ -216,40 +216,28 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
                 ),
                 onTap: () => showTopNotice(
                   context,
-                  duration: const Duration(seconds: 5),
-                  content: Table(
-                    columnWidths: const {
-                      0: IntrinsicColumnWidth(),
-                      1: IntrinsicColumnWidth(),
-                    },
-                    defaultVerticalAlignment:
-                        TableCellVerticalAlignment.baseline,
-                    textBaseline: TextBaseline.alphabetic,
+                  duration: const Duration(seconds: 7),
+                  content: Column(
                     children: [
-                      TableRow(
-                        children: [
-                          Text('${l10n.totalGold}:'),
-                          Text('$tgStr ($rtgStr)'),
-                        ],
+                      SummaryRow(
+                        title: Text(l10n.totalGold),
+                        trailing: SummaryRow.text('$tgStr ($rtgStr)'),
                       ),
-                      TableRow(
-                        children: [
-                          Text('${l10n.gp}:'),
-                          Text(
-                            '${gp.toStringAsFixed(3)} (${calcGp(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
-                          ),
-                        ],
+                      SummaryRow(
+                        title: Text(l10n.gp),
+                        trailing: SummaryRow.text(
+                          '${gp.toStringAsFixed(3)} (${calcGp(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                        ),
                       ),
-                      TableRow(
-                        children: [
-                          Text('${l10n.gpCN}:'),
-                          Text(
-                            '${gpCn.toStringAsFixed(3)} (${calcGpCN(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
-                          ),
-                        ],
+                      SummaryRow(
+                        title: Text(l10n.gpCN),
+                        trailing: SummaryRow.text(
+                          '${gpCn.toStringAsFixed(3)} (${calcGpCN(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                        ),
                       ),
                     ],
                   ),
+                  noticeType: NoticeType.content,
                 ),
               ),
             ),

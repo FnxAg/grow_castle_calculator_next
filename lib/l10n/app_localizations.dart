@@ -1935,13 +1935,13 @@ abstract class AppLocalizations {
   /// No description provided for @tooltipViewScoreTrend.
   ///
   /// In zh, this message translates to:
-  /// **'查看分数趋势'**
+  /// **'查看折线图'**
   String get tooltipViewScoreTrend;
 
   /// No description provided for @tooltipViewMilestoneRanks.
   ///
   /// In zh, this message translates to:
-  /// **'查看特殊名次'**
+  /// **'里程碑名次'**
   String get tooltipViewMilestoneRanks;
 
   /// No description provided for @tooltipHistoryData.

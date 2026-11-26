@@ -684,8 +684,8 @@
       }
     }
   },
-  "tooltipViewScoreTrend": "查看分数趋势",
-  "tooltipViewMilestoneRanks": "查看特殊名次",
+  "tooltipViewScoreTrend": "查看折线图",
+  "tooltipViewMilestoneRanks": "里程碑名次",
   "tooltipHistoryData": "查询历史数据",
   "tooltipBackToCurrentSeason": "返回当前赛季",
   "historyDateHelp": "选择日期",

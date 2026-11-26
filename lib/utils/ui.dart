@@ -3,8 +3,9 @@ import 'package:material_ui/material_ui.dart';
 abstract class UIs extends StatelessWidget {
   static const padding = EdgeInsets.symmetric(horizontal: 8.0);
 
+  static const double cardRadiusValue = 16.0;
   static const cardShape = RoundedRectangleBorder(
-    borderRadius: BorderRadius.all(Radius.circular(16.0)),
+    borderRadius: BorderRadius.all(Radius.circular(cardRadiusValue)),
   );
 
   /// 卡片内 ListTile 的最小高度与紧凑程度

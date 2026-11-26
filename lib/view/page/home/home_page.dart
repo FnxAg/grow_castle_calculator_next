@@ -354,7 +354,7 @@ class _HomePageState extends ConsumerState<HomePage>
             showTopNotice(
               context,
               message: AppLocalizations.of(context).snackUserBanned(name),
-              isError: true,
+              noticeType: NoticeType.error,
             );
           }
           return;
@@ -380,7 +380,7 @@ class _HomePageState extends ConsumerState<HomePage>
             message: l10n.snackQueryFailed(
               _queryErrorMessage(l10n, name, result),
             ),
-            isError: true,
+            noticeType: NoticeType.error,
           );
         }
       }

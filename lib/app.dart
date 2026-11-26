@@ -9,7 +9,6 @@ import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/navigation/app_router.dart';
-import 'package:grow_castle_calculator_next/view/navigation/route_selection_guard.dart';
 import 'package:grow_castle_calculator_next/view/responsive/breakpoints.dart';
 
 class MyApp extends ConsumerStatefulWidget {
@@ -89,7 +88,6 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
       fontFamilyFallback: platformFontFallback,
     );
     return theme.copyWith(
-      pageTransitionsTheme: const RouteSelectionGuardTransitions(),
       listTileTheme: ListTileThemeData(
         style: ListTileStyle.list,
         tileColor: Color.alphaBlend(

@@ -1052,10 +1052,10 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
-  String get tooltipViewScoreTrend => '查看分数趋势';
+  String get tooltipViewScoreTrend => '查看折线图';
 
   @override
-  String get tooltipViewMilestoneRanks => '查看特殊名次';
+  String get tooltipViewMilestoneRanks => '里程碑名次';
 
   @override
   String get tooltipHistoryData => '查询历史数据';
@@ -2618,10 +2618,10 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   }
 
   @override
-  String get tooltipViewScoreTrend => '檢視分數趨勢';
+  String get tooltipViewScoreTrend => '檢視折線圖';
 
   @override
-  String get tooltipViewMilestoneRanks => '檢視特殊名次';
+  String get tooltipViewMilestoneRanks => '里程碑名次';
 
   @override
   String get tooltipHistoryData => '查詢歷史資料';

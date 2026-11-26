@@ -197,7 +197,7 @@ class _RankingPageState extends State<RankingPage> {
       showTopNotice(
         context,
         message: l10n.snackRefreshFailed(refreshFailure!),
-        isError: true,
+        noticeType: NoticeType.error,
       );
     }
   }
@@ -296,6 +296,7 @@ class _RankingPageState extends State<RankingPage> {
           tooltip: !_viewWPHMode ? l10n.labelScore : l10n.labelSeasonWPH,
           onPressed: () => setState(() => _viewWPHMode = !_viewWPHMode),
         ),
+      HistoryDateActions(date: date, onChanged: _onHistoryChanged),
       PopupMenuButton<_RankingMenuAction>(
         icon: const Icon(Icons.more_vert),
         onSelected: (action) {
@@ -318,7 +319,6 @@ class _RankingPageState extends State<RankingPage> {
           ),
         ],
       ),
-      HistoryDateActions(date: date, onChanged: _onHistoryChanged),
     ];
 
     return Scaffold(

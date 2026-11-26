@@ -1,3 +1,5 @@
+import 'dart:ui';
+
 import 'package:flutter/gestures.dart';
 import 'package:flutter/services.dart';
 import 'package:go_router/go_router.dart';
@@ -373,6 +375,8 @@ class _ShellScaffoldState extends State<ShellScaffold>
   Widget _buildFloatingBar(bool visible) {
     final l10n = AppLocalizations.of(context);
     final scheme = Theme.of(context).colorScheme;
+    final radius = BorderRadius.circular(floatingBarHeight / 2);
+    final glassTint = scheme.surfaceContainerHigh;
     return Positioned(
       left: 0,
       right: 0,
@@ -402,87 +406,114 @@ class _ShellScaffoldState extends State<ShellScaffold>
                       maxWidth: floatingBarMaxWidth,
                     ),
                     child: Material(
-                      color: scheme.surfaceContainerHigh,
-                      elevation: 6.0,
-                      borderRadius: BorderRadius.circular(
-                        floatingBarHeight / 2,
-                      ),
+                      color: Colors.transparent,
+                      elevation: 10.0,
+                      shadowColor: scheme.shadow.withValues(alpha: 0.2),
+                      borderRadius: radius,
                       clipBehavior: Clip.antiAlias,
-                      child: SizedBox(
-                        height: floatingBarHeight,
-                        child: MediaQuery.withClampedTextScaling(
-                          maxScaleFactor: 2.0,
-                          child: Padding(
-                            padding: const EdgeInsets.all(
-                              floatingBarInnerPadding,
+                      child: ClipRRect(
+                        borderRadius: radius,
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
+                          child: Ink(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topLeft,
+                                end: Alignment.bottomRight,
+                                colors: [
+                                  glassTint.withValues(alpha: 0.82),
+                                  glassTint.withValues(alpha: 0.70),
+                                ],
+                              ),
+                              border: Border.all(
+                                color: scheme.onSurface.withValues(alpha: 0.12),
+                              ),
                             ),
-                            child: LayoutBuilder(
-                              builder: (context, constraints) {
-                                final itemWidth =
-                                    constraints.maxWidth / mainPages.length;
-                                return Stack(
-                                  children: [
-                                    Positioned.fill(
-                                      child: AnimatedBuilder(
-                                        animation: _switchController,
-                                        builder: (context, _) {
-                                          final indicatorWidth =
-                                              itemWidth -
-                                              floatingBarIndicatorGap * 2;
-                                          final left =
-                                              itemWidth * _barPosition() +
-                                              floatingBarIndicatorGap;
-                                          // Align 在剩余空间上插值，需由左边界反推
-                                          final alignment =
-                                              2.0 *
-                                                  left /
-                                                  (constraints.maxWidth -
-                                                      indicatorWidth) -
-                                              1.0;
-                                          return Align(
-                                            alignment: Alignment(
-                                              alignment,
-                                              0.0,
-                                            ),
-                                            child: Container(
-                                              width: indicatorWidth,
-                                              height: constraints.maxHeight,
-                                              decoration: BoxDecoration(
-                                                color:
-                                                    scheme.secondaryContainer,
-                                                borderRadius:
-                                                    BorderRadius.circular(
-                                                      constraints.maxHeight / 2,
-                                                    ),
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    Positioned.fill(
-                                      child: Row(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.stretch,
+                            child: SizedBox(
+                              height: floatingBarHeight,
+                              child: MediaQuery.withClampedTextScaling(
+                                maxScaleFactor: 2.0,
+                                child: Padding(
+                                  padding: const EdgeInsets.all(
+                                    floatingBarInnerPadding,
+                                  ),
+                                  child: LayoutBuilder(
+                                    builder: (context, constraints) {
+                                      final itemWidth =
+                                          constraints.maxWidth /
+                                          mainPages.length;
+                                      return Stack(
                                         children: [
-                                          for (
-                                            var i = 0;
-                                            i < mainPages.length;
-                                            i++
-                                          )
-                                            Expanded(
-                                              child: _buildBarItem(
-                                                i,
-                                                l10n,
-                                                scheme,
-                                              ),
+                                          Positioned.fill(
+                                            child: AnimatedBuilder(
+                                              animation: _switchController,
+                                              builder: (context, _) {
+                                                final indicatorWidth =
+                                                    itemWidth -
+                                                    floatingBarIndicatorGap * 2;
+                                                final left =
+                                                    itemWidth * _barPosition() +
+                                                    floatingBarIndicatorGap;
+                                                // Align 在剩余空间上插值，需由左边界反推
+                                                final alignment =
+                                                    2.0 *
+                                                        left /
+                                                        (constraints.maxWidth -
+                                                            indicatorWidth) -
+                                                    1.0;
+                                                return Align(
+                                                  alignment: Alignment(
+                                                    alignment,
+                                                    0.0,
+                                                  ),
+                                                  child: Container(
+                                                    width: indicatorWidth,
+                                                    height:
+                                                        constraints.maxHeight,
+                                                    decoration: BoxDecoration(
+                                                      color: scheme
+                                                          .secondaryContainer
+                                                          .withValues(
+                                                            alpha: 0.82,
+                                                          ),
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                            constraints
+                                                                    .maxHeight /
+                                                                2,
+                                                          ),
+                                                    ),
+                                                  ),
+                                                );
+                                              },
                                             ),
+                                          ),
+                                          Positioned.fill(
+                                            child: Row(
+                                              crossAxisAlignment:
+                                                  CrossAxisAlignment.stretch,
+                                              children: [
+                                                for (
+                                                  var i = 0;
+                                                  i < mainPages.length;
+                                                  i++
+                                                )
+                                                  Expanded(
+                                                    child: _buildBarItem(
+                                                      i,
+                                                      l10n,
+                                                      scheme,
+                                                    ),
+                                                  ),
+                                              ],
+                                            ),
+                                          ),
                                         ],
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
                             ),
                           ),
                         ),
