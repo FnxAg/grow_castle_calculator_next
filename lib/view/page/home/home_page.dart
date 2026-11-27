@@ -578,6 +578,26 @@ class _HomePageState extends ConsumerState<HomePage>
           ),
         ),
       ],
+      onTap: () => showTopNotice(
+        context,
+        content: Column(
+          children: [
+            SummaryRow(
+              title: Text('Season Rank Reward'),
+              trailing: SummaryRow.text('$_redCrystalFromPlayerRank'),
+            ),
+            SummaryRow(
+              title: Text('Hell Mode Rank Reward'),
+              trailing: SummaryRow.text('$_redCrystalFromHellModeRank'),
+            ),
+            SummaryRow(
+              title: Text('Guild Rank Reward'),
+              trailing: SummaryRow.text('$_boxReward'),
+            ),
+          ],
+        ),
+        noticeType: NoticeType.content,
+      ),
     );
     // 快捷入口
     final quickAccess = <Widget>[

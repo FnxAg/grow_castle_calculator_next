@@ -14,6 +14,7 @@ class CardTile extends StatelessWidget {
     this.enabled = true,
     this.dense,
     this.contentPadding,
+    this.cardType = CardType.normal,
   });
 
   final Widget? leading;
@@ -26,10 +27,12 @@ class CardTile extends StatelessWidget {
   final bool enabled;
   final bool? dense;
   final EdgeInsetsGeometry? contentPadding;
+  final CardType cardType;
 
   @override
   Widget build(BuildContext context) {
     return CardX(
+      cardType: cardType,
       child: ListTile(
         leading: leading,
         title: title,

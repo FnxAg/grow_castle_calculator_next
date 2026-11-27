@@ -7,19 +7,24 @@ class SummaryCard extends StatelessWidget {
   const SummaryCard({
     super.key,
     required this.children,
+    this.onTap,
     this.cardType = CardType.normal,
   });
 
   final List<Widget> children;
+  final VoidCallback? onTap;
   final CardType cardType;
 
   @override
   Widget build(BuildContext context) {
     return CardX(
       cardType: cardType,
-      child: Padding(
-        padding: UIs.inCardPadding,
-        child: Column(mainAxisSize: MainAxisSize.min, children: children),
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: UIs.inCardPadding,
+          child: Column(mainAxisSize: MainAxisSize.min, children: children),
+        ),
       ),
     );
   }

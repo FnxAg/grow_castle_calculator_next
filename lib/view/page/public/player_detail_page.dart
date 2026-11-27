@@ -244,6 +244,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     final traditional = context.isTraditionalChineseLocale;
     final scheme = Theme.of(context).colorScheme;
     final wph = ref.watch(theoreticalWphProvider);
+    final dataExists = _wphHistory != null && _wphHistory!.isNotEmpty;
     final reward =
         getRedCrystalFromPlayerRank(_playerRank ?? 0) +
         getRedCrystalFromHellModeRank(_hellRank ?? 0);
@@ -263,7 +264,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
               controller: _scrollController,
               padding: UIs.padding,
               children: <Widget>[
-                if (_wphHistory != null && _wphHistory!.isNotEmpty) ...[
+                if (dataExists) ...[
                   for (final group in _wphHistory!) ...[
                     SectionHeader(group.season),
                     _wphGrid(
@@ -286,19 +287,21 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
           Positioned(
             left: 0,
             right: 0,
-            bottom: _wphHistory == null || _wphHistory!.isEmpty ? null : 0,
-            top: _wphHistory == null || _wphHistory!.isEmpty ? 0 : null,
+            bottom: !dataExists ? null : 0,
+            top: !dataExists ? 0 : null,
             child: IgnorePointer(
               ignoring: !_showCard,
               child: SizeTransition(
                 sizeFactor: _cardAnimation,
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  padding: const EdgeInsets.all(8.0),
+                  // padding: const EdgeInsets.all(8.0),
+                  padding: UIs.padding.copyWith(top: 8.0, bottom: dataExists ? 8.0 : 24.0),
                   child: SummaryCard(
-                    cardType: _wphHistory != null && _wphHistory!.isNotEmpty
-                        ? CardType.floating
-                        : CardType.normal,
+                    // cardType: _wphHistory != null && _wphHistory!.isNotEmpty
+                    //     ? CardType.floating
+                    //     : CardType.normal,
+                    cardType: CardType.glass,
                     children: <Widget>[
                       SummaryRow(
                         leading: Icon(Icons.emoji_events),

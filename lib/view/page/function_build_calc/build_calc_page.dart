@@ -10,6 +10,7 @@ import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:measure_size/measure_size.dart';
 
 /// 阵容经济计算页
 class BuildCalcPage extends ConsumerStatefulWidget {
@@ -24,6 +25,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
   final Map<int, FocusNode> _textFocusNodes = {};
   final Map<int, TextEditingController> _numberControllers = {};
   final Map<int, TextEditingController> _textControllers = {};
+  double _paddingTop = 0.0;
 
   FocusNode _focusNodeFor(int id, Map<int, FocusNode> cache) {
     return cache.putIfAbsent(id, () => FocusNode());
@@ -111,57 +113,56 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
       ),
     ];
 
-    final Widget formationExpanded = cardIds.isEmpty
+    final Widget formationContent = cardIds.isEmpty
         ? Center(
             child: Text(
               l10n.emptyFormationHint,
               style: const TextStyle(color: Colors.grey),
             ),
           )
-        : Expanded(
-            child: ReorderableListView.builder(
-              key: const PageStorageKey('formation_card_list'),
-              itemCount: cardIds.length,
-              padding: EdgeInsets.only(
-                bottom: 8.0,
-                left: UIs.padding.left,
-                right: UIs.padding.right,
-              ),
-              proxyDecorator: (child, index, animation) {
-                return AnimatedBuilder(
-                  animation: animation,
-                  builder: (context, child) {
-                    final double elevation = 4.0 * animation.value;
-                    return Material(
-                      elevation: elevation,
-                      shadowColor: Colors.black26,
-                      borderRadius: BorderRadius.circular(8.0),
-                      child: IgnorePointer(child: child),
-                    );
-                  },
-                  child: child,
-                );
-              },
-              onReorderItem: (oldIndex, newIndex) {
-                FocusManager.instance.primaryFocus?.unfocus();
-                ref.users.reorderCard(oldIndex, newIndex);
-              },
-              itemBuilder: (context, index) {
-                final id = cardIds[index];
-                return FormationCardTile(
-                  key: ValueKey(id),
-                  id: id,
-                  index: index,
-                  textController: _textControllerFor(id),
-                  numberController: _numberControllerFor(id),
-                  textFocusNode: _focusNodeFor(id, _textFocusNodes),
-                  numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
-                  onRemove: _removeCard,
-                );
-              },
-              buildDefaultDragHandles: false,
-              scrollDirection: .vertical,
+        : ReorderableListView.builder(
+            key: const PageStorageKey('formation_card_list'),
+            itemCount: cardIds.length,
+            padding: EdgeInsets.only(
+              top: _paddingTop,
+              bottom: 8.0,
+              left: UIs.padding.left,
+              right: UIs.padding.right,
             ),
+            proxyDecorator: (child, index, animation) {
+              return AnimatedBuilder(
+                animation: animation,
+                builder: (context, child) {
+                  final double elevation = 4.0 * animation.value;
+                  return Material(
+                    elevation: elevation,
+                    shadowColor: Colors.black26,
+                    borderRadius: BorderRadius.circular(8.0),
+                    child: IgnorePointer(child: child),
+                  );
+                },
+                child: child,
+              );
+            },
+            onReorderItem: (oldIndex, newIndex) {
+              FocusManager.instance.primaryFocus?.unfocus();
+              ref.users.reorderCard(oldIndex, newIndex);
+            },
+            itemBuilder: (context, index) {
+              final id = cardIds[index];
+              return FormationCardTile(
+                key: ValueKey(id),
+                id: id,
+                index: index,
+                textController: _textControllerFor(id),
+                numberController: _numberControllerFor(id),
+                textFocusNode: _focusNodeFor(id, _textFocusNodes),
+                numberFocusNode: _focusNodeFor(id, _numberFocusNodes),
+                onRemove: _removeCard,
+              );
+            },
+            buildDefaultDragHandles: false,
+            scrollDirection: .vertical,
           );
 
     final totalGold = ref.watch(currentUserTotalGoldProvider);
@@ -184,64 +185,74 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
       appBar: AppBar(title: Text(l10n.tabFormation), actions: appBarActions),
       body: SafeArea(
         top: false,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+        child: Stack(
           children: [
-            Padding(
-              padding: UIs.padding,
-              child: CardTile(
-                title: Text(username, overflow: TextOverflow.ellipsis),
-                trailing: Wrap(
-                  spacing: 2.0,
-                  children: [
-                    Tooltip(
-                      message: l10n.totalGold,
-                      child: PillChip(
-                        text: totalGold.formatCompact(
-                          fractionDigits: 2,
-                          english: context.isCompactUnitEnglish,
-                          traditional: context.isTraditionalChineseLocale,
+            Positioned.fill(child: formationContent),
+            Positioned(
+              top: 0.0,
+              left: 0.0,
+              right: 0.0,
+              child: MeasureSize(
+                onChange: (size) {
+                  setState(() => _paddingTop = size.height);
+                },
+                child: Padding(
+                  padding: UIs.padding,
+                  child: CardTile(
+                    cardType: CardType.glass,
+                    title: Text(username, overflow: TextOverflow.ellipsis),
+                    trailing: Wrap(
+                      spacing: 2.0,
+                      children: [
+                        Tooltip(
+                          message: l10n.totalGold,
+                          child: PillChip(
+                            text: totalGold.formatCompact(
+                              fractionDigits: 2,
+                              english: context.isCompactUnitEnglish,
+                              traditional: context.isTraditionalChineseLocale,
+                            ),
+                          ),
                         ),
-                      ),
-                    ),
-                    Tooltip(
-                      message: l10n.gp,
-                      child: PillChip(text: gp.toStringAsFixed(3)),
-                    ),
-                    Tooltip(
-                      message: l10n.gpCN,
-                      child: PillChip(text: gpCn.toStringAsFixed(3)),
-                    ),
-                  ],
-                ),
-                onTap: () => showTopNotice(
-                  context,
-                  duration: const Duration(seconds: 7),
-                  content: Column(
-                    children: [
-                      SummaryRow(
-                        title: Text(l10n.totalGold),
-                        trailing: SummaryRow.text('$tgStr ($rtgStr)'),
-                      ),
-                      SummaryRow(
-                        title: Text(l10n.gp),
-                        trailing: SummaryRow.text(
-                          '${gp.toStringAsFixed(3)} (${calcGp(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                        Tooltip(
+                          message: l10n.gp,
+                          child: PillChip(text: gp.toStringAsFixed(3)),
                         ),
-                      ),
-                      SummaryRow(
-                        title: Text(l10n.gpCN),
-                        trailing: SummaryRow.text(
-                          '${gpCn.toStringAsFixed(3)} (${calcGpCN(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                        Tooltip(
+                          message: l10n.gpCN,
+                          child: PillChip(text: gpCn.toStringAsFixed(3)),
                         ),
+                      ],
+                    ),
+                    onTap: () => showTopNotice(
+                      context,
+                      duration: const Duration(seconds: 7),
+                      content: Column(
+                        children: [
+                          SummaryRow(
+                            title: Text(l10n.totalGold),
+                            trailing: SummaryRow.text('$tgStr ($rtgStr)'),
+                          ),
+                          SummaryRow(
+                            title: Text(l10n.gp),
+                            trailing: SummaryRow.text(
+                              '${gp.toStringAsFixed(3)} (${calcGp(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                            ),
+                          ),
+                          SummaryRow(
+                            title: Text(l10n.gpCN),
+                            trailing: SummaryRow.text(
+                              '${gpCn.toStringAsFixed(3)} (${calcGpCN(wave: wave, gold: rTotalGold).toStringAsFixed(3)})',
+                            ),
+                          ),
+                        ],
                       ),
-                    ],
+                      noticeType: NoticeType.content,
+                    ),
                   ),
-                  noticeType: NoticeType.content,
                 ),
               ),
             ),
-            formationExpanded,
           ],
         ),
       ),

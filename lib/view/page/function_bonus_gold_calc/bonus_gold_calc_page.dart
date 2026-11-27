@@ -5,12 +5,11 @@ import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
 import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_info.dart';
-import 'package:grow_castle_calculator_next/view/widget/app_bar/app_bar_item.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/notice/top_notice.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:measure_size/measure_size.dart';
 
 /// 单条收入相对金挂成本的收益率，成本非正时记 0
 double _sampleRate(num income, double safeCost) =>
@@ -31,6 +30,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
   static final Map<int, List<int>> _incomesByUser = {};
 
   late List<int> _incomes;
+  double paddingTop = 0.0;
 
   @override
   void initState() {
@@ -170,7 +170,9 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
               ref.users.setCurrentUserGabBonus(filled);
               showTopNotice(
                 context,
-                message: l10n.snackAppliedGabBonus(filled.format(fractionDigits: 2)),
+                message: l10n.snackAppliedGabBonus(
+                  filled.format(fractionDigits: 2),
+                ),
               );
             },
             child: Text(l10n.actionConfirm),
@@ -185,6 +187,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     final l10n = AppLocalizations.of(context);
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final username = ref.watch(currentUsernameProvider);
     final wave = ref.watch(currentUserWaveProvider);
     final gabCost = _gabCost(wave);
     final safeCost = gabCost > 0 ? gabCost : 0.0;
@@ -235,7 +238,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     );
 
     final Widget list = ListView.builder(
-      padding: const EdgeInsets.only(bottom: 8.0),
+      padding: UIs.padding.add(EdgeInsets.only(top: paddingTop)),
       itemCount: _incomes.length,
       itemBuilder: (context, index) {
         final income = _incomes[index];
@@ -258,29 +261,11 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
       },
     );
 
-    final Widget appBarInfo = AppBarInfo(
-      children: [
-        AppBarItem.currentUser(),
-        AppBarItem.text(
-          gabCost.formatCompact(english: english, traditional: traditional),
-          tooltip: l10n.labelGabCost,
-        ),
-        AppBarItem.text(
-          avgIncome.formatCompact(english: english, traditional: traditional),
-          tooltip: l10n.labelAverageIncome,
-        ),
-        AppBarItem.text(
-          '${percent.format(fractionDigits: 2)}%',
-          tooltip: l10n.labelPercent,
-        ),
-      ],
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: .start,
-          children: [Text(l10n.wavePushIncomeCalc), appBarInfo],
+          children: [Text(l10n.wavePushIncomeCalc)],
         ),
         actions: [
           IconButton(
@@ -293,21 +278,103 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
       ),
       body: SafeArea(
         top: false,
-        child: Padding(
-          padding: UIs.padding,
-          child: Builder(
-            builder: (context) {
-              if (_incomes.isEmpty) {
-                return Center(
-                  child: Text(
-                    l10n.emptyIncomeSamples,
-                    style: const TextStyle(color: Colors.grey),
+        child: Stack(
+          children: [
+            Positioned.fill(
+              child: Builder(
+                builder: (context) {
+                  if (_incomes.isEmpty) {
+                    return Center(
+                      child: Text(
+                        l10n.emptyIncomeSamples,
+                        style: const TextStyle(color: Colors.grey),
+                      ),
+                    );
+                  }
+                  return list;
+                },
+              ),
+            ),
+            Positioned(
+              top: 0.0,
+              left: 0.0,
+              right: 0.0,
+              child: MeasureSize(
+                onChange: (size) {
+                  setState(() => paddingTop = size.height);
+                },
+                child: Padding(
+                  padding: UIs.padding,
+                  child: CardTile(
+                    cardType: CardType.glass,
+                    title: Text(username, overflow: TextOverflow.ellipsis),
+                    trailing: Wrap(
+                      spacing: 2.0,
+                      children: [
+                        Tooltip(
+                          message: l10n.labelGabCost,
+                          child: PillChip(
+                            text: gabCost.formatCompact(
+                              english: english,
+                              traditional: traditional,
+                            ),
+                          ),
+                        ),
+                        Tooltip(
+                          message: l10n.labelAverageIncome,
+                          child: PillChip(
+                            text: avgIncome.formatCompact(
+                              english: english,
+                              traditional: traditional,
+                            ),
+                          ),
+                        ),
+                        Tooltip(
+                          message: l10n.labelPercent,
+                          child: PillChip(
+                            text: '${percent.format(fractionDigits: 2)}%',
+                          ),
+                        ),
+                      ],
+                    ),
+                    onTap: () => showTopNotice(
+                      context,
+                      duration: const Duration(seconds: 7),
+                      content: Column(
+                        children: [
+                          SummaryRow(
+                            title: Text(l10n.labelGabCost),
+                            trailing: SummaryRow.text(
+                              gabCost.formatCompact(
+                                english: english,
+                                traditional: traditional,
+                              ),
+                            ),
+                          ),
+                          SummaryRow(
+                            title: Text(l10n.labelAverageIncome),
+                            trailing: SummaryRow.text(
+                              avgIncome.formatCompact(
+                                english: english,
+                                traditional: traditional,
+                              ),
+                            ),
+                          ),
+                          SummaryRow(
+                            title: Text(l10n.labelPercent),
+                            trailing: SummaryRow.text(
+                              '${percent.format(fractionDigits: 2)}%',
+                            ),
+                          ),
+                        ],
+                      ),
+                      noticeType: NoticeType.content,
+                    ),
                   ),
-                );
-              }
-              return list;
-            },
-          ),
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );

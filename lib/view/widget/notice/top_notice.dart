@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/widget/glass_surface.dart';
 import 'package:material_ui/material_ui.dart';
 
 OverlayEntry? _currentEntry;
@@ -156,121 +156,92 @@ class _TopNoticeState extends State<_TopNotice> with TickerProviderStateMixin {
               child: Center(
                 child: ConstrainedBox(
                   constraints: const BoxConstraints(maxWidth: 560.0),
-                  child: Material(
-                    color: Colors.transparent,
-                    elevation: 10.0,
-                    shadowColor: scheme.shadow.withValues(alpha: 0.2),
+                  child: GlassSurface(
                     borderRadius: radius,
-                    clipBehavior: Clip.antiAlias,
-                    child: ClipRRect(
-                      borderRadius: radius,
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 18.0, sigmaY: 18.0),
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
-                              colors: [
-                                glassTint.withValues(alpha: 0.82),
-                                glassTint.withValues(alpha: 0.70),
-                              ],
-                            ),
-                            border: Border.all(
-                              color: scheme.onSurface.withValues(alpha: 0.12),
-                            ),
-                          ),
-                          child: Semantics(
-                            liveRegion: true,
-                            container: true,
-                            child: InkWell(
-                              onTap: _dismiss,
-                              borderRadius: inkRadius,
-                              hoverColor: scheme.onSurface.withValues(
-                                alpha: 0.05,
+                    tintColor: glassTint,
+                    child: Semantics(
+                      liveRegion: true,
+                      container: true,
+                      child: InkWell(
+                        onTap: _dismiss,
+                        borderRadius: inkRadius,
+                        hoverColor: scheme.onSurface.withValues(alpha: 0.05),
+                        highlightColor: scheme.onSurface.withValues(
+                          alpha: 0.04,
+                        ),
+                        child: Stack(
+                          children: [
+                            Padding(
+                              padding: const EdgeInsets.fromLTRB(
+                                14.0,
+                                6.0,
+                                14.0,
+                                14.0,
                               ),
-                              highlightColor: scheme.onSurface.withValues(
-                                alpha: 0.04,
-                              ),
-                              child: Stack(
+                              child: Row(
                                 children: [
-                                  Padding(
-                                    padding: const EdgeInsets.fromLTRB(
-                                      14.0,
-                                      6.0,
-                                      14.0,
-                                      14.0,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        ...?leading,
-                                        Expanded(
-                                          child: Padding(
-                                            padding: const EdgeInsets.symmetric(
-                                              vertical: 6.0,
-                                            ),
-                                            child:
-                                                widget.content ??
-                                                Text(
-                                                  widget.message!,
-                                                  maxLines: 3,
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                  style: TextStyle(
-                                                    color: foreground,
-                                                    fontSize: 14.0,
-                                                  ),
-                                                ),
-                                          ),
-                                        ),
-                                        if (widget.actionLabel != null)
-                                          TextButton(
-                                            onPressed: () {
-                                              widget.onAction?.call();
-                                              _dismiss();
-                                            },
-                                            style: TextButton.styleFrom(
-                                              foregroundColor: foreground,
-                                              visualDensity:
-                                                  VisualDensity.compact,
-                                            ),
-                                            child: Text(widget.actionLabel!),
-                                          ),
-                                      ],
-                                    ),
-                                  ),
-                                  Positioned(
-                                    left: 14.0,
-                                    right: 14.0,
-                                    bottom: 8.0,
-                                    height: 2.5,
-                                    child: ClipRRect(
-                                      borderRadius: BorderRadius.circular(2.0),
-                                      child: ColoredBox(
-                                        color: scheme.onSurface.withValues(
-                                          alpha: 0.10,
-                                        ),
-                                        child: AnimatedBuilder(
-                                          animation: _countdown,
-                                          builder: (context, child) =>
-                                              Transform.scale(
-                                                scaleX: 1.0 - _countdown.value,
-                                                alignment: Alignment.centerLeft,
-                                                child: child,
-                                              ),
-                                          child: ColoredBox(
-                                            color:
-                                                (foreground ?? scheme.onSurface)
-                                                    .withValues(alpha: 0.62),
-                                          ),
-                                        ),
+                                  ...?leading,
+                                  Expanded(
+                                    child: Padding(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 6.0,
                                       ),
+                                      child:
+                                          widget.content ??
+                                          Text(
+                                            widget.message!,
+                                            maxLines: 3,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: TextStyle(
+                                              color: foreground,
+                                              fontSize: 14.0,
+                                            ),
+                                          ),
                                     ),
                                   ),
+                                  if (widget.actionLabel != null)
+                                    TextButton(
+                                      onPressed: () {
+                                        widget.onAction?.call();
+                                        _dismiss();
+                                      },
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: foreground,
+                                        visualDensity: VisualDensity.compact,
+                                      ),
+                                      child: Text(widget.actionLabel!),
+                                    ),
                                 ],
                               ),
                             ),
-                          ),
+                            Positioned(
+                              left: 14.0,
+                              right: 14.0,
+                              bottom: 8.0,
+                              height: 2.5,
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(2.0),
+                                child: ColoredBox(
+                                  color: scheme.onSurface.withValues(
+                                    alpha: 0.10,
+                                  ),
+                                  child: AnimatedBuilder(
+                                    animation: _countdown,
+                                    builder: (context, child) =>
+                                        Transform.scale(
+                                          scaleX: 1.0 - _countdown.value,
+                                          alignment: Alignment.centerLeft,
+                                          child: child,
+                                        ),
+                                    child: ColoredBox(
+                                      color: (foreground ?? scheme.onSurface)
+                                          .withValues(alpha: 0.62),
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
                       ),
                     ),
