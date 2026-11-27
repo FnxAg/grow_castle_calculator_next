@@ -316,7 +316,7 @@ class _ShellScaffoldState extends State<ShellScaffold>
                             return ShellLayout(
                               mode: mode,
                               contentWidth: constraints.maxWidth,
-                              bottomOverlayInset: barVisible
+                              bottomOverlayInset: mode == ShellMode.compact
                                   ? floatingBarInset
                                   : 0.0,
                               child: ShellTransitionScope(

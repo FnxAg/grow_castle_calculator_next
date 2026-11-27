@@ -583,15 +583,15 @@ class _HomePageState extends ConsumerState<HomePage>
         content: Column(
           children: [
             SummaryRow(
-              title: Text('Season Rank Reward'),
+              title: Text('Season Rank Reward', overflow: TextOverflow.ellipsis),
               trailing: SummaryRow.text('$_redCrystalFromPlayerRank'),
             ),
             SummaryRow(
-              title: Text('Hell Mode Rank Reward'),
+              title: Text('Hell Mode Rank Reward', overflow: TextOverflow.ellipsis),
               trailing: SummaryRow.text('$_redCrystalFromHellModeRank'),
             ),
             SummaryRow(
-              title: Text('Guild Rank Reward'),
+              title: Text('Guild Rank Reward', overflow: TextOverflow.ellipsis),
               trailing: SummaryRow.text('$_boxReward'),
             ),
           ],
