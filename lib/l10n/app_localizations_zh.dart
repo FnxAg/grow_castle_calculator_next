@@ -377,13 +377,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsAutoLastOnline => '自动查询上次在线';
 
   @override
-  String get settingsAutoLastOnlineSubtitle => '公会详情页查询成员\"上次在线\"';
-
-  @override
   String get settingsGameTrack => '游戏轨迹记录';
-
-  @override
-  String get settingsGameTrackSubtitle => '记录个人数据变化';
 
   @override
   String get settingsGameTrackMinInterval => '轨迹记录最小间隔';
@@ -397,15 +391,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get settingsDataBackup => '数据备份';
 
   @override
-  String get settingsDataBackupSubtitle => 'WebDAV 云备份 · 本地导入导出';
-
-  @override
   String get settingsCheckUpdate => '检查更新';
-
-  @override
-  String settingsCurrentVersion(String version) {
-    return '当前版本 v$version';
-  }
 
   @override
   String get settingsAbout => '关于';
@@ -418,9 +404,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get aboutThirdPartyApiInfo => '第三方 API 说明';
-
-  @override
-  String get aboutThirdPartyApiInfoSubtitle => '当查询内容为空时，请查看这里';
 
   @override
   String get dialogThirdPartyApiBody =>
@@ -1943,13 +1926,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsAutoLastOnline => '自動查詢上次線上';
 
   @override
-  String get settingsAutoLastOnlineSubtitle => '公會詳情頁查詢成員「上次線上」';
-
-  @override
   String get settingsGameTrack => '遊戲軌跡紀錄';
-
-  @override
-  String get settingsGameTrackSubtitle => '紀錄個人資料變化';
 
   @override
   String get settingsGameTrackMinInterval => '軌跡紀錄最小間隔';
@@ -1963,15 +1940,7 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
   String get settingsDataBackup => '資料備份';
 
   @override
-  String get settingsDataBackupSubtitle => 'WebDAV 雲端備份 · 本機匯入匯出';
-
-  @override
   String get settingsCheckUpdate => '檢查更新';
-
-  @override
-  String settingsCurrentVersion(String version) {
-    return '目前版本 v$version';
-  }
 
   @override
   String get settingsAbout => '關於';
@@ -1984,9 +1953,6 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get aboutThirdPartyApiInfo => '第三方 API 說明';
-
-  @override
-  String get aboutThirdPartyApiInfoSubtitle => '當查詢內容為空時，請查看這裡';
 
   @override
   String get dialogThirdPartyApiBody =>

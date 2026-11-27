@@ -195,9 +195,7 @@
   "themeDark": "暗色",
   "settingsThirdPartyApiSubtitle": "玩家详情页获取波速信息",
   "settingsAutoLastOnline": "自动查询上次在线",
-  "settingsAutoLastOnlineSubtitle": "公会详情页查询成员\"上次在线\"",
   "settingsGameTrack": "游戏轨迹记录",
-  "settingsGameTrackSubtitle": "记录个人数据变化",
   "settingsGameTrackMinInterval": "轨迹记录最小间隔",
   "settingsGameTrackIntervalValue": "{minutes} 分钟",
   "@settingsGameTrackIntervalValue": {
@@ -208,21 +206,11 @@
     }
   },
   "settingsDataBackup": "数据备份",
-  "settingsDataBackupSubtitle": "WebDAV 云备份 · 本地导入导出",
   "settingsCheckUpdate": "检查更新",
-  "settingsCurrentVersion": "当前版本 v{version}",
-  "@settingsCurrentVersion": {
-    "placeholders": {
-      "version": {
-        "type": "String"
-      }
-    }
-  },
   "settingsAbout": "关于",
   "aboutAdaptedVersion": "适配版本",
   "aboutGuide": "使用说明",
   "aboutThirdPartyApiInfo": "第三方 API 说明",
-  "aboutThirdPartyApiInfoSubtitle": "当查询内容为空时，请查看这里",
   "dialogThirdPartyApiBody": "默认第三方 API (https://fnxag.eu.org/gcapi) 由开发者维护。\n只有部分玩家在记录范围中，如果有需要，可联系开发者添加。\n需要使用其他 API 时，可以自行创建。\n\n注意：该 API 与本应用无任何直接联系，请自行判断是否使用。",
   "actionGotIt": "知道了",
   "aboutGithubRepo": "GitHub 仓库",

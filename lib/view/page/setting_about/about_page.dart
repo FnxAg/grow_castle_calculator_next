@@ -46,7 +46,7 @@ class _AboutPageState extends State<AboutPage> {
       _AboutEntry(
         icon: Icons.api,
         title: l10n.aboutThirdPartyApiInfo,
-        subtitle: l10n.aboutThirdPartyApiInfoSubtitle,
+        // subtitle: l10n.aboutThirdPartyApiInfoSubtitle,
         onTap: () => showDialog<void>(
           context: context,
           builder: (context) => AlertDialog(

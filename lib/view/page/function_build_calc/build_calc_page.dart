@@ -190,7 +190,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
             Padding(
               padding: UIs.padding,
               child: CardTile(
-                title: Text(username),
+                title: Text(username, overflow: TextOverflow.ellipsis),
                 trailing: Wrap(
                   spacing: 2.0,
                   children: [

@@ -255,7 +255,6 @@ class _SettingPageState extends State<SettingPage> {
   Widget build(BuildContext context) {
     final appSettingsStore = Stores.appSettingsStore;
     final l10n = AppLocalizations.of(context);
-    final currentVersion = _currentVersion;
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tabSettings)),
       body: ListView(
@@ -326,7 +325,6 @@ class _SettingPageState extends State<SettingPage> {
           ExpansionCardTile(
             leading: const Icon(Icons.api),
             title: Text(l10n.settingsThirdPartyApi),
-            subtitle: Text(l10n.settingsThirdPartyApiSubtitle),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.thirdPartyApiEnabledNotifier,
@@ -353,7 +351,6 @@ class _SettingPageState extends State<SettingPage> {
           ExpansionCardTile(
             leading: const Icon(Icons.schedule),
             title: Text(l10n.settingsAutoLastOnline),
-            subtitle: Text(l10n.settingsAutoLastOnlineSubtitle),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.autoLastOnlineEnabledNotifier,
@@ -381,7 +378,6 @@ class _SettingPageState extends State<SettingPage> {
           ExpansionCardTile(
             leading: const Icon(Icons.timeline),
             title: Text(l10n.settingsGameTrack),
-            subtitle: Text(l10n.settingsGameTrackSubtitle),
             children: [
               ValueListenableBuilder<bool>(
                 valueListenable: appSettingsStore.gameTrackEnabledNotifier,
@@ -412,7 +408,6 @@ class _SettingPageState extends State<SettingPage> {
           CardTile(
             leading: const Icon(Icons.cloud_outlined),
             title: Text(l10n.settingsDataBackup),
-            subtitle: Text(l10n.settingsDataBackupSubtitle),
             trailing: const Icon(Icons.chevron_right),
             onTap: () {
               FocusManager.instance.primaryFocus?.unfocus();
@@ -422,9 +417,6 @@ class _SettingPageState extends State<SettingPage> {
           CardTile(
             leading: const Icon(Icons.system_update_alt),
             title: Text(l10n.settingsCheckUpdate),
-            subtitle: currentVersion == null
-                ? null
-                : Text(l10n.settingsCurrentVersion(currentVersion)),
             trailing: _checking
                 ? const SizedBox(
                     width: 18,

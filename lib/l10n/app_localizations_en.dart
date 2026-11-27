@@ -388,15 +388,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsAutoLastOnline => 'Auto-query last online';
 
   @override
-  String get settingsAutoLastOnlineSubtitle =>
-      'Queries members\' \"last online\" on the guild detail page';
-
-  @override
   String get settingsGameTrack => 'Game track recording';
-
-  @override
-  String get settingsGameTrackSubtitle =>
-      'Records changes to your personal data';
 
   @override
   String get settingsGameTrackMinInterval => 'Minimum track interval';
@@ -410,16 +402,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get settingsDataBackup => 'Data backup';
 
   @override
-  String get settingsDataBackupSubtitle =>
-      'WebDAV cloud backup · local import/export';
-
-  @override
   String get settingsCheckUpdate => 'Check for updates';
-
-  @override
-  String settingsCurrentVersion(String version) {
-    return 'Current version v$version';
-  }
 
   @override
   String get settingsAbout => 'About';
@@ -432,10 +415,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get aboutThirdPartyApiInfo => 'About the third-party API';
-
-  @override
-  String get aboutThirdPartyApiInfoSubtitle =>
-      'Check here when a query comes back empty';
 
   @override
   String get dialogThirdPartyApiBody =>

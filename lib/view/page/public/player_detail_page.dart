@@ -11,6 +11,7 @@ import 'package:grow_castle_calculator_next/icon/crystal.dart';
 import 'package:grow_castle_calculator_next/l10n/app_localizations.dart';
 import 'package:grow_castle_calculator_next/provider/userdata/user_data_selectors.dart';
 import 'package:grow_castle_calculator_next/utils/ui.dart';
+import 'package:grow_castle_calculator_next/view/extension/context_l10n.dart';
 import 'package:grow_castle_calculator_next/view/widget/card/cards.dart';
 import 'package:grow_castle_calculator_next/view/widget/pill_chip/pill_chip.dart';
 import 'package:grow_castle_calculator_next/view/widget/section_header.dart';
@@ -239,6 +240,8 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
 
   Widget _buildResult(PlayerQueryResult r) {
     final l10n = AppLocalizations.of(context);
+    final english = context.isCompactUnitEnglish;
+    final traditional = context.isTraditionalChineseLocale;
     final scheme = Theme.of(context).colorScheme;
     final wph = ref.watch(theoreticalWphProvider);
     final reward =
@@ -333,7 +336,12 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                                 ),
                                 const SizedBox(width: 8.0),
                               ],
-                              SummaryRow.text(_hellScore!.format()),
+                              SummaryRow.text(
+                                _hellScore!.formatCompact(
+                                  english: english,
+                                  traditional: traditional,
+                                ),
+                              ),
                             ],
                           ),
                         ),

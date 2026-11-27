@@ -1,6 +1,6 @@
 import 'package:grow_castle_calculator_next/core/service/api.dart';
 
-/// 榜单里程碑名次（与榜单页“特殊名次”一致）
+/// 榜单里程碑名次
 const List<int> rankMilestoneRanks = [1, 3, 5, 10, 50, 100, 200, 300];
 
 /// 里程碑名次对应的榜单条目
@@ -15,9 +15,19 @@ class RankMilestone {
 Map<int, RankMilestone>? milestonesOf(SeasonQueryResult<RankInfo>? ranking) {
   if (ranking == null) return null;
   final entries = <int, RankMilestone>{};
-  for (final item in ranking.items) {
-    if (rankMilestoneRanks.contains(item.rank)) {
-      entries[item.rank] = RankMilestone(name: item.name, score: item.score);
+  for (final milestoneRank in rankMilestoneRanks) {
+    RankInfo? closestItem;
+    for (final item in ranking.items) {
+      if (item.rank <= milestoneRank &&
+          (closestItem == null || item.rank > closestItem.rank)) {
+        closestItem = item;
+      }
+    }
+    if (closestItem != null) {
+      entries[milestoneRank] = RankMilestone(
+        name: closestItem.name,
+        score: closestItem.score,
+      );
     }
   }
   return entries;

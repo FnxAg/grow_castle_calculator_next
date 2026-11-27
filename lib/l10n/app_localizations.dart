@@ -781,23 +781,11 @@ abstract class AppLocalizations {
   /// **'自动查询上次在线'**
   String get settingsAutoLastOnline;
 
-  /// No description provided for @settingsAutoLastOnlineSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'公会详情页查询成员\"上次在线\"'**
-  String get settingsAutoLastOnlineSubtitle;
-
   /// No description provided for @settingsGameTrack.
   ///
   /// In zh, this message translates to:
   /// **'游戏轨迹记录'**
   String get settingsGameTrack;
-
-  /// No description provided for @settingsGameTrackSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'记录个人数据变化'**
-  String get settingsGameTrackSubtitle;
 
   /// No description provided for @settingsGameTrackMinInterval.
   ///
@@ -817,23 +805,11 @@ abstract class AppLocalizations {
   /// **'数据备份'**
   String get settingsDataBackup;
 
-  /// No description provided for @settingsDataBackupSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'WebDAV 云备份 · 本地导入导出'**
-  String get settingsDataBackupSubtitle;
-
   /// No description provided for @settingsCheckUpdate.
   ///
   /// In zh, this message translates to:
   /// **'检查更新'**
   String get settingsCheckUpdate;
-
-  /// No description provided for @settingsCurrentVersion.
-  ///
-  /// In zh, this message translates to:
-  /// **'当前版本 v{version}'**
-  String settingsCurrentVersion(String version);
 
   /// No description provided for @settingsAbout.
   ///
@@ -858,12 +834,6 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'第三方 API 说明'**
   String get aboutThirdPartyApiInfo;
-
-  /// No description provided for @aboutThirdPartyApiInfoSubtitle.
-  ///
-  /// In zh, this message translates to:
-  /// **'当查询内容为空时，请查看这里'**
-  String get aboutThirdPartyApiInfoSubtitle;
 
   /// No description provided for @dialogThirdPartyApiBody.
   ///
