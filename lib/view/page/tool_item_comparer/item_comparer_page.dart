@@ -373,6 +373,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
     final l10n = AppLocalizations.of(context);
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final baseResult = _computeItemResult(const []);
     final item1Result = _computeItemResult(_equip1);
     final item2Result = _computeItemResult(_equip2);
@@ -391,6 +392,7 @@ class _ItemComparerPageState extends State<ItemComparerPage> {
             text: baseResult.dps.formatCompact(
               english: english,
               traditional: traditional,
+              englishStyle: englishStyle,
             ),
           ),
         ),

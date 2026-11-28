@@ -398,6 +398,7 @@ class _RankingPageState extends State<RankingPage> {
     final scheme = Theme.of(context).colorScheme;
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final season = _activeSeasonNotifier.value;
     // 赛季信息缺失时退回分数显示
     final progress = RankingCache.seasonProgress(season) ?? 1.0;
@@ -468,6 +469,7 @@ class _RankingPageState extends State<RankingPage> {
                       RankingKind.hell => row.gapPrev!.formatCompact(
                         english: english,
                         traditional: traditional,
+                        englishStyle: englishStyle,
                       ),
                       RankingKind.player =>
                         !_viewWPHMode
@@ -488,6 +490,7 @@ class _RankingPageState extends State<RankingPage> {
                       RankingKind.hell => row.score.formatCompact(
                         english: english,
                         traditional: traditional,
+                        englishStyle: englishStyle,
                       ),
                       RankingKind.player =>
                         !_viewWPHMode ? row.score.format() : wph.format(),

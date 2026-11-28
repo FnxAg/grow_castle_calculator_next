@@ -171,6 +171,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get compactUnitEnglish => 'English (K/M/B)';
 
   @override
+  String get settingsCompactEnglishStyle => 'English abbreviation style';
+
+  @override
+  String get compactEnglishStyleStandard => 'Standard';
+
+  @override
+  String get compactEnglishStyleGame => 'In-game';
+
+  @override
   String get itemSourceDragon1 => 'Green Dragon';
 
   @override
@@ -1655,4 +1664,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get labelIncome => 'Income';
+
+  @override
+  String get labelSeasonRankReward => 'Season rank reward (Red Crystal)';
+
+  @override
+  String get labelGuildRankReward => 'Guild rank reward (Item Box)';
+
+  @override
+  String get labelHellModeRankReward => 'Hell mode rank reward (Red Crystal)';
 }

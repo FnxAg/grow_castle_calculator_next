@@ -399,6 +399,24 @@ abstract class AppLocalizations {
   /// **'英文（K/M/B）'**
   String get compactUnitEnglish;
 
+  /// No description provided for @settingsCompactEnglishStyle.
+  ///
+  /// In zh, this message translates to:
+  /// **'英文缩写风格'**
+  String get settingsCompactEnglishStyle;
+
+  /// No description provided for @compactEnglishStyleStandard.
+  ///
+  /// In zh, this message translates to:
+  /// **'标准'**
+  String get compactEnglishStyleStandard;
+
+  /// No description provided for @compactEnglishStyleGame.
+  ///
+  /// In zh, this message translates to:
+  /// **'游戏内'**
+  String get compactEnglishStyleGame;
+
   /// No description provided for @itemSourceDragon1.
   ///
   /// In zh, this message translates to:
@@ -2837,6 +2855,24 @@ abstract class AppLocalizations {
   /// In zh, this message translates to:
   /// **'收入'**
   String get labelIncome;
+
+  /// No description provided for @labelSeasonRankReward.
+  ///
+  /// In zh, this message translates to:
+  /// **'赛季排名奖励（红水晶）'**
+  String get labelSeasonRankReward;
+
+  /// No description provided for @labelGuildRankReward.
+  ///
+  /// In zh, this message translates to:
+  /// **'公会排名奖励（宝箱）'**
+  String get labelGuildRankReward;
+
+  /// No description provided for @labelHellModeRankReward.
+  ///
+  /// In zh, this message translates to:
+  /// **'无尽排名奖励（红水晶）'**
+  String get labelHellModeRankReward;
 }
 
 class _AppLocalizationsDelegate

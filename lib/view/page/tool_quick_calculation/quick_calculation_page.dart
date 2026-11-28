@@ -390,6 +390,7 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
   Widget _buildField(AppLocalizations l10n, _Field field) {
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final value = _valueOf(field);
     return CardField(
       title: _labelOf(l10n, field),
@@ -408,6 +409,7 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
               _Field.gold => value.formatCompact(
                 english: english,
                 traditional: traditional,
+                englishStyle: englishStyle,
               ),
               _ => value.format(fractionDigits: 3),
             },

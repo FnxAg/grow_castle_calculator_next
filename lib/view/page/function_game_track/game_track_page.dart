@@ -192,6 +192,7 @@ class _TrackCard extends StatelessWidget {
         text: record.totalGold.formatCompact(
           english: context.isCompactUnitEnglish,
           traditional: context.isTraditionalChineseLocale,
+          englishStyle: context.compactEnglishStyle,
         ),
         textStyle: textStyle,
       ),

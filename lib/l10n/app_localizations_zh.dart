@@ -170,6 +170,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get compactUnitEnglish => '英文（K/M/B）';
 
   @override
+  String get settingsCompactEnglishStyle => '英文缩写风格';
+
+  @override
+  String get compactEnglishStyleStandard => '标准';
+
+  @override
+  String get compactEnglishStyleGame => '游戏内';
+
+  @override
   String get itemSourceDragon1 => '一龙（绿龙）';
 
   @override
@@ -1552,6 +1561,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get labelIncome => '收入';
+
+  @override
+  String get labelSeasonRankReward => '赛季排名奖励（红水晶）';
+
+  @override
+  String get labelGuildRankReward => '公会排名奖励（宝箱）';
+
+  @override
+  String get labelHellModeRankReward => '无尽排名奖励（红水晶）';
 }
 
 /// The translations for Chinese, using the Han script (`zh_Hant`).
@@ -1717,6 +1735,15 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get compactUnitEnglish => '英文（K/M/B）';
+
+  @override
+  String get settingsCompactEnglishStyle => '英文縮寫風格';
+
+  @override
+  String get compactEnglishStyleStandard => '標準';
+
+  @override
+  String get compactEnglishStyleGame => '遊戲內';
 
   @override
   String get itemSourceDragon1 => '一龍（綠龍）';
@@ -3101,4 +3128,13 @@ class AppLocalizationsZhHant extends AppLocalizationsZh {
 
   @override
   String get labelIncome => '收入';
+
+  @override
+  String get labelSeasonRankReward => '賽季排名獎勵（紅水晶）';
+
+  @override
+  String get labelGuildRankReward => '公會排名獎勵（寶箱）';
+
+  @override
+  String get labelHellModeRankReward => '無盡排名獎勵（紅水晶）';
 }

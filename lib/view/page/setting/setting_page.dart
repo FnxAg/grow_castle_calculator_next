@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:grow_castle_calculator_next/core/service/update_checker.dart';
 import 'package:grow_castle_calculator_next/data/res/store.dart';
 import 'package:grow_castle_calculator_next/data/store/app_settings.dart';
@@ -322,6 +323,37 @@ class _SettingPageState extends State<SettingPage> {
                 onSelected: appSettingsStore.setCompactUnitEnglish,
               ),
             ),
+          // 英文缩写风格只在英文缩写单位生效时可选
+          ValueListenableBuilder<bool>(
+            valueListenable: appSettingsStore.compactUnitEnglishNotifier,
+            builder: (context, englishUnit, _) {
+              if (context.isChineseLocale && !englishUnit) {
+                return const SizedBox.shrink();
+              }
+              return ValueListenableBuilder<CompactEnglishStyle>(
+                valueListenable: appSettingsStore.compactEnglishStyleNotifier,
+                builder: (context, style, _) =>
+                    _choiceTile<CompactEnglishStyle>(
+                      leading: Icons.format_list_numbered,
+                      title: l10n.settingsCompactEnglishStyle,
+                      current: style,
+                      options: [
+                        (
+                          CompactEnglishStyle.standard,
+                          l10n.compactEnglishStyleStandard,
+                          null,
+                        ),
+                        (
+                          CompactEnglishStyle.game,
+                          l10n.compactEnglishStyleGame,
+                          null,
+                        ),
+                      ],
+                      onSelected: appSettingsStore.setCompactEnglishStyle,
+                    ),
+              );
+            },
+          ),
           ExpansionCardTile(
             leading: const Icon(Icons.api),
             title: Text(l10n.settingsThirdPartyApi),

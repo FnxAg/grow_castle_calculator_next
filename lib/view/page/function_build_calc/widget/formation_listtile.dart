@@ -102,6 +102,11 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
           focusNode: widget.numberFocusNode,
           keyboardType: TextInputType.number,
           inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+          trailing: TextButton(
+            onPressed: () => widget.numberController.text =
+                '${widget.numberController.text}000',
+            child: Text('+000'),
+          ),
         ),
         SwitchCardTile(
           title: Text(applied ? l10n.actionApplied : l10n.actionNotApplied),
@@ -193,6 +198,7 @@ class _FormationCardTileState extends ConsumerState<FormationCardTile> {
                     text: gold.formatCompact(
                       english: context.isCompactUnitEnglish,
                       traditional: context.isTraditionalChineseLocale,
+                      englishStyle: context.compactEnglishStyle,
                     ),
                     backgroundColor: applied ? null : theme.disabledColor,
                   ),

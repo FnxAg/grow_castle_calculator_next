@@ -80,6 +80,7 @@ class _SelectUserPageState extends ConsumerState<SelectUserPage>
                         fractionDigits: 2,
                         english: context.isCompactUnitEnglish,
                         traditional: context.isTraditionalChineseLocale,
+                        englishStyle: context.compactEnglishStyle,
                       ),
                       leading: Icon(Icons.monetization_on),
                     ),

@@ -187,6 +187,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
     final l10n = AppLocalizations.of(context);
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final username = ref.watch(currentUsernameProvider);
     final wave = ref.watch(currentUserWaveProvider);
     final gabCost = _gabCost(wave);
@@ -317,6 +318,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
                             text: gabCost.formatCompact(
                               english: english,
                               traditional: traditional,
+                              englishStyle: englishStyle,
                             ),
                           ),
                         ),
@@ -326,6 +328,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
                             text: avgIncome.formatCompact(
                               english: english,
                               traditional: traditional,
+                              englishStyle: englishStyle,
                             ),
                           ),
                         ),
@@ -348,6 +351,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
                               gabCost.formatCompact(
                                 english: english,
                                 traditional: traditional,
+                                englishStyle: englishStyle,
                               ),
                             ),
                           ),
@@ -357,6 +361,7 @@ class _BonusGoldCalcPageState extends ConsumerState<BonusGoldCalcPage>
                               avgIncome.formatCompact(
                                 english: english,
                                 traditional: traditional,
+                                englishStyle: englishStyle,
                               ),
                             ),
                           ),

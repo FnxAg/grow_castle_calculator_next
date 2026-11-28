@@ -242,6 +242,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
     final l10n = AppLocalizations.of(context);
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final scheme = Theme.of(context).colorScheme;
     final wph = ref.watch(theoreticalWphProvider);
     final dataExists = _wphHistory != null && _wphHistory!.isNotEmpty;
@@ -339,6 +340,7 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                                 _hellScore!.formatCompact(
                                   english: english,
                                   traditional: traditional,
+                                  englishStyle: englishStyle,
                                 ),
                               ),
                             ],

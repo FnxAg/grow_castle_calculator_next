@@ -50,6 +50,9 @@
   "settingsCompactUnit": "Abbreviated units",
   "compactUnitChinese": "Chinese (万/亿)",
   "compactUnitEnglish": "English (K/M/B)",
+  "settingsCompactEnglishStyle": "English abbreviation style",
+  "compactEnglishStyleStandard": "Standard",
+  "compactEnglishStyleGame": "In-game",
   "itemSourceDragon1": "Green Dragon",
   "itemSourceDragon2": "Black Dragon",
   "itemSourceDragon3": "Red Dragon",
@@ -456,5 +459,8 @@
   "dialogDelete": "Confirm delete?",
   "actionRename": "Rename",
   "labelTime": "Time",
-  "labelIncome": "Income"
+  "labelIncome": "Income",
+  "labelSeasonRankReward": "Season rank reward (Red Crystal)",
+  "labelGuildRankReward": "Guild rank reward (Item Box)",
+  "labelHellModeRankReward": "Hell mode rank reward (Red Crystal)"
 }

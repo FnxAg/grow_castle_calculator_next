@@ -195,6 +195,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
     final scheme = Theme.of(context).colorScheme;
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final scoreRange = (maxScore - minScore).abs();
     final chartMinY = (minScore - scoreRange * 0.08).clamp(0, double.infinity);
     final chartMaxY = maxScore + (scoreRange == 0 ? 1 : scoreRange * 0.08);
@@ -228,6 +229,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
                   value,
                   english: english,
                   traditional: traditional,
+                  englishStyle: englishStyle,
                 ),
                 style: const TextStyle(fontSize: 10.0),
                 textAlign: .right,
@@ -290,6 +292,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
     double value, {
     required bool english,
     required bool traditional,
+    required CompactEnglishStyle englishStyle,
   }) {
     if (widget.kind != RankingKind.hell) return value.round().format();
     if (value.abs() < 10000) return value.round().format();
@@ -297,6 +300,7 @@ class _RankingChartPageState extends State<RankingChartPage> {
       fractionDigits: 1,
       english: english,
       traditional: traditional,
+      englishStyle: englishStyle,
     );
   }
 }

@@ -91,6 +91,9 @@
   "settingsCompactUnit": "缩写单位",
   "compactUnitChinese": "中文（万/亿）",
   "compactUnitEnglish": "英文（K/M/B）",
+  "settingsCompactEnglishStyle": "英文缩写风格",
+  "compactEnglishStyleStandard": "标准",
+  "compactEnglishStyleGame": "游戏内",
   "itemSourceDragon1": "一龙（绿龙）",
   "itemSourceDragon2": "二龙（黑龙）",
   "itemSourceDragon3": "三龙（红龙）",
@@ -1002,5 +1005,8 @@
   "dialogDelete": "确认删除？",
   "actionRename": "重命名",
   "labelTime": "时间",
-  "labelIncome": "收入"
+  "labelIncome": "收入",
+  "labelSeasonRankReward": "赛季排名奖励（红水晶）",
+  "labelGuildRankReward": "公会排名奖励（宝箱）",
+  "labelHellModeRankReward": "无尽排名奖励（红水晶）"
 }

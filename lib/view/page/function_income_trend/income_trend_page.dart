@@ -45,6 +45,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
     final l10n = AppLocalizations.of(context);
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final afterTime = _selectedOptionIndex == _customOptionIndex
         ? _customTime! * 1440.0
         : _trendMinutesOptions[_selectedOptionIndex];
@@ -170,6 +171,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                         startWaveGabCost.formatCompact(
                           english: english,
                           traditional: traditional,
+                          englishStyle: englishStyle,
                         ),
                       ),
                     ),
@@ -180,6 +182,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                         startWaveTotalGold.formatCompact(
                           english: english,
                           traditional: traditional,
+                          englishStyle: englishStyle,
                         ),
                       ),
                     ),
@@ -235,6 +238,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                                 .formatCompact(
                                   english: english,
                                   traditional: traditional,
+                                  englishStyle: englishStyle,
                                 ),
                           ),
                           const SizedBox(width: 8),
@@ -242,6 +246,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                             endWaveGabCost.formatCompact(
                               english: english,
                               traditional: traditional,
+                              englishStyle: englishStyle,
                             ),
                           ),
                         ],
@@ -260,6 +265,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                             text: totalIncome.formatCompact(
                               english: english,
                               traditional: traditional,
+                              englishStyle: englishStyle,
                             ),
                           ),
                           const SizedBox(width: 8),
@@ -267,6 +273,7 @@ class _IncomeTrendPageState extends ConsumerState<IncomeTrendPage> {
                             endWaveTotalGold.formatCompact(
                               english: english,
                               traditional: traditional,
+                              englishStyle: englishStyle,
                             ),
                           ),
                         ],

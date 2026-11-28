@@ -237,6 +237,7 @@ class _OverviewPanel extends StatelessWidget {
                   value: data.totalGold.formatCompact(
                     english: context.isCompactUnitEnglish,
                     traditional: context.isTraditionalChineseLocale,
+                    englishStyle: context.compactEnglishStyle,
                   ),
                 ),
               ),
@@ -361,6 +362,7 @@ class _UnitSummaryRow extends StatelessWidget {
                   gold.formatCompact(
                     english: context.isCompactUnitEnglish,
                     traditional: context.isTraditionalChineseLocale,
+                    englishStyle: context.compactEnglishStyle,
                   ),
                   style: theme.textTheme.titleSmall?.copyWith(
                     color: colors.primary,

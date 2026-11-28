@@ -26,6 +26,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
   Widget _buildList({required bool wide, required AppLocalizations l10n}) {
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final income = ref.watch(dailyIncomeProvider);
     Widget sectionHeaderTrailing(_, String text) => PillChip(text: text);
 
@@ -42,6 +43,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
             income.autoBattle.formatCompact(
               english: english,
               traditional: traditional,
+              englishStyle: englishStyle,
             ),
           ),
         ),
@@ -53,6 +55,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
             income.colony.formatCompact(
               english: english,
               traditional: traditional,
+              englishStyle: englishStyle,
             ),
           ),
         ),
@@ -76,6 +79,7 @@ class _IncomePageState extends ConsumerState<IncomePage> {
             income.other.formatCompact(
               english: english,
               traditional: traditional,
+              englishStyle: englishStyle,
             ),
           ),
         ),

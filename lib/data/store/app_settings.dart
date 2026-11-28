@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:hive_ce_flutter/hive_ce_flutter.dart';
 
@@ -25,6 +26,7 @@ class AppSettingsStore {
   static const String _themeModeKey = 'themeMode';
   static const String _languageKey = 'language';
   static const String _compactUnitEnglishKey = 'compactUnitEnglish';
+  static const String _compactEnglishStyleKey = 'compactEnglishStyle';
   static const String _apiUrlKey = 'apiUrl';
   static const String _thirdPartyApiEnabledKey = 'thirdPartyApiEnabled';
   static const String _autoLastOnlineEnabledKey = 'autoLastOnlineEnabled';
@@ -45,6 +47,9 @@ class AppSettingsStore {
 
   /// 中文界面下数字缩写是否使用英文单位（K/M/B），默认中文（万/亿）
   final ValueNotifier<bool> compactUnitEnglishNotifier;
+
+  /// 英文缩写单位的显示风格，默认标准
+  final ValueNotifier<CompactEnglishStyle> compactEnglishStyleNotifier;
   final ValueNotifier<String> apiUrlNotifier;
   final ValueNotifier<bool> thirdPartyApiEnabledNotifier;
   final ValueNotifier<bool> autoLastOnlineEnabledNotifier;
@@ -64,6 +69,9 @@ class AppSettingsStore {
       ),
       compactUnitEnglishNotifier = ValueNotifier<bool>(
         _readCompactUnitEnglish(Hive.box(_boxName)),
+      ),
+      compactEnglishStyleNotifier = ValueNotifier<CompactEnglishStyle>(
+        _readCompactEnglishStyle(Hive.box(_boxName)),
       ),
       apiUrlNotifier = ValueNotifier<String>(_readApiUrl(Hive.box(_boxName))),
       thirdPartyApiEnabledNotifier = ValueNotifier<bool>(
@@ -129,12 +137,29 @@ class AppSettingsStore {
     _box.put(_compactUnitEnglishKey, english);
   }
 
+  static CompactEnglishStyle _readCompactEnglishStyle(Box box) {
+    final raw = box.get(_compactEnglishStyleKey);
+    for (final style in CompactEnglishStyle.values) {
+      if (style.name == raw) return style;
+    }
+    return CompactEnglishStyle.standard;
+  }
+
+  void setCompactEnglishStyle(CompactEnglishStyle style) {
+    if (compactEnglishStyleNotifier.value == style) {
+      return;
+    }
+    compactEnglishStyleNotifier.value = style;
+    _box.put(_compactEnglishStyleKey, style.name);
+  }
+
   /// 重新从 box 读取全部设置并刷新各 notifier（数据恢复/导入后调用；
   /// ValueNotifier 等值不触发通知，安全）
   void reload() {
     themeModeNotifier.value = _readThemeMode(_box);
     languageNotifier.value = _readLanguage(_box);
     compactUnitEnglishNotifier.value = _readCompactUnitEnglish(_box);
+    compactEnglishStyleNotifier.value = _readCompactEnglishStyle(_box);
     apiUrlNotifier.value = _readApiUrl(_box);
     thirdPartyApiEnabledNotifier.value = _readThirdPartyApiEnabled(_box);
     autoLastOnlineEnabledNotifier.value = _readAutoLastOnlineEnabled(_box);

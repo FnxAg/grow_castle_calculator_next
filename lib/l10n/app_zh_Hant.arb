@@ -51,6 +51,9 @@
   "settingsCompactUnit": "縮寫單位",
   "compactUnitChinese": "中文（萬/億）",
   "compactUnitEnglish": "英文（K/M/B）",
+  "settingsCompactEnglishStyle": "英文縮寫風格",
+  "compactEnglishStyleStandard": "標準",
+  "compactEnglishStyleGame": "遊戲內",
   "itemSourceDragon1": "一龍（綠龍）",
   "itemSourceDragon2": "二龍（黑龍）",
   "itemSourceDragon3": "三龍（紅龍）",
@@ -455,5 +458,8 @@
   "dialogDelete": "確認刪除？",
   "actionRename": "重新命名",
   "labelTime": "時間",
-  "labelIncome": "收入"
+  "labelIncome": "收入",
+  "labelSeasonRankReward": "賽季排名獎勵（紅水晶）",
+  "labelGuildRankReward": "公會排名獎勵（寶箱）",
+  "labelHellModeRankReward": "無盡排名獎勵（紅水晶）"
 }

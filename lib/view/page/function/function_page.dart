@@ -91,6 +91,7 @@ class FunctionPage extends ConsumerWidget {
                     fractionDigits: 2,
                     english: context.isCompactUnitEnglish,
                     traditional: context.isTraditionalChineseLocale,
+                    englishStyle: context.compactEnglishStyle,
                   ),
             ),
             trailing: const Icon(Icons.chevron_right),

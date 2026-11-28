@@ -408,6 +408,7 @@ class _HomePageState extends ConsumerState<HomePage>
     final l10n = AppLocalizations.of(context);
     final english = context.isCompactUnitEnglish;
     final traditional = context.isTraditionalChineseLocale;
+    final englishStyle = context.compactEnglishStyle;
     final isDefaultUser = ref.watch(currentUserIdProvider) == 0;
     final username = ref.read(currentUsernameProvider);
     final guild = ref.read(currentUserGuildProvider);
@@ -515,7 +516,11 @@ class _HomePageState extends ConsumerState<HomePage>
               rank: _hellRank! - 1,
               name: _hellPrevName ?? '',
               gapText:
-                  '+${_hellGapPrev!.formatCompact(english: english, traditional: traditional)}',
+                  '+${_hellGapPrev!.formatCompact(
+                    english: english,
+                    traditional: traditional,
+                    englishStyle: englishStyle,
+                  )}',
               gapColor: Colors.red,
             )
           : null,
@@ -526,6 +531,7 @@ class _HomePageState extends ConsumerState<HomePage>
             _hellScore?.formatCompact(
               english: english,
               traditional: traditional,
+              englishStyle: englishStyle,
             ) ??
             '—',
         highlight: true,
@@ -535,7 +541,11 @@ class _HomePageState extends ConsumerState<HomePage>
               rank: _hellRank! + 1,
               name: _hellNextName ?? '',
               gapText:
-                  '-${_hellGapNext!.formatCompact(english: english, traditional: traditional)}',
+                  '-${_hellGapNext!.formatCompact(
+                    english: english,
+                    traditional: traditional,
+                    englishStyle: englishStyle,
+                  )}',
               gapColor: Colors.green,
             )
           : null,
@@ -543,8 +553,11 @@ class _HomePageState extends ConsumerState<HomePage>
       nextAnimation: _anims[AnimSource.hellNext],
       selfScore: _hellScore,
       milestones: _hellMilestones,
-      formatScore: (value) =>
-          value.formatCompact(english: english, traditional: traditional),
+      formatScore: (value) => value.formatCompact(
+        english: english,
+        traditional: traditional,
+        englishStyle: englishStyle,
+      ),
     );
     // 奖励
     final rewardCard = SummaryCard(
@@ -560,20 +573,7 @@ class _HomePageState extends ConsumerState<HomePage>
               if (_boxReward > 0)
                 PillChip(text: '$_boxReward', leading: boxIcon),
               if (_crystalReward > 0)
-                Tooltip(
-                  message: [
-                    (_redCrystalFromPlayerRank > 0
-                        ? 'Season Rank +$_redCrystalFromPlayerRank'
-                        : ''),
-                    (_redCrystalFromHellModeRank > 0
-                        ? 'Hell Mode Rank +$_redCrystalFromHellModeRank'
-                        : ''),
-                  ].where((e) => e.isNotEmpty).join('\n'),
-                  child: PillChip(
-                    text: '$_crystalReward',
-                    leading: crystalIcon,
-                  ),
-                ),
+                PillChip(text: '$_crystalReward', leading: crystalIcon),
             ],
           ),
         ),
@@ -583,15 +583,24 @@ class _HomePageState extends ConsumerState<HomePage>
         content: Column(
           children: [
             SummaryRow(
-              title: Text('Season Rank Reward', overflow: TextOverflow.ellipsis),
+              title: Text(
+                l10n.labelSeasonRankReward,
+                overflow: TextOverflow.ellipsis,
+              ),
               trailing: SummaryRow.text('$_redCrystalFromPlayerRank'),
             ),
             SummaryRow(
-              title: Text('Hell Mode Rank Reward', overflow: TextOverflow.ellipsis),
+              title: Text(
+                l10n.labelHellModeRankReward,
+                overflow: TextOverflow.ellipsis,
+              ),
               trailing: SummaryRow.text('$_redCrystalFromHellModeRank'),
             ),
             SummaryRow(
-              title: Text('Guild Rank Reward', overflow: TextOverflow.ellipsis),
+              title: Text(
+                l10n.labelGuildRankReward,
+                overflow: TextOverflow.ellipsis,
+              ),
               trailing: SummaryRow.text('$_boxReward'),
             ),
           ],

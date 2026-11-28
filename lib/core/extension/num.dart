@@ -1,3 +1,12 @@
+/// 英文缩写单位的显示风格
+enum CompactEnglishStyle {
+  /// 标准
+  standard,
+
+  /// 游戏内
+  game,
+}
+
 extension IntNumFormat on int {
   /// 千位分隔符格式化
   String format() => _thousands(toString());
@@ -6,10 +15,12 @@ extension IntNumFormat on int {
     int fractionDigits = 2,
     bool english = false,
     bool traditional = false,
+    CompactEnglishStyle englishStyle = CompactEnglishStyle.standard,
   }) => (toDouble()).formatCompact(
     fractionDigits: fractionDigits,
     english: english,
     traditional: traditional,
+    englishStyle: englishStyle,
   );
 }
 
@@ -27,6 +38,7 @@ extension DoubleNumFormat on double {
     int fractionDigits = 2,
     bool english = false,
     bool traditional = false,
+    CompactEnglishStyle englishStyle = CompactEnglishStyle.standard,
   }) {
     if (isNaN || isInfinite) return toString();
     final units = english
@@ -51,16 +63,26 @@ extension DoubleNumFormat on double {
             (1e8, '亿'),
             (1e4, '万'),
           ];
-    for (final (threshold, suffix) in units) {
-      if (this >= threshold) {
-        final scaled = this / threshold;
-        final text = scaled == scaled.roundToDouble()
-            ? scaled.toStringAsFixed(0)
-            : scaled.toStringAsFixed(fractionDigits);
-        return '$text$suffix';
+    final gameStyle = english && englishStyle == CompactEnglishStyle.game;
+    for (var i = 0; i < units.length; i++) {
+      final (threshold, suffix) = units[i];
+      if (this < threshold) continue;
+      if (gameStyle) {
+        // 单位降一档，只保留整数部分；K 以下不再带单位
+        final (lowerThreshold, lowerSuffix) = i + 1 < units.length
+            ? units[i + 1]
+            : (1.0, '');
+        final scaled = this / lowerThreshold;
+        final text = scaled.truncateToDouble().toStringAsFixed(0);
+        return '${_thousands(text)}$lowerSuffix';
       }
+      final scaled = this / threshold;
+      final text = scaled == scaled.roundToDouble()
+          ? scaled.toStringAsFixed(0)
+          : scaled.toStringAsFixed(fractionDigits);
+      return '$text$suffix';
     }
-    return toStringAsFixed(0);
+    return gameStyle ? truncateToDouble().toStringAsFixed(0) : toStringAsFixed(0);
   }
 }
 

@@ -1,3 +1,4 @@
+import 'package:grow_castle_calculator_next/core/extension/num.dart';
 import 'package:material_ui/material_ui.dart';
 
 /// 当前 locale 的读取扩展。
@@ -23,6 +24,10 @@ extension L10nLocale on BuildContext {
   /// 非中文界面固定英文；中文界面由设置项决定，默认中文（万/亿）。
   bool get isCompactUnitEnglish =>
       !isChineseLocale || CompactUnitScope.of(this);
+
+  /// `formatCompact` 英文缩写单位的显示风格
+  CompactEnglishStyle get compactEnglishStyle =>
+      CompactEnglishStyleScope.of(this);
 }
 
 /// 把"中文界面下用英文缩写单位"的设置下发给 [L10nLocale.isCompactUnitEnglish]
@@ -40,4 +45,21 @@ class CompactUnitScope extends InheritedNotifier<ValueNotifier<bool>> {
           ?.notifier
           ?.value ??
       false;
+}
+
+/// 把英文缩写风格的设置下发给 `formatCompact` 的调用方；设置变化时相关界面重建。
+class CompactEnglishStyleScope
+    extends InheritedNotifier<ValueNotifier<CompactEnglishStyle>> {
+  const CompactEnglishStyleScope({
+    super.key,
+    required ValueNotifier<CompactEnglishStyle> notifier,
+    required super.child,
+  }) : super(notifier: notifier);
+
+  static CompactEnglishStyle of(BuildContext context) =>
+      context
+          .dependOnInheritedWidgetOfExactType<CompactEnglishStyleScope>()
+          ?.notifier
+          ?.value ??
+      CompactEnglishStyle.standard;
 }

@@ -155,9 +155,13 @@ class _MyAppState extends ConsumerState<MyApp> with WidgetsBindingObserver {
               onTap: () => FocusScope.of(context).unfocus(),
               child: child!,
             );
-            // 数字缩写单位设置变化时，让读取 isCompactUnitEnglish 的界面重建
+            // 数字缩写单位设置变化时，让读取缩写设置的界面重建
             content = CompactUnitScope(
               notifier: appSettings.compactUnitEnglishNotifier,
+              child: content,
+            );
+            content = CompactEnglishStyleScope(
+              notifier: appSettings.compactEnglishStyleNotifier,
               child: content,
             );
             if (isDesktopPlatform()) {

@@ -164,6 +164,7 @@ class _GameTrackChartPageState extends ConsumerState<GameTrackChartPage> {
           (double value) => value.formatCompact(
             english: context.isCompactUnitEnglish,
             traditional: context.isTraditionalChineseLocale,
+            englishStyle: context.compactEnglishStyle,
           ),
         ),
         (

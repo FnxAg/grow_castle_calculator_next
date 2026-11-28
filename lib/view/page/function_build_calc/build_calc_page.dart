@@ -175,11 +175,13 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
       fractionDigits: 2,
       english: context.isCompactUnitEnglish,
       traditional: context.isTraditionalChineseLocale,
+      englishStyle: context.compactEnglishStyle,
     );
     final rtgStr = rTotalGold.formatCompact(
       fractionDigits: 2,
       english: context.isCompactUnitEnglish,
       traditional: context.isTraditionalChineseLocale,
+      englishStyle: context.compactEnglishStyle,
     );
     return Scaffold(
       appBar: AppBar(title: Text(l10n.tabFormation), actions: appBarActions),
@@ -211,6 +213,7 @@ class _FormationCalcPageState extends ConsumerState<BuildCalcPage> {
                               fractionDigits: 2,
                               english: context.isCompactUnitEnglish,
                               traditional: context.isTraditionalChineseLocale,
+                              englishStyle: context.compactEnglishStyle,
                             ),
                           ),
                         ),
