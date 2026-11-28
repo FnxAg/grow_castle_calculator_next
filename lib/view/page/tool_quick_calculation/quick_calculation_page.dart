@@ -340,13 +340,7 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
             ),
             const SizedBox(height: 16.0),
             for (final field in _Field.values) ...[
-              Row(
-                children: [
-                  Expanded(child: _buildField(l10n, field)),
-                  _buildLockButton(l10n, field),
-                  _buildFillButton(l10n, field),
-                ],
-              ),
+              _buildField(l10n, field),
             ],
           ],
         ),
@@ -417,6 +411,13 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
               ),
               _ => value.format(fractionDigits: 3),
             },
+      trailing: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          _buildLockButton(l10n, field),
+          _buildFillButton(l10n, field),
+        ],
+      ),
     );
   }
 
@@ -444,20 +445,17 @@ class _QuickCalculationPageState extends ConsumerState<QuickCalculationPage> {
   Widget _buildLockButton(AppLocalizations l10n, _Field field) {
     final locked = _lockedField == field;
     final scheme = Theme.of(context).colorScheme;
-    return Padding(
-      padding: const EdgeInsets.only(left: 8.0),
-      child: IconButton(
-        tooltip: locked ? l10n.quickCalcUnlock : l10n.quickCalcLock,
-        visualDensity: VisualDensity.compact,
-        iconSize: 20.0,
-        icon: Icon(
-          locked ? Icons.lock : Icons.lock_open,
-          color: locked ? scheme.primary : scheme.onSurfaceVariant,
-        ),
-        onPressed: locked || (_valueOf(field) ?? 0) > 0
-            ? () => _toggleLock(field)
-            : null,
+    return IconButton(
+      tooltip: locked ? l10n.quickCalcUnlock : l10n.quickCalcLock,
+      visualDensity: VisualDensity.compact,
+      iconSize: 20.0,
+      icon: Icon(
+        locked ? Icons.lock : Icons.lock_open,
+        color: locked ? scheme.primary : scheme.onSurfaceVariant,
       ),
+      onPressed: locked || (_valueOf(field) ?? 0) > 0
+          ? () => _toggleLock(field)
+          : null,
     );
   }
 }

@@ -295,12 +295,8 @@ class _PlayerDetailPageState extends ConsumerState<PlayerDetailPage>
                 sizeFactor: _cardAnimation,
                 alignment: Alignment.topCenter,
                 child: Padding(
-                  // padding: const EdgeInsets.all(8.0),
                   padding: UIs.padding.copyWith(top: 8.0, bottom: dataExists ? 8.0 : 24.0),
                   child: SummaryCard(
-                    // cardType: _wphHistory != null && _wphHistory!.isNotEmpty
-                    //     ? CardType.floating
-                    //     : CardType.normal,
                     cardType: CardType.glass,
                     children: <Widget>[
                       SummaryRow(
